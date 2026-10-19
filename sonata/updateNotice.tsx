@@ -27,12 +27,13 @@ function paint() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement("style");
     style.id = STYLE_ID;
+    // Dark navy with light blue text and an outlined button — like Discord's dark notices.
     style.textContent = `
-[class*="notice__"]:has(.vc-sonata-update) { background: linear-gradient(90deg, #1e40af, #2563eb 45%, #3b82f6) !important; color: #fff !important; }
-[class*="notice__"]:has(.vc-sonata-update) [class*="button__"] { color: #fff !important; border-color: rgb(255 255 255 / 0.75) !important; background: rgb(255 255 255 / 0.08) !important; }
-[class*="notice__"]:has(.vc-sonata-update) [class*="button__"]:hover { background: rgb(255 255 255 / 0.2) !important; }
-[class*="notice__"]:has(.vc-sonata-update) [class*="closeIcon__"], [class*="notice__"]:has(.vc-sonata-update) [class*="closeButton__"] { color: #fff !important; }
-.vc-sonata-update b { font-weight: 700; }`;
+[class*="notice__"]:has(.vc-sonata-update) { background: #0a1630 !important; color: #8db4ff !important; border-bottom: 1px solid #16284f !important; }
+[class*="notice__"]:has(.vc-sonata-update) [class*="button__"] { color: #8db4ff !important; border: 1px solid #5f8ff0 !important; background: transparent !important; border-radius: 4px !important; }
+[class*="notice__"]:has(.vc-sonata-update) [class*="button__"]:hover { color: #fff !important; background: rgb(95 143 240 / 0.18) !important; }
+[class*="notice__"]:has(.vc-sonata-update) [class*="closeIcon__"], [class*="notice__"]:has(.vc-sonata-update) [class*="closeButton__"] { color: #8db4ff !important; }
+.vc-sonata-update { font-weight: 500; }`;
     document.head.appendChild(style);
     // Take the colour away once the bar has gone.
     const watch = setInterval(() => {
@@ -49,7 +50,7 @@ async function check(isOn: () => boolean) {
     shown.add(latest.version);
     paint();
     showNotice(
-        <span className="vc-sonata-update">🎵 <b>Sonata {latest.version}</b> is out{latest.title ? ` — ${latest.title}` : ""}</span>,
+        <span className="vc-sonata-update">Sonata {latest.version} is out.</span>,
         "Update",
         async () => {
             const how = await native().sonataRunUpdater?.().catch(() => null);

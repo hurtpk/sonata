@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.19f",
+        date: "October 19, 2026",
+        title: "A calmer update bar",
+        items: [
+            { icon: "🔔", text: "The update bar now looks like Discord's own dark notices: dark blue, with just \"Sonata (version) is out.\" and an Update button. It also checks for a new Sonata every 15 minutes." },
+        ],
+    },
+    {
         version: "2026.10.19e",
         date: "October 19, 2026",
         title: "Theme Studio: pictures, bubbles and sharing",
