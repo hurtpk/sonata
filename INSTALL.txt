@@ -42,7 +42,9 @@ Service. People rarely get in trouble for using one, but it's your call.
    If it says "Windows needs a fresh window", just close it and
    double-click "Install Sonata.bat" again - it carries on.
 
-3. FULLY close Discord: right-click the Discord icon by the clock
+3. At the end it checks that Equicord is connected to your Discord and
+   offers to restart Discord for you. Say Y - or do it yourself:
+   FULLY close Discord: right-click the Discord icon by the clock
    (bottom-right of the screen) and choose "Quit Discord".
    Then open Discord again.
 

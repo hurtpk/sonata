@@ -137,6 +137,9 @@ echo   In the next screen, pick your Discord (usually "Stable") and press Enter.
 echo.
 call pnpm inject
 if errorlevel 1 goto :failed
+call :checkconnected
+if "%CONNECTED%"=="0" goto :notconnected
+echo   Connected to: %DISCORDS%
 
 rem ---- Optional: yt-dlp for Media Downloader ----
 call :step "Optional extra"
@@ -157,10 +160,7 @@ echo.
 echo  ==============================================================
 echo                        SONATA IS INSTALLED
 echo  ==============================================================
-echo.
-echo   Now FULLY close Discord: right-click its icon by the clock
-echo   (bottom-right of your screen) and choose "Quit Discord".
-echo   Then open Discord again.
+call :restartdiscord
 echo.
 echo   Open Sonata with the music-note button under your profile picture.
 echo   A short welcome tour helps you pick your features.
@@ -223,13 +223,15 @@ git -C "%TARGET%" pull --ff-only
 if errorlevel 1 goto :pullfailed
 call :rebuild
 if errorlevel 1 goto :failed
+call :ensureconnected
+if errorlevel 1 goto :notconnected
 echo.
 echo  ==============================================================
 echo                        SONATA IS UPDATED
 echo  ==============================================================
+call :restartdiscord
 echo.
-echo   Fully close Discord ^(right-click its tray icon, "Quit Discord"^)
-echo   and open it again. "What's new" shows you everything that changed.
+echo   "What's new" in Sonata shows you everything that changed.
 echo.
 pause
 exit /b 0
@@ -237,6 +239,17 @@ exit /b 0
 :uptodate
 echo.
 echo   You're up to date - Sonata %CUR% is the newest version.
+echo.
+call :checkconnected
+if "%CONNECTED%"=="1" goto :uptodateok
+echo   BUT Equicord isn't connected to your Discord right now, so
+echo   Sonata won't show up. Press R to repair that.
+echo.
+choice /c QR /n /m "  [Q] Close   [R] Repair "
+if errorlevel 2 goto :repair
+exit /b 0
+:uptodateok
+echo   Connected to: %DISCORDS%
 echo.
 echo   If Sonata went missing from Discord ^(a Discord update can do that^),
 echo   Repair rebuilds it and connects it to Discord again.
@@ -266,8 +279,11 @@ call :copylocal
 if errorlevel 1 goto :failed
 call :rebuild
 if errorlevel 1 goto :failed
+call :ensureconnected
+if errorlevel 1 goto :notconnected
 echo.
-echo   Done - fully close Discord and open it again.
+echo   Done.
+call :restartdiscord
 pause
 exit /b 0
 
@@ -289,8 +305,11 @@ git clone %REPO% "%TARGET%"
 if errorlevel 1 goto :failed
 call :rebuild
 if errorlevel 1 goto :failed
+call :ensureconnected
+if errorlevel 1 goto :notconnected
 echo.
-echo   Done - fully close Discord and open it again.
+echo   Done.
+call :restartdiscord
 pause
 exit /b 0
 
@@ -304,8 +323,11 @@ echo.
 cd /d "%EQ%"
 call pnpm inject
 if errorlevel 1 goto :failed
+call :checkconnected
+if "%CONNECTED%"=="0" goto :notconnected
 echo.
-echo   Repaired - fully close Discord and open it again.
+echo   Repaired - connected to: %DISCORDS%
+call :restartdiscord
 pause
 exit /b 0
 
@@ -408,6 +430,57 @@ if errorlevel 1 (
 echo   Added Sonata's small Equicord fixes.
 exit /b 0
 
+rem  Is this Equicord connected to a Discord? Looks in the newest app-* folder of
+rem  each Discord at resources\app.asar: Equicord's installer makes that a tiny
+rem  file (newer installers) or folder (older ones) that loads Equicord from this
+rem  folder. Sets CONNECTED (1/0) and DISCORDS (which ones).
+:checkconnected
+set "CONNECTED=0"
+set "DISCORDS="
+for /f "usebackq delims=" %%r in (`powershell -NoProfile -Command "$w = ($env:EQ + '\dist').Replace('\','\\').ToLower(); $hit = foreach ($n in 'Discord','DiscordPTB','DiscordCanary','DiscordDevelopment') { $a = Get-ChildItem (Join-Path $env:LOCALAPPDATA $n) -Directory -Filter 'app-*' -EA 0 | Sort-Object { try { [version]$_.Name.Substring(4) } catch { [version]'0.0' } } | Select-Object -Last 1; if ($a) { $f = Join-Path $a.FullName 'resources\app.asar'; if (Test-Path $f -PathType Container) { $f = Join-Path $f 'index.js' }; if ((Test-Path $f -PathType Leaf) -and (Get-Item $f).Length -lt 131072 -and [IO.File]::ReadAllText($f).ToLower().Contains($w)) { $n } } }; $hit -join ', '"`) do set "DISCORDS=%%r"
+if defined DISCORDS set "CONNECTED=1"
+exit /b 0
+
+rem  Lists each Discord and what it loads - so a screenshot shows what's wrong.
+:showdiscords
+echo   What's on this PC:
+powershell -NoProfile -Command "$any = $false; foreach ($n in 'Discord','DiscordPTB','DiscordCanary','DiscordDevelopment') { $a = Get-ChildItem (Join-Path $env:LOCALAPPDATA $n) -Directory -Filter 'app-*' -EA 0 | Sort-Object { try { [version]$_.Name.Substring(4) } catch { [version]'0.0' } } | Select-Object -Last 1; if (-not $a) { continue }; $any = $true; $f = Join-Path $a.FullName 'resources\app.asar'; if (Test-Path $f -PathType Container) { $f = Join-Path $f 'index.js' }; $t = ''; if ((Test-Path $f -PathType Leaf) -and (Get-Item $f).Length -lt 131072) { $t = [IO.File]::ReadAllText($f) }; $m = [regex]::Match($t, 'require\((.+?)\)'); if ($m.Success) { '    ' + $n + ' (' + $a.Name + '): loads Equicord from ' + $m.Groups[1].Value } else { '    ' + $n + ' (' + $a.Name + '): normal Discord, no Equicord' } }; if (-not $any) { '    No Discord found in ' + $env:LOCALAPPDATA }"
+echo     This Equicord: %EQ%
+exit /b 0
+
+rem  Connects Equicord to Discord if it isn't already. Fails if it still isn't.
+:ensureconnected
+call :checkconnected
+if "%CONNECTED%"=="1" exit /b 0
+call :step "Connecting to Discord"
+echo   Equicord isn't connected to your Discord yet - doing that now.
+echo   In the next screen, pick your Discord (usually "Stable") and press Enter.
+echo.
+cd /d "%EQ%"
+call pnpm inject
+call :checkconnected
+if "%CONNECTED%"=="1" exit /b 0
+exit /b 1
+
+rem  Discord only loads Equicord when it fully restarts - offers to do that.
+:restartdiscord
+echo.
+tasklist 2>nul | findstr /i /r /c:"^Discord" >nul
+if errorlevel 1 (
+    echo   Now open Discord - Sonata will be there.
+    exit /b 0
+)
+echo   Discord has to fully restart to load Sonata.
+choice /c YN /n /m "  Restart Discord now? [Y/N] "
+if errorlevel 2 (
+    echo   Then fully close it yourself: right-click its icon by the clock
+    echo   ^(bottom-right^), choose "Quit Discord", and open it again.
+    exit /b 0
+)
+echo   Restarting Discord...
+powershell -NoProfile -Command "$p = Get-Process Discord,DiscordPTB,DiscordCanary,DiscordDevelopment -EA 0; $n = $p.Name | Sort-Object -Unique; $p | Stop-Process -Force -EA 0; Start-Sleep 2; foreach ($x in $n) { $u = Join-Path $env:LOCALAPPDATA ($x + '\Update.exe'); if (Test-Path $u) { Start-Process $u -ArgumentList '--processStart', ($x + '.exe') } }"
+exit /b 0
+
 rem  Sonata's version, from the top of its changelog: call :versionof "<sonata folder>" VAR
 :versionof
 set "%~2=unknown"
@@ -470,6 +543,22 @@ echo   Move that folder somewhere else ^(outside "src\userplugins"^)
 echo   and run this again to get a fresh copy.
 pause
 exit /b 1
+
+:notconnected
+echo.
+echo   Sonata is built, but Equicord didn't connect to Discord.
+echo.
+call :showdiscords
+echo.
+echo   Usually one of these:
+echo     - A different Discord was picked in that screen - try again and
+echo       pick the Discord you use ^(usually "Stable"^).
+echo     - Discord was in the middle of updating - open Discord, let it
+echo       finish, then try again.
+echo.
+choice /c RQ /n /m "  [R] Try again   [Q] Close "
+if errorlevel 2 exit /b 1
+goto :repair
 
 :failed
 echo.
