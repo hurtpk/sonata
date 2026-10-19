@@ -253,6 +253,11 @@ exit /b 0
 :uptodateok
 call :showdiscords
 echo.
+rem  Connected, but Discord hasn't loaded it yet: a completely fresh start does it.
+if not exist "%APPDATA%\Equicord\settings\settings.json" (
+    call :restartdiscord
+    echo.
+)
 echo   If Sonata went missing from Discord ^(a Discord update can do that^),
 echo   Repair rebuilds it and connects it to Discord again.
 echo.
@@ -480,23 +485,27 @@ call :checkconnected
 if "%CONNECTED%"=="1" exit /b 0
 exit /b 1
 
-rem  Discord only loads Equicord when it fully restarts - offers to do that.
+rem  Discord only loads Equicord on a completely fresh start. This closes every
+rem  Discord process (including the hidden ones in the tray), then starts the
+rem  connected Discord's own Discord.exe directly - not through Discord's
+rem  updater, which can update first and start a copy without Equicord.
+rem  Uses DISCORDS from :checkconnected (Discord if it's empty).
 :restartdiscord
 echo.
-tasklist 2>nul | findstr /i /r /c:"^Discord" >nul
-if errorlevel 1 (
-    echo   Now open Discord - Sonata will be there.
-    exit /b 0
-)
-echo   Discord has to fully restart to load Sonata.
-choice /c YN /n /m "  Restart Discord now? [Y/N] "
+echo   Discord has to start completely fresh to load Sonata. This closes
+echo   Discord ^(if it's open^) and starts it again.
+choice /c YN /n /m "  Start Discord with Sonata now? [Y/N] "
 if errorlevel 2 (
-    echo   Then fully close it yourself: right-click its icon by the clock
+    echo   Then fully close Discord yourself: right-click its icon by the clock
     echo   ^(bottom-right^), choose "Quit Discord", and open it again.
     exit /b 0
 )
-echo   Restarting Discord...
-powershell -NoProfile -Command "$p = Get-Process Discord,DiscordPTB,DiscordCanary,DiscordDevelopment -EA 0; $n = $p.Name | Sort-Object -Unique; $p | Stop-Process -Force -EA 0; Start-Sleep 2; foreach ($x in $n) { $u = Join-Path $env:LOCALAPPDATA ($x + '\Update.exe'); if (Test-Path $u) { Start-Process $u -ArgumentList '--processStart', ($x + '.exe') } }"
+echo   Closing Discord...
+for %%n in (Discord DiscordPTB DiscordCanary DiscordDevelopment) do taskkill /f /t /im %%n.exe >nul 2>nul
+timeout /t 3 /nobreak >nul
+for %%n in (Discord DiscordPTB DiscordCanary DiscordDevelopment) do taskkill /f /t /im %%n.exe >nul 2>nul
+echo   Starting Discord...
+powershell -NoProfile -Command "$names = @(($env:DISCORDS -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }); if (-not $names) { $names = @('Discord') }; foreach ($n in $names) { $a = Get-ChildItem (Join-Path $env:LOCALAPPDATA $n) -Directory -Filter 'app-*' -EA 0 | Sort-Object { try { [version]$_.Name.Substring(4) } catch { [version]'0.0' } } | Select-Object -Last 1; if ($a) { $exe = Join-Path $a.FullName ($n + '.exe'); if (Test-Path $exe) { Start-Process $exe -WorkingDirectory $a.FullName; '    Started ' + $n + ' (' + $a.Name + ')' } } }"
 exit /b 0
 
 rem  Sonata's version, from the top of its changelog: call :versionof "<sonata folder>" VAR
