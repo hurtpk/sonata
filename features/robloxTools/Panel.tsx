@@ -30,6 +30,36 @@ import { Trade } from "./Trade";
 
 type Tab = "lookup" | "servers" | "compare" | "assets" | "trade" | "groups" | "people" | "names" | "robux";
 
+/** The tools in four groups, so the top of the window stays tidy. */
+const GROUPS: { id: string; icon: string; label: string; tools: { tab: Tab; icon: string; label: string; blurb: string; }[]; }[] = [
+    {
+        id: "find", icon: "🔎", label: "Find", tools: [
+            { tab: "lookup", icon: "🔎", label: "Look up", blurb: "Any profile, game, group or item" },
+            { tab: "names", icon: "🏷️", label: "Names", blurb: "Is a username free?" },
+            { tab: "people", icon: "👤", label: "People", blurb: "Watch name, bio and avatar changes" },
+        ],
+    },
+    {
+        id: "games", icon: "🎮", label: "Games", tools: [
+            { tab: "servers", icon: "🖥️", label: "Servers", blurb: "Find a server and join it" },
+            { tab: "compare", icon: "⚖️", label: "Compare", blurb: "Up to four games side by side" },
+            { tab: "assets", icon: "📦", label: "Assets", blurb: "An item's 3D model, textures and sounds" },
+        ],
+    },
+    {
+        id: "trading", icon: "🤝", label: "Trading", tools: [
+            { tab: "trade", icon: "🤝", label: "Trade", blurb: "Who comes out ahead" },
+            { tab: "robux", icon: "🧱", label: "Robux", blurb: "Robux to money and back" },
+        ],
+    },
+    {
+        id: "groups", icon: "👥", label: "Groups", tools: [
+            { tab: "groups", icon: "👥", label: "Groups", blurb: "Watch groups grow and catch new shouts" },
+        ],
+    },
+];
+const groupOf = (t: Tab) => GROUPS.find(g => g.tools.some(x => x.tab === t)) ?? GROUPS[0];
+
 // Cards anywhere can open the server finder; inside the window it just switches tab.
 cardActions.servers = placeId => openRoblox("servers", placeId);
 cardActions.lookup = query => openRoblox("lookup", query);
@@ -207,7 +237,12 @@ function Robux() {
 /* ── The window ── */
 
 function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalProps; start: Tab; initial?: string; }) {
-    const [tab, setTab] = useState<Tab>(start);
+    const [tab, setTabState] = useState<Tab>(start);
+    // Each group reopens on the tool you used last in it.
+    const [lastIn, setLastIn] = useState<Record<string, Tab>>({});
+    const setTab = (t: Tab) => { setTabState(t); setLastIn(l => ({ ...l, [groupOf(t).id]: t })); };
+    const group = groupOf(tab);
+    const tool = group.tools.find(x => x.tab === tab)!;
     const [serversFor, setServersFor] = useState(start === "servers" ? initial : undefined);
     const [lookupFor, setLookupFor] = useState(start === "lookup" ? initial : undefined);
     const [compareAdd, setCompareAdd] = useState(start === "compare" ? initial : undefined);
@@ -225,7 +260,7 @@ function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalPr
         return () => { Object.assign(cardActions, outside); };
     }, []);
     return (
-        <Modal {...modalProps} size="xl" title="Roblox Tools" subtitle="Look up anyone or anything on Roblox, find a server, compare games, get an item's files, watch groups and people, and work out Robux">
+        <Modal {...modalProps} size="xl" title="Roblox Tools" subtitle="Profiles, games, servers, trades, groups and Robux — all in one place">
             <div className={classes("vc-tool-wrap", rb("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={rb("layout")}>
                 <SavedSidebar current={tab === "lookup" ? current : null}
@@ -233,11 +268,26 @@ function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalPr
                     onOpenMe={id => { setLookupFor(`https://www.roblox.com/users/${id}/profile`); setCurrent(savedKey("user", id)); setTab("lookup"); }}
                     onCompare={() => { setCompareAdd(undefined); setCompareNonce(n => n + 1); setTab("compare"); }} />
                 <div className={rb("main")}>
-                <div className="vc-tool-tabs">
-                    {([["lookup", "🔎 Look up"], ["servers", "🖥️ Servers"], ["compare", "⚖️ Compare"], ["assets", "📦 Assets"], ["trade", "🤝 Trade"], ["groups", "👥 Groups"], ["people", "👤 People"], ["names", "🏷️ Names"], ["robux", "🧱 Robux"]] as [Tab, string][]).map(([t, l]) => (
-                        <button key={t} type="button" className={classes("vc-tool-tab", tab === t && "vc-tool-tab-on")} onClick={() => setTab(t)}>{l}</button>
+                <nav className={rb("nav")} role="tablist" aria-label="Roblox Tools">
+                    {GROUPS.map(g => (
+                        <button key={g.id} type="button" role="tab" aria-selected={group.id === g.id} className={classes(rb("nav-btn"), group.id === g.id && rb("nav-on"))}
+                            onClick={() => setTab(lastIn[g.id] ?? g.tools[0].tab)}>
+                            <span className={rb("nav-icon")} aria-hidden>{g.icon}</span>{g.label}
+                        </button>
                     ))}
-                </div>
+                </nav>
+                {group.tools.length > 1 ? (
+                    <div className={rb("subnav")} style={{ "--n": group.tools.length } as React.CSSProperties}>
+                        {group.tools.map(t => (
+                            <button key={t.tab} type="button" className={classes(rb("sub"), tab === t.tab && rb("sub-on"))} onClick={() => setTab(t.tab)}>
+                                <b><span aria-hidden>{t.icon}</span> {t.label}</b>
+                                <small>{t.blurb}</small>
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className={rb("tool-head")}><b>{tool.icon} {tool.label}</b><small>{tool.blurb}</small></div>
+                )}
                 <ErrorBoundary key={tab} message="This part of Roblox Tools hit a problem — try another tab, or reopen the window.">
                     {tab === "lookup" && <Lookup key={lookupFor ?? ""} initial={lookupFor} onInfo={showing} />}
                     {tab === "servers" && <Servers key={serversFor ?? ""} initial={serversFor} />}

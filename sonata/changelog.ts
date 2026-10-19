@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.19b",
+        date: "October 19, 2026",
+        title: "A tidier Roblox Tools",
+        items: [
+            { icon: "🧱", text: "Roblox Tools has four groups instead of nine tabs: Find (Look up, Names, People), Games (Servers, Compare, Assets), Trading (Trade, Robux) and Groups. Each tool shows a short line about what it does, and each group reopens on the tool you used last." },
+        ],
+    },
+    {
         version: "2026.10.19",
         date: "October 19, 2026",
         title: "Media Downloader",

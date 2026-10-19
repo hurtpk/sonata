@@ -532,3 +532,25 @@
 .vc-rbx-names-row { display: grid; grid-template-columns: 24px minmax(120px, 200px) 1fr 30px; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; background: hsl(0 0% 0% / 0.15); }
 .vc-rbx-names-row b { font-family: var(--font-code, monospace); color: var(--text-default, #dbdee1); }
 .vc-rbx-names-row.vc-rbx-name-free b { color: #57e389; }
+
+/* ─── Navigation: four groups, then the group's tools as small cards ─── */
+.vc-rbx-nav { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: hsl(0 0% 0% / 0.3); border: 1px solid hsl(0 0% 100% / 0.05); }
+.vc-rbx-nav-btn { all: unset; box-sizing: border-box; cursor: pointer; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 12px; border-radius: 10px; font-size: 14px; font-weight: 700; color: var(--text-muted); white-space: nowrap; transition: background 0.15s, color 0.15s; }
+.vc-rbx-nav-btn:hover { color: var(--text-default, #fff); background: hsl(0 0% 100% / 0.05); }
+.vc-rbx-nav-btn:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: -2px; }
+.vc-rbx-nav-on, .vc-rbx-nav-on:hover { color: #fff; background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 85%, white 10%), color-mix(in oklab, var(--tl-accent) 75%, black)); box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.2); }
+.vc-rbx-nav-icon { font-size: 16px; line-height: 1; }
+
+.vc-rbx-subnav { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 8px; }
+.vc-rbx-sub { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 9px 12px 10px 14px; border-radius: 12px; background: hsl(0 0% 100% / 0.03); border: 1px solid hsl(0 0% 100% / 0.07); transition: background 0.15s, border-color 0.15s; }
+.vc-rbx-sub:hover { background: hsl(0 0% 100% / 0.06); }
+.vc-rbx-sub:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+.vc-rbx-sub b { font-size: 13.5px; color: var(--header-primary, #fff); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-rbx-sub small { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-rbx-sub-on, .vc-rbx-sub-on:hover { background: linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 16%, transparent), hsl(0 0% 100% / 0.02) 70%); border-color: color-mix(in srgb, var(--tl-accent) 45%, transparent); box-shadow: inset 3px 0 0 var(--tl-accent); }
+
+.vc-rbx-tool-head { display: flex; align-items: baseline; gap: 10px; padding: 2px 4px; }
+.vc-rbx-tool-head b { font-size: 15px; color: var(--header-primary, #fff); }
+.vc-rbx-tool-head small { font-size: 12.5px; color: var(--text-muted); }
+
+@media (max-width: 760px) { .vc-rbx-subnav { grid-template-columns: 1fr; } .vc-rbx-nav-btn { padding: 0 6px; font-size: 13px; } }
