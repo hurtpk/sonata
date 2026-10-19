@@ -41,3 +41,14 @@
 .vc-dl-x { box-sizing: border-box; display: grid; place-items: center; width: 28px; height: 28px; margin: 0; padding: 0; border-radius: 8px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 100% / 0.04); color: var(--text-muted); font: 700 12px var(--font-primary); cursor: pointer; appearance: none; }
 .vc-dl-x:hover { color: #fff; background: hsl(358 75% 50% / 0.85); border-color: transparent; }
 @media (prefers-reduced-motion: reduce) { .vc-dl-spinner, .vc-dl-bar-busy { animation: none; } }
+
+/* Playlists */
+.vc-dl-pl .vc-dl-card-main { gap: 8px; }
+.vc-dl-pl-list { display: flex; flex-direction: column; gap: 2px; max-height: 280px; overflow-y: auto; padding: 4px; border-radius: 12px; background: hsl(0 0% 0% / 0.18); }
+.vc-dl-pl-row { display: flex; align-items: center; gap: 9px; padding: 5px 8px; border-radius: 9px; cursor: pointer; min-width: 0; opacity: 0.6; transition: background 0.12s, opacity 0.12s; }
+.vc-dl-pl-row:hover { background: hsl(0 0% 100% / 0.05); }
+.vc-dl-pl-on { opacity: 1; }
+.vc-dl-pl-row input { accent-color: var(--tl-accent); margin: 0; flex: none; }
+.vc-dl-pl-n { width: 24px; flex: none; text-align: right; font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.vc-dl-pl-thumb { width: 52px; height: 30px; flex: none; object-fit: cover; border-radius: 6px; display: grid; place-items: center; font-size: 13px; background: hsl(0 0% 100% / 0.05); }
+.vc-dl-pl-title { flex: 1; min-width: 0; font-size: 13px; color: var(--text-default, var(--text-normal)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

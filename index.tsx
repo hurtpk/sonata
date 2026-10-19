@@ -59,6 +59,7 @@ import calendar from "./features/calendar";
 import callTimer from "./features/callTimer";
 import categoryChannelGreeter from "./features/categoryChannelGreeter";
 import channelNotes from "./features/channelNotes";
+import themeStudio from "./features/themeStudio";
 import charactersPicker from "./features/charactersPicker";
 import chatEffects from "./features/chatEffects";
 import coloredText from "./features/coloredText";
@@ -312,7 +313,7 @@ const FEATURES: Record<string, Feature> = {
     gameActivityToggle, platformSpoofer, showRolesInChat, soundStudio, miniGames,
     typingSounds, autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
     smoothChat, currencyConverter, giftWrap, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
-    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes,
+    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio,
     antimod, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
 

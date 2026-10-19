@@ -15,8 +15,8 @@ import { ChannelStore, DraftType, Modal, openModal, SelectedChannelStore, showTo
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
-import { isSpotify, siteOf } from "./links";
-import { cancelDownload, clearFinished, Info, isActive, Item, native, removeItem, settings, startDownload, useItems } from "./store";
+import { isSpotify, looksLikePlaylist, singleIn, siteOf } from "./links";
+import { cancelDownload, cancelWaiting, clearFinished, Info, isActive, Item, native, Playlist, queueMany, removeItem, settings, startDownload, useItems } from "./store";
 
 interface Setup { ytdlp: string | null; version: string | null; ffmpeg: string | null; folder: string; }
 
@@ -98,6 +98,77 @@ function Picker({ info, setup, onDone }: { info: Info; setup: Setup; onDone(): v
     );
 }
 
+/* ── A playlist: pick which ones ── */
+
+function PlaylistPicker({ list, setup, onDone }: { list: Playlist; setup: Setup; onDone(): void; }) {
+    const s = settings.use(["mode", "quality", "audio"]);
+    const [picked, setPicked] = useState<Set<string>>(() => new Set(list.entries.map(e => e.key)));
+    const [mode, setMode] = useState<"video" | "audio">(s.mode === "audio" ? "audio" : "video");
+    const [quality, setQuality] = useState(() => QUALITIES.some(([h]) => h === s.quality) ? s.quality : 0);
+    const [audio, setAudio] = useState<"mp3" | "original">(s.audio === "original" || !setup.ffmpeg ? "original" : "mp3");
+    const [filter, setFilter] = useState("");
+    const [busy, setBusy] = useState(false);
+    const q = filter.trim().toLowerCase();
+    const shown = q ? list.entries.filter(e => e.title.toLowerCase().includes(q)) : list.entries;
+    const toggle = (k: string) => setPicked(p => { const n = new Set(p); if (n.has(k)) n.delete(k); else n.add(k); return n; });
+    const all = shown.length > 0 && shown.every(e => picked.has(e.key));
+    const total = list.entries.filter(e => picked.has(e.key)).reduce((t, e) => t + (e.duration ?? 0), 0);
+
+    const go = async () => {
+        setBusy(true);
+        settings.store.mode = mode;
+        if (mode === "video") settings.store.quality = quality; else settings.store.audio = audio;
+        await queueMany(list, list.entries.filter(e => picked.has(e.key)), mode, quality, audio);
+        onDone();
+    };
+
+    return (
+        <section className="vc-dl-card vc-dl-pl">
+            <div className="vc-dl-card-main">
+                <span className="vc-tool-label">📃 Playlist{list.site ? ` · ${list.site}` : ""}</span>
+                <b className="vc-dl-title" title={list.title}>{list.title}</b>
+                <span className="vc-tool-hint">{[list.uploader, `${list.entries.length}${list.count > list.entries.length ? ` of ${list.count}` : ""} items`].filter(Boolean).join(" · ")}</span>
+
+                <div className="vc-tool-row">
+                    <input className="vc-tool-input vc-tool-grow" value={filter} placeholder="Find in this playlist…" onChange={e => setFilter(e.currentTarget.value)} />
+                    <button type="button" className="vc-tool-btn" onClick={() => setPicked(p => { const n = new Set(p); shown.forEach(e => { if (all) n.delete(e.key); else n.add(e.key); }); return n; })}>{all ? "Untick all" : "Tick all"}</button>
+                </div>
+                <div className="vc-dl-pl-list">
+                    {shown.map(e => (
+                        <label key={e.key} className={classes("vc-dl-pl-row", picked.has(e.key) && "vc-dl-pl-on")}>
+                            <input type="checkbox" checked={picked.has(e.key)} onChange={() => toggle(e.key)} />
+                            <span className="vc-dl-pl-n">{list.entries.indexOf(e) + 1}</span>
+                            {e.thumbnail ? <img className="vc-dl-pl-thumb" src={e.thumbnail} alt="" loading="lazy" /> : <span className="vc-dl-pl-thumb vc-dl-thumb-none">🎞️</span>}
+                            <span className="vc-dl-pl-title" title={e.title}>{e.title}</span>
+                            {e.duration != null && <span className="vc-tool-hint">{length(e.duration)}</span>}
+                        </label>
+                    ))}
+                    {!shown.length && <span className="vc-tool-hint">Nothing matches “{filter}”.</span>}
+                </div>
+
+                <div className="vc-tool-seg">
+                    <button type="button" className={classes("vc-tool-seg-btn", mode === "video" && "vc-tool-seg-on")} onClick={() => setMode("video")}>🎬 Video</button>
+                    <button type="button" className={classes("vc-tool-seg-btn", mode === "audio" && "vc-tool-seg-on")} onClick={() => setMode("audio")}>🎵 Audio only</button>
+                </div>
+                <div className="vc-tool-chips">
+                    {mode === "video"
+                        ? QUALITIES.map(([h, label]) => <button key={h} type="button" className={classes("vc-tool-chip", quality === h && "vc-tool-chip-on")} onClick={() => setQuality(h)}>{label}</button>)
+                        : <>
+                            <button type="button" disabled={!setup.ffmpeg} title={setup.ffmpeg ? "Converted to MP3, with the title, artist and cover art" : "Needs FFmpeg — see below"} className={classes("vc-tool-chip", audio === "mp3" && "vc-tool-chip-on")} onClick={() => setAudio("mp3")}>MP3</button>
+                            <button type="button" className={classes("vc-tool-chip", audio === "original" && "vc-tool-chip-on")} onClick={() => setAudio("original")}>Original</button>
+                        </>}
+                </div>
+                <div className="vc-tool-row">
+                    <span className="vc-tool-hint">{picked.size} picked{total ? ` · ${length(total)} in all` : ""} · {mode === "video" ? "each at or under that quality" : audio === "mp3" ? "as MP3s with cover art" : "the original audio"} · two at a time</span>
+                    <span className="vc-tool-spacer" />
+                    <button type="button" className="vc-tool-btn" onClick={onDone}>Cancel</button>
+                    <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!picked.size || busy} onClick={() => void go()}>⬇ Download {picked.size}</button>
+                </div>
+            </div>
+        </section>
+    );
+}
+
 /* ── Your downloads ── */
 
 async function sendInChat(i: Item) {
@@ -123,12 +194,12 @@ function Row({ i, close }: { i: Item; close(): void; }) {
                     <>
                         <div className="vc-dl-bar"><i style={{ width: `${j.status === "processing" ? 100 : j.percent}%` }} className={j.status === "processing" ? "vc-dl-bar-busy" : undefined} /></div>
                         <span className="vc-tool-hint">
-                            {j.status === "starting" ? "Starting…" : j.status === "processing" ? (i.mode === "audio" ? "Converting…" : "Putting the video and sound together…") : `${j.percent.toFixed(0)}%${j.speed ? ` · ${j.speed}` : ""}${j.eta ? ` · ${j.eta} left` : ""}`}
+                            {j.status === "queued" ? `Waiting in line${i.group ? ` · ${i.group}` : ""}` : j.status === "starting" ? "Starting…" : j.status === "processing" ? (i.mode === "audio" ? "Converting…" : "Putting the video and sound together…") : `${j.percent.toFixed(0)}%${j.speed ? ` · ${j.speed}` : ""}${j.eta ? ` · ${j.eta} left` : ""}`}
                         </span>
                     </>
                 ) : (
                     <span className={classes("vc-tool-hint", j.status === "error" && "vc-dl-err")}>
-                        {j.status === "done" ? [i.mode === "audio" ? "🎵 Audio" : "🎬 Video", sizeOf(j.size), i.site, new Date(i.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })].filter(Boolean).join(" · ")
+                        {j.status === "done" ? [i.mode === "audio" ? "🎵 Audio" : "🎬 Video", sizeOf(j.size), i.group ?? i.site, new Date(i.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })].filter(Boolean).join(" · ")
                             : j.status === "cancelled" ? "Cancelled" : j.error ?? "Didn't work"}
                     </span>
                 )}
@@ -157,6 +228,7 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
     const [url, setUrl] = useState(start ?? "");
     const [looking, setLooking] = useState(false);
     const [info, setInfo] = useState<Info | null>(null);
+    const [list, setList] = useState<Playlist | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const check = () => void native().dlCheck().then(setSetup).catch(() => setSetup({ ytdlp: null, version: null, ffmpeg: null, folder: "" }));
@@ -164,11 +236,20 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
 
     const lookUp = async (u = url) => {
         const link = u.trim();
-        setInfo(null); setError(null);
+        setInfo(null); setList(null); setError(null);
         if (!/^https?:\/\//i.test(link)) { setError("Paste a link that starts with https://"); return; }
         if (isSpotify(link)) { setError("Spotify songs are copy-protected (DRM), so they can't be downloaded. Spotify Premium can save them for offline listening in the Spotify app."); return; }
         setLooking(true);
-        const r = await native().dlInfo(link).catch((e: any) => ({ ok: false, error: String(e?.message ?? e) }));
+        const fail = (e: any) => ({ ok: false, error: String(e?.message ?? e) });
+        if (looksLikePlaylist(link)) {
+            // A playlist link: what's in it, plus the one video it points at (youtube.com/watch?v=…&list=…).
+            const one = singleIn(link);
+            const [pl, single] = await Promise.all([native().dlPlaylist(link).catch(fail), one ? native().dlInfo(one).catch(fail) : null]);
+            if (pl.ok && pl.list?.entries.length) setList(pl.list);
+            if (single?.ok) setInfo(single.info);
+            if ((pl.ok && pl.list?.entries.length) || single?.ok) { setLooking(false); return; }
+        }
+        const r = await native().dlInfo(link).catch(fail);
         setLooking(false);
         if (r.ok) setInfo(r.info); else setError(r.error);
     };
@@ -182,12 +263,13 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
 
     const folder = s.folder || setup?.folder || "";
     const done = items.filter(i => !isActive(i)).length;
-    const running = items.filter(isActive).length;
+    const running = items.filter(i => isActive(i) && i.job.status !== "queued").length;
+    const waitingCount = items.filter(i => i.job.status === "queued").length;
 
     return (
-        <Modal {...modalProps} size="lg" title="Media Downloader" subtitle="Save videos and music from YouTube, SoundCloud, TikTok, Instagram, X, Reddit and a thousand more sites">
+        <Modal {...modalProps} size="lg" title="Media Downloader" subtitle="Save videos, music and whole playlists from YouTube, SoundCloud, TikTok, Instagram, X, Reddit and a thousand more sites">
             <div className="vc-tool-wrap vc-dl" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <ToolHero icon="⬇️" kicker="Media Downloader" title={running ? `Downloading ${running}…` : "Paste a link"}
+                <ToolHero icon="⬇️" kicker="Media Downloader" title={running ? `Downloading ${running}…${waitingCount ? ` · ${waitingCount} waiting` : ""}` : "Paste a link"}
                     sub={setup?.version ? `yt-dlp ${setup.version}${setup.ffmpeg ? " · FFmpeg ready" : ""}` : "Videos as MP4, music as MP3 — saved on your computer."}
                     numbers={[{ value: done, label: done === 1 ? "download" : "downloads" }]} />
 
@@ -202,7 +284,8 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
                         {url && !info && !error && !looking && siteOf(url) && <span className="vc-tool-hint">{siteOf(url)} link — press Look up.</span>}
                         {looking && <div className="vc-dl-looking"><span className="vc-dl-spinner" />Asking {siteOf(url) ?? "the site"} what this is…</div>}
                         {error && <div className="vc-dl-error">{error}</div>}
-                        {info && setup && <Picker info={info} setup={setup} onDone={() => { setInfo(null); setUrl(""); }} />}
+                        {info && setup && <Picker info={info} setup={setup} onDone={() => { setInfo(null); if (!list) setUrl(""); }} />}
+                        {list && setup && <PlaylistPicker list={list} setup={setup} onDone={() => { setList(null); if (!info) setUrl(""); }} />}
 
                         {setup && !setup.ffmpeg && (
                             <span className="vc-dl-note">FFmpeg wasn't found, so MP3s and HD video with sound are off (you'll get the site's own files). Get it with <code>winget install yt-dlp.FFmpeg</code>, then press <button type="button" className="vc-tool-link" onClick={check}>Check again</button>.</span>
@@ -222,6 +305,7 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
                         <div className="vc-tool-row">
                             <span className="vc-tool-label">Your downloads · {items.length}</span>
                             <span className="vc-tool-spacer" />
+                            {waitingCount > 0 && <button type="button" className="vc-tool-link" onClick={cancelWaiting}>Cancel the {waitingCount} waiting</button>}
                             {done > 0 && <button type="button" className="vc-tool-link" onClick={clearFinished}>Clear list</button>}
                         </div>
                         {items.map(i => <Row key={i.id} i={i} close={modalProps.onClose} />)}

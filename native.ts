@@ -25,7 +25,7 @@ export { fetchDiscordFile } from "./features/filePreviewer/native";
 export { clearPreviewCache, extractFromArchive, openArchive, openPdfWindow } from "./features/filePreviewer/previewCache";
 export { recognizeText } from "./features/imageToText/native";
 export { expandLink } from "./features/linkCleaner/native";
-export { dlCancel, dlCheck, dlInfo, dlOpen, dlPickFolder, dlProgress, dlReadFile, dlReveal, dlStart } from "./features/mediaDownloader/native";
+export { dlCancel, dlCheck, dlInfo, dlOpen, dlPickFolder, dlPlaylist, dlProgress, dlReadFile, dlReveal, dlStart } from "./features/mediaDownloader/native";
 export * from "./features/messageLoggerEnhanced/native";
 export { rbxAssetFile, rbxAssetInfo, rbxCdnImage, rbxGame, rbxGroup, rbxHistory, rbxInventoryAt, rbxItem, rbxItemHistory, rbxJoin, rbxLimiteds, rbxNameCheck, rbxOutfit, rbxOwnedGames, rbxPlayerHistory, rbxSavedLive, rbxServers, rbxShop, rbxThumbs, rbxUser, rbxUserGroups, rbxWearing } from "./features/robloxTools/native";
 export { steamAchievements, steamAppDetails, steamFriends, steamItems, steamNews, steamNoteImage, steamProfile, steamReviews, steamSearch, steamWishlist } from "./features/steamWatcher/native";

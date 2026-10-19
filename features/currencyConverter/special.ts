@@ -97,6 +97,50 @@ export function timeIn(zone: string, t: number, refZone: string) {
 
 export const zoneName = (zone: string) => zone === "UTC" ? "UTC" : zone.split("/").pop()!.replace(/_/g, " ");
 
+/** How far a zone is from yours right now, in hours ("+9", "−3.5", "0"). */
+export function hoursFromMe(zone: string, t = Date.now()) {
+    return (offset(zone, t) - offset(localZone(), t)) / 3_600_000;
+}
+
+/** The hour of the day (0–24, with minutes as a fraction) in a zone. */
+export function hourIn(zone: string, t = Date.now()) {
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", hour: "2-digit", minute: "2-digit" })
+        .formatToParts(t).filter(x => x.type !== "literal").map(x => [x.type, Number(x.value)]));
+    return p.hour + p.minute / 60;
+}
+
+let allZones: string[] | null = null;
+
+/** Big cities the time zone list doesn't name (or names the old way). */
+const CITIES: Record<string, string> = {
+    kolkata: "Asia/Kolkata", calcutta: "Asia/Kolkata", mumbai: "Asia/Kolkata", delhi: "Asia/Kolkata", "new delhi": "Asia/Kolkata", bangalore: "Asia/Kolkata", bengaluru: "Asia/Kolkata", chennai: "Asia/Kolkata", hyderabad: "Asia/Kolkata",
+    kiev: "Europe/Kyiv", "ho chi minh": "Asia/Ho_Chi_Minh", saigon: "Asia/Ho_Chi_Minh", hanoi: "Asia/Ho_Chi_Minh", kathmandu: "Asia/Kathmandu", yangon: "Asia/Yangon", rangoon: "Asia/Yangon",
+    "san francisco": "America/Los_Angeles", seattle: "America/Los_Angeles", "las vegas": "America/Los_Angeles", "san diego": "America/Los_Angeles", portland: "America/Los_Angeles",
+    miami: "America/New_York", boston: "America/New_York", atlanta: "America/New_York", washington: "America/New_York", philadelphia: "America/New_York", orlando: "America/New_York", montreal: "America/Toronto", ottawa: "America/Toronto",
+    houston: "America/Chicago", dallas: "America/Chicago", austin: "America/Chicago", "san antonio": "America/Chicago", minneapolis: "America/Chicago", "new orleans": "America/Chicago",
+    calgary: "America/Edmonton", "salt lake city": "America/Denver", rio: "America/Sao_Paulo", "rio de janeiro": "America/Sao_Paulo",
+    manchester: "Europe/London", edinburgh: "Europe/London", glasgow: "Europe/London", barcelona: "Europe/Madrid", munich: "Europe/Berlin", hamburg: "Europe/Berlin", milan: "Europe/Rome",
+    osaka: "Asia/Tokyo", kyoto: "Asia/Tokyo", busan: "Asia/Seoul", "abu dhabi": "Asia/Dubai", riyadh: "Asia/Riyadh", doha: "Asia/Qatar", "tel aviv": "Asia/Jerusalem",
+    guangzhou: "Asia/Shanghai", shenzhen: "Asia/Shanghai", taipei: "Asia/Taipei", "kuala lumpur": "Asia/Kuala_Lumpur", lahore: "Asia/Karachi", islamabad: "Asia/Karachi", dhaka: "Asia/Dhaka",
+    canberra: "Australia/Sydney", "gold coast": "Australia/Brisbane", wellington: "Pacific/Auckland", "cape town": "Africa/Johannesburg", accra: "Africa/Accra", casablanca: "Africa/Casablanca",
+};
+
+/** A place or zone someone typed ("Tokyo", "EST", "new york", "Europe/Paris", "Lima") → its time zone. */
+export function findZone(input: string): string | null {
+    const s = input.trim().toLowerCase();
+    if (!s) return null;
+    if (s in ZONES) return ZONES[s] || localZone();
+    if (s in CITIES && validZone(CITIES[s])) return CITIES[s];
+    const iana = s.split("/").map(w => w.replace(/(^|_|-)\w/g, c => c.toUpperCase())).join("/");
+    if (s.includes("/") && validZone(iana)) return iana;
+    // Any city in the time zone list: "lima" → America/Lima, "los angeles" → America/Los_Angeles.
+    allZones ??= (Intl as any).supportedValuesOf?.("timeZone") ?? SHOW_ZONES;
+    const want = s.replace(/\s+/g, "_");
+    return allZones!.find(z => z.toLowerCase().split("/").pop() === want)
+        ?? allZones!.find(z => z.toLowerCase().split("/").pop()!.startsWith(want))
+        ?? null;
+}
+
 // ─── Number systems ───
 
 export interface NumberViews { value: bigint | null; decimal: string; hex: string; binary: string; octal: string; roman: string | null; words: string; }

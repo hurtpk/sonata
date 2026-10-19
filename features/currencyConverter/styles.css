@@ -107,3 +107,38 @@
 .vc-conv-example:hover { background: color-mix(in srgb, var(--tl-accent) 14%, transparent); box-shadow: 0 0 14px -6px var(--tl-accent); }
 .vc-conv-chip { transition: border-color 0.15s, box-shadow 0.15s; }
 .vc-conv-chip:hover { box-shadow: 0 0 12px -6px var(--tl-accent); }
+
+/* World clock */
+.vc-conv-wc-wrap { gap: 12px; }
+.vc-conv-wc-add { display: flex; gap: 8px; }
+.vc-conv-wc-add .vc-tool-input { flex: 1; min-width: 0; }
+.vc-conv-wc-add .vc-conv-wc-who { flex: 0 0 170px; }
+.vc-conv-wc-quick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.vc-conv-wc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; max-height: 44vh; overflow-y: auto; padding-right: 2px; }
+.vc-conv-wc-card { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 16px; min-width: 0; overflow: hidden;
+    border: 1px solid hsl(0 0% 100% / 0.08); color: #fff; transition: background 0.4s; }
+/* Day and night shading — the colours mean something here, so they don't follow Sonata's colour. */
+.vc-conv-wc-night { background: linear-gradient(160deg, #1a2350, #0b0f24 70%); }
+.vc-conv-wc-dawn { background: linear-gradient(160deg, #6b4a7a, #e08a5c 120%); }
+.vc-conv-wc-day { background: linear-gradient(160deg, #2f7fd6, #63b5ef 120%); }
+.vc-conv-wc-dusk { background: linear-gradient(160deg, #9c4a5c, #e2925a 120%); }
+.vc-conv-wc-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.vc-conv-wc-name { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-conv-wc-x { all: unset; box-sizing: border-box; display: grid; place-items: center; width: 22px; height: 22px; min-width: 0; border-radius: 7px; font-size: 10px; cursor: pointer;
+    color: hsl(0 0% 100% / 0.7); background: hsl(0 0% 0% / 0.18); opacity: 0; transition: opacity 0.12s; }
+.vc-conv-wc-card:hover .vc-conv-wc-x { opacity: 1; }
+.vc-conv-wc-x:hover { color: #fff; background: hsl(358 75% 50% / 0.9); }
+.vc-conv-wc-place { font-size: 11.5px; color: hsl(0 0% 100% / 0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-conv-wc-time { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.vc-conv-wc-when { font-size: 12px; color: hsl(0 0% 100% / 0.85); }
+.vc-conv-wc-diff { font-size: 11.5px; font-weight: 700; color: hsl(0 0% 100% / 0.72); }
+.vc-conv-wc-plan { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.07);
+    background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%); }
+.vc-conv-wc-plan-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.vc-conv-wc-plan-head b { font-size: 13.5px; color: var(--text-default, var(--text-normal)); }
+.vc-conv-wc-ticks { position: relative; height: 14px; font-size: 10.5px; color: var(--text-muted); }
+.vc-conv-wc-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.vc-conv-wc-ticks span:nth-child(1) { left: 0; transform: none; }
+.vc-conv-wc-ticks span:nth-child(2) { left: 33.33%; }
+.vc-conv-wc-ticks span:nth-child(3) { left: 66.66%; }
+.vc-conv-wc-ticks span:nth-child(4) { right: 0; left: auto; transform: none; }

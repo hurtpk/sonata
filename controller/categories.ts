@@ -118,6 +118,7 @@ const FEATURE_CATEGORY: Record<string, string> = {
     steamWatcher: "social",
     quickText: "chat",
     channelNotes: "chat",
+    themeStudio: "system",
     todoLists: "chat",
     fontSwapper: "system",
     fileConverter: "media",

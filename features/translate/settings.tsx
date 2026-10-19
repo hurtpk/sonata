@@ -69,6 +69,11 @@ export const settings = defineFeatureSettings("translate", {
         description: "Your Kagi session token (from kagi.com/settings?p=user_details)",
         default: ""
     },
+    hoverTranslate: {
+        type: OptionType.BOOLEAN,
+        description: "Hold Alt and point at a message to see its translation in a small bubble (the message itself doesn't change)",
+        default: true
+    },
     autoTranslate: {
         type: OptionType.BOOLEAN,
         description: "Automatically translate your messages before sending. You can also Shift+click or right-click the translate button to toggle this",

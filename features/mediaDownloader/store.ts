@@ -25,8 +25,15 @@ export const settings = defineFeatureSettings("mediaDownloader", {
 export const native = () => VencordNative.pluginHelpers.Sonata as any;
 
 export interface Info { title: string; uploader: string | null; duration: number | null; thumbnail: string | null; site: string | null; url: string; heights: number[]; hasVideo: boolean; isLive: boolean; }
-export interface Job { status: "starting" | "downloading" | "processing" | "done" | "error" | "cancelled"; percent: number; speed: string; eta: string; file?: string; size?: number; error?: string; }
-export interface Item { id: string; url: string; title: string; site: string | null; thumbnail: string | null; mode: "video" | "audio"; at: number; job: Job; }
+export interface Job { status: "queued" | "starting" | "downloading" | "processing" | "done" | "error" | "cancelled"; percent: number; speed: string; eta: string; file?: string; size?: number; error?: string; }
+export interface Item { id: string; url: string; title: string; site: string | null; thumbnail: string | null; mode: "video" | "audio"; at: number; job: Job; /** The playlist it came from. */ group?: string; }
+export interface Entry { key: string; title: string; url: string; duration: number | null; thumbnail: string | null; uploader: string | null; }
+export interface Playlist { title: string; uploader: string | null; site: string | null; count: number; entries: Entry[]; }
+
+/** How many downloads run at once — the rest of a playlist waits its turn. */
+const AT_ONCE = 2;
+/** What each waiting download is waiting with. */
+const waiting = new Map<string, { quality: number; audio: "mp3" | "original"; }>();
 
 const KEY = "Sonata_downloads";
 const MAX = 100;
@@ -39,7 +46,7 @@ const save = () => DataStore.set(KEY, items.filter(i => i.job.status === "done" 
 
 export const loadItems = () => loaded ??= DataStore.get<Item[]>(KEY).then(v => { items = [...items.filter(i => isActive(i)), ...(v ?? [])]; emit(); }).catch(() => { });
 
-export const isActive = (i: Item) => i.job.status === "starting" || i.job.status === "downloading" || i.job.status === "processing";
+export const isActive = (i: Item) => i.job.status === "queued" || i.job.status === "starting" || i.job.status === "downloading" || i.job.status === "processing";
 
 export function useItems() {
     const [, bump] = useState(0);
@@ -62,8 +69,44 @@ function watch() {
         });
         emit();
         if (finished) void save();
+        await fillSlots();
         if (!items.some(isActive) && timer) { clearInterval(timer); timer = null; }
     }, 600);
+}
+
+/** Starts waiting downloads while there are free slots. */
+async function fillSlots() {
+    let running = items.filter(i => i.job.status === "starting" || i.job.status === "downloading" || i.job.status === "processing").length;
+    // Oldest first, so a playlist downloads in order.
+    for (const i of [...items].reverse()) {
+        if (running >= AT_ONCE) break;
+        if (i.job.status !== "queued") continue;
+        const w = waiting.get(i.id);
+        waiting.delete(i.id);
+        i.job = { ...i.job, status: "starting" };
+        running++;
+        const r = await native().dlStart(i.id, i.url, { mode: i.mode, quality: w?.quality ?? 0, audio: w?.audio ?? "mp3", folder: settings.store.folder || undefined }).catch(() => null);
+        if (!r?.ok) { i.job = { ...i.job, status: "error", error: r?.error ?? "Couldn't start" }; running--; }
+        items = [...items];
+        emit();
+    }
+}
+
+/** Puts a playlist's picks in line; they download a couple at a time. */
+export async function queueMany(list: Playlist, picks: Entry[], mode: "video" | "audio", quality: number, audio: "mp3" | "original") {
+    await loadItems();
+    const t = Date.now();
+    const added: Item[] = picks.map((e, n) => {
+        const id = `${(t + n).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+        waiting.set(id, { quality, audio });
+        return { id, url: e.url, title: e.title, site: list.site, thumbnail: e.thumbnail, mode, at: t + n, group: list.title, job: { status: "queued" as const, percent: 0, speed: "", eta: "" } };
+    });
+    // Newest at the top, like single downloads.
+    items = [...added.reverse(), ...items];
+    emit();
+    await fillSlots();
+    watch();
+    showToast(`${picks.length} added — ${Math.min(AT_ONCE, picks.length)} at a time`, "success");
 }
 
 export async function startDownload(info: Info, mode: "video" | "audio", quality: number, audio: "mp3" | "original") {
@@ -78,6 +121,11 @@ export async function startDownload(info: Info, mode: "video" | "audio", quality
 }
 
 export async function cancelDownload(id: string) {
+    if (waiting.delete(id) || items.find(i => i.id === id)?.job.status === "queued") {
+        items = items.map(i => i.id === id ? { ...i, job: { ...i.job, status: "cancelled" } } : i);
+        emit();
+        return;
+    }
     await native().dlCancel(id);
     items = items.map(i => i.id === id ? { ...i, job: { ...i.job, status: "cancelled" } } : i);
     emit();
@@ -94,4 +142,11 @@ export function clearFinished() {
     items = items.filter(isActive);
     emit();
     void save();
+}
+
+/** Cancels everything still waiting its turn (downloads already going carry on). */
+export function cancelWaiting() {
+    waiting.clear();
+    items = items.map(i => i.job.status === "queued" ? { ...i, job: { ...i.job, status: "cancelled" } } : i);
+    emit();
 }

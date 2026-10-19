@@ -17,6 +17,18 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.19d",
+        date: "October 19, 2026",
+        title: "Theme Studio, World clock and playlists",
+        items: [
+            { icon: "🎨", text: "New: Theme Studio. Make Discord your own: background, chat, text, faded text and accent colours, corner roundness and a font. Change how solid the backgrounds are, and put a picture (with blur) or slowly moving colours behind Discord. Add hover animations for the chat bar (inner glow, lift, or pulse while typing), channels, DMs, messages and server icons (slide, accent bar, tint, grow, bounce, wiggle) at the speed you like. Buttons can squish when pressed, and scroll bars and @mentions can take the accent colour. There are 9 starting looks, and a live preview." },
+            { icon: "👁", text: "Theme Studio: see other apps through Discord. Switch it on, restart Discord, and a video, game or anything else behind Discord shows through while you chat. The See-through slider sets how much shows, and the text stays solid. Popouts, menus and the chat bar can go see-through too, and you can frost what's behind (Windows 11). It also works when a Nitro app theme is on." },
+            { icon: "🕐", text: "Converter: a World clock tab. Pin cities, or a friend's name and where they live, and see every time at once, shaded for day and night. Slide the planner to find a time that works for everyone, then put it in your message as a Discord timestamp, which shows each person the time where they are." },
+            { icon: "🌐", text: "Translate: hold Alt and point at a message to see its translation in a small bubble. The message itself doesn't change. Each message is translated once, so going back to it is instant. Switch it off in Translate's settings." },
+            { icon: "📃", text: "Media Downloader: playlists. Paste a playlist, album, SoundCloud set or channel link, tick the ones you want (or search the list), and they download two at a time, each with its own progress. Waiting ones can be cancelled all at once." },
+        ],
+    },
+    {
         version: "2026.10.19c",
         date: "October 19, 2026",
         title: "Update bar",

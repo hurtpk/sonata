@@ -63,6 +63,7 @@ export const settings = defineFeatureSettings("currencyConverter", {
     },
     favoritesJson: { type: OptionType.STRING, description: "Internal: conversions you starred.", default: "", hidden: true },
     recentJson: { type: OptionType.STRING, description: "Internal: your last conversions.", default: "", hidden: true },
+    clocksJson: { type: OptionType.STRING, description: "Internal: the places pinned in World clock.", default: "", hidden: true },
     crypto: {
         type: OptionType.BOOLEAN,
         description: "Also show crypto amounts in messages in your currency (0.01 btc, 2 eth, 100 usdt…) — checks today's price with CoinGecko",

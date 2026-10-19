@@ -91,6 +91,7 @@ export const FEATURE_ICONS: Record<string, string> = {
     steamWatcher: "steam",
     quickText: "keyboard",
     channelNotes: "notes",
+    themeStudio: "brush",
     roleColorEverywhere: "palette",
     scheduledMessages: "scheduled",
     screenshotStyler: "screenshot",

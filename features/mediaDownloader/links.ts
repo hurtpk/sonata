@@ -54,3 +54,25 @@ export function linksIn(message: any): { url: string; site: string; }[] {
     for (const e of message?.embeds ?? []) for (const u of [e.url, e.video?.url]) if (typeof u === "string") found.add(u);
     return [...found].map(url => ({ url: url.replace(/[.,!?)]+$/, ""), site: siteOf(url) })).filter((l): l is { url: string; site: string; } => !!l.site);
 }
+
+/** Links that are (or include) a playlist, album, set or channel — worth asking yt-dlp what's in them. */
+export function looksLikePlaylist(url: string) {
+    try {
+        const u = new URL(url);
+        const host = u.hostname.toLowerCase(), path = u.pathname.toLowerCase();
+        if (/(^|\.)(youtube\.com|youtu\.be)$/.test(host)) return u.searchParams.has("list") || path.startsWith("/playlist") || /^\/(@[^/]+|channel\/[^/]+|c\/[^/]+|user\/[^/]+)(\/(videos|shorts|streams|playlists))?\/?$/.test(path);
+        if (/(^|\.)soundcloud\.com$/.test(host)) return path.includes("/sets/") || /^\/[^/]+\/?(tracks|likes)?\/?$/.test(path);
+        if (/(^|\.)bandcamp\.com$/.test(host)) return path.startsWith("/album/") || path === "/" || path === "/music";
+        if (/(^|\.)vimeo\.com$/.test(host)) return /\/(showcase|album|channels)\//.test(path);
+        if (/(^|\.)mixcloud\.com$/.test(host)) return /\/playlists\//.test(path);
+        return /playlist|\/album\/|\/sets\//.test(path) || u.searchParams.has("list");
+    } catch { return false; }
+}
+
+/** The single video in a playlist link like youtube.com/watch?v=…&list=… (null when it's only a playlist). */
+export function singleIn(url: string) {
+    try {
+        const u = new URL(url);
+        return u.searchParams.has("v") || /(^|\.)youtu\.be$/.test(u.hostname) ? url : null;
+    } catch { return null; }
+}

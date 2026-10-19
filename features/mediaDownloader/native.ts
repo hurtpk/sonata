@@ -140,6 +140,46 @@ export async function dlInfo(_: IpcMainInvokeEvent, url: string) {
     }
 }
 
+/** What's in a playlist (or album, set, channel) — titles and links only, nothing downloaded. Null when the link isn't one. */
+export async function dlPlaylist(_: IpcMainInvokeEvent, url: string) {
+    if (!okUrl(url)) return { ok: false, error: "That doesn't look like a link." } satisfies Fail;
+    if (isSpotify(url)) return { ok: false, error: "Spotify songs are copy-protected (DRM), so they can't be downloaded." } satisfies Fail;
+    const ytdlp = findYtDlp();
+    if (!ytdlp) return { ok: false, error: "yt-dlp isn't installed." } satisfies Fail;
+    const r = await run(ytdlp, ["-J", "--flat-playlist", "--yes-playlist", "--playlist-end", "500", "--no-warnings", "--encoding", "utf-8", "--", url], 120_000);
+    if (r.code !== 0) return { ok: false, error: reason(r.err) } satisfies Fail;
+    try {
+        const j = JSON.parse(r.out);
+        if (j._type !== "playlist" || !Array.isArray(j.entries)) return { ok: true as const, list: null };
+        const entries = (j.entries as any[]).filter(Boolean).map((e, n) => {
+            const link = typeof e.url === "string" && /^https?:\/\//i.test(e.url) ? e.url
+                : typeof e.webpage_url === "string" ? e.webpage_url
+                    : e.ie_key === "Youtube" && e.id ? `https://www.youtube.com/watch?v=${e.id}` : null;
+            return link && okUrl(link) ? {
+                key: String(e.id ?? n),
+                title: String(e.title ?? `Item ${n + 1}`),
+                url: link,
+                duration: typeof e.duration === "number" ? e.duration : null,
+                thumbnail: e.thumbnails?.at?.(-1)?.url ?? e.thumbnail ?? null,
+                uploader: e.uploader ?? e.channel ?? null,
+            } : null;
+        }).filter(Boolean);
+        return {
+            ok: true as const,
+            list: {
+                title: String(j.title ?? "Playlist"),
+                uploader: j.uploader ?? j.channel ?? null,
+                // "YoutubeTab" is yt-dlp's name for a YouTube playlist or channel.
+                site: (j.extractor_key ?? j.extractor ?? null)?.replace(/Tab$/, "") ?? null,
+                count: typeof j.playlist_count === "number" ? j.playlist_count : entries.length,
+                entries,
+            },
+        };
+    } catch {
+        return { ok: false, error: "Couldn't read what yt-dlp found." } satisfies Fail;
+    }
+}
+
 /* ── Downloading ── */
 
 export interface DlOptions { mode: "video" | "audio"; quality: number; audio: "mp3" | "original"; folder?: string; }

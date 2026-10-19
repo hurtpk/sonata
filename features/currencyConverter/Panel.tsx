@@ -16,6 +16,7 @@ import { askFor, priceResult, usePrice } from "./prices";
 import { robuxResult } from "./robux";
 import { localZone, parseNumberSystem, parseZoneTime, SHOW_ZONES, timeIn, zoneName } from "./special";
 import { CATEGORIES, categoryById, compound, convertUnit, formatNumber, parseQuantity, Unit } from "./units";
+import { WorldClock } from "./WorldClock";
 
 const cl = classNameFactory("vc-tool-");
 const cv = classNameFactory("vc-conv-");
@@ -25,6 +26,7 @@ type Mode = "auto" | "currency" | "tz" | "numbers" | string;
 const SPECIAL = [
     { id: "currency", name: "Currency", icon: "💱" },
     { id: "tz", name: "Time zones", icon: "🌍" },
+    { id: "clock", name: "World clock", icon: "🕐" },
     { id: "numbers", name: "Number systems", icon: "🔢" },
     { id: "crypto", name: "Crypto", icon: "🪙" },
     { id: "stocks", name: "Stocks", icon: "📈" },
@@ -228,7 +230,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                     {SPECIAL.map(k => <button key={k.id} type="button" className={classes(cv("kind"), mode === k.id && cv("kind-on"))} onClick={() => pickMode(k.id)}>{k.icon} {k.name}</button>)}
                     {CATEGORIES.map(c => <button key={c.id} type="button" className={classes(cv("kind"), mode === c.id && cv("kind-on"))} onClick={() => pickMode(c.id)}>{c.icon} {c.name}</button>)}
                 </nav>
-                <section className={cv("main")}>
+                {mode === "clock" ? <WorldClock /> : <section className={cv("main")}>
                     <div className={cv("ask")}>
                         <input className={classes(cl("input"), cv("input"))} autoFocus value={text} placeholder={mode === "tz" ? "3pm EST" : mode === "numbers" ? "255, 0xff, 0b1010, XIV" : mode === "robux" ? "50k robux, R$ 1000, $100 to robux" : mode === "crypto" ? "1 btc, 0.5 eth to eur, doge" : mode === "stocks" ? "AAPL, $TSLA, 10 nvda shares, microsoft" : mode === "auto" ? "Try 5 ft 3 in, 72°F, 100 USD, 1 BTC, $AAPL…" : "Type a number"}
                             onChange={e => setText(e.currentTarget.value)} />
@@ -268,7 +270,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                         </div>
                     )}
                     <span className={cl("hint")}>Click a result to copy it, or ↵ to put it in your message. Your units: {mySystem() === "metric" ? "metric" : "imperial"} · your currency: {mine} (change in the feature's settings).</span>
-                </section>
+                </section>}
             </div>
         </Modal>
     );

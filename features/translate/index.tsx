@@ -26,6 +26,7 @@ import { ChannelStore, Menu } from "@webpack/common";
 
 import { settings } from "./settings";
 import { setShouldShowTranslateEnabledTooltip, TranslateChatBarIcon, TranslateIcon } from "./TranslateIcon";
+import { startHover, stopHover } from "./hover";
 import { handleTranslate, TranslationAccessory } from "./TranslationAccessory";
 import { translate } from "./utils";
 
@@ -73,6 +74,13 @@ export default definePlugin({
     },
     // not used, just here in case some other plugin wants it or w/e
     translate,
+
+    start() {
+        startHover();
+    },
+    stop() {
+        stopHover();
+    },
 
     renderMessageAccessory: props => <TranslationAccessory message={props.message} />,
 
