@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.19g",
+        date: "October 19, 2026",
+        title: "Updates right inside Discord",
+        items: [
+            { icon: "⚡", text: "The update bar's Update button now updates Sonata right inside Discord, with no installer window. It downloads the new version, keeps Equicord on the right version, adds anything new and rebuilds, ticking each step off, then offers Restart Discord. If it can't (for example, when Sonata was copied in by hand), it offers the installer instead." },
+        ],
+    },
+    {
         version: "2026.10.19f",
         date: "October 19, 2026",
         title: "A calmer update bar",

@@ -7,13 +7,14 @@
 // "Sonata 2026.10.20 is out" — a blue bar along the top of Discord, like
 // Discord's own notices, when GitHub has a newer Sonata than this one. It
 // looks a minute after Discord starts and then every 15 minutes, shows each
-// new version once, and its Update button opens Install Sonata.bat (which
-// shows what changed and asks before updating). Switch it off in Updates.
+// new version once, and its Update button updates Sonata right inside Discord
+// (UpdateNow.tsx) — or opens the installer if it can't. Switch it off in Updates.
 
 import { showNotice } from "@api/Notices";
 import { showToast } from "@webpack/common";
 
 import { LATEST } from "./changelog";
+import { openUpdateNow } from "./UpdateNow";
 
 const native = () => VencordNative.pluginHelpers.Sonata as any;
 
@@ -52,7 +53,9 @@ async function check(isOn: () => boolean) {
     showNotice(
         <span className="vc-sonata-update">Sonata {latest.version} is out.</span>,
         "Update",
+        // Updates right here — no installer window. (Older Discord sessions without the new helper fall back to the installer.)
         async () => {
+            if (native().sonataUpdateStart) { openUpdateNow(latest.version); return; }
             const how = await native().sonataRunUpdater?.().catch(() => null);
             showToast(how === "installer" ? "The installer shows what changed and asks before updating" : "Opened Sonata's GitHub page", "message");
         },

@@ -33,4 +33,4 @@ export { robloxUser, tiktokProfile, tiktokRecent, tiktokVideo } from "./features
 export { walletBalance, walletPrices } from "./features/wallet/native";
 export { fetchDiscordAttachment } from "./features/zipPreview/native";
 export { clearCaches, deepMemory, getCacheSizes, getLeftovers, getMemory, getOldVersions, openFolder } from "./sonata/cacheNative";
-export { sonataLatest, sonataRunUpdater } from "./sonata/updateNative";
+export { sonataLatest, sonataRunUpdater, sonataUpdateStart, sonataUpdateStatus } from "./sonata/updateNative";
