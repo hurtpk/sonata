@@ -4,10 +4,14 @@ title Sonata installer
 cd /d "%~dp0"
 
 rem  Sonata installer.
-rem  Put this file inside the "sonata" folder (next to index.tsx) and double-click it.
-rem  It installs Git, Node.js and pnpm if they're missing, downloads Equicord,
-rem  copies Sonata into it, builds it and installs it into Discord.
-rem  Run it again any time to update Sonata from a newer "sonata" folder.
+rem  Double-click it. It installs Git, Node.js and pnpm if they're missing,
+rem  downloads Equicord, adds Sonata, builds it and installs it into Discord.
+rem
+rem  On its own, it downloads Sonata from GitHub - and running it again later
+rem  updates Sonata to the newest version.
+rem  Inside a "sonata" folder (next to index.tsx), it uses that folder instead.
+
+set "REPO=https://github.com/hurtpk/sonata"
 
 echo.
 echo  ==============================================================
@@ -17,9 +21,10 @@ echo.
 echo   This will:
 echo     1. Install Git, Node.js and pnpm, only if you don't have them
 echo     2. Download Equicord into your Documents folder
-echo     3. Add Sonata to it, build it, and install it into Discord
+echo     3. Download Sonata, build it, and install it into Discord
 echo.
-echo   It takes about 5-10 minutes the first time.
+echo   It takes about 5-10 minutes the first time. Already installed?
+echo   Running it again updates Sonata to the newest version.
 echo.
 echo   Heads-up: client mods like Equicord are against Discord's
 echo   Terms of Service. People rarely get in trouble, but it's your call.
@@ -27,10 +32,11 @@ echo.
 choice /c YN /n /m "  Continue? [Y/N] "
 if errorlevel 2 goto :cancelled
 
-rem ---- Where Sonata is: the folder this file is in ----
+rem ---- Is this file inside a Sonata folder? Then that copy is used. ----
 set "SONATA=%~dp0"
 if "%SONATA:~-1%"=="\" set "SONATA=%SONATA:~0,-1%"
-if not exist "%SONATA%\index.tsx" goto :nosonata
+set "LOCAL=0"
+if exist "%SONATA%\index.tsx" if exist "%SONATA%\features" set "LOCAL=1"
 
 rem ---- winget, to install anything missing ----
 where winget >nul 2>nul
@@ -98,17 +104,41 @@ if exist "%EQ%\package.json" (
     if errorlevel 1 goto :failed
 )
 
-rem ---- Copy Sonata in (skipped if this already IS that folder) ----
-call :step "Adding Sonata"
+rem ---- Sonata: this folder's copy, or the newest one from GitHub ----
+call :step "Getting Sonata"
 set "TARGET=%EQ%\src\userplugins\sonata"
+if not exist "%EQ%\src\userplugins" mkdir "%EQ%\src\userplugins"
+if "%LOCAL%"=="1" goto :sonatalocal
+if exist "%TARGET%\.git" goto :sonatapull
+if not exist "%TARGET%\index.tsx" goto :sonataclone
+rem  An older Sonata copied in by hand: moved out of the way (outside userplugins,
+rem  so Equicord doesn't build it twice), never deleted.
+set "OLD=%EQ%\sonata-old-%RANDOM%"
+echo   Moving your older Sonata to "%OLD%"...
+move "%TARGET%" "%OLD%" >nul
+if errorlevel 1 goto :failed
+:sonataclone
+echo   Downloading Sonata from GitHub...
+git clone %REPO% "%TARGET%"
+if errorlevel 1 goto :failed
+goto :sonatadone
+
+:sonatapull
+echo   Updating Sonata from GitHub...
+git -C "%TARGET%" pull --ff-only
+if errorlevel 1 goto :pullfailed
+goto :sonatadone
+
+:sonatalocal
 if /i "%SONATA%"=="%TARGET%" (
-    echo   Sonata is already in place.
-) else (
-    if not exist "%EQ%\src\userplugins" mkdir "%EQ%\src\userplugins"
-    robocopy "%SONATA%" "%TARGET%" /E /NFL /NDL /NJH /NJS /NP /XD node_modules .git >nul
-    if errorlevel 8 goto :failed
-    echo   Copied Sonata into "%TARGET%".
+    echo   Using the Sonata that's already in place.
+    goto :sonatadone
 )
+robocopy "%SONATA%" "%TARGET%" /E /NFL /NDL /NJH /NJS /NP /XD node_modules .git .claude >nul
+if errorlevel 8 goto :failed
+echo   Copied Sonata from this folder into "%TARGET%".
+
+:sonatadone
 
 rem ---- Build and install ----
 cd /d "%EQ%"
@@ -153,8 +183,7 @@ echo.
 echo   Open Sonata with the music-note button under your profile picture.
 echo   A short welcome tour helps you pick your features.
 echo.
-echo   To update later: put the new "sonata" folder somewhere, put this
-echo   file inside it, and double-click it again.
+echo   To update Sonata later, just double-click this file again.
 echo.
 pause
 exit /b 0
@@ -170,14 +199,6 @@ echo.
 echo   Nothing was changed.
 pause
 exit /b 0
-
-:nosonata
-echo.
-echo   Couldn't find Sonata's files next to this installer.
-echo   Put "Install Sonata.bat" inside the "sonata" folder - next to index.tsx -
-echo   and run it from there.
-pause
-exit /b 1
 
 :nowinget
 echo.
@@ -200,6 +221,15 @@ echo.
 echo   It's installed, but Windows needs a fresh window to find it.
 echo   Close this window and double-click "Install Sonata.bat" again -
 echo   it will carry on from where it stopped.
+pause
+exit /b 1
+
+:pullfailed
+echo.
+echo   Couldn't update Sonata from GitHub. Usually this means files in
+echo   "%TARGET%" were changed by hand.
+echo   Move that folder somewhere else ^(outside "src\userplugins"^)
+echo   and run this again to get a fresh copy.
 pause
 exit /b 1
 

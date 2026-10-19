@@ -4,7 +4,7 @@ Sonata adds around a hundred features to Discord: a GIF editor, a screenshot sty
 
 It's a plugin for **Equicord**, a Discord mod. This guide installs both. It takes about 10 minutes the first time.
 
-**Quickest way:** double-click **`Install Sonata.bat`** in this folder. It does every step below for you. **`INSTALL.txt`** has the same steps in plain text.
+**Quickest way:** download **[Install Sonata.bat](https://github.com/hurtpk/sonata/raw/main/Install%20Sonata.bat)** and double-click it. It's the only file you need: it does every step below for you, and running it again later updates Sonata. If Windows says "Windows protected your PC", click **More info → Run anyway**. **`INSTALL.txt`** has the same steps in plain text.
 
 > **Heads-up:** client mods like Equicord are against Discord's Terms of Service. People rarely get in trouble for using one, but it's your call.
 
@@ -35,11 +35,13 @@ pnpm install
 
 ## 3. Add Sonata
 
-Copy the whole **`sonata`** folder (the one this file is in) into:
+Still in the `Equicord` folder, download Sonata into its plugin folder:
 
+```powershell
+git clone https://github.com/hurtpk/sonata src\userplugins\sonata
 ```
-Documents\Equicord\src\userplugins\
-```
+
+(Or use **Code → Download ZIP** on [the GitHub page](https://github.com/hurtpk/sonata), unzip it, and put it in `Documents\Equicord\src\userplugins\` as a folder named `sonata`.)
 
 You should end up with `Documents\Equicord\src\userplugins\sonata\index.tsx`.
 
@@ -68,11 +70,16 @@ pnpm inject
 
 ## Updating
 
-When you get a newer `sonata` folder:
+Double-click **`Install Sonata.bat`** again: it downloads the newest Sonata and rebuilds. Then press **Ctrl+R** in Discord.
 
-1. Replace the old `src\userplugins\sonata` folder with the new one.
-2. Run `pnpm build` in the `Equicord` folder.
-3. In Discord, press **Ctrl+R**.
+Or by hand, in the `Equicord` folder:
+
+```powershell
+git -C src\userplugins\sonata pull
+pnpm build
+```
+
+Then press **Ctrl+R** in Discord.
 
 **What's new** opens by itself to show what changed.
 

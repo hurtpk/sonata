@@ -13,15 +13,24 @@ Service. People rarely get in trouble for using one, but it's your call.
  THE EASY WAY  (about 5-10 minutes)
 ----------------------------------------------------------------------
 
-1. Make sure "Install Sonata.bat" is inside the "sonata" folder,
-   next to index.tsx (it already is if you got them together).
+1. Download the installer - it's the only file you need:
+
+     https://github.com/hurtpk/sonata/raw/main/Install%20Sonata.bat
+
+   (Or open https://github.com/hurtpk/sonata, click "Install Sonata.bat",
+   then the download button.)
 
 2. Double-click "Install Sonata.bat".
 
+   If Windows says "Windows protected your PC", click "More info",
+   then "Run anyway" - Windows says this about any downloaded .bat file.
+
    It installs anything that's missing (Git, Node.js, pnpm), downloads
    Equicord into your Documents folder (or your user folder, if
-   Documents is synced by OneDrive), adds Sonata, and builds it.
+   Documents is synced by OneDrive), downloads Sonata, and builds it.
    If you already have Equicord, it uses that one.
+   (Got a "sonata" folder from a friend instead? Put the installer
+   inside it and it uses that copy.)
    When it asks which Discord to install into, pick yours (usually
    "Stable") and press Enter.
 
@@ -57,11 +66,15 @@ Service. People rarely get in trouble for using one, but it's your call.
      cd Equicord
      pnpm install
 
-3. Copy the whole "sonata" folder into:
+3. Still in PowerShell, download Sonata into Equicord's plugin folder:
 
-     Documents\Equicord\src\userplugins\
+     git clone https://github.com/hurtpk/sonata src\userplugins\sonata
 
-   so that this file exists:
+   (Or download it from https://github.com/hurtpk/sonata -> Code ->
+   Download ZIP, unzip it, and put the folder in
+   Documents\Equicord\src\userplugins\ named "sonata".)
+
+   Either way, this file should exist:
 
      Documents\Equicord\src\userplugins\sonata\index.tsx
 
@@ -93,12 +106,15 @@ Then fully close and reopen Discord.
  UPDATING SONATA
 ----------------------------------------------------------------------
 
-When you get a newer "sonata" folder: put "Install Sonata.bat" inside
-it and double-click it again. It copies the new Sonata in and rebuilds.
+Double-click "Install Sonata.bat" again. It downloads the newest Sonata
+from GitHub and rebuilds. Then press Ctrl+R in Discord (or restart it).
 
-By hand: replace Documents\Equicord\src\userplugins\sonata with the
-new folder, run "pnpm build" in the Equicord folder, then press Ctrl+R
-in Discord.
+By hand: in PowerShell, in the Equicord folder, run
+
+     git -C src\userplugins\sonata pull
+     pnpm build
+
+then press Ctrl+R in Discord.
 
 
 ----------------------------------------------------------------------
