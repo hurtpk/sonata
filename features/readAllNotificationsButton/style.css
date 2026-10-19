@@ -1,0 +1,102 @@
+/* Read All — a small framed button in the server list column. */
+
+.vc-ranb-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 2px 0 8px;
+}
+
+.vc-ranb-button {
+    all: unset;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 26px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: var(--interactive-icon-default, var(--interactive-normal, #b5bac1));
+    background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.09);
+    cursor: pointer;
+    user-select: none;
+    transition:
+        color 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.2s ease,
+        transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-ranb-button:hover {
+    color: var(--interactive-icon-active, #fff);
+    background: hsl(0 0% 100% / 0.08);
+    border-color: hsl(from var(--brand-500) h s l / 0.65);
+    box-shadow: 0 0 12px hsl(from var(--brand-500) h s l / 0.3);
+    transform: translateY(-1px);
+}
+
+.vc-ranb-button:active {
+    transform: scale(0.93);
+    transition-duration: 0.06s;
+}
+
+.vc-ranb-button:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+}
+
+/* Confirmation after a click. */
+.vc-ranb-done,
+.vc-ranb-done:hover {
+    color: #fff;
+    background: var(--status-positive, #23a55a);
+    border-color: transparent;
+    box-shadow: 0 0 14px rgb(35 165 90 / 45%);
+}
+
+.vc-ranb-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle, hsl(0 0% 100% / 0.45) 0%, transparent 65%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.vc-ranb-done::after {
+    animation: vc-ranb-ripple 0.55s ease-out;
+}
+
+.vc-ranb-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    animation: vc-ranb-swap 0.22s ease;
+}
+
+@keyframes vc-ranb-ripple {
+    from { opacity: 1; transform: scale(0.2); }
+    to { opacity: 0; transform: scale(2.4); }
+}
+
+@keyframes vc-ranb-swap {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-ranb-button,
+    .vc-ranb-label,
+    .vc-ranb-button::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

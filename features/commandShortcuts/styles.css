@@ -1,0 +1,16 @@
+.vc-cmdsc-wrap { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; }
+.vc-cmdsc-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; background: hsl(0 0% 100% / 0.035); border: 1px solid hsl(0 0% 100% / 0.06); }
+.vc-cmdsc-recent { align-items: center; }
+.vc-cmdsc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.vc-cmdsc-main b { font-size: 14px; color: var(--header-primary, #fff); }
+.vc-cmdsc-main code { overflow: hidden; font-size: 12.5px; color: var(--text-default, #dbdee1); text-overflow: ellipsis; white-space: nowrap; }
+.vc-cmdsc-main small { font-size: 11.5px; color: var(--text-muted); }
+.vc-cmdsc-tools { display: flex; align-items: center; gap: 2px; flex: none; }
+.vc-cmdsc-tools .vc-tool-btn { margin-right: 4px; }
+.vc-cmdsc-values { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.vc-cmdsc-value { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-muted); }
+
+/* 2026-10 refresh: roomier, with colour fades and glows. */
+.vc-cmdsc-row { position: relative; overflow: hidden; border-radius: 14px; border: 1px solid hsl(0 0% 100% / 0.06); background: linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 11%, transparent), hsl(0 0% 0% / 0.16) 65%); transition: border-color 0.15s, transform 0.12s; }
+.vc-cmdsc-row:hover { border-color: color-mix(in srgb, var(--tl-accent) 40%, transparent); transform: translateY(-1px); }
+.vc-cmdsc-row { padding: 12px 14px; }

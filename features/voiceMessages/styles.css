@@ -1,0 +1,15 @@
+/* Voice Messages — the shared window kit (_shared/tool.css) does most of it. */
+.vc-vmsg-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.vc-vmsg-stop, .vc-vmsg-stop:hover:not(:disabled) { background: var(--status-danger, #f23f43); color: #fff; }
+
+.vc-vmsg-preview { position: relative; display: flex; align-items: center; height: 52px; padding: 0 16px; border-radius: 26px; border: 1px solid var(--tl-line); background: hsl(0 0% 0% / 0.28); color: var(--text-default, var(--text-normal)); }
+.vc-vmsg-preview-indicator { width: 14px; height: 14px; border-radius: 50%; background: hsl(0 0% 100% / 0.2); transition: background 0.2s; }
+.vc-vmsg-preview-recording { border-color: hsl(from var(--status-danger, #f23f43) h s l / 0.5); }
+.vc-vmsg-preview-recording .vc-vmsg-preview-indicator { background: var(--status-danger, #f23f43); animation: vc-vmsg-blink 1s ease-in-out infinite; }
+@keyframes vc-vmsg-blink { 50% { opacity: 0.35; } }
+.vc-vmsg-preview-time { margin: 0 10px; font-family: var(--font-code, monospace); font-size: 13px; opacity: 0.85; }
+.vc-vmsg-preview-label { flex: 1; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; opacity: 0.5; }
+
+.vc-vmsg-warn { border-color: hsl(from var(--status-warning, #f0b232) h s l / 0.45); background: hsl(from var(--status-warning, #f0b232) h s l / 0.08); }
+.vc-vmsg-warn b { color: var(--status-warning, #f0b232); font-size: 14px; }
+.vc-vmsg-error { color: var(--status-danger, #f23f43); }

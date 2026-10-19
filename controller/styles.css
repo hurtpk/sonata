@@ -1,0 +1,783 @@
+/*
+ * QOL page — same look as ChannelSettings' page (these rules mirror its
+ * styles.css under QOL's own prefix, so QOL doesn't depend on ChannelSettings
+ * being installed), with a sparse dust/star particle canvas behind it.
+ * Accent: ChannelSettings' About-tab color when set, else Discord's brand.
+ */
+
+.vc-qolcc-page {
+    --qolcc-accent: var(--vc-qolcc-accent, var(--brand-500));
+    --qolcc-amber: #f5b544;
+    --qolcc-line: hsl(0 0% 100% / 0.08);
+
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    container-type: inline-size;
+    background-color: var(--background-base-lowest, var(--background-base-lower));
+    background-image:
+        radial-gradient(900px 600px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.06), transparent 60%),
+        radial-gradient(800px 600px at 100% 100%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.045), transparent 60%);
+}
+
+.vc-qolcc-page > *:not(.vc-qolcc-particles) {
+    position: relative;
+    z-index: 1;
+}
+
+.vc-qolcc-particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ─── Header ─── */
+
+.vc-qolcc-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 32px 32px 18px;
+    overflow: hidden;
+}
+
+.vc-qolcc-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(900px 200px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.07), transparent 60%),
+        radial-gradient(600px 200px at 100% 0%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.05), transparent 60%);
+    pointer-events: none;
+}
+
+.vc-qolcc-header-text {
+    position: relative;
+    min-width: 0;
+}
+
+.vc-qolcc-title-main {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-default);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.vc-qolcc-title-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.vc-qolcc-title-pending {
+    color: var(--qolcc-amber);
+    font-weight: 600;
+}
+
+/* Faint tagline in the header's empty middle. */
+.vc-qolcc-tagline {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    align-self: center;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 13px;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    opacity: 0.55;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    user-select: none;
+}
+
+@container (max-width: 900px) {
+    .vc-qolcc-tagline {
+        display: none;
+    }
+}
+
+/* Right side of the header: All on / All off + the section switch. */
+.vc-qolcc-header-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.vc-qolcc-view-switch {
+    display: flex;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 99px;
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+}
+
+.vc-qolcc-view-btn {
+    all: unset;
+    cursor: pointer;
+    padding: 7px 15px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--text-muted);
+    transition: color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.vc-qolcc-view-btn:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.06);
+}
+
+.vc-qolcc-view-btn:focus-visible {
+    outline: 2px solid var(--qolcc-accent);
+    outline-offset: 2px;
+}
+
+.vc-qolcc-view-btn-active,
+.vc-qolcc-view-btn-active:hover {
+    color: #fff;
+    background: var(--qolcc-accent);
+    box-shadow: 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.35);
+}
+
+/* All on / All off — styled like ChannelSettings' filter chips. */
+.vc-qolcc-bulk {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.vc-qolcc-bulk-btn {
+    all: unset;
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-default);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    border-radius: 99px;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.vc-qolcc-bulk-btn:hover:not(:disabled) {
+    background: hsl(0 0% 100% / 0.08);
+    border-color: hsl(from var(--qolcc-accent) h s l / 0.6);
+    box-shadow: 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.25);
+}
+
+.vc-qolcc-bulk-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.vc-qolcc-bulk-btn:focus-visible {
+    outline: 2px solid var(--qolcc-accent);
+    outline-offset: 2px;
+}
+
+/* ─── Tabs (categories) ─── */
+
+.vc-qolcc-tab-bar {
+    display: flex;
+    gap: 2px;
+    padding: 0 32px;
+    border-bottom: 1px solid hsl(0 0% 100% / 0.06);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.vc-qolcc-tab {
+    all: unset;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    transition: color 0.18s ease, background 0.18s ease;
+}
+
+.vc-qolcc-tab::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -1px;
+    height: 2px;
+    background: var(--qolcc-accent);
+    border-radius: 2px 2px 0 0;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-qolcc-tab:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.03);
+}
+
+.vc-qolcc-tab:focus-visible {
+    outline: 2px solid var(--qolcc-accent);
+    outline-offset: -2px;
+}
+
+.vc-qolcc-tab-active {
+    color: var(--text-default);
+}
+
+.vc-qolcc-tab-active::after {
+    transform: scaleX(1);
+}
+
+.vc-qolcc-tab-count {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 99px;
+    color: var(--text-muted);
+    background: hsl(0 0% 100% / 0.06);
+}
+
+.vc-qolcc-tab-active .vc-qolcc-tab-count {
+    color: var(--qolcc-accent);
+    background: hsl(from var(--qolcc-accent) h s l / 0.15);
+}
+
+/* ─── Scroll area ─── */
+
+.vc-qolcc-scroller {
+    flex: 1;
+    min-height: 0;
+}
+
+.vc-qolcc-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 100%;
+    box-sizing: border-box;
+    padding: 24px 28px 0;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ─── Search (same treatment as ChannelSettings) ─── */
+
+.vc-qolcc-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    padding: 0 0 4px;
+}
+
+.vc-qolcc-search {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.vc-qolcc-search > * {
+    flex: 1;
+}
+
+.vc-qolcc-search::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+    background-color: var(--text-muted);
+    -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M21 21L16.65 16.65M11 6C13.7614 6 16 8.23858 16 11M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat center / contain;
+    mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M21 21L16.65 16.65M11 6C13.7614 6 16 8.23858 16 11M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat center / contain;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 0.18s, background-color 0.18s;
+    z-index: 1;
+}
+
+.vc-qolcc-search:focus-within::before {
+    opacity: 1;
+    background-color: var(--qolcc-accent);
+}
+
+.vc-qolcc-search input,
+.vc-qolcc-search [class*="lookFilled"] {
+    padding-left: 40px !important;
+    height: 42px !important;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04)) !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+.vc-qolcc-search input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 40px !important;
+}
+
+.vc-qolcc-search [class*="inputWrapper"],
+.vc-qolcc-search [class*="inputDefault"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.vc-qolcc-search input:hover,
+.vc-qolcc-search [class*="lookFilled"]:hover {
+    background: var(--neutral-78, hsl(0 0% 100% / 0.08)) !important;
+    border-color: hsl(0 0% 100% / 0.1) !important;
+}
+
+.vc-qolcc-search input:focus,
+.vc-qolcc-search input:focus-within,
+.vc-qolcc-search [class*="lookFilled"]:focus-within {
+    border-color: var(--qolcc-accent) !important;
+    box-shadow: 0 0 0 3px hsl(from var(--qolcc-accent) h s l / 0.18) !important;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04)) !important;
+}
+
+/* ─── Status filter chips ─── */
+
+.vc-qolcc-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.vc-qolcc-filter-chip {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 99px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.vc-qolcc-filter-chip:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.08);
+}
+
+.vc-qolcc-filter-chip:focus-visible {
+    outline: 2px solid var(--qolcc-accent);
+    outline-offset: 2px;
+}
+
+.vc-qolcc-filter-chip-active,
+.vc-qolcc-filter-chip-active:hover {
+    color: #fff;
+    background: var(--qolcc-accent);
+    border-color: var(--qolcc-accent);
+    box-shadow: 0 0 0 1px var(--qolcc-accent), 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.35);
+}
+
+.vc-qolcc-filter-badge {
+    min-width: 16px;
+    padding: 0 5px;
+    border-radius: 99px;
+    background: var(--qolcc-amber);
+    color: #241600;
+    font-size: 10.5px;
+    font-weight: 800;
+    line-height: 16px;
+    text-align: center;
+}
+
+/* ─── Grid + cards (ChannelSettings' plugin card) ─── */
+
+.vc-qolcc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
+    gap: 14px;
+}
+
+.vc-qolcc-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-radius: 14px;
+    background: var(--background-surface-high);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.18s, background 0.18s, opacity 0.2s;
+}
+
+.vc-qolcc-card-enabled {
+    border-color: hsl(from var(--qolcc-accent) h s l / 0.55);
+}
+
+.vc-qolcc-card:hover {
+    background: var(--neutral-78, hsl(0 0% 100% / 0.08));
+    border-color: hsl(0 0% 100% / 0.22);
+    transform: translateY(-1px);
+}
+
+.vc-qolcc-card-enabled:hover {
+    border-color: hsl(from var(--qolcc-accent) h s l / 0.8);
+}
+
+/* Dim only the text and cog of disabled cards, keep the switch clear. */
+.vc-qolcc-card-disabled .vc-qolcc-card-name,
+.vc-qolcc-card-disabled .vc-qolcc-card-desc,
+.vc-qolcc-card-disabled .vc-qolcc-card-cog {
+    opacity: 0.6;
+}
+
+.vc-qolcc-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.vc-qolcc-card-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-default);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.vc-qolcc-card-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 5px;
+    color: var(--qolcc-accent);
+    background: hsl(from var(--qolcc-accent) h s l / 0.15);
+    border: 1px solid hsl(from var(--qolcc-accent) h s l / 0.35);
+}
+
+.vc-qolcc-card-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.vc-qolcc-card-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.vc-qolcc-status-dot {
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.vc-qolcc-status-active { color: var(--text-feedback-positive, var(--status-positive, #23a55a)); }
+.vc-qolcc-status-active .vc-qolcc-status-dot { box-shadow: 0 0 8px currentColor; }
+.vc-qolcc-status-apply-on,
+.vc-qolcc-status-apply-off,
+.vc-qolcc-status-needs { color: var(--qolcc-amber); }
+.vc-qolcc-status-paused { color: var(--text-feedback-critical, var(--status-danger, #f23f43)); }
+
+.vc-qolcc-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.vc-qolcc-card-cog {
+    all: unset;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.55;
+    transition: color 0.25s, opacity 0.2s, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-qolcc-card:hover .vc-qolcc-card-cog {
+    opacity: 1;
+}
+
+.vc-qolcc-card-cog:hover {
+    color: var(--text-default);
+    transform: scale(1.12);
+}
+
+.vc-qolcc-card-cog:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--qolcc-accent);
+}
+
+/* ─── Switch (ChannelSettings' plugin toggle) ─── */
+
+.vc-qolcc-toggle {
+    all: unset;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    width: 42px;
+    height: 24px;
+    border-radius: 99px;
+    background: hsl(0 0% 100% / 0.18);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vc-qolcc-toggle:hover {
+    background: hsl(0 0% 100% / 0.26);
+}
+
+.vc-qolcc-toggle:focus-visible {
+    outline: 2px solid var(--qolcc-accent);
+    outline-offset: 2px;
+}
+
+.vc-qolcc-toggle-on,
+.vc-qolcc-toggle-on:hover {
+    background: var(--qolcc-accent);
+    box-shadow: 0 0 0 1px var(--qolcc-accent), 0 0 16px hsl(from var(--qolcc-accent) h s l / 0.35);
+}
+
+.vc-qolcc-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.35);
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-qolcc-toggle-on .vc-qolcc-toggle-knob {
+    transform: translateX(18px);
+}
+
+/* Switched, but waiting for a reload to take effect. */
+.vc-qolcc-toggle-pending,
+.vc-qolcc-toggle-pending:hover {
+    box-shadow: 0 0 0 2px var(--qolcc-amber);
+}
+
+.vc-qolcc-toggle-small {
+    width: 32px;
+    height: 18px;
+}
+
+.vc-qolcc-toggle-small .vc-qolcc-toggle-knob {
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+}
+
+.vc-qolcc-toggle-small.vc-qolcc-toggle-on .vc-qolcc-toggle-knob {
+    transform: translateX(14px);
+}
+
+/* ─── Empty state ─── */
+
+.vc-qolcc-empty {
+    padding: 64px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ─── Bottom notification (apply bar) ─── */
+
+.vc-qolcc-apply-bar {
+    position: sticky;
+    bottom: 16px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: auto 0 16px;
+    padding: 9px 10px 9px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--qolcc-line);
+    background: rgb(10 12 15 / 82%);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 50%);
+}
+
+.vc-qolcc-apply-bar-pending {
+    border-color: rgb(245 181 68 / 38%);
+    background: rgb(30 23 10 / 88%);
+    animation: vc-qolcc-rise 0.22s ease;
+}
+
+.vc-qolcc-apply-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--qolcc-accent);
+    box-shadow: 0 0 10px var(--qolcc-accent);
+}
+
+.vc-qolcc-apply-bar-pending .vc-qolcc-apply-dot {
+    background: var(--qolcc-amber);
+    box-shadow: 0 0 10px var(--qolcc-amber);
+    animation: vc-qolcc-pulse 1.6s ease-in-out infinite;
+}
+
+.vc-qolcc-apply-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #aeb3ba;
+}
+
+.vc-qolcc-apply-bar-pending .vc-qolcc-apply-text {
+    color: #fde8c3;
+}
+
+.vc-qolcc-auto {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #aeb3ba;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.vc-qolcc-apply-btn {
+    all: unset;
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: var(--qolcc-amber);
+    color: #241600;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: filter 0.12s ease;
+}
+
+.vc-qolcc-apply-btn:hover {
+    filter: brightness(1.08);
+}
+
+.vc-qolcc-apply-btn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* ─── Options window (cog) ─── */
+
+.vc-qolcc-modal-body {
+    padding-bottom: 8px;
+}
+
+.vc-qolcc-modal-desc {
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.vc-qolcc-modal-empty {
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px dashed hsl(0 0% 100% / 0.12);
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.vc-qolcc-modal-options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ─── Motion ─── */
+
+@keyframes vc-qolcc-rise {
+    from { transform: translateY(8px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+
+@keyframes vc-qolcc-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-qolcc-page * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Narrow chat area: header actions drop under the title. */
+@container (max-width: 640px) {
+    .vc-qolcc-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Feature icons */
+.vc-qolcc-card-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; margin-right: 12px; border-radius: 10px; color: var(--vc-qolcc-accent, var(--brand-500)); background: color-mix(in srgb, var(--vc-qolcc-accent, #5865f2) 14%, transparent); }
+.vc-qolcc-card-disabled .vc-qolcc-card-icon { color: var(--text-muted); background: hsl(0 0% 100% / 0.05); }

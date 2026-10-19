@@ -1,0 +1,51 @@
+/* Controls hidden until you hover the player (or tab into it with the keyboard).
+   The player sits in the sidebar, so animating its height made Discord lay out
+   the whole sidebar — channel list and all — every frame of the animation,
+   which stuttered. Now the room for the controls opens in one step (a single
+   layout), and only the buttons animate, with transform/opacity, which the GPU
+   handles without any layout or repainting. Leaving, the buttons fade first and
+   the room closes once they're gone. */
+#vc-spotify-player .vc-spotify-button-row {
+    height: 0;
+    max-height: none;
+    margin-top: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: layout paint;
+    /* Close the room only after the buttons have faded out. */
+    transition: height 0s linear 0.16s, margin-top 0s linear 0.16s;
+}
+
+#vc-spotify-player .vc-spotify-button-row > * {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+    transition: opacity 0.14s ease, transform 0.22s cubic-bezier(0.25, 0.9, 0.3, 1);
+}
+
+/* Keyboard focus keeps them open too; a mouse click doesn't pin them. */
+#vc-spotify-player:hover .vc-spotify-button-row,
+#vc-spotify-player:has(:focus-visible) .vc-spotify-button-row {
+    height: auto;
+    margin-top: 14px;
+    pointer-events: auto;
+    /* Open the room straight away. */
+    transition: none;
+}
+
+#vc-spotify-player:hover .vc-spotify-button-row > *,
+#vc-spotify-player:has(:focus-visible) .vc-spotify-button-row > * {
+    opacity: 1;
+    transform: none;
+    will-change: transform, opacity;
+}
+
+/* The buttons ripple in left to right. */
+#vc-spotify-player:hover .vc-spotify-button-row > :nth-child(2) { transition-delay: 0.02s; }
+#vc-spotify-player:hover .vc-spotify-button-row > :nth-child(3) { transition-delay: 0.04s; }
+#vc-spotify-player:hover .vc-spotify-button-row > :nth-child(4) { transition-delay: 0.06s; }
+#vc-spotify-player:hover .vc-spotify-button-row > :nth-child(5) { transition-delay: 0.08s; }
+#vc-spotify-player:hover .vc-spotify-button-row > :nth-child(n + 6) { transition-delay: 0.1s; }
+
+@media (prefers-reduced-motion: reduce) {
+    #vc-spotify-player .vc-spotify-button-row > * { transition: opacity 0.12s ease; transform: none; }
+}

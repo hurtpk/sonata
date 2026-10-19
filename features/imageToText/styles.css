@@ -1,0 +1,98 @@
+.vc-ocr-wrap { padding-bottom: 10px; }
+
+.vc-ocr-layout { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 14px; align-items: start; }
+
+.vc-ocr-image {
+    width: 100%;
+    max-height: min(62vh, 620px);
+    object-fit: contain;
+    border-radius: 12px;
+    background: hsl(0 0% 0% / 0.3);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+}
+
+.vc-ocr-side { display: flex; flex-direction: column; gap: 10px; min-height: 220px; }
+
+.vc-ocr-text {
+    flex: 1;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: min(52vh, 480px);
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    background: hsl(0 0% 0% / 0.28);
+    color: var(--text-default);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+}
+
+.vc-ocr-text:focus { border-color: var(--tl-accent); box-shadow: 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.18); }
+
+.vc-ocr-note { display: flex; align-items: center; gap: 10px; padding: 30px 8px; font-size: 13.5px; color: var(--text-muted); }
+
+.vc-ocr-error {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--text-default);
+    border: 1px solid hsl(from var(--status-danger, #f23f43) h s l / 0.45);
+    background: hsl(from var(--status-danger, #f23f43) h s l / 0.1);
+}
+
+.vc-ocr-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid hsl(0 0% 100% / 0.15);
+    border-top-color: var(--tl-accent);
+    animation: vc-ocr-spin 0.8s linear infinite;
+}
+
+@keyframes vc-ocr-spin { to { transform: rotate(360deg); } }
+
+.vc-ocr-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: auto; }
+
+.vc-ocr-btn, .vc-ocr-btn-primary {
+    all: unset;
+    cursor: pointer;
+    padding: 9px 15px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.08);
+}
+
+.vc-ocr-btn:hover { background: hsl(0 0% 100% / 0.14); }
+.vc-ocr-btn-primary { color: #fff; background: var(--tl-accent); }
+.vc-ocr-btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+.vc-ocr-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.vc-ocr-btn:focus-visible, .vc-ocr-btn-primary:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) { .vc-ocr-spinner { animation: none; } }
+
+/* Tabs: the text, or the text translated */
+.vc-ocr-tabs { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.vc-ocr-tab { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--text-muted); background: hsl(0 0% 100% / 0.04); border: 1px solid hsl(0 0% 100% / 0.07); }
+.vc-ocr-tab:hover { color: var(--header-primary, #fff); }
+.vc-ocr-tab-on, .vc-ocr-tab-on:hover { color: #fff; background: hsl(from var(--tl-accent) h s l / 0.3); border-color: var(--tl-accent); }
+.vc-ocr-lang { margin-left: auto; padding: 6px 10px; border-radius: 9px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 0% / 0.3); color: var(--text-default); font: inherit; font-size: 13px; color-scheme: dark; }
+.vc-ocr-text-busy { opacity: 0.6; }
+.vc-ocr-hint { font-size: 12px; color: var(--text-muted); }
+
+/* 2026-10 refresh: roomier, with colour fades and glows. */
+.vc-ocr-layout { gap: 16px; }
+.vc-ocr-image { border-radius: 16px; border: 1px solid color-mix(in srgb, var(--tl-accent) 25%, transparent); box-shadow: none; background: hsl(0 0% 0% / 0.28); }
+.vc-ocr-side { padding: 16px; border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.07);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%); }
+.vc-ocr-tabs { padding: 4px; border-radius: 99px; background: hsl(0 0% 0% / 0.28); }
+.vc-ocr-tab { border-radius: 99px; }
+.vc-ocr-tab-on { color: #fff; background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)); box-shadow: none; }
+.vc-ocr-text { border-radius: 12px; transition: border-color 0.15s, box-shadow 0.15s; }
+.vc-ocr-text:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--tl-accent) 22%, transparent); }
+.vc-ocr-btn-primary { background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)); box-shadow: none; }

@@ -1,0 +1,204 @@
+/*
+ * The dock is injected as a third child alongside the avatar section and
+ * the mic/deafen/settings row, inside Discord's own account panel
+ * container. That container is a single-row flexbox, so without this it
+ * squeezes the dock in next to those buttons instead of dropping below
+ * them. :has() lets us make that parent wrap onto a new line for our
+ * dock specifically, without hardcoding Discord's own (unstable, hashed)
+ * class name for it.
+ */
+:has(> .vc-plugin-dock-container) {
+    flex-wrap: wrap !important;
+    height: auto !important;
+    min-height: unset !important;
+    overflow: visible !important;
+    align-content: flex-start;
+}
+
+.vc-plugin-dock-container {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    max-height: 1000px;
+    overflow: hidden;
+    flex: 1 0 100%;
+    width: 100%;
+    transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+}
+
+.vc-plugin-dock-container.vc-plugin-dock-hidden {
+    grid-template-rows: 0fr 0fr;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    min-height: 0;
+    transition: grid-template-rows 0.2s cubic-bezier(0.4, 0, 0.6, 1),
+                opacity 0.15s cubic-bezier(0.4, 0, 0.6, 1),
+                max-height 0.2s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.vc-plugin-dock-container.vc-plugin-dock-hidden > * {
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+.vc-plugin-dock-container > * {
+    overflow: hidden;
+}
+
+.vc-plugin-dock-separator {
+    height: 12px;
+    margin: 0;
+    cursor: ns-resize;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.vc-plugin-dock-separator::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    height: 1px;
+    background: hsla(0, 0%, 100%, 0.06);
+    transition: background 0.2s ease;
+}
+
+.vc-plugin-dock-separator:hover::after {
+    background: hsla(0, 0%, 100%, 0.2);
+}
+
+.vc-plugin-dock-separator.vc-plugin-dock-dragging::after {
+    background: hsla(0, 0%, 100%, 0.35);
+}
+
+.vc-plugin-dock-buttons-wrapper {
+    display: grid;
+    grid-template-rows: 1fr;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+}
+
+.vc-plugin-dock-buttons-wrapper.vc-plugin-dock-collapsed {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.2s cubic-bezier(0.4, 0, 0.6, 1),
+                opacity 0.15s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.vc-plugin-dock-buttons-wrapper > .vc-plugin-dock-buttons {
+    overflow: hidden;
+}
+
+.vc-plugin-dock-buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 8px;
+}
+
+.vc-plugin-dock-item {
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.vc-plugin-dock-item button {
+    transition: color 0.3s ease !important;
+}
+
+.vc-plugin-dock-item svg,
+.vc-plugin-dock-item [class*="lottieIcon"] {
+    transition: transform 0.1s ease-out;
+}
+
+.vc-plugin-dock-hovered svg,
+.vc-plugin-dock-hovered [class*="lottieIcon"] {
+    transform: scale(1.05);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vc-plugin-dock-glowing {
+    background-color: hsl(359 82.6% 59.4% / 0.12);
+}
+
+.vc-plugin-dock-glowing button {
+    color: var(--status-danger) !important;
+}
+
+.vc-plugin-dock-glow-green {
+    background-color: hsla(0, 0%, 55%, 0.12) !important;
+}
+
+.vc-plugin-dock-glow-green button {
+    color: var(--status-positive, rgb(104, 104, 104)) !important;
+}
+
+.vc-plugin-dock-pressed svg,
+.vc-plugin-dock-pressed [class*="lottieIcon"] {
+    transform: scale(0.9) !important;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+@keyframes vc-dock-pop {
+    0% { transform: scale(0.9); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+.vc-plugin-dock-pop:not(.vc-plugin-dock-pressed) svg,
+.vc-plugin-dock-pop:not(.vc-plugin-dock-pressed) [class*="lottieIcon"] {
+    animation: vc-dock-pop 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.vc-plugin-dock-item.vc-plugin-dock-selected {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;    /* adjust to match the native button's box */
+    height: 32px;   /* adjust to match the native button's box */
+    background: var(--background-modifier-selected, hsla(0, 0%, 55%, 0.048));
+    border-radius: 8px;
+}
+ 
+.vc-plugin-dock-item.vc-plugin-dock-selected svg {
+    color: #fff !important;
+}
+/* Sonata's pinned button on the left, then a line that fades out at both ends. */
+.vc-plugin-dock-row {
+    display: flex;
+    align-items: stretch;
+}
+
+.vc-plugin-dock-pinned {
+    display: flex;
+    align-items: center;
+    padding: 6px 2px 6px 8px;
+}
+
+.vc-plugin-dock-pin-line {
+    flex-shrink: 0;
+    width: 1px;
+    margin: 4px 4px;
+    background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 0.45) 50%, transparent);
+}
+
+.vc-plugin-dock-row > .vc-plugin-dock-buttons {
+    flex: 1;
+    min-width: 0;
+}

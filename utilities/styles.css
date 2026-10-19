@@ -1,0 +1,1283 @@
+.vc-chsettings-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    /* Same backdrop as the QOL page: near-black with a faint accent wash,
+       plus the drifting dust canvas (.vc-chsettings-particles) behind it. */
+    background-color: var(--background-base-lowest, var(--background-base-lower));
+    background-image:
+        radial-gradient(900px 600px at 0% 0%, hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.06), transparent 60%),
+        radial-gradient(800px 600px at 100% 100%, hsl(from var(--vc-chsettings-accent, var(--brand-500)) calc(h + 50) s l / 0.045), transparent 60%);
+}
+
+.vc-chsettings-particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.vc-chsettings-page > *:not(.vc-chsettings-particles) {
+    position: relative;
+    z-index: 1;
+}
+
+.vc-chsettings-header {
+    padding: 32px 32px 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.vc-chsettings-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(900px 200px at 0% 0%, hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.07), transparent 60%),
+        radial-gradient(600px 200px at 100% 0%, hsl(from var(--vc-chsettings-accent, var(--brand-500)) calc(h + 50) s l / 0.05), transparent 60%);
+    pointer-events: none;
+}
+
+.vc-chsettings-title-main {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-default);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    position: relative;
+}
+
+.vc-chsettings-title-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+    position: relative;
+}
+
+.vc-chsettings-tab-bar {
+    display: flex;
+    gap: 2px;
+    padding: 0 32px;
+    border-bottom: 1px solid hsl(0 0% 100% / 0.06);
+    background: transparent;
+    position: relative;
+}
+
+.vc-chsettings-tab {
+    all: unset;
+    cursor: pointer;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    transition: color 0.18s ease, background 0.18s ease;
+}
+
+.vc-chsettings-tab::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -1px;
+    height: 2px;
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    border-radius: 2px 2px 0 0;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-chsettings-tab:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.03);
+}
+
+.vc-chsettings-tab-active {
+    color: var(--text-default);
+}
+
+.vc-chsettings-tab-active::after {
+    transform: scaleX(1);
+}
+
+.vc-chsettings-scroller {
+    flex: 1;
+    min-height: 0;
+}
+
+.vc-chsettings-content {
+    padding: 24px 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ─── Plugins page wrap ─── */
+.vc-chsettings-plugins-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* ─── Toolbar (search + sort) ─── */
+.vc-chsettings-plugins-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    padding: 0 0 4px;
+}
+
+.vc-chsettings-plugins-search {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.vc-chsettings-plugins-search::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+    background-color: var(--text-muted);
+    -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M21 21L16.65 16.65M11 6C13.7614 6 16 8.23858 16 11M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat center / contain;
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M21 21L16.65 16.65M11 6C13.7614 6 16 8.23858 16 11M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat center / contain;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 0.18s, background-color 0.18s;
+    z-index: 1;
+}
+
+.vc-chsettings-plugins-search:focus-within::before {
+    opacity: 1;
+    background-color: var(--vc-chsettings-accent, var(--brand-500));
+}
+
+.vc-chsettings-plugins-search input,
+.vc-chsettings-plugins-search [class*="lookFilled"] {
+    padding-left: 40px !important;
+    height: 42px !important;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04)) !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+/* Discord wraps input inside a div + the input itself has its own border.
+   Strip the inner one so we don't get a double ring. */
+.vc-chsettings-plugins-search input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 40px !important;
+}
+
+.vc-chsettings-plugins-search [class*="inputWrapper"],
+.vc-chsettings-plugins-search [class*="inputDefault"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.vc-chsettings-plugins-search input:hover,
+.vc-chsettings-plugins-search [class*="lookFilled"]:hover {
+    background: var(--neutral-78, hsl(0 0% 100% / 0.08)) !important;
+    border-color: hsl(0 0% 100% / 0.1) !important;
+}
+
+.vc-chsettings-plugins-search input:focus,
+.vc-chsettings-plugins-search input:focus-within,
+.vc-chsettings-plugins-search [class*="lookFilled"]:focus-within {
+    border-color: var(--vc-chsettings-accent, var(--brand-500)) !important;
+    box-shadow: 0 0 0 3px hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.18) !important;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04)) !important;
+}
+
+.vc-chsettings-plugins-sort {
+    min-width: 200px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+}
+
+.vc-chsettings-plugins-sort [class*="lookFilled"],
+.vc-chsettings-plugins-sort > div {
+    height: 42px !important;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04)) !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    transition: border-color 0.18s, background 0.18s !important;
+}
+
+.vc-chsettings-plugins-sort:hover [class*="lookFilled"],
+.vc-chsettings-plugins-sort:hover > div {
+    background: var(--neutral-78, hsl(0 0% 100% / 0.08)) !important;
+    border-color: hsl(0 0% 100% / 0.1) !important;
+}
+
+/* ─── Filter chips (Has settings / Show user plugins) ─── */
+.vc-chsettings-plugins-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.vc-chsettings-filter-chip {
+    all: unset;
+    cursor: pointer;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 99px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.vc-chsettings-filter-chip:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.08);
+}
+
+.vc-chsettings-filter-chip-active,
+.vc-chsettings-filter-chip-active:hover {
+    color: #fff;
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    border-color: var(--vc-chsettings-accent, var(--brand-500));
+    box-shadow: 0 0 0 1px var(--vc-chsettings-accent, var(--brand-500)), 0 0 14px hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.35);
+}
+
+/* ─── Grid ─── */
+.vc-chsettings-plugins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 14px;
+}
+
+/* ─── Plugin card ─── */
+.vc-chsettings-plugin-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-radius: 14px;
+    background: var(--background-surface-high);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.18s, background 0.18s, opacity 0.2s;
+}
+
+.vc-chsettings-plugin-card-enabled {
+    border-color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.55);
+    border-style: solid;
+}
+
+.vc-chsettings-plugin-card:hover {
+    background: var(--neutral-78, hsl(0 0% 100% / 0.08));
+    border-color: hsl(0 0% 100% / 0.22);
+    transform: translateY(-1px);
+}
+
+.vc-chsettings-plugin-card-enabled:hover {
+    border-color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.8);
+}
+
+/* Dim only the text/icon content, keep the toggle at full clarity */
+.vc-chsettings-plugin-card-disabled .vc-chsettings-plugin-card-info,
+.vc-chsettings-plugin-card-disabled .vc-chsettings-plugin-card-cog {
+    opacity: 0.6;
+}
+
+.vc-chsettings-plugin-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.vc-chsettings-plugin-card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-default);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vc-chsettings-plugin-card-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 5px;
+    color: var(--vc-chsettings-accent, var(--brand-500));
+    background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.15);
+    border: 1px solid hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.35);
+}
+
+.vc-chsettings-plugin-card-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.vc-chsettings-plugin-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* ─── Cog button ─── */
+.vc-chsettings-plugin-card-cog {
+    all: unset;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.25s, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity: 0.55;
+    transform: rotate(0deg) scale(1);
+}
+
+.vc-chsettings-plugin-card:hover .vc-chsettings-plugin-card-cog {
+    opacity: 1;
+}
+
+.vc-chsettings-plugin-card-cog:hover {
+    color: var(--text-default);
+    transform: scale(1.12);
+}
+
+/* ─── Toggle ─── */
+.vc-chsettings-plugin-toggle {
+    all: unset;
+    cursor: pointer;
+    width: 42px;
+    height: 24px;
+    border-radius: 99px;
+    background: hsl(0 0% 100% / 0.18);
+    position: relative;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vc-chsettings-plugin-toggle:hover {
+    background: hsl(0 0% 100% / 0.26);
+}
+
+.vc-chsettings-plugin-toggle-on,
+.vc-chsettings-plugin-toggle-on:hover {
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    box-shadow: 0 0 0 1px var(--vc-chsettings-accent, var(--brand-500)), 0 0 16px hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.35);
+}
+
+.vc-chsettings-plugin-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.35);
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-chsettings-plugin-toggle-on .vc-chsettings-plugin-toggle-knob {
+    transform: translateX(18px);
+}
+
+/* ─── Empty state ─── */
+.vc-chsettings-empty {
+    padding: 64px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ─── Keybinds tab ─── */
+.vc-chsettings-keybinds-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    container-type: inline-size;
+}
+
+.vc-chsettings-keybind-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vc-chsettings-keybind-search { flex: 1; min-width: 200px; }
+
+.vc-chsettings-keybind-chip {
+    all: unset;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: hsl(0 0% 100% / 0.05);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    white-space: nowrap;
+}
+
+.vc-chsettings-keybind-chip:hover { color: var(--text-default); }
+.vc-chsettings-keybind-chip-on { color: #fff; background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.7); border-color: transparent; }
+
+.vc-chsettings-keybind-hint {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    padding: 8px 12px;
+    background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.08);
+    border: 1px solid hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.3);
+    border-radius: 10px;
+}
+
+.vc-chsettings-keybind-section { display: flex; flex-direction: column; gap: 6px; }
+
+.vc-chsettings-keybind-section-title {
+    margin: 6px 0 2px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.vc-chsettings-keybind-section-title span { margin-left: 4px; opacity: 0.6; }
+
+/* A group folds into one slim row: name, how many settings, how many have a key. */
+.vc-chsettings-keybind-group { border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.07); background: hsl(0 0% 100% / 0.025); overflow: hidden; }
+.vc-chsettings-keybind-group-open { background: hsl(0 0% 100% / 0.04); border-color: hsl(0 0% 100% / 0.12); }
+
+.vc-chsettings-keybind-group-header {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 14px;
+    cursor: pointer;
+}
+
+.vc-chsettings-keybind-group-header:hover { background: hsl(0 0% 100% / 0.04); }
+.vc-chsettings-keybind-group-header:disabled { cursor: default; }
+.vc-chsettings-keybind-group-header:focus-visible { outline: 2px solid var(--vc-chsettings-accent, var(--brand-500)); outline-offset: -2px; }
+
+.vc-chsettings-keybind-chevron { display: inline-block; width: 10px; font-size: 16px; color: var(--text-muted); transition: transform 0.15s; }
+.vc-chsettings-keybind-group-open .vc-chsettings-keybind-chevron { transform: rotate(90deg); }
+.vc-chsettings-keybind-group-name { font-size: 14px; font-weight: 600; color: var(--text-default); }
+.vc-chsettings-keybind-group-count { font-size: 12px; color: var(--text-muted); }
+.vc-chsettings-keybind-group-bound { margin-left: auto; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; color: #fff; background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.7); }
+
+/* Rows inside an open group: compact, two columns when there's room. */
+.vc-chsettings-keybind-rows { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 4px 10px 10px; }
+
+@container (min-width: 860px) { .vc-chsettings-keybind-rows { grid-template-columns: 1fr 1fr; } }
+
+.vc-chsettings-keybind-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    padding: 7px 10px;
+    background: var(--background-surface-high, hsl(0 0% 100% / 0.03));
+    border: 1px solid hsl(0 0% 100% / 0.06);
+    border-radius: 10px;
+}
+
+.vc-chsettings-keybind-row:hover { border-color: hsl(0 0% 100% / 0.16); }
+.vc-chsettings-keybind-row-bound { border-color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.45); }
+
+.vc-chsettings-keybind-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-default);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-chsettings-keybind-kind {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: hsl(0 0% 100% / 0.06);
+    vertical-align: 1px;
+}
+
+.vc-chsettings-keybind-controls { display: flex; align-items: center; gap: 6px; flex: none; }
+.vc-chsettings-keybind-input { width: 130px; }
+
+.vc-chsettings-keybind-input input {
+    font-family: ui-monospace, "JetBrains Mono", Menlo, monospace !important;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 12.5px !important;
+}
+
+.vc-chsettings-keybind-reset {
+    all: unset;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.05);
+}
+
+.vc-chsettings-keybind-reset:hover:not(:disabled) { color: var(--text-default); background: var(--neutral-78, hsl(0 0% 100% / 0.08)); }
+.vc-chsettings-keybind-reset:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.vc-chsettings-keybind-more, .vc-chsettings-keybind-less {
+    all: unset;
+    cursor: pointer;
+    align-self: center;
+    margin-top: 4px;
+    padding: 8px 18px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.06);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+}
+
+.vc-chsettings-keybind-less { background: none; border-color: transparent; color: var(--text-muted); padding: 4px 12px; margin-top: 0; }
+.vc-chsettings-keybind-more:hover { background: hsl(0 0% 100% / 0.1); }
+
+/* ─── Dock tab ─── */
+.vc-chsettings-dock-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.vc-chsettings-dock-hint {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    padding: 10px 14px;
+    background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.08);
+    border: 1px solid hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.35);
+    border-radius: 10px;
+}
+
+.vc-chsettings-dock-add-note {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: -4px;
+}
+
+.vc-chsettings-dock-add-note strong {
+    color: var(--text-normal, #dbdee1);
+    font-weight: 600;
+}
+
+.vc-chsettings-dock-strip {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px 20px;
+    background: var(--background-surface-high);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    border-radius: 14px;
+    min-height: 100px;
+}
+
+.vc-chsettings-dock-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.vc-chsettings-dock-icon {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.05);
+    color: var(--interactive-active, #f2f3f5);
+    cursor: grab;
+    transition: background 0.18s, border-color 0.18s, transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.18s;
+}
+
+.vc-chsettings-dock-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.vc-chsettings-dock-icon:hover {
+    background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.18);
+    border-color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.55);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.vc-chsettings-dock-icon:active {
+    cursor: grabbing;
+    transform: scale(0.96);
+}
+
+.vc-chsettings-dock-icon-dragging {
+    opacity: 0.4;
+}
+
+.vc-chsettings-dock-icon-drop::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    box-shadow: 0 0 10px var(--vc-chsettings-accent, var(--brand-500));
+}
+
+.vc-chsettings-dock-icon-hidden {
+    opacity: 0.3;
+    filter: grayscale(0.6);
+}
+
+.vc-chsettings-dock-visibility {
+    all: unset;
+    cursor: pointer;
+    width: 34px;
+    height: 20px;
+    border-radius: 99px;
+    background: var(--neutral-78, hsl(0 0% 100% / 0.08));
+    position: relative;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vc-chsettings-dock-visibility:hover {
+    background: hsl(0 0% 100% / 0.12);
+}
+
+.vc-chsettings-dock-visibility-on,
+.vc-chsettings-dock-visibility-on:hover {
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    box-shadow: 0 0 12px hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.4);
+}
+
+.vc-chsettings-dock-visibility-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.35);
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-chsettings-dock-visibility-on .vc-chsettings-dock-visibility-knob {
+    transform: translateX(14px);
+}
+
+/* ─── Dock: custom-button remove badge ─── */
+.vc-chsettings-dock-icon-slot {
+    position: relative;
+    display: flex;
+}
+
+.vc-chsettings-dock-remove {
+    all: unset;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    color: #fff;
+    background: hsl(0 70% 55% / 0.9);
+    border: 1px solid hsl(0 0% 100% / 0.15);
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.35);
+    z-index: 2;
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
+    transition: background 0.15s, transform 0.15s, opacity 0.15s;
+}
+
+/* Reveal on hover of the icon slot (covers both the icon and the badge itself,
+   so moving from the icon onto the badge doesn't hide it again). */
+.vc-chsettings-dock-icon-slot:hover .vc-chsettings-dock-remove {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.vc-chsettings-dock-remove:hover {
+    background: hsl(0 75% 60%);
+    transform: scale(1.12);
+}
+
+/* ─── Dock: add-a-plugin section ─── */
+.vc-chsettings-dock-add-section {
+    display: flex;
+    justify-content: center;
+}
+
+.vc-chsettings-dock-add-toggle {
+    all: unset;
+    cursor: pointer;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-default);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px dashed hsl(0 0% 100% / 0.25);
+    border-radius: 10px;
+    transition: background 0.18s, border-color 0.18s, transform 0.18s;
+}
+
+.vc-chsettings-dock-add-toggle:hover {
+    background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.12);
+    border-color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.55);
+    transform: translateY(-1px);
+}
+
+.vc-chsettings-dock-add-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    padding: 18px;
+    background: var(--background-surface-high);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    border-radius: 14px;
+}
+
+.vc-chsettings-dock-add-row {
+    display: flex;
+}
+
+.vc-chsettings-dock-add-select {
+    flex: 1;
+    min-height: 40px;
+}
+
+.vc-chsettings-dock-add-select [class*="lookFilled"],
+.vc-chsettings-dock-add-select > div {
+    height: 40px !important;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04)) !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+}
+
+.vc-chsettings-dock-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 8px;
+    /* Over 200 icons: scroll within the picker instead of stretching the page. */
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.vc-chsettings-dock-icon-choice {
+    all: unset;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: var(--text-muted);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.05);
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+
+.vc-chsettings-dock-icon-choice:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.08);
+    transform: translateY(-1px);
+}
+
+.vc-chsettings-dock-icon-choice-selected,
+.vc-chsettings-dock-icon-choice-selected:hover {
+    color: #fff;
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    border-color: var(--vc-chsettings-accent, var(--brand-500));
+    box-shadow: 0 0 0 1px var(--vc-chsettings-accent, var(--brand-500)), 0 0 14px hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.4);
+}
+
+.vc-chsettings-dock-add-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.vc-chsettings-dock-add-cancel,
+.vc-chsettings-dock-add-confirm {
+    all: unset;
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.vc-chsettings-dock-add-cancel {
+    color: var(--text-muted);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.05);
+}
+
+.vc-chsettings-dock-add-cancel:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.08);
+}
+
+.vc-chsettings-dock-add-confirm {
+    color: #fff;
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    text-align: center;
+}
+
+.vc-chsettings-dock-add-confirm:hover:not(:disabled) {
+    background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s calc(l - 5%));
+}
+
+.vc-chsettings-dock-add-confirm:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ─── About tab ─── */
+.vc-chsettings-about-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.vc-chsettings-about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(140px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 560px;
+}
+
+.vc-chsettings-about-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 18px;
+    background: var(--background-surface-high);
+    border-radius: 14px;
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    transition:
+        transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 0.32s ease,
+        background 0.32s ease,
+        box-shadow 0.32s ease;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* Soft top glow */
+.vc-chsettings-about-stat::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: radial-gradient(120% 80% at 50% 0%, hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.22), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.32s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Sweeping shine that slides across on hover */
+.vc-chsettings-about-stat::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent 0%, hsl(0 0% 100% / 0.08) 50%, transparent 100%);
+    transform: skewX(-18deg);
+    transition: left 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.vc-chsettings-about-stat > * {
+    position: relative;
+    z-index: 1;
+}
+
+.vc-chsettings-about-stat:hover {
+    transform: translateY(-3px) scale(1.02);
+    background: var(--background-surface-higher, var(--background-surface-high));
+    border-color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.5);
+    box-shadow: 0 0 0 1px hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.25) inset;
+}
+
+.vc-chsettings-about-stat:hover::before {
+    opacity: 1;
+}
+
+.vc-chsettings-about-stat:hover::after {
+    left: 110%;
+}
+
+.vc-chsettings-about-stat-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-default);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    position: relative;
+    background: linear-gradient(180deg, #ffffff 0%, hsl(0 0% 80%) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.vc-chsettings-about-stat-value-compact {
+    font-size: 20px;
+}
+
+.vc-chsettings-about-stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-top: 8px;
+    position: relative;
+}
+
+.vc-chsettings-about-credit {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: color 0.18s ease, background 0.18s ease;
+}
+
+.vc-chsettings-about-credit:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.05);
+}
+
+.vc-chsettings-about-credit-handle {
+    font-weight: 700;
+    color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l);
+    transition: text-decoration-color 0.18s ease;
+}
+
+.vc-chsettings-about-credit:hover .vc-chsettings-about-credit-handle {
+    text-decoration: underline;
+}
+
+.vc-chsettings-about-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.vc-chsettings-about-link {
+    color: var(--text-default);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.35);
+    transition: background 0.18s, border-color 0.18s, transform 0.18s;
+}
+
+.vc-chsettings-about-link:hover {
+    background: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.12);
+    border-color: hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.7);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+/* ─── About: profile hero card ─── */
+.vc-chsettings-about-profile {
+    --vc-profile-accent: var(--vc-chsettings-accent, var(--brand-500));
+    width: 100%;
+    max-width: 560px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--background-surface-high);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    cursor: pointer;
+    position: relative;
+    transition:
+        transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 0.32s ease,
+        box-shadow 0.32s ease;
+}
+
+.vc-chsettings-about-profile:hover {
+    transform: translateY(-3px) scale(1.01);
+    border-color: hsl(from var(--vc-profile-accent) h s l / 0.55);
+    box-shadow: 0 0 0 1px hsl(from var(--vc-profile-accent) h s l / 0.3) inset;
+}
+
+.vc-chsettings-about-profile-banner {
+    height: 96px;
+    /* Real banner image overrides via inline style. Theme-colors gradient if set. Fallback: solid white. */
+    background-color: #ffffff;
+    background-image: linear-gradient(135deg, var(--vc-profile-theme-1, #ffffff), var(--vc-profile-theme-2, #ffffff));
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+
+.vc-chsettings-about-profile-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 50%, hsl(0 0% 0% / 0.18));
+    pointer-events: none;
+}
+
+.vc-chsettings-about-profile-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px 18px 20px;
+    position: relative;
+}
+
+.vc-chsettings-about-profile-avatar-ring {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--background-surface-high);
+    padding: 4px;
+    margin-top: -44px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.3);
+}
+
+.vc-chsettings-about-profile-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.vc-chsettings-about-profile-text {
+    flex: 1;
+    min-width: 0;
+    padding-top: 6px;
+}
+
+.vc-chsettings-about-profile-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-default);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.vc-chsettings-about-profile-handle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+}
+
+.vc-chsettings-about-profile-cta {
+    font-size: 12px;
+    color: hsl(from var(--vc-profile-accent) h s 70%);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 6px;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.25s, transform 0.25s;
+    flex-shrink: 0;
+}
+
+.vc-chsettings-about-profile:hover .vc-chsettings-about-profile-cta {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ─── About: accent color picker ─── */
+.vc-chsettings-about-ambient {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.vc-chsettings-about-ambient-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+.vc-chsettings-about-ambient-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.vc-chsettings-about-ambient-reset {
+    all: unset;
+    cursor: pointer;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 99px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.vc-chsettings-about-ambient-reset:hover {
+    color: var(--text-default);
+    background: hsl(0 0% 100% / 0.08);
+}
+
+.vc-chsettings-about-ambient-reset-active,
+.vc-chsettings-about-ambient-reset-active:hover {
+    color: #fff;
+    background: var(--vc-chsettings-accent, var(--brand-500));
+    border-color: var(--vc-chsettings-accent, var(--brand-500));
+}
+
+.vc-chsettings-about-ambient-swatch {
+    position: relative;
+    display: block;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    cursor: pointer;
+    overflow: hidden;
+    border: 2px solid hsl(0 0% 100% / 0.15);
+    box-shadow: 0 0 0 1px hsl(0 0% 100% / 0.06) inset;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.vc-chsettings-about-ambient-swatch:hover {
+    transform: translateY(-2px) scale(1.06);
+    border-color: hsl(0 0% 100% / 0.4);
+}
+
+.vc-chsettings-about-ambient-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Sonata's own dock button: always shown, can't be moved, hidden or removed. */
+.vc-chsettings-dock-icon-pinned { cursor: default; }
+.vc-chsettings-dock-visibility-locked { cursor: not-allowed; opacity: 0.55; }
+
+/* Icon picker: a search box, and the icons in labelled groups. */
+.vc-chsettings-dock-icon-search {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    color: var(--text-default);
+    background: hsl(0 0% 0% / 0.22);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+}
+
+.vc-chsettings-dock-icon-search:focus { border-color: var(--brand-500); }
+
+.vc-chsettings-dock-icon-group {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.vc-chsettings-dock-icon-group:first-child { margin-top: 0; }
+
+/* Editing a dock button (right-click in the Dock tab). */
+.vc-chsettings-dock-edit-form { margin-top: 12px; border-color: color-mix(in srgb, var(--brand-500) 55%, transparent) !important; }
+.vc-chsettings-dock-edit-title { font-size: 14px; color: var(--text-default); margin-bottom: 4px; }
+.vc-chsettings-dock-icon-editing { outline: 2px solid var(--brand-500); outline-offset: 2px; }

@@ -1,0 +1,46 @@
+/* The ♫ next to Sonata users' names: floats gently, glows, and a shine sweeps across it. */
+.vc-snb-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--snb-size, 15px);
+    height: var(--snb-size, 15px);
+    margin-left: 4px;
+    vertical-align: -2px;
+    flex: none;
+    filter: drop-shadow(0 0 2.5px rgb(125 211 252 / 0.75)) drop-shadow(0 0 6px rgb(186 230 253 / 0.35));
+    animation: vc-snb-float 3.2s ease-in-out infinite;
+    cursor: default;
+}
+
+/* The note itself: the shape comes from a mask, the colour from a gradient, so the shine stays inside it. */
+.vc-snb-note {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(150deg, #38bdf8 0%, #7dd3fc 40%, #e0f2fe 75%, #fff 100%);
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 17.6V6.3a1 1 0 0 1 .76-.97l9-2.25A1 1 0 0 1 20 4.05V15.6' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/><path d='M9 9.6 20 6.85' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/><ellipse cx='6.5' cy='17.7' rx='2.9' ry='2.3' fill='black'/><ellipse cx='17.5' cy='15.7' rx='2.9' ry='2.3' fill='black'/></svg>") center / contain no-repeat;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 17.6V6.3a1 1 0 0 1 .76-.97l9-2.25A1 1 0 0 1 20 4.05V15.6' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/><path d='M9 9.6 20 6.85' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/><ellipse cx='6.5' cy='17.7' rx='2.9' ry='2.3' fill='black'/><ellipse cx='17.5' cy='15.7' rx='2.9' ry='2.3' fill='black'/></svg>") center / contain no-repeat;
+}
+
+/* The shine: a bright diagonal streak passing over every few seconds. */
+.vc-snb-note::after {
+    content: "";
+    position: absolute;
+    inset: -50% auto -50% -60%;
+    width: 45%;
+    rotate: 25deg;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.95), transparent);
+    animation: vc-snb-shine 3.6s ease-in-out infinite;
+}
+
+@keyframes vc-snb-float { 0%, 100% { translate: 0 0.5px; } 50% { translate: 0 -1.5px; } }
+
+/* Sweeps across in the first part of the loop, then rests out of sight. */
+@keyframes vc-snb-shine { 0% { left: -60%; } 35%, 100% { left: 130%; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-snb-badge, .vc-snb-note::after { animation: none; }
+}

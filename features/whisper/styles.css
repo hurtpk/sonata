@@ -1,0 +1,54 @@
+/* The writing window. */
+.vc-whisper { display: flex; flex-direction: column; gap: 14px; }
+.vc-whisper-secret { min-height: 92px; resize: vertical; }
+.vc-whisper-over { color: #f87171 !important; }
+.vc-whisper-pass { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.vc-whisper-check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.vc-whisper-check input { accent-color: var(--tl-accent); }
+
+/* Under a message. */
+.vc-whisper-box { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; max-width: 560px; margin-top: 4px; padding: 8px 12px; border-radius: 12px; background: hsl(0 0% 0% / 0.18); border: 1px solid color-mix(in srgb, var(--vc-tool-accent, var(--brand-500)) 35%, transparent); }
+.vc-whisper-tag { flex: none; font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--vc-tool-accent, var(--brand-500)); }
+.vc-whisper-text { all: unset; cursor: pointer; flex: 1; min-width: 0; font-size: 14.5px; line-height: 1.45; color: var(--text-default, var(--text-normal)); word-break: break-word; transition: filter 0.2s; }
+.vc-whisper-hidden { filter: blur(6px); user-select: none; }
+.vc-whisper-hint, .vc-whisper-locked { font-size: 12.5px; color: var(--text-muted); }
+.vc-whisper-input { flex: 1; min-width: 120px; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 0% / 0.25); color: var(--text-default, var(--text-normal)); font: inherit; font-size: 13px; outline: none; }
+.vc-whisper-input:focus { border-color: var(--vc-tool-accent, var(--brand-500)); }
+.vc-whisper-btn { height: 28px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--vc-tool-accent, var(--brand-500)); color: #fff; font: 600 13px var(--font-primary); cursor: pointer; }
+.vc-whisper-btn:disabled { opacity: 0.5; cursor: default; }
+.vc-whisper-wrong { font-size: 12.5px; font-weight: 600; color: #f87171; }
+
+/* ─── Whisper 2 ─── */
+.vc-whisper-card { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; background: hsl(0 0% 0% / 0.18); border: 1px solid hsl(0 0% 100% / 0.07); }
+.vc-whisper-locks { display: flex; flex-direction: column; gap: 8px; }
+.vc-whisper-locks .vc-tool-chip:disabled { opacity: 0.35; cursor: not-allowed; }
+.vc-whisper-newpass { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
+.vc-whisper-add { align-self: flex-start; }
+
+.vc-whisper-history { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; }
+.vc-whisper-seen { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: hsl(0 0% 0% / 0.18); border: 1px solid hsl(0 0% 100% / 0.06); }
+.vc-whisper-seen-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.vc-whisper-seen-head b { font-size: 14px; color: var(--header-primary, #fff); }
+.vc-whisper-seen-head span { font-size: 12px; color: var(--text-muted); }
+.vc-whisper-seen-text { all: unset; cursor: pointer; font-size: 14px; line-height: 1.45; color: var(--text-default, var(--text-normal)); white-space: pre-wrap; word-break: break-word; transition: filter 0.2s; }
+.vc-whisper-expired { cursor: default; color: var(--text-muted); }
+
+.vc-whisper-keyrow { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; background: hsl(0 0% 100% / 0.03); }
+.vc-whisper-keyname { all: unset; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--header-primary, #fff); }
+.vc-whisper-pw { all: unset; cursor: pointer; padding: 1px 8px; border-radius: 6px; font: 12.5px var(--font-code, monospace); color: var(--text-muted); background: hsl(0 0% 0% / 0.25); }
+.vc-whisper-x { box-sizing: border-box; display: grid; place-items: center; width: 26px; height: 26px; margin: 0; padding: 0; border-radius: 8px; border: 1px solid hsl(358 75% 59% / 0.4); background: hsl(358 75% 59% / 0.12); color: #f87171; font: 700 12px var(--font-primary); cursor: pointer; appearance: none; }
+.vc-whisper-x:hover { background: hsl(358 75% 50% / 0.9); color: #fff; border-color: transparent; }
+
+/* Under a message, opened. */
+.vc-whisper-box-open { flex-direction: column; align-items: stretch; }
+.vc-whisper-box-quiet { opacity: 0.7; }
+.vc-whisper-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vc-whisper-grow { flex: 1; }
+.vc-whisper-mini { height: 24px; padding: 0 10px; border: 1px solid hsl(0 0% 100% / 0.12); border-radius: 7px; background: hsl(0 0% 100% / 0.05); color: var(--text-default, var(--text-normal)); font: 600 12px var(--font-primary); cursor: pointer; }
+.vc-whisper-mini:hover { background: hsl(0 0% 100% / 0.1); }
+.vc-whisper-previews { display: flex; flex-wrap: wrap; gap: 8px; }
+.vc-whisper-pic { position: relative; display: block; max-width: 320px; border-radius: 10px; overflow: hidden; line-height: 0; }
+.vc-whisper-pic img { display: block; max-width: 320px; max-height: 240px; object-fit: cover; }
+.vc-whisper-yt::after { content: "▶"; position: absolute; left: 50%; top: 50%; translate: -50% -50%; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; line-height: 1; color: #fff; background: hsl(0 0% 0% / 0.6); }
+.vc-whisper-link { padding: 3px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 600; color: var(--text-link, #00a8fc); background: hsl(0 0% 100% / 0.06); text-decoration: none; }
+.vc-whisper-save { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); cursor: pointer; }

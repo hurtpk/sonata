@@ -1,0 +1,48 @@
+/* Fancy Text — the shared window kit (_shared/tool.css) does most of it. */
+.vc-fancy-input { font-size: 16px; padding: 12px 14px; }
+
+.vc-fancy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; max-height: 52vh; overflow-y: auto; padding-right: 2px; }
+.vc-fancy-card { display: flex; align-items: stretch; border-radius: 12px; border: 1px solid var(--tl-line); background: var(--tl-soft); overflow: hidden; transition: border-color 0.12s; }
+.vc-fancy-card:hover { border-color: hsl(from var(--tl-accent) h s l / 0.6); }
+.vc-fancy-card-sample .vc-fancy-out { opacity: 0.55; }
+.vc-fancy-main { all: unset; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; cursor: pointer; }
+.vc-fancy-main:disabled { cursor: default; }
+.vc-fancy-name { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.vc-fancy-out { font-size: 16px; color: var(--text-default, var(--text-normal)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-fancy-copy { all: unset; padding: 0 12px; border-left: 1px solid var(--tl-line); font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+.vc-fancy-copy:hover:not(:disabled) { color: var(--text-default, var(--text-normal)); background: var(--tl-hover); }
+.vc-fancy-copy:disabled { cursor: default; opacity: 0.5; }
+
+/* 2026-10 refresh: roomier, with colour fades and glows. */
+.vc-fancy-input { font-size: 18px; padding: 14px 16px; border-radius: 14px; }
+.vc-fancy-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; max-height: 56vh; }
+.vc-fancy-card { border-radius: 14px; border: 1px solid hsl(0 0% 100% / 0.07); background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 9%, transparent), hsl(0 0% 0% / 0.16) 65%); transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s; }
+.vc-fancy-card:hover { border-color: color-mix(in srgb, var(--tl-accent) 50%, transparent); transform: translateY(-1px); box-shadow: none; }
+.vc-fancy-main { gap: 6px; padding: 13px 15px; }
+.vc-fancy-name { color: color-mix(in srgb, var(--tl-accent) 60%, #fff); }
+.vc-fancy-out { font-size: 18px; color: #fff; }
+.vc-fancy-copy { border-left-color: hsl(0 0% 100% / 0.06); }
+.vc-fancy-copy:hover:not(:disabled) { color: #fff; background: color-mix(in srgb, var(--tl-accent) 30%, transparent); }
+
+/* Favourites, your own styles and the mixer. */
+.vc-fancy-scroll { display: flex; flex-direction: column; gap: 10px; max-height: 58vh; overflow-y: auto; padding-right: 2px; }
+.vc-fancy-scroll .vc-fancy-grid { max-height: none; overflow: visible; }
+.vc-fancy-section-head { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.vc-fancy-section-head .vc-tool-label { flex: 1; }
+.vc-fancy-card-fav { border-color: color-mix(in srgb, #f0b232 45%, transparent); }
+.vc-fancy-side { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 4px; border-left: 1px solid hsl(0 0% 100% / 0.06); }
+.vc-fancy-star, .vc-fancy-tool { all: unset; box-sizing: border-box; display: grid; place-items: center; min-width: 28px; height: 26px; padding: 0 6px; border-radius: 8px; font-size: 14px; color: var(--text-muted); cursor: pointer; }
+.vc-fancy-star:hover, .vc-fancy-tool:hover:not(:disabled) { color: #fff; background: hsl(0 0% 100% / 0.08); }
+.vc-fancy-tool:disabled { opacity: 0.4; cursor: default; }
+.vc-fancy-star-on { color: #f0b232; }
+.vc-fancy-tool-x { color: #f23f43; }
+.vc-fancy-tool-x:hover { background: hsl(358 75% 50% / 0.85) !important; color: #fff !important; }
+.vc-fancy-tool-sure { font-size: 11.5px; font-weight: 700; color: #fff; background: hsl(358 75% 50% / 0.9); }
+.vc-fancy-mixer { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--tl-accent) 30%, transparent);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.18) 60%); max-height: 58vh; overflow-y: auto; }
+.vc-fancy-mixer-head { display: flex; align-items: center; gap: 10px; }
+.vc-fancy-mixer-head b { font-size: 16px; color: #fff; }
+.vc-fancy-mixer-name { width: 220px; }
+.vc-fancy-preview { padding: 16px; border-radius: 14px; font-size: 24px; color: #fff; text-align: center; overflow-wrap: anywhere; background: hsl(0 0% 0% / 0.28);
+    box-shadow: inset 0 0 30px -12px color-mix(in srgb, var(--tl-accent) 60%, transparent); }
+.vc-fancy-mixer-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }

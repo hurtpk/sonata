@@ -1,0 +1,104 @@
+/* ─── The banner at the top of Discord ─── */
+
+.vc-rem-stack {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(560px, calc(100vw - 32px));
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.vc-rem-banner {
+    --rem: #4f8cff;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--rem) 55%, transparent);
+    background:
+        linear-gradient(100deg, color-mix(in srgb, var(--rem) 30%, transparent), color-mix(in srgb, var(--rem) 8%, transparent) 60%),
+        color-mix(in srgb, var(--background-floating, #111214) 92%, transparent);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.45), 0 0 0 4px color-mix(in srgb, var(--rem) 14%, transparent);
+    color: var(--text-default, var(--text-normal, #dbdee1));
+    backdrop-filter: blur(10px);
+    animation: vc-rem-in 0.45s cubic-bezier(.2, 1.3, .4, 1);
+}
+
+.vc-rem-leaving { animation: vc-rem-out 0.22s ease-in forwards; }
+
+/* Red: a slow pulse until it's dealt with. */
+.vc-rem-red { animation: vc-rem-in 0.45s cubic-bezier(.2, 1.3, .4, 1), vc-rem-pulse 1.6s ease-in-out 0.45s infinite; }
+.vc-rem-red.vc-rem-leaving { animation: vc-rem-out 0.22s ease-in forwards; }
+
+.vc-rem-bell { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--rem) 35%, transparent); font-size: 18px; animation: vc-rem-ring 1.2s ease-in-out 0.3s 2; }
+.vc-rem-body { flex: 1; min-width: 0; }
+.vc-rem-text { font-size: 15px; font-weight: 700; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.vc-rem-meta { margin-top: 2px; font-size: 12px; color: var(--text-muted, #949ba4); }
+
+.vc-rem-actions { flex: none; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 46%; }
+.vc-rem-actions button {
+    all: unset;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    background: hsl(0 0% 100% / 0.08);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.vc-rem-actions button:hover { background: hsl(0 0% 100% / 0.14); }
+.vc-rem-actions .vc-rem-done { background: var(--rem); color: #fff; }
+.vc-rem-actions .vc-rem-done:hover { filter: brightness(1.1); background: var(--rem); }
+.vc-rem-actions .vc-rem-quiet { background: none; }
+
+@keyframes vc-rem-in { from { opacity: 0; transform: translateY(-24px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes vc-rem-out { to { opacity: 0; transform: translateY(-16px) scale(0.97); } }
+@keyframes vc-rem-pulse { 0%, 100% { box-shadow: 0 12px 32px rgb(0 0 0 / 0.45), 0 0 0 4px color-mix(in srgb, var(--rem) 14%, transparent); } 50% { box-shadow: 0 12px 32px rgb(0 0 0 / 0.45), 0 0 0 9px color-mix(in srgb, var(--rem) 28%, transparent); } }
+@keyframes vc-rem-ring { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(16deg); } 30% { transform: rotate(-14deg); } 45% { transform: rotate(10deg); } 60% { transform: rotate(-6deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-rem-banner, .vc-rem-red, .vc-rem-bell { animation: none; }
+}
+
+/* ─── The Reminders window ─── */
+
+.vc-remw-new { align-self: flex-start; }
+.vc-remw-editor { --rem: #4f8cff; display: flex; flex-direction: column; gap: 10px; border: 1px solid color-mix(in srgb, var(--rem) 40%, transparent) !important; background: linear-gradient(160deg, color-mix(in srgb, var(--rem) 16%, transparent), hsl(0 0% 0% / 0.2) 60%) !important; box-shadow: none; }
+.vc-remw-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.vc-remw-chip { all: unset; padding: 6px 10px; border-radius: 99px; border: 1px solid var(--tl-line); font-size: 13px; color: var(--text-default, var(--text-normal)); cursor: pointer; }
+.vc-remw-chip:hover { border-color: color-mix(in srgb, var(--rem) 60%, transparent); }
+.vc-remw-chip-on { border-color: var(--rem); background: color-mix(in srgb, var(--rem) 18%, transparent); }
+.vc-remw-date { width: auto; padding: 6px 10px; color-scheme: dark; }
+
+.vc-remw-colors { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.vc-remw-swatch { all: unset; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 2px hsl(0 0% 0% / 0.2), 0 0 12px -3px currentColor; transition: transform 0.12s; }
+.vc-remw-swatch:hover { transform: scale(1.1); }
+.vc-remw-swatch-on { box-shadow: 0 0 0 2px var(--background-primary, #313338), 0 0 0 4px currentColor; color: var(--text-default, #fff); }
+
+.vc-remw-group { display: flex; flex-direction: column; gap: 8px; }
+.vc-remw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.vc-remw-row {
+    --rem: #4f8cff;
+    position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 16px; border-radius: 14px; overflow: hidden;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--rem) 14%, transparent), hsl(0 0% 0% / 0.2) 65%);
+    border: 1px solid hsl(0 0% 100% / 0.07); transition: border-color 0.15s, transform 0.12s;
+}
+.vc-remw-row::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--rem); box-shadow: 0 0 12px var(--rem); }
+.vc-remw-row:hover { border-color: color-mix(in srgb, var(--rem) 40%, transparent); transform: translateY(-1px); }
+.vc-remw-row-late { border-color: color-mix(in srgb, var(--rem) 60%, transparent); box-shadow: none; background: linear-gradient(135deg, color-mix(in srgb, var(--rem) 26%, transparent), hsl(0 0% 0% / 0.2) 70%); }
+.vc-remw-bell { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; font-size: 18px; background: color-mix(in srgb, var(--rem) 25%, transparent); box-shadow: 0 0 14px -4px var(--rem); }
+.vc-remw-row-main { all: unset; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+.vc-remw-row-text { font-size: 14.5px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-remw-row-when { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
+.vc-remw-pill { padding: 2px 8px; border-radius: 99px; font-weight: 700; color: #fff; background: color-mix(in srgb, var(--rem) 35%, transparent); }
+.vc-remw-x { all: unset; box-sizing: border-box; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: #f23f43; background: hsl(358 75% 50% / 0.14); border: 1px solid hsl(358 75% 55% / 0.35); cursor: pointer; font-size: 12px; }
+.vc-remw-x:hover { color: #fff; background: hsl(358 75% 50% / 0.9); }
+.vc-remw-sure { display: flex; gap: 4px; }
+.vc-remw-del { background: hsl(358 75% 50% / 0.85) !important; color: #fff !important; }

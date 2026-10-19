@@ -1,0 +1,27 @@
+/* Typing Sounds picker — the shared kit (_shared/tool.css) does most of it. */
+.vc-ts-picker { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+.vc-ts-group { display: flex; flex-direction: column; gap: 6px; }
+
+/* Your own packs */
+.vc-ts-mine { position: relative; padding: 0 !important; display: flex; }
+.vc-ts-mine-main { all: unset; cursor: pointer; flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; min-width: 0; }
+.vc-ts-mine-tools { display: flex; flex-direction: column; gap: 2px; padding: 4px; opacity: 0.55; }
+.vc-ts-mine:hover .vc-ts-mine-tools { opacity: 1; }
+.vc-ts-mine-tools button { all: unset; cursor: pointer; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; font-size: 11px; }
+.vc-ts-mine-tools button:hover { background: hsl(0 0% 100% / 0.1); }
+.vc-ts-new { border-style: dashed !important; }
+.vc-ts-maker { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; background: hsl(0 0% 100% / 0.03); border: 1px solid hsl(0 0% 100% / 0.07); }
+.vc-ts-maker-head { display: flex; flex-direction: column; gap: 2px; }
+.vc-ts-maker-head b { font-size: 14px; color: var(--header-primary, #fff); }
+.vc-ts-slot { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 10px; border: 1px dashed hsl(0 0% 100% / 0.14); transition: border-color 0.12s, background 0.12s; }
+.vc-ts-slot-over { border-color: var(--vc-tool-accent, #5865f2); background: hsl(0 0% 100% / 0.03); }
+.vc-ts-slot-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.vc-ts-slot-head b { font-size: 13px; color: var(--header-primary, #fff); }
+.vc-ts-slot-files { display: flex; flex-wrap: wrap; gap: 6px; }
+.vc-ts-sound { display: inline-flex; align-items: center; gap: 4px; max-width: 220px; padding: 2px 4px 2px 2px; border-radius: 99px; font-size: 12.5px; background: hsl(0 0% 100% / 0.06); }
+.vc-ts-sound > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-ts-sound button { all: unset; cursor: pointer; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; font-size: 10px; }
+.vc-ts-sound button:hover { background: hsl(0 0% 100% / 0.12); }
+.vc-ts-add { all: unset; cursor: pointer; padding: 3px 10px; border-radius: 99px; font-size: 12.5px; color: var(--text-muted); border: 1px dashed hsl(0 0% 100% / 0.18); }
+.vc-ts-add:hover { color: #fff; border-color: var(--vc-tool-accent, #5865f2); }
+.vc-ts-maker-foot { display: flex; gap: 8px; }

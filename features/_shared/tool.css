@@ -1,0 +1,315 @@
+/* Shared look for every Sonata feature window (and the bits features add to chat). */
+
+/* The kit's colours work anywhere a feature puts its own elements — in a window they follow its accent,
+   elsewhere (a board under a message, a button in a menu) they fall back to Discord's, which Sonata recolours. */
+[class*="vc-"] { --tl-accent: var(--vc-tool-accent, var(--brand-500)); --tl-line: hsl(0 0% 100% / 0.08); }
+
+.vc-tool-wrap {
+    --tl-accent: var(--vc-tool-accent, var(--brand-500));
+    --tl-line: hsl(0 0% 100% / 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 12px;
+}
+
+.vc-tool-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vc-tool-grow { flex: 1; min-width: 0; }
+
+.vc-tool-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+}
+
+.vc-tool-hint { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+.vc-tool-error { font-size: 13px; color: var(--status-danger, #f23f43); }
+.vc-tool-ok { font-size: 13px; color: var(--status-positive, #23a55a); }
+
+.vc-tool-input, .vc-tool-area {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--tl-line);
+    background: hsl(0 0% 0% / 0.3);
+    color: var(--text-default, var(--text-normal));
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.vc-tool-area { min-height: 90px; max-height: 32vh; overflow-y: auto; resize: vertical; }
+.vc-tool-input:focus, .vc-tool-area:focus { border-color: var(--tl-accent); }
+.vc-tool-mono { font-family: var(--font-code, ui-monospace, Consolas, monospace); font-size: 13px; }
+
+.vc-tool-out {
+    box-sizing: border-box;
+    min-height: 60px;
+    max-height: 30vh;
+    overflow-y: auto;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px dashed var(--tl-line);
+    background: hsl(0 0% 0% / 0.18);
+    color: var(--text-default, var(--text-normal));
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
+}
+
+.vc-tool-out-empty { color: var(--text-muted); }
+
+.vc-tool-seg { display: flex; flex-wrap: wrap; padding: 3px; gap: 3px; border-radius: 10px; background: hsl(0 0% 0% / 0.3); }
+
+.vc-tool-seg-btn {
+    all: unset;
+    flex: 1;
+    text-align: center;
+    padding: 6px 10px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.vc-tool-seg-btn:hover { color: var(--text-default, var(--text-normal)); }
+.vc-tool-seg-on, .vc-tool-seg-on:hover { background: var(--tl-accent); color: #fff; }
+
+.vc-tool-btn {
+    all: unset;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-default, var(--text-normal));
+    background: hsl(0 0% 100% / 0.08);
+    white-space: nowrap;
+}
+
+.vc-tool-btn:hover:not(:disabled) { background: hsl(0 0% 100% / 0.14); }
+.vc-tool-btn:disabled { opacity: 0.5; cursor: default; }
+.vc-tool-btn:focus-visible, .vc-tool-seg-btn:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+.vc-tool-primary { background: var(--tl-accent); color: #fff; }
+.vc-tool-primary:hover:not(:disabled) { background: hsl(from var(--tl-accent) h s calc(l - 6)); }
+.vc-tool-danger { color: var(--status-danger, #f23f43); }
+
+.vc-tool-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vc-tool-spacer { flex: 1; }
+
+.vc-tool-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--tl-line);
+    background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
+}
+
+.vc-tool-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-default, var(--text-normal)); cursor: pointer; }
+.vc-tool-check input { accent-color: var(--tl-accent); margin: 0; }
+
+.vc-tool-color { width: 36px; height: 28px; border: 0; padding: 0; background: none; cursor: pointer; flex: none; }
+
+/* ═══ Sonata's window kit ═══
+   Everything below is shared by every feature window, so they all look and
+   behave the same: tiles, chips, tabs, lists, stats, empty states, previews. */
+
+.vc-tool-wrap { --tl-soft: hsl(0 0% 100% / 0.03); --tl-hover: hsl(0 0% 100% / 0.05); --tl-sel: hsl(from var(--tl-accent) h s l / 0.14); }
+
+/* Section heading with an optional action on the right. */
+.vc-tool-head { display: flex; align-items: center; gap: 8px; min-height: 22px; }
+.vc-tool-head .vc-tool-label { flex: 1; }
+.vc-tool-link { all: unset; font-size: 12.5px; font-weight: 600; color: var(--tl-accent); cursor: pointer; }
+.vc-tool-link:hover { text-decoration: underline; }
+.vc-tool-link:disabled { opacity: 0.5; cursor: default; text-decoration: none; }
+
+/* Tiles: a choice with a title and a line under it. */
+.vc-tool-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.vc-tool-tile { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--tl-line); cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+.vc-tool-tile b { font-size: 14px; color: var(--text-default, var(--text-normal)); }
+.vc-tool-tile span { font-size: 11.5px; line-height: 1.3; color: var(--text-muted); }
+.vc-tool-tile:hover { border-color: hsl(from var(--tl-accent) h s l / 0.5); }
+.vc-tool-tile-on, .vc-tool-tile-on:hover { border-color: var(--tl-accent); background: var(--tl-sel); }
+.vc-tool-tile:disabled { opacity: 0.45; cursor: default; }
+
+/* Chips: small pill choices. */
+.vc-tool-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.vc-tool-chip { all: unset; padding: 5px 11px; border-radius: 99px; border: 1px solid var(--tl-line); font-size: 13px; color: var(--text-default, var(--text-normal)); cursor: pointer; white-space: nowrap; transition: border-color 0.12s, background 0.12s; }
+.vc-tool-chip:hover { border-color: hsl(from var(--tl-accent) h s l / 0.6); }
+.vc-tool-chip-on, .vc-tool-chip-on:hover { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.18); }
+
+/* Tabs across the top of a window. */
+.vc-tool-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; border-radius: 10px; background: hsl(0 0% 0% / 0.3); }
+.vc-tool-tab { all: unset; flex: 1; text-align: center; padding: 7px 10px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+.vc-tool-tab:hover { color: var(--text-default, var(--text-normal)); }
+.vc-tool-tab-on, .vc-tool-tab-on:hover { color: var(--text-default, #fff); background: hsl(from var(--tl-accent) h s l / 0.28); }
+
+/* Lists of things (messages, people, files…). */
+.vc-tool-list { display: flex; flex-direction: column; gap: 3px; min-height: 0; overflow-y: auto; }
+.vc-tool-item { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid transparent; }
+.vc-tool-item:hover { background: var(--tl-hover); border-color: var(--tl-line); }
+.vc-tool-item-on { background: var(--tl-sel); border-color: hsl(from var(--tl-accent) h s l / 0.5); }
+.vc-tool-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.vc-tool-item-title { font-size: 14px; color: var(--text-default, var(--text-normal)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-tool-item-sub { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-tool-item-tools { display: flex; gap: 2px; opacity: 0; transition: opacity 0.12s; }
+.vc-tool-item:hover .vc-tool-item-tools, .vc-tool-item-tools:focus-within { opacity: 1; }
+.vc-tool-avatar { flex: none; width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: hsl(0 0% 100% / 0.06); }
+
+/* Small square icon buttons (✕, ✎, ↗…). */
+.vc-tool-icon { all: unset; display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 6px; box-sizing: border-box; border-radius: 7px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.vc-tool-icon:hover:not(:disabled) { color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.08); }
+.vc-tool-icon:disabled { opacity: 0.4; cursor: default; }
+
+/* Numbers and facts. */
+.vc-tool-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.vc-tool-stat { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--tl-line); background: var(--tl-soft); min-width: 0; }
+.vc-tool-stat > span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+.vc-tool-stat > b { font-size: 18px; color: var(--text-default, var(--text-normal)); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.vc-tool-stat-accent > b { color: var(--tl-accent); filter: brightness(1.25); }
+
+.vc-tool-badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 99px; font-size: 11px; font-weight: 700; background: hsl(0 0% 100% / 0.08); color: var(--text-muted); white-space: nowrap; }
+.vc-tool-badge-accent { background: hsl(from var(--tl-accent) h s l / 0.2); color: var(--text-default, #fff); }
+.vc-tool-badge-good { background: hsl(from var(--status-positive, #23a55a) h s l / 0.2); color: var(--status-positive, #23a55a); }
+.vc-tool-badge-bad { background: hsl(from var(--status-danger, #f23f43) h s l / 0.18); color: var(--status-danger, #f23f43); }
+
+/* Nothing here yet. */
+.vc-tool-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 16px; border-radius: 14px; border: 1px dashed var(--tl-line); text-align: center; font-size: 13.5px; color: var(--text-muted); }
+.vc-tool-empty-icon { font-size: 26px; line-height: 1; }
+
+/* A dark area for previews (pictures, QR codes, players…). */
+.vc-tool-stage { position: relative; display: grid; place-items: center; min-height: 120px; padding: 12px; border-radius: 14px; border: 1px solid var(--tl-line); background: hsl(0 0% 0% / 0.28); overflow: hidden; }
+.vc-tool-checker { background: repeating-conic-gradient(#ffffff0d 0 25%, transparent 0 50%) 50% / 16px 16px, hsl(0 0% 0% / 0.28); }
+
+/* Form pieces. */
+.vc-tool-select { all: unset; box-sizing: border-box; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--tl-line); background: hsl(0 0% 0% / 0.3); font-size: 14px; color: var(--text-default, var(--text-normal)); cursor: pointer; color-scheme: dark; }
+.vc-tool-select option { background: var(--background-floating, #111214); }
+.vc-tool-select:focus { border-color: var(--tl-accent); }
+.vc-tool-range { width: 100%; accent-color: var(--tl-accent); }
+.vc-tool-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.vc-tool-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+
+/* Progress. */
+.vc-tool-bar { height: 6px; border-radius: 3px; background: hsl(0 0% 100% / 0.07); overflow: hidden; }
+.vc-tool-bar > div { height: 100%; border-radius: 3px; background: var(--tl-accent); transition: width 0.25s ease; }
+
+/* A soft card for sections inside a window. */
+.vc-tool-section { display: flex; flex-direction: column; gap: 9px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--tl-line); background: var(--tl-soft); min-width: 0; }
+.vc-tool-section-title { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--text-default, var(--text-normal)); }
+
+/* ═══ 2026-10 refresh: more alive, more room ═══
+   Colour fades and soft glows in each window's own colour, roomier spacing,
+   and livelier hover states. Overrides the plainer rules above. */
+
+.vc-tool-wrap { gap: 14px; padding-bottom: 16px; --tl-fade: color-mix(in srgb, var(--tl-accent) 10%, transparent); --tl-edge: color-mix(in srgb, var(--tl-accent) 28%, transparent); }
+
+/* Sections and cards: a fade from the window's colour into dark, a tinted edge. */
+.vc-tool-section, .vc-tool-card {
+    gap: 11px; padding: 15px 16px; border-radius: 16px;
+    background: linear-gradient(160deg, var(--tl-fade), hsl(0 0% 0% / 0.16) 65%);
+    border: 1px solid hsl(0 0% 100% / 0.07);
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.04);
+}
+.vc-tool-section:hover, .vc-tool-card:hover { border-color: var(--tl-edge); }
+.vc-tool-section-title { font-size: 15px; }
+.vc-tool-label { font-size: 11.5px; letter-spacing: 0.05em; }
+
+/* Inputs: deeper, with a glow when focused. */
+.vc-tool-input, .vc-tool-area, .vc-tool-select { border-radius: 11px; background: hsl(0 0% 0% / 0.32); transition: border-color 0.15s, box-shadow 0.15s; }
+.vc-tool-input:focus, .vc-tool-area:focus, .vc-tool-select:focus { border-color: var(--tl-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tl-accent) 22%, transparent); }
+
+/* Buttons: primary ones glow in the window's colour, everything lifts a little. */
+.vc-tool-btn { padding: 9px 15px; border-radius: 10px; transition: background 0.15s, box-shadow 0.15s, transform 0.1s; }
+.vc-tool-btn:active:not(:disabled) { transform: translateY(1px); }
+.vc-tool-primary { background: linear-gradient(135deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 70%, #000)); box-shadow: none; }
+.vc-tool-primary:hover:not(:disabled) { background: linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 88%, #fff), var(--tl-accent)); box-shadow: none; }
+
+/* Tabs and segments: the chosen one glows. */
+.vc-tool-tabs, .vc-tool-seg { padding: 4px; border-radius: 12px; background: hsl(0 0% 0% / 0.32); border: 1px solid hsl(0 0% 100% / 0.05); }
+.vc-tool-tab, .vc-tool-seg-btn { padding: 8px 12px; border-radius: 9px; transition: background 0.15s, color 0.15s, box-shadow 0.15s; }
+.vc-tool-tab-on, .vc-tool-tab-on:hover, .vc-tool-seg-on, .vc-tool-seg-on:hover {
+    color: #fff; background: linear-gradient(135deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 65%, #000));
+    box-shadow: none;
+}
+
+/* Chips and tiles. */
+.vc-tool-chip { padding: 6px 12px; transition: border-color 0.15s, background 0.15s, box-shadow 0.15s; }
+.vc-tool-chip-on, .vc-tool-chip-on:hover { background: color-mix(in srgb, var(--tl-accent) 22%, transparent); box-shadow: 0 0 14px -4px color-mix(in srgb, var(--tl-accent) 70%, transparent); }
+.vc-tool-tiles { gap: 8px; }
+.vc-tool-tile { padding: 11px 13px; border-radius: 12px; background: hsl(0 0% 0% / 0.16); transition: border-color 0.15s, background 0.15s, transform 0.12s, box-shadow 0.15s; }
+.vc-tool-tile:hover { transform: translateY(-1px); background: linear-gradient(160deg, var(--tl-fade), hsl(0 0% 0% / 0.16)); }
+.vc-tool-tile-on, .vc-tool-tile-on:hover { background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 22%, transparent), hsl(0 0% 0% / 0.16)); box-shadow: none; }
+
+/* Lists. */
+.vc-tool-list { gap: 4px; }
+.vc-tool-item { padding: 9px 12px; border-radius: 12px; transition: background 0.12s, border-color 0.12s; }
+.vc-tool-item:hover { background: linear-gradient(90deg, var(--tl-fade), hsl(0 0% 100% / 0.02)); border-color: hsl(0 0% 100% / 0.07); }
+.vc-tool-item-on { background: linear-gradient(90deg, color-mix(in srgb, var(--tl-accent) 20%, transparent), hsl(0 0% 100% / 0.02)); }
+
+/* Numbers. */
+.vc-tool-stats { gap: 10px; }
+.vc-tool-stat { padding: 12px 14px; border-radius: 14px; background: linear-gradient(160deg, var(--tl-fade), hsl(0 0% 0% / 0.18) 70%); border: 1px solid hsl(0 0% 100% / 0.06); }
+.vc-tool-stat > b { font-size: 21px; color: #fff; }
+.vc-tool-stat-accent > b { color: #fff; filter: none; text-shadow: 0 0 16px var(--tl-accent); }
+
+/* Empty states and preview areas. */
+.vc-tool-empty { padding: 30px 18px; border-style: solid; border-color: hsl(0 0% 100% / 0.06); background: radial-gradient(120% 120% at 50% 0%, var(--tl-fade), transparent 70%); }
+.vc-tool-empty-icon { font-size: 30px; filter: drop-shadow(0 0 12px color-mix(in srgb, var(--tl-accent) 60%, transparent)); }
+.vc-tool-stage { border-radius: 16px; background: radial-gradient(120% 120% at 50% 0%, var(--tl-fade), hsl(0 0% 0% / 0.3) 70%); }
+.vc-tool-bar > div { background: linear-gradient(90deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #fff)); box-shadow: 0 0 10px var(--tl-accent); }
+
+/* The top card every window can have: a glowing icon, a title, a line about it, and actions. */
+.vc-tool-hero {
+    position: relative; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 18px 20px; border-radius: 18px; overflow: hidden;
+    background: radial-gradient(130% 150% at 0% 0%, color-mix(in srgb, var(--tl-accent) 30%, transparent), transparent 62%), hsl(0 0% 0% / 0.24);
+    border: 1px solid color-mix(in srgb, var(--tl-accent) 32%, transparent);
+    /* The glow stays inside the card. */
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 0 44px -18px color-mix(in srgb, var(--tl-accent) 55%, transparent);
+}
+.vc-tool-hero-icon {
+    flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; font-size: 26px; color: #fff;
+    background: linear-gradient(135deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000));
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.25);
+}
+.vc-tool-hero-text { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 3px; }
+.vc-tool-hero-kicker { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: color-mix(in srgb, var(--tl-accent) 65%, white); }
+.vc-tool-hero-text b { font-size: 20px; line-height: 1.2; color: #fff; }
+.vc-tool-hero-text > span:last-child { font-size: 13.5px; line-height: 1.4; color: var(--text-muted); }
+.vc-tool-hero-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vc-tool-hero-num { display: flex; flex-direction: column; align-items: center; min-width: 76px; padding: 8px 14px; border-radius: 14px; background: hsl(0 0% 0% / 0.3); border: 1px solid color-mix(in srgb, var(--tl-accent) 35%, transparent); }
+.vc-tool-hero-num b { font-size: 26px; line-height: 1; color: #fff; text-shadow: 0 0 16px var(--tl-accent); font-variant-numeric: tabular-nums; }
+.vc-tool-hero-num span { margin-top: 3px; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+/* Scroll bars: thin, rounded and see-through, glowing in the window's colour
+   on hover — instead of the system's white bar with arrows. */
+.vc-tool-wrap ::-webkit-scrollbar,
+.vc-tool-wrap::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+.vc-tool-wrap ::-webkit-scrollbar-track,
+.vc-tool-wrap::-webkit-scrollbar-track { background: transparent; border: 0; }
+.vc-tool-wrap ::-webkit-scrollbar-button,
+.vc-tool-wrap::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.vc-tool-wrap ::-webkit-scrollbar-corner,
+.vc-tool-wrap::-webkit-scrollbar-corner { background: transparent; }
+.vc-tool-wrap ::-webkit-scrollbar-thumb,
+.vc-tool-wrap::-webkit-scrollbar-thumb {
+    min-height: 40px;
+    border: 3px solid transparent;
+    border-radius: 99px;
+    background: hsl(0 0% 100% / 0.14);
+    background-clip: padding-box;
+}
+.vc-tool-wrap ::-webkit-scrollbar-thumb:hover,
+.vc-tool-wrap::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--tl-accent) 70%, transparent); background-clip: padding-box; }
+.vc-tool-wrap ::-webkit-scrollbar-thumb:active,
+.vc-tool-wrap::-webkit-scrollbar-thumb:active { background: var(--tl-accent); background-clip: padding-box; }

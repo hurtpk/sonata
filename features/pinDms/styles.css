@@ -1,0 +1,272 @@
+.vc-pindms-section-container {
+    box-sizing: border-box;
+    white-space: nowrap;
+    /* Visible, so sparkles can sit just outside the letters; the name itself cuts off with "…". */
+    overflow: visible;
+    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: .02em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    flex: 1 1 auto;
+    color: var(--channels-default);
+    cursor: pointer;
+}
+
+.vc-pindms-header-text {
+    overflow: visible !important;
+    min-width: 0;
+    display: flex;
+}
+
+.vc-pindms-collapse-icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    color: var(--interactive-icon-default);
+    transform: rotate(90deg);
+    transition: transform 0.15s ease;
+}
+
+.vc-pindms-collapsed .vc-pindms-collapse-icon {
+    transform: rotate(0deg);
+}
+
+/* ─── A category's name: fill + effects ─── */
+
+.vc-pindms-name {
+    position: relative;
+    display: inline-flex;
+    min-width: 0;
+    max-width: 100%;
+    vertical-align: middle;
+}
+
+.vc-pindms-name-text {
+    position: relative;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: var(--pd-fill);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    /* Room for descenders inside the clip. */
+    padding-block: 1px;
+}
+
+/* Flow: the (mirrored) gradient drifts through the letters. */
+.vc-pindms-fx-flow .vc-pindms-name-text {
+    background-size: 300% 100%;
+    animation: vc-pindms-flow 7s linear infinite;
+}
+
+@keyframes vc-pindms-flow { from { background-position: 0% 50%; } to { background-position: 150% 50%; } }
+
+/* Shine: a soft highlight sweeps across, then rests for a moment. */
+.vc-pindms-fx-shine .vc-pindms-name-text::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    padding-block: inherit;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: linear-gradient(105deg, transparent 38%, hsl(0 0% 100% / 0.9) 50%, transparent 62%);
+    background-size: 250% 100%;
+    background-repeat: no-repeat;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: vc-pindms-shine 4.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes vc-pindms-shine {
+    0% { background-position: 130% 0; }
+    45%, 100% { background-position: -30% 0; }
+}
+
+/* Glow: a halo in the name's own colours, breathing slowly. */
+.vc-pindms-fx-glow .vc-pindms-name-text {
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--pd-a) 70%, transparent)) drop-shadow(0 0 7px color-mix(in srgb, var(--pd-b) 45%, transparent));
+    animation: vc-pindms-glow 3.6s ease-in-out infinite;
+}
+
+.vc-pindms-fx-glow.vc-pindms-fx-flow .vc-pindms-name-text {
+    animation: vc-pindms-flow 7s linear infinite, vc-pindms-glow 3.6s ease-in-out infinite;
+}
+
+@keyframes vc-pindms-glow { 50% { opacity: 0.82; } }
+
+/* Underline: a thin line in the same colours that fades out at the ends. */
+.vc-pindms-fx-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1.5px;
+    border-radius: 2px;
+    background: var(--pd-fill);
+    background-size: inherit;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.vc-pindms-fx-underline.vc-pindms-fx-flow::after {
+    background-size: 300% 100%;
+    animation: vc-pindms-flow 7s linear infinite;
+}
+
+/* Sparkles: four tiny stars around the name, twinkling one after another. */
+.vc-pindms-sparkles {
+    position: absolute;
+    inset: -7px -9px;
+    pointer-events: none;
+}
+
+.vc-pindms-sparkles i {
+    position: absolute;
+    font-style: normal;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--pd-a);
+    text-shadow: 0 0 4px currentcolor;
+    opacity: 0;
+    animation: vc-pindms-twinkle 3.2s ease-in-out infinite;
+}
+
+.vc-pindms-sparkles i:nth-child(1) { left: 0; top: 0; }
+.vc-pindms-sparkles i:nth-child(2) { right: 18%; top: -1px; font-size: 7px; color: var(--pd-b); animation-delay: 0.8s; }
+.vc-pindms-sparkles i:nth-child(3) { right: 0; bottom: 1px; animation-delay: 1.6s; color: var(--pd-b); }
+.vc-pindms-sparkles i:nth-child(4) { left: 30%; bottom: -1px; font-size: 9px; animation-delay: 2.4s; }
+
+@keyframes vc-pindms-twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+    15% { opacity: 1; transform: scale(1) rotate(20deg); }
+    35% { opacity: 0; transform: scale(0.5) rotate(45deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-pindms-name-text, .vc-pindms-name-text::after, .vc-pindms-fx-underline::after { animation: none !important; }
+    .vc-pindms-sparkles i { animation: none; opacity: 0.8; }
+}
+
+/* ─── The category window ─── */
+
+.vc-pindms-ed-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px 12px;
+    border-radius: 12px;
+    background: var(--background-base-lower, #121214);
+    border: 1px solid var(--tl-line);
+}
+
+.vc-pindms-ed-preview-head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 6px 0 8px;
+    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: .02em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--channels-default);
+}
+
+.vc-pindms-ed-preview-chevron { flex: none; transform: rotate(90deg); color: var(--interactive-icon-default, var(--text-muted)); }
+
+.vc-pindms-ed-preview-row { display: flex; align-items: center; gap: 10px; padding: 4px 6px; }
+.vc-pindms-ed-preview-row span { width: 28px; height: 28px; border-radius: 50%; background: hsl(0 0% 100% / 0.08); flex: none; }
+.vc-pindms-ed-preview-row i { height: 9px; width: 52%; border-radius: 99px; background: hsl(0 0% 100% / 0.08); }
+
+.vc-pindms-ed-swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+.vc-pindms-ed-swatch {
+    all: unset;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.12);
+    transition: transform 0.12s ease;
+}
+
+.vc-pindms-ed-swatch:hover { transform: scale(1.1); }
+.vc-pindms-ed-swatch:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+.vc-pindms-ed-swatch-on { box-shadow: 0 0 0 2px var(--background-base-low, #1a1a1e), 0 0 0 4px var(--tl-accent); }
+
+.vc-pindms-ed-well {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 32px;
+    border-radius: 9px;
+    cursor: pointer;
+    color: #fff;
+    box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.18);
+    flex: none;
+}
+
+.vc-pindms-ed-well svg { filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.6)); }
+.vc-pindms-ed-well input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.vc-pindms-ed-well:focus-within { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+
+.vc-pindms-ed-gradients { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+
+.vc-pindms-ed-grad {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-default, var(--text-normal));
+    border: 1px solid var(--tl-line);
+    background: hsl(0 0% 100% / 0.03);
+}
+
+.vc-pindms-ed-grad:hover { background: hsl(from var(--tl-accent) h s l / 0.12); }
+.vc-pindms-ed-grad:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+.vc-pindms-ed-grad-on { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.18); }
+.vc-pindms-ed-grad-swatch { width: 18px; height: 18px; border-radius: 6px; flex: none; }
+
+.vc-pindms-ed-range { flex: 1; accent-color: var(--tl-accent); }
+
+.vc-pindms-ed-effects { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+
+.vc-pindms-ed-fx {
+    all: unset;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--tl-line);
+    background: hsl(0 0% 100% / 0.03);
+}
+
+.vc-pindms-ed-fx:hover:not(:disabled) { background: hsl(from var(--tl-accent) h s l / 0.12); }
+.vc-pindms-ed-fx:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+.vc-pindms-ed-fx:disabled { cursor: default; opacity: 0.45; }
+.vc-pindms-ed-fx-on { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.18); }
+.vc-pindms-ed-fx-emoji { grid-row: span 2; font-size: 18px; align-self: center; }
+.vc-pindms-ed-fx-name { font-size: 13px; font-weight: 700; color: var(--text-default, var(--text-normal)); }
+.vc-pindms-ed-fx-blurb { font-size: 11.5px; color: var(--text-muted); line-height: 1.3; }

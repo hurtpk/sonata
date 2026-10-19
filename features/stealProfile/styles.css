@@ -1,0 +1,88 @@
+.vc-steal-layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+@container (max-width: 640px) { .vc-steal-layout { grid-template-columns: minmax(0, 1fr); } }
+.vc-tool-wrap:has(.vc-steal-layout) { container-type: inline-size; }
+
+/* A rough copy of Discord's profile card. */
+.vc-steal-card {
+    position: sticky;
+    top: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #232428;
+    padding: 4px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+.vc-steal-banner {
+    height: 106px;
+    border-radius: 10px 10px 0 0;
+    background-size: cover;
+    background-position: center;
+}
+
+.vc-steal-avatar {
+    width: 84px;
+    height: 84px;
+    margin: -44px 0 0 14px;
+    border-radius: 50%;
+    border: 6px solid #232428;
+    background: #5865f2 center / cover;
+    position: relative;
+}
+
+.vc-steal-body {
+    margin: 8px 4px 4px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgb(0 0 0 / 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vc-steal-name { font-size: 19px; font-weight: 700; color: #fff; word-break: break-word; }
+.vc-steal-pronouns { font-size: 13px; color: #dbdee1; }
+.vc-steal-bio { margin-top: 6px; font-size: 13.5px; line-height: 1.4; color: #dbdee1; white-space: pre-wrap; word-break: break-word; max-height: 160px; overflow-y: auto; }
+
+.vc-steal-fields { display: flex; flex-direction: column; gap: 10px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }
+
+.vc-steal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--tl-line);
+    background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
+}
+
+.vc-steal-field-off > :not(:first-child) { opacity: 0.45; }
+
+.vc-steal-tag {
+    margin-left: auto;
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tl-accent);
+    background: hsl(from var(--tl-accent) h s l / 0.18);
+}
+
+.vc-steal-thumb {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 50%;
+    background: hsl(0 0% 100% / 0.08) center / cover;
+}
+
+.vc-steal-thumb-wide { width: 72px; border-radius: 8px; }
+
+.vc-steal-select { appearance: auto; cursor: pointer; padding: 7px 10px; }
+.vc-steal-select option { background: #1e1f22; color: #dbdee1; }

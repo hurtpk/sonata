@@ -1,0 +1,40 @@
+.vc-trans-accessory {
+    color: var(--text-muted);
+    margin-top: 0.5em;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.2rem;
+    white-space: break-spaces;
+}
+
+.vc-trans-accessory-icon {
+    margin-right: 0.25em;
+}
+
+.vc-trans-dismiss {
+    all: unset;
+    cursor: pointer;
+    color: var(--text-link);
+}
+
+.vc-trans-dismiss:is(:hover, :focus) {
+    text-decoration: underline;
+}
+
+.vc-trans-auto-translate {
+    color: var(--green-360);
+}
+
+.vc-trans-chat-button {
+    scale: 1.085;
+}
+/* The Translate window — the shared kit (_shared/tool.css) does most of it. */
+.vc-trans-window { padding-bottom: 12px; }
+.vc-trans-pair { display: flex; align-items: flex-end; gap: 10px; }
+.vc-trans-lang { flex: 1; }
+.vc-trans-arrow { padding-bottom: 10px; font-size: 18px; color: var(--text-muted); }
+
+/* 2026-10 refresh */
+.vc-trans-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; align-items: start; }
+.vc-trans-hero-arrow { color: color-mix(in srgb, var(--tl-accent) 65%, #fff); text-shadow: 0 0 14px var(--tl-accent); }
+.vc-trans-arrow { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 2px; padding: 0; border-radius: 50%; font-size: 16px; color: #fff; background: color-mix(in srgb, var(--tl-accent) 28%, transparent); box-shadow: 0 0 14px -4px var(--tl-accent); flex: none; }

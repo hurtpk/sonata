@@ -1,0 +1,70 @@
+/* The chat bar button, with how many are left. */
+.vc-todo-btn { position: relative; display: grid; place-items: center; }
+.vc-todo-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background: var(--brand-500, #5865f2);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    box-shadow: 0 0 0 2px var(--background-secondary, #2b2d31);
+}
+
+/* The window. */
+.vc-todo-add { display: flex; gap: 8px; }
+.vc-todo-add .vc-tool-input { font-size: 15px; padding: 12px 14px; }
+.vc-todo-progress { height: 6px; border-radius: 3px; background: hsl(0 0% 100% / 0.06); overflow: hidden; }
+.vc-todo-progress div { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #fff)); box-shadow: 0 0 10px var(--tl-accent); transition: width 0.3s ease; }
+.vc-todo-hero-bar { display: block; width: min(320px, 100%); height: 8px; margin-top: 6px; border-radius: 4px; background: hsl(0 0% 100% / 0.08); overflow: hidden; }
+.vc-todo-hero-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #fff)); box-shadow: 0 0 12px var(--tl-accent); transition: width 0.3s ease; }
+
+.vc-todo-items { display: flex; flex-direction: column; gap: 6px; max-height: 52vh; overflow-y: auto; }
+.vc-todo-item {
+    display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 12px;
+    background: linear-gradient(90deg, hsl(0 0% 100% / 0.035), hsl(0 0% 0% / 0.12)); border: 1px solid hsl(0 0% 100% / 0.06);
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.vc-todo-item:hover { border-color: color-mix(in srgb, var(--tl-accent) 35%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.12)); }
+.vc-todo-item-done { opacity: 0.7; }
+.vc-todo-item-dragging { opacity: 0.4; transform: scale(0.99); }
+.vc-todo-grip { color: var(--text-muted); font-size: 11px; letter-spacing: -2px; cursor: grab; opacity: 0; }
+.vc-todo-item:hover .vc-todo-grip { opacity: 0.6; }
+
+.vc-todo-check { all: unset; flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 2px solid hsl(0 0% 100% / 0.28); cursor: pointer; transition: background 0.15s, border-color 0.15s, box-shadow 0.15s; }
+.vc-todo-check:hover { border-color: var(--tl-accent); box-shadow: 0 0 10px -2px var(--tl-accent); }
+.vc-todo-check-on { background: var(--tl-accent); border-color: var(--tl-accent); box-shadow: 0 0 12px -2px var(--tl-accent); }
+.vc-todo-check svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; animation: vc-todo-tick 0.25s ease-out; }
+@keyframes vc-todo-tick { from { stroke-dasharray: 14; stroke-dashoffset: 14; } to { stroke-dasharray: 14; stroke-dashoffset: 0; } }
+
+.vc-todo-text { flex: 1; min-width: 0; font-size: 14.5px; color: #fff; word-break: break-word; }
+.vc-todo-item-done .vc-todo-text { color: var(--text-muted); text-decoration: line-through; }
+.vc-todo-edit { flex: 1; padding: 4px 8px; }
+
+.vc-todo-tools { display: flex; gap: 2px; opacity: 0; transition: opacity 0.12s; }
+.vc-todo-item:hover .vc-todo-tools, .vc-todo-tools:focus-within { opacity: 1; }
+.vc-todo-tools button { all: unset; padding: 4px 7px; border-radius: 7px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.vc-todo-tools button:hover { color: #fff; background: hsl(0 0% 100% / 0.08); }
+
+.vc-todo-empty { padding: 10px 0; }
+
+.vc-todo-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.vc-todo-list {
+    all: unset; box-sizing: border-box; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 14px 16px; border-radius: 14px; cursor: pointer;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.18) 65%); border: 1px solid hsl(0 0% 100% / 0.07);
+    transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+}
+.vc-todo-list:hover { border-color: color-mix(in srgb, var(--tl-accent) 45%, transparent); transform: translateY(-1px); box-shadow: none; }
+.vc-todo-list-done { opacity: 0.75; }
+.vc-todo-list-name { font-size: 15px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-todo-list-count { font-size: 12px; color: color-mix(in srgb, var(--tl-accent) 70%, #fff); font-weight: 700; }
+.vc-todo-list-peek { grid-column: 1 / -1; font-size: 12.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-todo-list-bar { grid-column: 1 / -1; height: 5px; margin-top: 4px; border-radius: 3px; background: hsl(0 0% 100% / 0.07); overflow: hidden; }
+.vc-todo-list-bar i { display: block; height: 100%; border-radius: 3px; background: var(--tl-accent); box-shadow: 0 0 8px var(--tl-accent); }

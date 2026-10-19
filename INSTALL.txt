@@ -1,0 +1,133 @@
+======================================================================
+                        HOW TO INSTALL SONATA
+======================================================================
+
+Sonata adds about a hundred features to Discord, all in one page.
+It's a plugin for Equicord, a Discord mod, so this installs both.
+
+Heads-up: client mods like Equicord are against Discord's Terms of
+Service. People rarely get in trouble for using one, but it's your call.
+
+
+----------------------------------------------------------------------
+ THE EASY WAY  (about 5-10 minutes)
+----------------------------------------------------------------------
+
+1. Make sure "Install Sonata.bat" is inside the "sonata" folder,
+   next to index.tsx (it already is if you got them together).
+
+2. Double-click "Install Sonata.bat".
+
+   It installs anything that's missing (Git, Node.js, pnpm), downloads
+   Equicord into your Documents folder (or your user folder, if
+   Documents is synced by OneDrive), adds Sonata, and builds it.
+   If you already have Equicord, it uses that one.
+   When it asks which Discord to install into, pick yours (usually
+   "Stable") and press Enter.
+
+   If Windows asks "Do you want to allow this app to make changes?"
+   while it's installing Git or Node.js, click Yes.
+
+   If it says "Windows needs a fresh window", just close it and
+   double-click "Install Sonata.bat" again - it carries on.
+
+3. FULLY close Discord: right-click the Discord icon by the clock
+   (bottom-right of the screen) and choose "Quit Discord".
+   Then open Discord again.
+
+4. Open Sonata with the music-note button under your profile picture.
+   A short welcome tour helps you pick your features.
+
+
+----------------------------------------------------------------------
+ THE MANUAL WAY  (if the .bat doesn't work for you)
+----------------------------------------------------------------------
+
+1. Install these free programs (keep the default options):
+
+     Git        https://git-scm.com/download/win
+     Node.js    https://nodejs.org      (the "LTS" version, 22 or newer)
+
+2. Open PowerShell (press Start, type PowerShell, press Enter) and run
+   these one at a time:
+
+     npm install -g pnpm
+     cd ~\Documents
+     git clone https://github.com/Equicord/Equicord
+     cd Equicord
+     pnpm install
+
+3. Copy the whole "sonata" folder into:
+
+     Documents\Equicord\src\userplugins\
+
+   so that this file exists:
+
+     Documents\Equicord\src\userplugins\sonata\index.tsx
+
+4. Back in PowerShell (still in the Equicord folder), run:
+
+     pnpm build
+     pnpm inject
+
+   Pick your Discord (usually "Stable") when it asks.
+
+5. Fully close Discord (tray icon -> Quit Discord) and open it again.
+
+
+----------------------------------------------------------------------
+ OPTIONAL: MEDIA DOWNLOADER
+----------------------------------------------------------------------
+
+Sonata's Media Downloader saves videos and music from YouTube,
+SoundCloud, TikTok, Instagram, X, Reddit and more. It needs a free
+program called yt-dlp. The installer offers it; or run this in
+PowerShell:
+
+     winget install yt-dlp
+
+Then fully close and reopen Discord.
+
+
+----------------------------------------------------------------------
+ UPDATING SONATA
+----------------------------------------------------------------------
+
+When you get a newer "sonata" folder: put "Install Sonata.bat" inside
+it and double-click it again. It copies the new Sonata in and rebuilds.
+
+By hand: replace Documents\Equicord\src\userplugins\sonata with the
+new folder, run "pnpm build" in the Equicord folder, then press Ctrl+R
+in Discord.
+
+
+----------------------------------------------------------------------
+ UNINSTALLING
+----------------------------------------------------------------------
+
+In PowerShell:
+
+     cd ~\Documents\Equicord
+     pnpm uninject
+
+Then fully close and reopen Discord.
+
+
+----------------------------------------------------------------------
+ SOMETHING WRONG?
+----------------------------------------------------------------------
+
+ "pnpm is not recognised"
+     Close PowerShell and open it again after installing Node.js
+     and pnpm.
+
+ Discord opens without Equicord or Sonata
+     Discord updates sometimes remove it. Run "pnpm inject" again in
+     the Equicord folder (or double-click the installer again).
+
+ A feature stopped working after a Discord update
+     Open Sonata Insights inside Sonata - it shows what broke and how
+     to fix it.
+
+ Discord feels slow
+     In Sonata, open the Performance tab and pick "Light".

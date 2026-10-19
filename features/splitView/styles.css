@@ -1,0 +1,62 @@
+/* The second channel, docked to the right of Discord. */
+.vc-split {
+    position: fixed;
+    top: var(--custom-app-top-bar-height, 32px);
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    max-width: 60vw;
+    min-width: 300px;
+    background: var(--background-base-lower, #1a1a1e);
+    border-left: 1px solid var(--border-subtle, hsl(0 0% 100% / 0.08));
+    box-shadow: -10px 0 30px rgb(0 0 0 / 0.3);
+    animation: vc-split-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes vc-split-in { from { translate: 40px 0; opacity: 0; } to { translate: 0; opacity: 1; } }
+
+.vc-split-grip { position: absolute; left: -4px; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 2; }
+.vc-split-grip:hover { background: linear-gradient(90deg, transparent 3px, var(--brand-500) 3px 5px, transparent 5px); }
+
+.vc-split-head { display: flex; align-items: center; gap: 4px; height: 48px; padding: 0 8px 0 14px; border-bottom: 1px solid var(--border-subtle, hsl(0 0% 100% / 0.08)); flex: none; }
+.vc-split-title { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.vc-split-name { font-size: 15px; font-weight: 700; color: var(--header-primary, #fff); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-split-sub { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-split-head button { all: unset; cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; font-size: 18px; color: var(--interactive-normal, #b5bac1); }
+.vc-split-head button:hover { background: hsl(0 0% 100% / 0.08); color: var(--interactive-hover, #fff); }
+
+.vc-split-list { flex: 1; overflow-y: auto; padding: 10px 0; }
+.vc-split-empty { padding: 30px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+.vc-split-msg { display: flex; gap: 10px; padding: 4px 14px 2px; margin-top: 10px; }
+.vc-split-grouped { margin-top: 0; padding-top: 1px; padding-left: 56px; }
+.vc-split-msg:hover { background: hsl(0 0% 100% / 0.025); }
+.vc-split-avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; margin-top: 2px; }
+.vc-split-msg-body { min-width: 0; flex: 1; }
+.vc-split-msg-head { display: flex; align-items: baseline; gap: 8px; }
+.vc-split-author { font-size: 14px; font-weight: 600; color: var(--header-primary, #fff); }
+.vc-split-time { font-size: 11px; color: var(--text-muted); }
+.vc-split-text { font-size: 14.5px; line-height: 1.4; color: var(--text-default, var(--text-normal)); word-break: break-word; white-space: pre-wrap; }
+.vc-split-image { display: block; max-width: 100%; max-height: 220px; margin-top: 4px; border-radius: 8px; object-fit: contain; }
+.vc-split-file, .vc-split-embed { display: block; margin-top: 3px; font-size: 13px; color: var(--text-link, #00a8fc); }
+
+.vc-split-compose { padding: 10px 12px 14px; flex: none; }
+.vc-split-compose textarea {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    max-height: 140px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14.5px;
+    line-height: 1.35;
+    color: var(--text-default, var(--text-normal));
+    background: var(--background-surface-high, hsl(0 0% 100% / 0.06));
+    field-sizing: content;
+    white-space: pre-wrap;
+}
+
+@media (prefers-reduced-motion: reduce) { .vc-split { animation: none; } }

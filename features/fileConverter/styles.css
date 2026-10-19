@@ -1,0 +1,134 @@
+/* File Converter's window. */
+
+.vc-fconv-drop {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 34px 20px;
+    border-radius: 16px;
+    border: 2px dashed var(--tl-line);
+    text-align: center;
+    color: var(--text-default, var(--text-normal));
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.vc-fconv-drop span { font-size: 13px; color: var(--text-muted); }
+.vc-fconv-drop:hover, .vc-fconv-drop-over { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.07); }
+.vc-fconv-drop-icon { font-size: 30px !important; color: var(--tl-accent) !important; }
+
+.vc-fconv-files { display: flex; flex-direction: column; gap: 4px; padding: 6px; border-radius: 12px; border: 1px solid var(--tl-line); max-height: 180px; overflow-y: auto; }
+.vc-fconv-file { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; }
+.vc-fconv-file:hover { background: hsl(0 0% 100% / 0.03); }
+.vc-fconv-file-name { flex: 1; min-width: 0; font-size: 14px; color: var(--text-default, var(--text-normal)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-fconv-file-meta { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.vc-fconv-x { all: unset; padding: 2px 6px; border-radius: 6px; color: var(--text-muted); cursor: pointer; }
+.vc-fconv-x:hover { color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.06); }
+.vc-fconv-more { all: unset; align-self: flex-start; padding: 4px 8px; font-size: 13px; font-weight: 600; color: var(--tl-accent); cursor: pointer; }
+
+.vc-fconv-choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.vc-fconv-choice { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--tl-line); cursor: pointer; }
+.vc-fconv-choice b { font-size: 14px; color: var(--text-default, var(--text-normal)); }
+.vc-fconv-choice span { font-size: 11.5px; line-height: 1.3; color: var(--text-muted); }
+.vc-fconv-choice:hover { border-color: hsl(from var(--tl-accent) h s l / 0.5); }
+.vc-fconv-choice-on { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.13); }
+
+.vc-fconv-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.vc-fconv-opt { display: flex; flex-direction: column; gap: 6px; }
+.vc-fconv-range { display: flex; align-items: center; gap: 10px; }
+.vc-fconv-range input { flex: 1; accent-color: var(--tl-accent); }
+.vc-fconv-range b { font-size: 13px; color: var(--text-default, var(--text-normal)); min-width: 38px; }
+.vc-fconv-num { width: 90px; padding: 6px 10px; }
+
+.vc-fconv-busy { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-muted); }
+.vc-fconv-bar { height: 6px; border-radius: 3px; background: hsl(0 0% 100% / 0.07); overflow: hidden; }
+.vc-fconv-bar div { height: 100%; border-radius: 3px; background: var(--tl-accent); transition: width 0.25s ease; }
+.vc-fconv-bar-wait div { width: 35% !important; animation: vc-fconv-wait 1.2s ease-in-out infinite; }
+@keyframes vc-fconv-wait { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+
+.vc-fconv-results { display: flex; flex-direction: column; gap: 6px; }
+.vc-fconv-result { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--tl-line); background: hsl(0 0% 100% / 0.02); }
+.vc-fconv-thumb { flex: none; width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background: repeating-conic-gradient(#ffffff10 0 25%, transparent 0 50%) 50% / 12px 12px; }
+.vc-fconv-thumb-icon { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 8px; background: hsl(0 0% 100% / 0.04); font-size: 24px; }
+.vc-fconv-audio { flex: none; width: 200px; height: 34px; }
+.vc-fconv-result-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.vc-fconv-result-name { font-size: 14px; color: var(--text-default, var(--text-normal)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-fconv-result-size { font-size: 12px; color: var(--text-muted); }
+.vc-fconv-smaller { color: var(--status-positive, #23a55a); }
+.vc-fconv-bigger { color: var(--status-warning, #f0b232); }
+.vc-fconv-result-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* Folders and many files */
+.vc-fconv-more-row { display: flex; gap: 6px; }
+.vc-fconv-more-row .vc-fconv-more { flex: 1; }
+
+/* Remove background */
+.vc-fconv-bg { flex-direction: row; flex-wrap: wrap; gap: 14px; }
+.vc-fconv-bg-preview { flex: 1 1 220px; min-height: 180px; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--tl-line); background: repeating-conic-gradient(#ffffff14 0 25%, transparent 0 50%) 50% / 18px 18px, hsl(0 0% 0% / 0.3); overflow: hidden; }
+.vc-fconv-bg-preview img { max-width: 100%; max-height: 300px; object-fit: contain; }
+.vc-fconv-bg-opts { flex: 1 1 260px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ── The trimmer ── */
+.vc-fconv-trim { gap: 8px; }
+.vc-fconv-trim-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.vc-fconv-trim-video { width: 100%; max-height: 240px; border-radius: 10px; background: #000; }
+.vc-fconv-trim-audio { width: 100%; }
+.vc-fconv-timeline { position: relative; height: 54px; border-radius: 8px; overflow: hidden; cursor: pointer; background: hsl(0 0% 100% / 0.05); touch-action: none; }
+.vc-fconv-frames { position: absolute; inset: 0; display: flex; }
+.vc-fconv-frames img { flex: 1 1 0; min-width: 0; height: 100%; object-fit: cover; pointer-events: none; }
+.vc-fconv-wave { flex: 1; background: repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.12) 0 2px, transparent 2px 6px); mask: linear-gradient(transparent 20%, #000 35% 65%, transparent 80%); }
+.vc-fconv-cut-out { position: absolute; top: 0; bottom: 0; background: hsl(0 0% 0% / 0.62); pointer-events: none; }
+.vc-fconv-cut-keep { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border: 2px solid var(--tl-accent, #5865f2); border-radius: 8px; pointer-events: none; }
+.vc-fconv-playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 4px #000; pointer-events: none; }
+/* Two range inputs stacked on the strip; only their handles take clicks. */
+.vc-fconv-handle { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+.vc-fconv-handle::-webkit-slider-runnable-track { height: 100%; background: none; }
+.vc-fconv-handle::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 12px; height: 54px; border-radius: 4px; background: var(--tl-accent, #5865f2); cursor: ew-resize; box-shadow: 0 0 0 2px hsl(0 0% 0% / 0.35); }
+.vc-fconv-trim-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.vc-fconv-trim-exact summary { cursor: pointer; font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px; }
+
+/* 2026-10 refresh: roomier, with colour fades and glows. */
+.vc-fconv-drop {
+    gap: 8px; padding: 48px 24px; border-radius: 20px; border: 2px dashed color-mix(in srgb, var(--tl-accent) 40%, transparent);
+    background: radial-gradient(420px 220px at 50% 0%, color-mix(in srgb, var(--tl-accent) 18%, transparent), transparent 70%), hsl(0 0% 0% / 0.15);
+}
+.vc-fconv-drop b { font-size: 17px; }
+.vc-fconv-drop:hover, .vc-fconv-drop-over { border-color: var(--tl-accent); background: radial-gradient(420px 220px at 50% 0%, color-mix(in srgb, var(--tl-accent) 28%, transparent), transparent 70%), hsl(0 0% 0% / 0.15); box-shadow: none; }
+.vc-fconv-drop-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 20px; font-size: 32px !important; color: #fff !important;
+    background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000)); box-shadow: none; }
+.vc-fconv-files { gap: 6px; padding: 8px; border-radius: 16px; border-color: hsl(0 0% 100% / 0.07); max-height: 220px; background: hsl(0 0% 0% / 0.14); }
+.vc-fconv-file { padding: 9px 11px; border-radius: 11px; background: linear-gradient(90deg, hsl(0 0% 100% / 0.04), transparent); }
+.vc-fconv-file:hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), transparent); }
+.vc-fconv-x { color: #f23f43; }
+.vc-fconv-x:hover { color: #fff; background: hsl(358 75% 50% / 0.85); }
+.vc-fconv-choices { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.vc-fconv-choice { padding: 12px 14px; border-radius: 13px; border-color: hsl(0 0% 100% / 0.07); background: linear-gradient(150deg, hsl(0 0% 100% / 0.04), hsl(0 0% 0% / 0.14)); transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s; }
+.vc-fconv-choice:hover { transform: translateY(-1px); }
+.vc-fconv-choice-on { border-color: var(--tl-accent); background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 26%, transparent), hsl(0 0% 0% / 0.14)); box-shadow: none; }
+.vc-fconv-bar { height: 8px; border-radius: 4px; }
+.vc-fconv-bar div { background: linear-gradient(90deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #fff)); box-shadow: 0 0 12px var(--tl-accent); }
+.vc-fconv-results { gap: 8px; }
+.vc-fconv-result { position: relative; overflow: hidden; padding: 10px 12px 10px 16px; border-radius: 14px; border-color: hsl(0 0% 100% / 0.07);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.16) 65%); }
+.vc-fconv-result::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); box-shadow: 0 0 12px var(--tl-accent); }
+.vc-fconv-thumb, .vc-fconv-thumb-icon { border-radius: 10px; }
+
+/* Batch rename */
+.vc-fconv-rename { display: flex; flex-direction: column; gap: 12px; }
+.vc-fconv-rename-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; padding: 14px; border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.07);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.16) 60%); }
+@container (max-width: 640px) { .vc-fconv-rename-grid { grid-template-columns: minmax(0, 1fr); } }
+.vc-fconv-rename-pattern { font-family: var(--font-code, monospace); font-size: 15px; }
+.vc-fconv-rename .vc-tool-chip small { margin-left: 4px; opacity: 0.6; font-size: 11px; }
+.vc-fconv-rename-side { display: flex; flex-direction: column; gap: 10px; }
+.vc-fconv-rename-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.vc-fconv-rename-opts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.vc-fconv-rename-list { display: flex; flex-direction: column; gap: 4px; max-height: 32vh; overflow-y: auto; padding: 8px; border-radius: 14px; background: hsl(0 0% 0% / 0.16); }
+.vc-fconv-rename-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; padding: 6px 10px; border-radius: 9px; font-size: 13px; }
+.vc-fconv-rename-row:nth-child(odd) { background: hsl(0 0% 100% / 0.025); }
+.vc-fconv-rename-old { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-fconv-rename-arrow { color: color-mix(in srgb, var(--tl-accent) 70%, #fff); }
+.vc-fconv-rename-new { color: #fff; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-fconv-rename-same .vc-fconv-rename-new { color: var(--text-muted); font-weight: 400; }

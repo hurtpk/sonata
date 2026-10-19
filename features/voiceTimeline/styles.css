@@ -1,0 +1,454 @@
+/* Voice Timeline — same look as ChannelSettings / QOL (window accent), scoped to .vc-vtl-*. */
+
+.vc-vtl-wrap {
+    --vtl-surface: hsl(0 0% 100% / 0.035);
+    --vtl-good: var(--status-positive, #23a55a);
+    --vtl-bad: var(--status-danger, #f23f43);
+    --vtl-warn: var(--status-warning, #f0b232);
+
+    position: relative;
+    container-type: inline-size;
+    margin: 0 -4px 8px;
+    padding: 4px;
+    border-radius: 14px;
+    background-image:
+        radial-gradient(700px 400px at 0% 0%, hsl(from var(--tl-accent) h s l / 0.07), transparent 60%),
+        radial-gradient(600px 400px at 100% 100%, hsl(from var(--tl-accent) calc(h + 50) s l / 0.05), transparent 60%);
+}
+
+.vc-vtl-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.vc-vtl-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+@container (max-width: 700px) {
+    .vc-vtl-columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ─── Cards ─── */
+
+.vc-vtl-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--tl-line);
+    background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
+}
+
+.vc-vtl-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-default);
+}
+
+.vc-vtl-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.vc-vtl-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.vc-vtl-label-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.vc-vtl-counter {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-vtl-counter-over {
+    color: var(--vtl-bad);
+    font-weight: 700;
+}
+
+.vc-vtl-textarea,
+.vc-vtl-datetime {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--tl-line);
+    background: hsl(0 0% 0% / 0.25);
+    color: var(--text-default);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.vc-vtl-textarea {
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.45;
+}
+
+.vc-vtl-datetime {
+    color-scheme: dark;
+}
+
+.vc-vtl-textarea:focus,
+.vc-vtl-datetime:focus {
+    border-color: var(--tl-accent);
+    box-shadow: 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.18);
+}
+
+.vc-vtl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.vc-vtl-chip {
+    all: unset;
+    cursor: pointer;
+    padding: 6px 11px;
+    border-radius: 99px;
+    border: 1px solid var(--tl-line);
+    background: var(--vtl-surface);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.vc-vtl-chip:hover {
+    color: var(--text-default);
+    border-color: hsl(from var(--tl-accent) h s l / 0.6);
+    background: hsl(from var(--tl-accent) h s l / 0.12);
+}
+
+.vc-vtl-chip:focus-visible,
+.vc-vtl-segment:focus-visible,
+.vc-vtl-btn:focus-visible,
+.vc-vtl-tab:focus-visible,
+.vc-vtl-link:focus-visible {
+    outline: 2px solid var(--tl-accent);
+    outline-offset: 2px;
+}
+
+.vc-vtl-segmented {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--tl-line);
+    background: var(--vtl-surface);
+}
+
+.vc-vtl-segment {
+    all: unset;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    padding: 7px 0;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.15s, color 0.15s;
+}
+
+.vc-vtl-segment:hover {
+    color: var(--text-default);
+}
+
+.vc-vtl-segment-active,
+.vc-vtl-segment-active:hover {
+    color: #fff;
+    background: var(--tl-accent);
+}
+
+.vc-vtl-summary {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: hsl(from var(--tl-accent) h s l / 0.1);
+    border: 1px solid hsl(from var(--tl-accent) h s l / 0.3);
+    font-size: 13px;
+    color: var(--text-default);
+}
+
+.vc-vtl-summary-bad {
+    background: hsl(from var(--vtl-warn) h s l / 0.1);
+    border-color: hsl(from var(--vtl-warn) h s l / 0.4);
+}
+
+.vc-vtl-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* ─── Timeline specifics ─── */
+
+.vc-vtl-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vc-vtl-count {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 99px;
+    color: var(--tl-accent);
+    background: hsl(from var(--tl-accent) h s l / 0.15);
+}
+
+.vc-vtl-sessions {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+}
+
+.vc-vtl-session {
+    all: unset;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--tl-line);
+    background: var(--vtl-surface);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.vc-vtl-session:hover {
+    color: var(--text-default);
+}
+
+.vc-vtl-session:focus-visible {
+    outline: 2px solid var(--tl-accent);
+    outline-offset: 2px;
+}
+
+.vc-vtl-session-active,
+.vc-vtl-session-active:hover {
+    color: #fff;
+    background: var(--tl-accent);
+    border-color: var(--tl-accent);
+}
+
+.vc-vtl-session-name {
+    opacity: 0.75;
+    font-weight: 500;
+}
+
+.vc-vtl-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--vtl-good);
+    box-shadow: 0 0 8px var(--vtl-good);
+    animation: vc-vtl-pulse 1.6s ease-in-out infinite;
+}
+
+.vc-vtl-people,
+.vc-vtl-events {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 430px;
+    overflow-y: auto;
+}
+
+.vc-vtl-person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border-radius: 10px;
+    transition: background 0.12s;
+}
+
+.vc-vtl-person:hover {
+    background: hsl(0 0% 100% / 0.04);
+}
+
+.vc-vtl-person-gone {
+    opacity: 0.55;
+}
+
+.vc-vtl-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: hsl(0 0% 100% / 0.06);
+}
+
+.vc-vtl-person-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.vc-vtl-person-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-default);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-vtl-person-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.vc-vtl-time {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-vtl-time-live {
+    color: var(--tl-accent);
+}
+
+.vc-vtl-event {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    font-size: 13px;
+    color: var(--text-default);
+}
+
+.vc-vtl-event-time {
+    flex-shrink: 0;
+    width: 86px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-vtl-event-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.vc-vtl-event-join .vc-vtl-event-dot { background: var(--vtl-good); }
+.vc-vtl-event-leave .vc-vtl-event-dot { background: var(--vtl-bad); }
+.vc-vtl-event-moved .vc-vtl-event-dot { background: var(--vtl-warn); }
+.vc-vtl-event-you-joined .vc-vtl-event-dot,
+.vc-vtl-event-you-left .vc-vtl-event-dot { background: var(--tl-accent); }
+
+.vc-vtl-event-you-joined,
+.vc-vtl-event-you-left {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.vc-vtl-event-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.vc-vtl-event-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-vtl-hint {
+    padding: 14px 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.vc-vtl-empty {
+    position: relative;
+    z-index: 1;
+    padding: 56px 24px;
+    text-align: center;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.vc-vtl-empty-title {
+    margin-bottom: 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-default);
+}
+
+@keyframes vc-vtl-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-vtl-wrap * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* 2026-10 refresh: roomier, with colour fades and glows. */
+.vc-vtl-wrap { background-image: none; display: flex; flex-direction: column; gap: 14px; }
+.vc-vtl-card { border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.07); background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%); }
+.vc-vtl-session-active, .vc-vtl-session-active:hover { background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)); box-shadow: none; }
+.vc-vtl-count { box-shadow: 0 0 12px -4px var(--tl-accent); }
+
+/* ─── This week (recap) ─── */
+.vc-vtl-recap { display: flex; flex-direction: column; gap: 12px; }
+.vc-vtl-recap-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vc-vtl-recap-range { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.vc-vtl-recap-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 6px 2px 2px; }
+.vc-vtl-recap-day { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.vc-vtl-recap-time { min-height: 15px; font-size: 11px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.vc-vtl-recap-track { position: relative; width: 100%; max-width: 46px; height: 110px; border-radius: 10px; background: hsl(0 0% 100% / 0.05); overflow: hidden; }
+.vc-vtl-recap-track i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 10px; background: linear-gradient(to top, color-mix(in srgb, var(--tl-accent) 70%, transparent), var(--tl-accent)); transition: height 0.3s ease; }
+.vc-vtl-recap-label { font-size: 12px; font-weight: 700; color: var(--text-default, var(--text-normal)); }
+.vc-vtl-recap-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; }
+.vc-vtl-recap-rank { flex: none; width: 20px; text-align: center; font-size: 12px; font-weight: 800; color: var(--text-muted); }
+.vc-vtl-recap-avatar { flex: none; width: 30px; height: 30px; border-radius: 50%; background: hsl(0 0% 100% / 0.08); object-fit: cover; }
+.vc-vtl-recap-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.vc-vtl-recap-who b { overflow: hidden; font-size: 13.5px; text-overflow: ellipsis; white-space: nowrap; color: var(--text-default, var(--text-normal)); }
+.vc-vtl-recap-bar { height: 4px; border-radius: 4px; background: hsl(0 0% 100% / 0.07); overflow: hidden; }
+.vc-vtl-recap-bar i { display: block; height: 100%; border-radius: 4px; background: var(--tl-accent); }
+.vc-vtl-recap-ms { flex: none; font-size: 12.5px; font-weight: 700; color: var(--text-default, var(--text-normal)); font-variant-numeric: tabular-nums; }

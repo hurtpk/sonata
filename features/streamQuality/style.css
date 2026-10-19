@@ -1,0 +1,65 @@
+/* Stream Quality — the shared window kit (_shared/tool.css) does most of it. */
+
+.vc-sq-status { flex-direction: row; align-items: center; gap: 10px; }
+.vc-sq-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted); flex: none; }
+.vc-sq-status-on { border-color: hsl(from var(--status-positive, #23a55a) h s l / 0.4); background: hsl(from var(--status-positive, #23a55a) h s l / 0.08); }
+.vc-sq-status-on .vc-sq-dot { background: var(--status-positive, #23a55a); box-shadow: 0 0 0 3px hsl(from var(--status-positive, #23a55a) h s l / 0.25); }
+.vc-sq-status-text { font-size: 14px; font-weight: 600; color: var(--text-default, var(--text-normal)); }
+
+.vc-sq-num { position: relative; display: flex; align-items: center; }
+.vc-sq-num input { padding-right: 46px; }
+.vc-sq-unit { position: absolute; right: 12px; font-size: 12px; color: var(--text-muted); pointer-events: none; }
+
+.vc-sq-preview { padding: 0; }
+.vc-sq-preview img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.vc-sq-drop { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 16px; border-radius: 14px; border: 1px dashed var(--tl-line); text-align: center; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+.vc-sq-drop:hover { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.07); }
+.vc-sq-drop b { font-size: 14px; color: var(--text-default, var(--text-normal)); }
+.vc-sq-zoom { max-width: 220px; }
+
+/* The cropper. */
+.vc-sq-crop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.vc-sq-crop-viewport {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    background-color: #1a1a1d;
+    background-image:
+        linear-gradient(45deg, #232428 25%, transparent 25%),
+        linear-gradient(-45deg, #232428 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #232428 75%),
+        linear-gradient(-45deg, transparent 75%, #232428 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.vc-sq-crop-viewport:active {
+    cursor: grabbing;
+}
+
+.vc-sq-crop-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    display: block;
+}
+
+.vc-sq-crop-frame {
+    position: absolute;
+    border: 2px solid #fff;
+    pointer-events: none;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+    box-sizing: border-box;
+}

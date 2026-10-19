@@ -1,0 +1,281 @@
+/* Live RPC Editor — the shared window kit (_shared/tool.css) does most of it. */
+.vc-liverpc-window { padding-bottom: 12px; }
+.vc-liverpc-window .vc-tool-head .vc-liverpc-status-toggle { margin-left: 0; }
+.vc-liverpc-label { display: block; margin: 10px 0 5px; }
+/* ─── Enabled / Disabled toggle (header) ─── */
+.vc-liverpc-status-toggle {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px 5px 10px;
+    border-radius: 100px;
+    border: 1px solid var(--tl-line);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.vc-liverpc-status-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-default, #dbdee1);
+}
+
+.vc-liverpc-status-toggle-on {
+    background: rgb(59 165 93 / 15%);
+    border-color: rgb(59 165 93 / 35%);
+    color: #3ba55d;
+}
+
+.vc-liverpc-status-toggle-on:hover {
+    background: rgb(59 165 93 / 22%);
+    color: #3ba55d;
+}
+
+.vc-liverpc-status-toggle-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.vc-liverpc-status-toggle-on .vc-liverpc-status-toggle-dot {
+    box-shadow: 0 0 8px currentColor;
+}
+
+
+
+/* ─── Two-column layout ─── */
+.vc-liverpc-wrap {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.vc-liverpc-form-scroll {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.vc-liverpc-form-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 8px;
+}
+
+/* ─── Top bar: Clone + Presets as subtle cards ─── */
+.vc-liverpc-top-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+}
+
+.vc-liverpc-top-bar > div {
+    background: var(--tl-soft);
+    border: 1px solid var(--tl-line);
+    border-radius: 8px;
+    padding: 8px 10px 10px;
+    min-width: 0;
+}
+
+/* ─── Form columns ─── */
+.vc-liverpc-form-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+}
+
+.vc-liverpc-form-col {
+    background: var(--tl-soft);
+    border: 1px solid var(--tl-line);
+    border-radius: 8px;
+    padding: 10px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* ─── Section titles ─── */
+.vc-liverpc-section-title {
+    color: var(--text-default, #f2f3f5) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    margin: 0 0 4px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+}
+
+.vc-liverpc-section-title::before {
+    content: "";
+    width: 3px;
+    height: 11px;
+    background: var(--tl-accent);
+    border-radius: 2px;
+}
+
+/* ─── Field labels ─── */
+.vc-liverpc-label {
+    color: #b5bac1 !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 2px 0 -1px !important;
+    line-height: 1.2;
+}
+
+/* ─── Inputs: keep Discord's native look, just tighten height ─── */
+
+/* ─── Field rows ─── */
+.vc-liverpc-field-row {
+    display: flex;
+    gap: 8px;
+}
+
+.vc-liverpc-field-row > * {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ─── Dividers (almost invisible) ─── */
+.vc-liverpc-divider {
+    margin: 2px 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+}
+
+/* hide the big divider between top-bar and form-columns — visual gap is enough */
+.vc-liverpc-form-inner > hr.vc-liverpc-divider {
+    display: none;
+}
+
+/* ─── Clone activity buttons / preset chips ─── */
+.vc-liverpc-clone-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.vc-liverpc-clone-buttons button {
+    flex-shrink: 0;
+}
+
+.vc-liverpc-preset-chip {
+    display: inline-flex;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--tl-line);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.vc-liverpc-preset-chip:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.vc-liverpc-preset-chip > button {
+    border-radius: 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.vc-liverpc-preset-chip > button:last-child {
+    color: rgba(255, 255, 255, 0.5) !important;
+    padding: 0 10px !important;
+    font-size: 14px;
+}
+
+.vc-liverpc-preset-chip > button:last-child:hover {
+    background: rgba(237, 66, 69, 0.15) !important;
+    color: #ed4245 !important;
+}
+
+/* ─── Preview panel ─── */
+.vc-liverpc-preview-panel {
+    width: 340px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 480px;
+    gap: 14px;
+}
+
+.vc-liverpc-preview-popout {
+    border-radius: 12px;
+    overflow: hidden auto;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 12px 32px rgba(0, 0, 0, 0.4);
+    max-height: 600px;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.vc-liverpc-preview-popout > * {
+    pointer-events: none;
+    user-select: none;
+}
+
+.vc-liverpc-preview-popout > * * {
+    pointer-events: none !important;
+}
+
+.vc-liverpc-preview-popout:focus {
+    outline: none;
+}
+
+.vc-liverpc-preview-fallback {
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 10px;
+    width: 100%;
+}
+
+.vc-liverpc-preview-empty {
+    padding: 40px 16px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+}
+
+.vc-liverpc-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 0;
+}
+
+.vc-liverpc-actions button {
+    width: 100%;
+}
+
+/* ─── Scrollbar polish ─── */
+.vc-liverpc-form-scroll [class*="scrollerBase"] ::-webkit-scrollbar-thumb,
+.vc-liverpc-preview-popout::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-radius: 4px;
+}
+
+.vc-liverpc-form-scroll [class*="scrollerBase"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+}

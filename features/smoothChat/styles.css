@@ -1,0 +1,29 @@
+/* New messages easing in (only messages that just arrived get these classes). */
+.vc-smooth-in { animation-duration: var(--smooth-speed, 0.3s); animation-timing-function: cubic-bezier(0.2, 0.8, 0.25, 1); animation-fill-mode: both; }
+
+.vc-smooth-slide { animation-name: vc-smooth-slide; }
+.vc-smooth-fade { animation-name: vc-smooth-fade; }
+.vc-smooth-pop { animation-name: vc-smooth-pop; }
+.vc-smooth-side { animation-name: vc-smooth-side; }
+
+@keyframes vc-smooth-slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes vc-smooth-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes vc-smooth-pop { from { opacity: 0; transform: scale(0.96); transform-origin: left center; } 70% { opacity: 1; transform: scale(1.01); } to { opacity: 1; transform: none; } }
+@keyframes vc-smooth-side { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+
+/* Optional soft glow behind a new message, fading out. */
+.vc-smooth-glow { position: relative; }
+.vc-smooth-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg, hsl(from var(--brand-500) h s l / 0.16), transparent 70%);
+    animation: vc-smooth-glow calc(var(--smooth-speed, 0.3s) * 5) ease-out both;
+}
+
+@keyframes vc-smooth-glow { from { opacity: 1; } to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-smooth-in, .vc-smooth-glow::before { animation: none !important; }
+}

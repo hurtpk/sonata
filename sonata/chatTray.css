@@ -1,0 +1,33 @@
+/* The buttons that slide out to the left of the chat bar's ♫. */
+.vc-sonata-tray {
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    margin-right: 2px;
+    border-radius: 10px;
+    background: hsl(0 0% 100% / 0.04);
+    animation: vc-sonata-tray-in 0.22s cubic-bezier(.2, .8, .3, 1);
+    transform-origin: right center;
+}
+
+.vc-sonata-tray > * { animation: vc-sonata-tray-item 0.26s cubic-bezier(.2, .8, .3, 1) both; }
+.vc-sonata-tray > *:nth-last-child(2) { animation-delay: 0.02s; }
+.vc-sonata-tray > *:nth-last-child(3) { animation-delay: 0.04s; }
+.vc-sonata-tray > *:nth-last-child(4) { animation-delay: 0.06s; }
+.vc-sonata-tray > *:nth-last-child(5) { animation-delay: 0.08s; }
+.vc-sonata-tray > *:nth-last-child(n + 6) { animation-delay: 0.1s; }
+
+@keyframes vc-sonata-tray-in { from { opacity: 0; transform: scaleX(0.6); } to { opacity: 1; transform: none; } }
+@keyframes vc-sonata-tray-item { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+
+.vc-sonata-tray-icon { overflow: visible; }
+.vc-sonata-tray-chevron { transform-box: fill-box; transform-origin: center; transition: transform 0.2s ease; }
+.vc-sonata-tray-icon-open .vc-sonata-tray-chevron { transform: scaleX(-1); }
+.vc-sonata-tray-icon-open { color: var(--brand-500); }
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-sonata-tray, .vc-sonata-tray > * { animation: none; }
+    .vc-sonata-tray-chevron { transition: none; }
+}
+
+.vc-sonata-tray-slot { display: contents; }

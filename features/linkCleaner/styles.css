@@ -1,0 +1,9 @@
+/* Link Cleaner — the "where does this link go?" bubble. */
+.vc-lc-tip { position: fixed; z-index: 10000; display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; border-radius: 10px; border: 1px solid hsl(0 0% 100% / 0.1); background: var(--background-floating, #111214); box-shadow: 0 8px 24px hsl(0 0% 0% / 0.45); font-size: 13px; color: var(--text-default, #dbdee1); pointer-events: none; opacity: 0; transform: translateY(-3px); transition: opacity 0.12s, transform 0.12s; }
+.vc-lc-tip-on { opacity: 1; transform: none; }
+.vc-lc-tip b { color: var(--text-default, #fff); }
+.vc-lc-tip > span { overflow-wrap: anywhere; }
+.vc-lc-tip-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+.vc-lc-tip-url { font-family: var(--font-code, monospace); font-size: 12.5px; color: var(--text-muted); }
+.vc-lc-tip-url b { font-family: var(--font-primary, inherit); font-size: 13.5px; }
+.vc-lc-tip-warn { font-size: 12px; color: var(--status-warning, #f0b232); }

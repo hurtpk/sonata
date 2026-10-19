@@ -1,0 +1,66 @@
+/* Controls on hover, swapped in where the song info is: the cover and title fade
+   out and the buttons fade in, in the same spot, so the player never changes
+   size. (The player sits in the sidebar; any change to its height makes Discord
+   re-measure the whole channel list, which hitches.) Only opacity and transform
+   change, which the GPU does without any layout or repainting. */
+#vc-spotify-player { position: relative; }
+
+#vc-spotify-player > .vc-spotify-button-row {
+    position: absolute !important;
+    z-index: 2 !important;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    height: 3em;
+    margin: 0 !important;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s ease;
+}
+
+#vc-spotify-player > .vc-spotify-button-row > * {
+    transform: translateY(5px) scale(0.96);
+    transition: transform 0.22s cubic-bezier(0.25, 0.9, 0.3, 1);
+}
+
+#vc-spotify-info-wrapper,
+#vc-spotify-album-expanded-wrapper {
+    transition: opacity 0.16s ease, transform 0.22s cubic-bezier(0.25, 0.9, 0.3, 1);
+}
+
+/* Hover (or keyboard focus): swap. A mouse click doesn't pin them. */
+#vc-spotify-player:hover > .vc-spotify-button-row,
+#vc-spotify-player:has(:focus-visible) > .vc-spotify-button-row {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#vc-spotify-player:hover > .vc-spotify-button-row > *,
+#vc-spotify-player:has(:focus-visible) > .vc-spotify-button-row > * {
+    transform: none;
+}
+
+#vc-spotify-player:hover #vc-spotify-info-wrapper,
+#vc-spotify-player:has(:focus-visible) #vc-spotify-info-wrapper {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+/* With the big cover open, the buttons sit on a dark strip over it, so they stay readable. */
+#vc-spotify-player:has(#vc-spotify-album-expanded-wrapper) > .vc-spotify-button-row {
+    border-radius: 10px;
+    background: hsl(0 0% 0% / 0.6);
+}
+
+/* The buttons ripple in left to right. */
+#vc-spotify-player:hover > .vc-spotify-button-row > :nth-child(2) { transition-delay: 0.02s; }
+#vc-spotify-player:hover > .vc-spotify-button-row > :nth-child(3) { transition-delay: 0.04s; }
+#vc-spotify-player:hover > .vc-spotify-button-row > :nth-child(4) { transition-delay: 0.06s; }
+#vc-spotify-player:hover > .vc-spotify-button-row > :nth-child(5) { transition-delay: 0.08s; }
+#vc-spotify-player:hover > .vc-spotify-button-row > :nth-child(n + 6) { transition-delay: 0.1s; }
+
+@media (prefers-reduced-motion: reduce) {
+    #vc-spotify-player > .vc-spotify-button-row > *,
+    #vc-spotify-info-wrapper { transform: none !important; }
+}

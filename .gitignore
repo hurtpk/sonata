@@ -1,0 +1,9 @@
+# Claude Code's own settings for this PC - never uploaded.
+.claude/
+
+# Things that are never part of Sonata itself.
+node_modules/
+*.zip
+*.log
+Thumbs.db
+desktop.ini

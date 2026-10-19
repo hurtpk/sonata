@@ -1,0 +1,27 @@
+/* Long Message Collapser — everything keys off attributes the feature sets, so nothing applies while it's off. */
+
+[data-vc-lmc="closed"] {
+    /* --vc-lmc-lines is set from the setting; 1lh is one line of the message's own text. */
+    max-height: calc(var(--vc-lmc-lines, 10) * 1lh);
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent);
+}
+
+/* The toggle sits on the element holding the message text (so it isn't faded with it). */
+[data-vc-lmc-host]::after {
+    content: attr(data-vc-lmc-label);
+    display: inline-flex;
+    align-items: center;
+    margin-top: 4px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    background: var(--background-mod-normal, hsl(0 0% 50% / 0.16));
+    color: var(--text-link, var(--brand-360));
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    cursor: pointer;
+    user-select: none;
+}
+
+[data-vc-lmc-host]:hover::after { text-decoration: underline; }
