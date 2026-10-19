@@ -872,7 +872,7 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                 <Ambience on={on} />
                 {welcome && <Welcome api={api} store={store} accents={ACCENTS} onDone={() => { setWelcome(false); store.sonataSeenVersion = LATEST; }} />}
                 {!welcome && !log && news.length > 0 && <WhatsNew entries={news} onClose={closeNews} />}
-                {log && <UpdateLog seen={s.sonataSeenVersion} onClose={closeLog} />}
+                {log && <UpdateLog seen={s.sonataSeenVersion} onClose={closeLog} store={store} />}
 
                 <header className="sonata-top">
                     <button type="button" className="sonata-brand" title="Features" onClick={() => setTab("features")}>

@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.19c",
+        date: "October 19, 2026",
+        title: "Update bar",
+        items: [
+            { icon: "🔔", text: "When there's a newer Sonata on GitHub, a blue bar shows at the top of Discord — like Discord's own notices — with an Update button that opens the installer (it shows what changed and asks first). It checks a minute after Discord starts and every six hours. Switch it off, or check right away, in Updates." },
+        ],
+    },
+    {
         version: "2026.10.19b",
         date: "October 19, 2026",
         title: "A tidier Roblox Tools",

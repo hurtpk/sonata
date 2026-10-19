@@ -10,7 +10,8 @@
 import { classes } from "@utils/misc";
 import { useEffect, useMemo, useRef, useState } from "@webpack/common";
 
-import { ChangeEntry,CHANGELOG } from "./changelog";
+import { ChangeEntry, CHANGELOG } from "./changelog";
+import { checkNow } from "./updateNotice";
 
 /** "October 2026" for grouping. */
 function monthOf(e: ChangeEntry) {
@@ -25,8 +26,15 @@ function Highlight({ text, q }: { text: string; q: string; }) {
     return <>{text.slice(0, i)}<mark>{text.slice(i, i + q.length)}</mark>{text.slice(i + q.length)}</>;
 }
 
-export function UpdateLog({ seen, onClose }: { seen: string | undefined; onClose(): void; }) {
+export function UpdateLog({ seen, onClose, store }: { seen: string | undefined; onClose(): void; store?: any; }) {
     const [q, setQ] = useState("");
+    const [notice, setNotice] = useState<boolean>(() => store?.sonataUpdateNotice !== false);
+    const [checking, setChecking] = useState<string | null>(null);
+    const checkGitHub = async () => {
+        setChecking("Checking…");
+        const r = await checkNow();
+        setChecking(r === null ? "Couldn't reach GitHub" : r ? `Sonata ${r} is out — see the bar at the top` : "You're up to date");
+    };
     const [open, setOpen] = useState<Set<string>>(() => new Set(CHANGELOG.filter((e, i) => i === 0 || (seen && e.version > seen)).map(e => e.version)));
     const search = useRef<HTMLInputElement>(null);
     useEffect(() => {
@@ -59,6 +67,12 @@ export function UpdateLog({ seen, onClose }: { seen: string | undefined; onClose
                     <button type="button" className="sonata-close" aria-label="Close" title="Close (Esc)" onClick={onClose}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
                     </button>
+                </div>
+                <div className="sonata-log-notice">
+                    <label className="sonata-check"><input type="checkbox" checked={notice} onChange={e => { const v = e.currentTarget.checked; setNotice(v); if (store) store.sonataUpdateNotice = v; }} /> Tell me at the top of Discord when there's a new version</label>
+                    <span className="sonata-spacer" />
+                    {checking && <span className="sonata-field-hint">{checking}</span>}
+                    <button type="button" className="sonata-btn" disabled={checking === "Checking…"} onClick={() => void checkGitHub()}>Check now</button>
                 </div>
                 <div className="sonata-log-tools">
                     <input ref={search} className="sonata-log-search" value={q} placeholder="Search every update — e.g. roblox, typing sounds, calendar…" spellCheck={false} onChange={e => setQ(e.currentTarget.value)} />

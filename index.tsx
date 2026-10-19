@@ -165,6 +165,7 @@ import { startMemoryWatch, stopMemoryWatch } from "./sonata/memoryWatch";
 import { openSonata } from "./sonata/open";
 import { cancelStartLater, canStartLater, startLater, startLaterOn, startPerformance, stopPerformance } from "./sonata/performance";
 import { sameVoicePatches, sameVoiceText, useSameVoiceLabel } from "./sonata/sameVoice";
+import { startUpdateNotice, stopUpdateNotice } from "./sonata/updateNotice";
 import { loadUsage, noteUse } from "./sonata/usage";
 import { addDockButton, dockContextMenus, dockPatch, PINNED_DOCK_ID, removeDockButton, renderDock } from "./utilities/dock";
 import { SonataIcon } from "./utilities/icons";
@@ -792,6 +793,7 @@ const qolDef: SettingsDefinition = {
     sonataInverted: { type: OptionType.BOOLEAN, description: "Invert the background (dark becomes light).", default: false, hidden: true },
     sonataWelcomed: { type: OptionType.BOOLEAN, description: "The welcome tour has been shown.", default: false, hidden: true },
     sonataSeenVersion: { type: OptionType.STRING, description: "The newest What's new entry you've seen.", default: "", hidden: true },
+    sonataUpdateNotice: { type: OptionType.BOOLEAN, description: "Show a bar at the top of Discord when there's a newer Sonata on GitHub.", default: true, hidden: true },
     sonataProfiles: { type: OptionType.STRING, description: "Your saved feature profiles (School, Gaming…).", default: "", hidden: true },
     sonataInvertHues: { type: OptionType.BOOLEAN, description: "Inverted background: flip the colours too (a true negative).", default: false, hidden: true },
     perfLazyChat: { type: OptionType.BOOLEAN, description: "Performance: only draw messages near the screen.", default: false, hidden: true },
@@ -1056,6 +1058,8 @@ const plugin = definePlugin({
         startAlbumWatch();
         // Feature windows use Sonata's accent instead of Discord's blue.
         startFeatureAccent();
+        // A blue bar at the top of Discord when GitHub has a newer Sonata.
+        startUpdateNotice(() => settings.store.sonataUpdateNotice !== false);
         // Performance settings (style rules that skip expensive drawing).
         startPerformance();
         // Disk space: automatic cleaning, decided a minute after start.
@@ -1097,6 +1101,7 @@ const plugin = definePlugin({
         uninstallSonataMenus();
         stopAlbumWatch();
         stopFeatureAccent();
+        stopUpdateNotice();
         stopPerformance();
         stopCacheAuto();
         stopMemoryWatch();
