@@ -17,6 +17,20 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.19e",
+        date: "October 19, 2026",
+        title: "Theme Studio: pictures, bubbles and sharing",
+        items: [
+            { icon: "🖼", text: "Make a theme from a picture. Pick a wallpaper or screenshot, and its colours become your background, text and two accents, with the picture behind Discord." },
+            { icon: "🌈", text: "A second accent colour. Buttons, accent bars, ping badges and moving colours fade between your two colours." },
+            { icon: "💬", text: "Message bubbles, with yours on the right in your accent colour, like on a phone. New messages can fade, slide or pop in, and so does a channel when you open it." },
+            { icon: "✅", text: "A readability check. Theme Studio says when text, faded text or button text is hard to read on your colours, and Fix it adjusts them." },
+            { icon: "🔗", text: "Share codes. Copy a short code and paste it in a chat; anyone with Sonata gets a Try it button under your message. Themes with a picture or video save as a .sonatatheme file instead." },
+            { icon: "🎬", text: "GIFs and videos behind Discord. GIFs keep moving, and MP4/WebM videos play muted on a loop (paused while Discord is minimised), with the same blur and darken sliders." },
+            { icon: "🔴", text: "Ping badges in your colours: Discord's red, your accent (or the gradient), or any colour you pick." },
+        ],
+    },
+    {
         version: "2026.10.19d",
         date: "October 19, 2026",
         title: "Theme Studio, World clock and playlists",

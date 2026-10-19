@@ -32,6 +32,8 @@ export interface Theme {
     text: string;
     muted: string;
     accent: string;
+    /** A second accent: buttons, accent bars, badges and moving colours become a gradient between the two. Null for one colour. */
+    accent2: string | null;
     /** Corner roundness: 0 = square, 1 = Discord's own, 2.5 = extra round. */
     radius: number;
     font: string;
@@ -39,8 +41,10 @@ export interface Theme {
     opacity: number;
     /** Popouts, menus, cards and the chat bar go see-through too (not just the big areas). */
     seeAll: boolean;
-    /** A picture behind Discord (a data: URL), or null. */
+    /** A picture behind Discord (a data: URL — a GIF keeps moving), or null. */
     image: string | null;
+    /** A video behind Discord (a data: URL; it plays muted, on a loop), or null. Wins over the picture. */
+    video: string | null;
     /** Picture blur in px, 0–30. */
     blur: number;
     /** How much the picture is darkened, 0–80. */
@@ -51,6 +55,14 @@ export interface Theme {
     /** @mentions in the accent colour. */
     mentions: boolean;
     fx: Effects;
+    /** Messages in rounded bubbles. */
+    bubbles: boolean;
+    /** …with yours on the right, in the accent colour. */
+    bubblesRight: boolean;
+    /** How new messages (and a channel you open) come in. */
+    msgIn: "none" | "fade" | "slide" | "pop";
+    /** The red number badges: Discord's own (null), "accent", or a colour. */
+    badge: string | null;
     at: number;
     /** Old: how much of the picture showed through. Now `opacity`. */
     see?: number;
@@ -70,17 +82,17 @@ export const FONTS: Font[] = [
 export const DEFAULT_FX: Effects = { chatBar: "glow", channels: "slide", dms: "slide", messages: "none", servers: "grow", buttons: true, speed: "normal" };
 export const NO_FX: Effects = { chatBar: "none", channels: "none", dms: "none", messages: "none", servers: "none", buttons: false, speed: "normal" };
 
-interface Preset { name: string; bg: string; text: string; muted: string; accent: string; radius?: number; font?: string; chat?: string; fx?: Partial<Effects>; moving?: boolean; opacity?: number; }
+export interface Preset { name: string; bg: string; text: string; muted: string; accent: string; accent2?: string; radius?: number; font?: string; chat?: string; fx?: Partial<Effects>; moving?: boolean; opacity?: number; bubbles?: boolean; msgIn?: Theme["msgIn"]; }
 
 export const PRESETS: Preset[] = [
     { name: "Midnight", bg: "#101218", text: "#e7e9ee", muted: "#8b90a0", accent: "#6e8bff" },
     { name: "Ocean", bg: "#0f1d2b", text: "#e3eef7", muted: "#87a2b8", accent: "#2fb5d6", fx: { channels: "bar", dms: "bar" } },
     { name: "Forest", bg: "#13201a", text: "#e4efe7", muted: "#8aa596", accent: "#4fbf7f", fx: { servers: "bounce" } },
-    { name: "Rose", bg: "#24161c", text: "#f5e6ec", muted: "#b1909e", accent: "#ff6fa3", radius: 1.6, fx: { chatBar: "pulse", channels: "tint", dms: "tint" } },
+    { name: "Rose", bg: "#24161c", text: "#f5e6ec", muted: "#b1909e", accent: "#ff6fa3", accent2: "#ffb86b", bubbles: true, msgIn: "pop", radius: 1.6, fx: { chatBar: "pulse", channels: "tint", dms: "tint" } },
     { name: "Mocha", bg: "#1f1a17", text: "#efe6de", muted: "#a8998c", accent: "#d7995b", fx: { messages: "bar" } },
     { name: "Grape", bg: "#1b1528", text: "#ece6f7", muted: "#9c91b3", accent: "#a77bff", fx: { servers: "wiggle", chatBar: "lift" } },
     { name: "Ember", bg: "#1c1412", text: "#f4e7e1", muted: "#ad958b", accent: "#ff7a45", radius: 1.4 },
-    { name: "Aurora", bg: "#0c1120", text: "#e6ecfa", muted: "#8d97b3", accent: "#5eead4", moving: true, opacity: 60, fx: { chatBar: "pulse", channels: "grow", dms: "grow" } },
+    { name: "Aurora", bg: "#0c1120", text: "#e6ecfa", muted: "#8d97b3", accent: "#5eead4", accent2: "#a78bfa", moving: true, opacity: 60, fx: { chatBar: "pulse", channels: "grow", dms: "grow" } },
     { name: "Paper", bg: "#f6f4ef", text: "#23211d", muted: "#6f6a62", accent: "#3d6bff", fx: { chatBar: "lift" } },
 ];
 
@@ -89,28 +101,102 @@ export const newId = () => Math.random().toString(36).slice(2, 10);
 export function fromPreset(p: Preset): Theme {
     return normalize({
         id: newId(), name: p.name, bg: p.bg, chat: p.chat ?? null, text: p.text, muted: p.muted, accent: p.accent, radius: p.radius ?? 1, font: p.font ?? "discord",
-        opacity: p.opacity ?? 100, seeAll: false, image: null, blur: 0, dim: 35, moving: !!p.moving, scrollbars: "accent", mentions: true, fx: { ...DEFAULT_FX, ...p.fx }, at: Date.now(),
+        accent2: p.accent2 ?? null, opacity: p.opacity ?? 100, seeAll: false, image: null, video: null, blur: 0, dim: 35, moving: !!p.moving, scrollbars: "accent", mentions: true,
+        fx: { ...DEFAULT_FX, ...p.fx }, bubbles: !!p.bubbles, bubblesRight: true, msgIn: p.msgIn ?? "fade", badge: "accent", at: Date.now(),
     });
+}
+
+const FX_OPTIONS: { [K in keyof Effects]: readonly Effects[K][] } = {
+    chatBar: ["none", "glow", "lift", "pulse"],
+    channels: ["none", "slide", "bar", "tint", "grow"],
+    dms: ["none", "slide", "bar", "tint", "grow"],
+    messages: ["none", "tint", "bar"],
+    servers: ["none", "grow", "bounce", "wiggle"],
+    buttons: [true, false],
+    speed: ["snappy", "normal", "relaxed"],
+};
+
+/** Hover animation choices, keeping only ones that exist (a shared code could hold anything). */
+function cleanFx(fx: Partial<Effects> | undefined): Effects {
+    const out = { ...DEFAULT_FX };
+    for (const k of Object.keys(FX_OPTIONS) as (keyof Effects)[]) if (fx && (FX_OPTIONS[k] as readonly unknown[]).includes(fx[k])) (out as any)[k] = fx[k];
+    return out;
 }
 
 /** Fills in anything a theme saved by an older Sonata doesn't have yet. */
 export function normalize(t: Partial<Theme> & Pick<Theme, "id" | "name" | "bg" | "text" | "muted" | "accent">): Theme {
     const clamp = (n: unknown, lo: number, hi: number, d: number) => typeof n === "number" && isFinite(n) ? Math.max(lo, Math.min(hi, n)) : d;
     return {
-        id: t.id, name: t.name, bg: t.bg, chat: t.chat ?? null, text: t.text, muted: t.muted, accent: t.accent,
+        id: t.id, name: t.name, bg: t.bg, chat: t.chat ?? null, text: t.text, muted: t.muted, accent: t.accent, accent2: t.accent2 ?? null,
         radius: clamp(t.radius, 0, 2.5, 1),
         font: t.font ?? "discord",
         opacity: clamp(t.opacity, 0, 100, t.image && typeof t.see === "number" ? 100 - t.see : 100),
         seeAll: !!t.seeAll,
         image: t.image ?? null,
+        video: t.video ?? null,
         blur: clamp(t.blur, 0, 30, 0),
         dim: clamp(t.dim, 0, 80, 35),
         moving: !!t.moving,
         scrollbars: t.scrollbars === "discord" ? "discord" : "accent",
         mentions: t.mentions !== false,
-        fx: { ...DEFAULT_FX, ...t.fx },
+        fx: cleanFx(t.fx),
+        bubbles: !!t.bubbles,
+        bubblesRight: t.bubblesRight !== false,
+        msgIn: (["none", "fade", "slide", "pop"] as const).includes(t.msgIn as any) ? t.msgIn! : "none",
+        badge: t.badge === undefined ? null : t.badge,
         at: t.at ?? Date.now(),
     };
+}
+
+export function rgbOf(hex: string): [number, number, number] {
+    const h = hex.replace("#", "");
+    const n = h.length === 3 ? [...h].map(c => c + c).join("") : h;
+    return [0, 2, 4].map(i => parseInt(n.slice(i, i + 2), 16) || 0) as [number, number, number];
+}
+export const hexOf = (r: number, g: number, b: number) => "#" + [r, g, b].map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0")).join("");
+/** A hex colour moved toward another by p (0–1). */
+export function mixHex(a: string, b: string, p: number) {
+    const x = rgbOf(a), y = rgbOf(b);
+    return hexOf(x[0] + (y[0] - x[0]) * p, x[1] + (y[1] - x[1]) * p, x[2] + (y[2] - x[2]) * p);
+}
+/** How easy one colour is to read on another (WCAG contrast: 1 = invisible, 21 = black on white). */
+export function contrast(a: string, b: string) {
+    const lum = (hex: string) => {
+        const [r, g, b] = rgbOf(hex).map(v => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+}
+
+export interface ReadIssue { key: "text" | "muted" | "accent"; what: string; ratio: number; need: number; }
+
+/** What's hard to read: text and faded text on the background, and white button text on the accent. */
+export function readability(t: Theme): ReadIssue[] {
+    const bg = t.chat || t.bg;
+    const out: ReadIssue[] = [];
+    const tx = contrast(t.text, bg), mu = contrast(t.muted, bg), ac = contrast("#ffffff", t.accent);
+    if (tx < 7) out.push({ key: "text", what: "Text", ratio: tx, need: 7 });
+    if (mu < 4.5) out.push({ key: "muted", what: "Faded text", ratio: mu, need: 4.5 });
+    if (ac < 3) out.push({ key: "accent", what: "White text on accent buttons", ratio: ac, need: 3 });
+    return out;
+}
+
+/** The smallest change that makes everything readable: text and faded text move away from the background, the accent darkens. */
+export function fixReadability(t: Theme): Partial<Theme> {
+    const bg = t.chat || t.bg;
+    const away = lightness(bg) > 0.55 ? "#000000" : "#ffffff";
+    const push = (c: string, toward: string, need: number, against: string) => {
+        for (let p = 0; p <= 1.0001; p += 0.04) { const x = mixHex(c, toward, p); if (contrast(x, against) >= need) return x; }
+        return toward;
+    };
+    const patch: Partial<Theme> = {};
+    for (const i of readability(t)) {
+        if (i.key === "text") patch.text = push(t.text, away, i.need, bg);
+        if (i.key === "muted") patch.muted = push(t.muted, away, i.need, bg);
+        if (i.key === "accent") patch.accent = push(t.accent, "#000000", i.need, "#ffffff");
+    }
+    return patch;
 }
 
 /** 0 (black) – 1 (white). */
@@ -235,14 +321,19 @@ const SERVER = '[data-list-item-id^="guildsnav___"]';
 
 const SPEED = { snappy: 110, normal: 180, relaxed: 320 };
 
-function listFx(sel: string, kind: ListFx, a: string, ms: number) {
+function listFx(sel: string, kind: ListFx, a: string, a2: string | null, ms: number) {
     if (kind === "none") return "";
     const move = `${sel} { transition: translate ${ms}ms ease, scale ${ms}ms ease, background-color ${ms}ms ease, box-shadow ${ms}ms ease; }\n`;
     switch (kind) {
         case "slide": return `${move}${sel}:hover { translate: 4px 0; }\n`;
         case "grow": return `${move}${sel}:hover { scale: 1.03; }\n`;
-        case "bar": return `${move}${sel}:hover { box-shadow: inset 3px 0 0 ${a}; }\n`;
-        case "tint": return `${move}${sel}:hover { background-color: ${alpha(a, 18)} !important; }\n`;
+        // Two colours: the bar is a little gradient strip down the left edge.
+        case "bar": return a2
+            ? `${move}${sel}:hover { background-image: linear-gradient(${a}, ${a2}) !important; background-size: 3px 100% !important; background-repeat: no-repeat !important; }\n`
+            : `${move}${sel}:hover { box-shadow: inset 3px 0 0 ${a}; }\n`;
+        case "tint": return a2
+            ? `${move}${sel}:hover { background-image: linear-gradient(90deg, ${alpha(a, 22)}, ${alpha(a2, 14)}) !important; }\n`
+            : `${move}${sel}:hover { background-color: ${alpha(a, 18)} !important; }\n`;
     }
 }
 
@@ -259,17 +350,23 @@ export function effectsCss(t: Theme) {
         if (f.chatBar === "pulse") css += `${CHAT_BAR}:hover { box-shadow: ${border}; }\n${CHAT_BAR}:focus-within { animation: vc-ts-pulse 2.4s ease-in-out infinite; }\n`
             + `@keyframes vc-ts-pulse { 0%, 100% { box-shadow: ${border}, inset 0 0 14px -10px ${a}; } 50% { box-shadow: inset 0 0 0 1px ${a}, inset 0 0 30px -8px ${a}; } }\n`;
     }
-    css += listFx(CHANNEL, f.channels, a, ms);
-    css += listFx(DM, f.dms, a, ms);
+    css += listFx(CHANNEL, f.channels, a, t.accent2, ms);
+    css += listFx(DM, f.dms, a, t.accent2, ms);
     if (f.messages !== "none") {
         css += `${MESSAGE} { transition: background-color ${ms}ms ease, box-shadow ${ms}ms ease; }\n`;
-        css += f.messages === "tint" ? `${MESSAGE}:hover { background-color: ${alpha(a, 7)}; }\n` : `${MESSAGE}:hover { box-shadow: inset 2px 0 0 ${a}; }\n`;
+        css += f.messages === "tint" ? `${MESSAGE}:hover { background-color: ${alpha(a, 7)}; }\n`
+            : t.accent2 ? `${MESSAGE}:hover { background-image: linear-gradient(${a}, ${t.accent2}); background-size: 2px 100%; background-repeat: no-repeat; }\n`
+                : `${MESSAGE}:hover { box-shadow: inset 2px 0 0 ${a}; }\n`;
     }
     if (f.servers === "grow") css += `${SERVER} { transition: scale ${ms}ms ease; }\n${SERVER}:hover { scale: 1.1; }\n`;
     if (f.servers === "bounce") css += `${SERVER}:hover { animation: vc-ts-bounce ${Math.round(ms * 2.8)}ms ease; }\n@keyframes vc-ts-bounce { 0%, 100% { translate: 0 0; } 40% { translate: 0 -5px; } 70% { translate: 0 1px; } }\n`;
     if (f.servers === "wiggle") css += `${SERVER}:hover { animation: vc-ts-wiggle ${Math.round(ms * 2.6)}ms ease; }\n@keyframes vc-ts-wiggle { 0%, 100% { rotate: 0deg; } 25% { rotate: -9deg; } 60% { rotate: 7deg; } }\n`;
     // The separate "scale" property, so Discord's own transforms on buttons are left alone.
     if (f.buttons) css += `button:active:not(:disabled) { scale: 0.96; }\n`;
+    if (t.msgIn !== "none") {
+        const from = t.msgIn === "fade" ? "opacity: 0;" : t.msgIn === "slide" ? "opacity: 0; translate: 0 10px;" : "opacity: 0; scale: 0.96;";
+        css += `${MESSAGE} { animation: vc-ts-msg-in ${Math.round(ms * 1.4)}ms ease-out; }\n@keyframes vc-ts-msg-in { from { ${from} } }\n`;
+    }
     return css ? `@media (prefers-reduced-motion: no-preference) {\n${css}}\n` : "";
 }
 
@@ -277,9 +374,14 @@ export function effectsCss(t: Theme) {
 function backdropCss(t: Theme) {
     let css = "";
     if (t.opacity < 100) css += "html, body { background: transparent !important; }\n";
-    if (!t.image && !t.moving) return css + (t.opacity < 100 ? "#app-mount { background: transparent !important; }\n" : "");
+    if (t.video) css += "html, body { background: transparent !important; }\n";
+    if (!t.image && !t.moving && !t.video) return css + (t.opacity < 100 ? "#app-mount { background: transparent !important; }\n" : "");
     css += "#app-mount { background: transparent !important; isolation: isolate; }\n";
-    if (t.image) {
+    if (t.video) {
+        // The video itself is a <video> behind Discord (see store.ts); this only darkens it.
+        const d = t.dim / 100;
+        if (d) css += `#app-mount::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: hsl(0 0% 0% / ${d}); }\n`;
+    } else if (t.image) {
         const d = t.dim / 100;
         // A blurred picture is drawn a little bigger, so its blurry edges stay off screen.
         css += `#app-mount::before { content: ""; position: fixed; inset: ${t.blur ? `-${t.blur * 2}px` : "0"}; z-index: -1; pointer-events: none;\n`
@@ -287,7 +389,7 @@ function backdropCss(t: Theme) {
     }
     if (t.moving) {
         const a = t.accent;
-        const b = mix(a, "#ff3df0", 55), c = mix(a, "#3d7bff", 55);
+        const b = t.accent2 ?? mix(a, "#ff3df0", 55), c = t.accent2 ? mix(a, t.accent2, 50) : mix(a, "#3d7bff", 55);
         // A big soft layer that drifts (only moved, never repainted, so it's cheap).
         css += `#app-mount::after { content: ""; position: fixed; inset: -30%; z-index: -1; pointer-events: none; opacity: ${t.image ? 0.6 : 1};\n`
             + `    background: radial-gradient(40% 44% at 28% 32%, ${alpha(a, 90)}, transparent 72%), radial-gradient(36% 42% at 72% 58%, ${alpha(b, 80)}, transparent 72%), radial-gradient(32% 38% at 46% 82%, ${alpha(c, 75)}, transparent 72%)${t.image ? "" : `, ${t.bg}`};\n`
@@ -298,16 +400,44 @@ function backdropCss(t: Theme) {
     return css;
 }
 
+/** Discord classes found while Discord runs (exact names — they change with Discord updates, so they're looked up, never written in). */
+export interface FoundClasses { badge?: string; brandButton?: string; }
+
+const CONTENT = '[id^="message-content-"]:not(:empty)';
+/** The mark Theme Studio puts on your own messages (an exact class, so :has() stays cheap). */
+export const OWN_MARK = "vc-ts-own";
+
+function extrasCss(t: Theme, found: FoundClasses) {
+    const a = t.accent, a2 = t.accent2;
+    const grad = a2 ? `linear-gradient(135deg, ${a}, ${a2})` : null;
+    let css = "";
+    if (t.bubbles) {
+        const light = lightness(t.bg) > 0.55;
+        const bub = mix(t.chat || t.bg, light ? "black" : "white", light ? 6 : 9);
+        css += `${MESSAGE} ${CONTENT} { width: fit-content; max-width: min(100%, 720px); box-sizing: border-box; padding: 6px 12px; border-radius: 18px 18px 18px 6px; background: ${bub}; }\n`;
+        const mine = `${MESSAGE}:has(.${OWN_MARK}) ${CONTENT}`;
+        css += `${mine} { background: ${grad ? `linear-gradient(135deg, ${alpha(a, 34)}, ${alpha(a2!, 26)})` : alpha(a, 30)}; ${t.bubblesRight ? "margin-left: auto; border-radius: 18px 18px 6px 18px;" : ""} }\n`;
+        if (t.bubblesRight) css += `${MESSAGE}:has(.${OWN_MARK}) h3 { justify-content: flex-end; text-align: right; }\n`;
+    }
+    if (t.badge && found.badge) {
+        const c = t.badge === "accent" ? a : t.badge;
+        css += `${found.badge} { background-color: ${c} !important; ${t.badge === "accent" && grad ? `background-image: ${grad} !important;` : ""} color: ${contrast("#ffffff", c) >= 3 ? "#fff" : "#111"} !important; }\n`;
+    }
+    if (grad && found.brandButton) css += `${found.brandButton} { background-image: ${grad} !important; }\n`;
+    return css;
+}
+
 /** The CSS that puts a theme on Discord. */
-export function themeCss(t: Theme) {
+export function themeCss(t: Theme, found: FoundClasses = {}) {
     const vars = Object.entries(themeVars(t)).map(([k, v]) => `    ${k}: ${v} !important;`).join("\n");
-    return `${ROOTS} {\n${vars}\n}\n${backdropCss(t)}${effectsCss(t)}`;
+    return `${ROOTS} {\n${vars}\n}\n${backdropCss(t)}${effectsCss(t)}${extrasCss(t, found)}`;
 }
 
 /** A theme file Equicord (and Vencord/BetterDiscord) can load. */
 export function themeFile(t: Theme) {
     const safe = t.name.replace(/\*\//g, "");
-    return `/**\n * @name ${safe}\n * @description Made with Sonata's Theme Studio\n * @author Sonata\n * @version 1.0.0\n */\n\n${themeCss(t)}`;
+    // A theme file can't play a video, so it's left out (the picture stays).
+    return `/**\n * @name ${safe}\n * @description Made with Sonata's Theme Studio\n * @author Sonata\n * @version 1.0.0\n */\n\n${themeCss({ ...t, video: null })}`;
 }
 
 export function fileName(t: Theme) {

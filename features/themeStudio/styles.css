@@ -95,3 +95,140 @@
 .vc-ts-switch:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
 .vc-ts-restart { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 11px; font-size: 13px; font-weight: 600;
     color: var(--text-default, var(--text-normal)); background: color-mix(in srgb, var(--tl-accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--tl-accent) 40%, transparent); }
+
+/* Preview: bubbles, badge, gradient button, video */
+.vc-ts-p-video { object-fit: cover; width: calc(100% + 16px); height: calc(100% + 16px); }
+.vc-ts-p-server { position: relative; }
+.vc-ts-p-badge { position: absolute; right: -3px; bottom: -3px; min-width: 15px; height: 15px; padding: 0 3px; box-sizing: border-box; border-radius: 8px; font-size: 9.5px; line-height: 15px; text-align: center;
+    color: #fff; background: var(--ts-badge); box-shadow: 0 0 0 2.5px var(--background-base-lowest); font-style: normal; }
+.vc-ts-p-btn { background: var(--ts-grad); }
+.vc-ts-preview-bubbles .vc-ts-p-msg p { display: block; width: fit-content; margin-top: 3px; padding: 4px 9px; border-radius: 12px 12px 12px 4px; background: color-mix(in oklab, var(--chat-background) 88%, white); }
+.vc-ts-preview-bubbles .vc-ts-p-mine p { background: color-mix(in srgb, var(--ts-accent) 32%, transparent); }
+.vc-ts-preview-bubbles.vc-ts-preview-right .vc-ts-p-mine > div { flex: 1; text-align: right; }
+.vc-ts-preview-bubbles.vc-ts-preview-right .vc-ts-p-mine p { margin-left: auto; border-radius: 12px 12px 4px 12px; text-align: left; }
+
+/* Second accent, readability */
+.vc-ts-add2 { align-self: flex-start; font-size: 13px; }
+.vc-ts-read { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 11px; font-size: 12.5px; font-weight: 600; }
+.vc-ts-read-ok { align-self: flex-start; color: #3ecf8e; background: hsl(152 60% 50% / 0.1); }
+.vc-ts-read-bad { color: #f0b232; background: hsl(40 90% 55% / 0.1); border: 1px solid hsl(40 90% 55% / 0.3); }
+
+/* Badge colour chip with a colour picker inside */
+.vc-ts-chip-color { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.vc-ts-chip-color input { width: 16px; height: 16px; padding: 0; border: 0; background: none; cursor: pointer; }
+.vc-ts-chip-color input::-webkit-color-swatch-wrapper { padding: 0; }
+.vc-ts-chip-color input::-webkit-color-swatch { border: 0; border-radius: 50%; }
+
+/* Start from a picture / import */
+.vc-ts-start-pic { font-weight: 700; }
+.vc-ts-import { display: flex; gap: 8px; margin-top: 8px; }
+
+/* A theme someone shared in chat */
+.vc-ts-shared { display: inline-flex; align-items: center; gap: 10px; margin-top: 6px; padding: 8px 10px 8px 8px; border-radius: 14px; max-width: 420px;
+    border: 1px solid hsl(0 0% 100% / 0.08); background: var(--background-surface-high, #2b2d31); }
+.vc-ts-shared-swatch { width: 38px; height: 38px; flex: none; border-radius: 10px; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.14); }
+.vc-ts-shared-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.vc-ts-shared-text b { font-size: 14px; color: var(--text-default, var(--text-normal)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-ts-shared-text span { font-size: 12px; color: var(--text-muted); }
+.vc-ts-shared-btn { all: unset; box-sizing: border-box; flex: none; padding: 7px 14px; border-radius: 9px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; background: var(--brand-500); }
+.vc-ts-shared-btn:hover { filter: brightness(1.1); }
+
+/* ═══ 2026-10 layout: themes on the left, preview + tabs on the right, no long scrolling ═══ */
+.vc-ts-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .vc-ts-layout { grid-template-columns: 1fr; } }
+.vc-ts-side { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; }
+.vc-ts-side .vc-ts-list { position: static; max-height: 58vh; }
+.vc-ts-newbtn { all: unset; box-sizing: border-box; padding: 10px 12px; border-radius: 13px; text-align: center; cursor: pointer; font-size: 13.5px; font-weight: 800;
+    color: var(--text-default, var(--text-normal)); border: 1.5px dashed color-mix(in srgb, var(--tl-accent) 55%, transparent); background: color-mix(in srgb, var(--tl-accent) 8%, transparent); transition: background 0.15s; }
+.vc-ts-newbtn:hover, .vc-ts-newbtn-on { background: color-mix(in srgb, var(--tl-accent) 18%, transparent); }
+.vc-ts-item-on { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--tl-accent); box-shadow: inset 0 0 0 1.5px hsl(0 0% 100% / 0.35); }
+.vc-ts-off { align-self: center; font-size: 12.5px; }
+
+.vc-ts-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.vc-ts-top { display: flex; align-items: center; gap: 10px; }
+.vc-ts-top .vc-ts-name { flex: 1; min-width: 0; font-size: 16px; font-weight: 800; padding: 9px 12px; }
+.vc-ts-onlabel { font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.vc-ts-onlabel-on { color: var(--tl-accent); }
+.vc-ts-main .vc-ts-preview { height: 168px; }
+
+.vc-ts-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: hsl(0 0% 0% / 0.22); border: 1px solid hsl(0 0% 100% / 0.06); }
+.vc-ts-tab { all: unset; box-sizing: border-box; flex: 1; text-align: center; padding: 8px 6px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text-muted);
+    white-space: nowrap; transition: background 0.15s, color 0.15s; }
+.vc-ts-tab:hover { color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.05); }
+.vc-ts-tab-on, .vc-ts-tab-on:hover { color: #fff; background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 62%, #000)); }
+.vc-ts-pane { display: flex; flex-direction: column; gap: 10px; min-height: 290px; animation: vc-ts-pane-in 0.16s ease-out; }
+@keyframes vc-ts-pane-in { from { opacity: 0; translate: 0 4px; } }
+
+/* Cards and rows */
+.vc-ts-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid hsl(0 0% 100% / 0.07);
+    background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 7%, transparent), hsl(0 0% 0% / 0.16) 70%); min-width: 0; }
+.vc-ts-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; align-items: start; }
+.vc-ts-lines { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; }
+.vc-ts-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px 10px 14px; border-radius: 12px; min-width: 0;
+    border: 1px solid hsl(0 0% 100% / 0.06); background: hsl(0 0% 0% / 0.16); transition: opacity 0.15s; }
+.vc-ts-card .vc-ts-line { padding: 0; border: 0; background: none; }
+.vc-ts-line > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.vc-ts-line b { font-size: 13.5px; color: var(--text-default, var(--text-normal)); }
+.vc-ts-line small { font-size: 12px; color: var(--text-muted); }
+.vc-ts-line-off { opacity: 0.5; }
+.vc-ts-mini { all: unset; box-sizing: border-box; display: grid; place-items: center; width: 30px; height: 30px; min-width: 0; flex: none; border-radius: 9px; cursor: pointer;
+    font-size: 13px; color: var(--text-muted); background: hsl(0 0% 100% / 0.06); }
+.vc-ts-mini:hover { color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.12); }
+.vc-ts-top .vc-ts-del:hover { color: #fff; background: hsl(358 75% 50% / 0.9); }
+
+/* Colours: a two-column grid of compact rows */
+.vc-ts-colors { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px; }
+.vc-ts-colors .vc-ts-color { padding: 8px 10px; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.06); background: hsl(0 0% 0% / 0.16); }
+.vc-ts-colors .vc-ts-swatch { width: 30px; height: 30px; }
+.vc-ts-colors .vc-ts-color-text b { font-size: 13px; }
+.vc-ts-colors .vc-ts-hex { width: 82px; padding: 6px 8px; }
+.vc-ts-colors .vc-ts-mini { width: 26px; height: 26px; font-size: 12px; }
+.vc-ts-add2 { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700;
+    color: var(--text-muted); border: 1.5px dashed hsl(0 0% 100% / 0.14); }
+.vc-ts-add2 span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; font-size: 18px; background: hsl(0 0% 100% / 0.06); }
+.vc-ts-add2 small { font-weight: 500; font-size: 12px; }
+.vc-ts-add2:hover { color: var(--text-default, var(--text-normal)); border-color: color-mix(in srgb, var(--tl-accent) 60%, transparent); }
+.vc-ts-pane .vc-ts-read { align-self: stretch; }
+.vc-ts-pane .vc-ts-read-ok { align-self: flex-start; }
+
+/* Motion: choices in two columns */
+.vc-ts-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 8px 16px; }
+.vc-ts-choices .vc-ts-choice { grid-template-columns: 96px minmax(0, 1fr); padding: 7px 10px; border-radius: 12px; background: hsl(0 0% 0% / 0.14); }
+.vc-ts-choices .vc-tool-chip { padding: 4px 10px; font-size: 12.5px; }
+
+/* Background */
+.vc-ts-pane .vc-ts-see { padding: 12px 14px; }
+.vc-ts-media-row { display: flex; gap: 12px; align-items: center; }
+.vc-ts-media-pick { all: unset; box-sizing: border-box; display: grid; place-items: center; width: 96px; height: 64px; flex: none; border-radius: 11px; overflow: hidden; cursor: pointer;
+    font-size: 24px; border: 1.5px dashed hsl(0 0% 100% / 0.16); background: hsl(0 0% 0% / 0.2); }
+.vc-ts-media-has { border-style: solid; border-color: hsl(0 0% 100% / 0.1); }
+.vc-ts-media-pick img, .vc-ts-media-pick video { width: 100%; height: 100%; object-fit: cover; }
+.vc-ts-media-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.vc-ts-media-text b { font-size: 13.5px; color: var(--text-default, var(--text-normal)); }
+.vc-ts-media-text > span { font-size: 12px; color: var(--text-muted); }
+.vc-ts-media-text .vc-tool-row { margin-top: 4px; }
+
+/* Share */
+.vc-ts-share > b { font-size: 14px; color: var(--text-default, var(--text-normal)); }
+.vc-ts-share > span { font-size: 12.5px; line-height: 1.45; color: var(--text-muted); }
+.vc-ts-share > .vc-tool-btn { align-self: flex-start; }
+.vc-ts-wrap-row { flex-wrap: wrap; }
+
+/* New theme */
+.vc-ts-new { display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.07);
+    background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 9%, transparent), hsl(0 0% 0% / 0.18) 65%); }
+.vc-ts-new-head { display: flex; align-items: center; justify-content: space-between; }
+.vc-ts-new-head b { font-size: 15px; color: var(--text-default, var(--text-normal)); }
+.vc-ts-new-pic { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 12px 14px; border-radius: 13px; cursor: pointer;
+    border: 1.5px dashed color-mix(in srgb, var(--tl-accent) 55%, transparent); background: color-mix(in srgb, var(--tl-accent) 8%, transparent); }
+.vc-ts-new-pic:hover { background: color-mix(in srgb, var(--tl-accent) 16%, transparent); }
+.vc-ts-new-pic span { grid-row: 1 / 3; font-size: 26px; text-align: center; }
+.vc-ts-new-pic b { font-size: 14px; color: var(--text-default, var(--text-normal)); }
+.vc-ts-new-pic small { font-size: 12px; color: var(--text-muted); }
+.vc-ts-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.vc-ts-preset { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700;
+    color: var(--text-default, var(--text-normal)); border: 1px solid hsl(0 0% 100% / 0.07); background: hsl(0 0% 0% / 0.18); transition: border-color 0.15s, translate 0.15s; }
+.vc-ts-preset:hover { border-color: color-mix(in srgb, var(--tl-accent) 50%, transparent); translate: 0 -1px; }
+.vc-ts-preset span { width: 26px; height: 26px; flex: none; border-radius: 8px; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.15); }
+.vc-ts-new .vc-ts-import { margin-top: 0; }
+.vc-ts-line-wide { grid-column: 1 / -1; }
