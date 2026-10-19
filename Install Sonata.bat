@@ -245,11 +245,13 @@ if "%CONNECTED%"=="1" goto :uptodateok
 echo   BUT Equicord isn't connected to your Discord right now, so
 echo   Sonata won't show up. Press R to repair that.
 echo.
+call :showdiscords
+echo.
 choice /c QR /n /m "  [Q] Close   [R] Repair "
 if errorlevel 2 goto :repair
 exit /b 0
 :uptodateok
-echo   Connected to: %DISCORDS%
+call :showdiscords
 echo.
 echo   If Sonata went missing from Discord ^(a Discord update can do that^),
 echo   Repair rebuilds it and connects it to Discord again.
@@ -327,6 +329,8 @@ call :checkconnected
 if "%CONNECTED%"=="0" goto :notconnected
 echo.
 echo   Repaired - connected to: %DISCORDS%
+echo.
+call :showdiscords
 call :restartdiscord
 pause
 exit /b 0
@@ -423,11 +427,23 @@ if not exist "%TARGET%\equicord-fixes.patch" exit /b 0
 git -C "%EQ%" apply --reverse --check "%TARGET%\equicord-fixes.patch" >nul 2>nul
 if not errorlevel 1 exit /b 0
 git -C "%EQ%" apply --whitespace=nowarn "%TARGET%\equicord-fixes.patch" >nul 2>nul
+if not errorlevel 1 goto :fixesadded
+rem  An older set of Sonata's fixes is in there: put those files back as they
+rem  came, then add the new set.
+for /f "tokens=3" %%f in ('findstr /b /c:"diff --git a/" "%TARGET%\equicord-fixes.patch"') do call :restorefile "%%f"
+git -C "%EQ%" apply --whitespace=nowarn "%TARGET%\equicord-fixes.patch" >nul 2>nul
 if errorlevel 1 (
     echo   Couldn't add Sonata's small Equicord fixes - carrying on without them.
     exit /b 0
 )
+:fixesadded
 echo   Added Sonata's small Equicord fixes.
+exit /b 0
+
+rem  call :restorefile "a/<path>" - puts one Equicord file back as it came.
+:restorefile
+set "RF=%~1"
+git -C "%EQ%" checkout --quiet HEAD -- "%RF:~2%" 2>nul
 exit /b 0
 
 rem  Is this Equicord connected to a Discord? Looks in the newest app-* folder of
@@ -446,6 +462,8 @@ rem  Lists each Discord and what it loads - so a screenshot shows what's wrong.
 echo   What's on this PC:
 powershell -NoProfile -Command "$any = $false; foreach ($n in 'Discord','DiscordPTB','DiscordCanary','DiscordDevelopment') { $a = Get-ChildItem (Join-Path $env:LOCALAPPDATA $n) -Directory -Filter 'app-*' -EA 0 | Sort-Object { try { [version]$_.Name.Substring(4) } catch { [version]'0.0' } } | Select-Object -Last 1; if (-not $a) { continue }; $any = $true; $f = Join-Path $a.FullName 'resources\app.asar'; if (Test-Path $f -PathType Container) { $f = Join-Path $f 'index.js' }; $t = ''; if ((Test-Path $f -PathType Leaf) -and (Get-Item $f).Length -lt 131072) { $t = [IO.File]::ReadAllText($f) }; $m = [regex]::Match($t, 'require\((.+?)\)'); if ($m.Success) { '    ' + $n + ' (' + $a.Name + '): loads Equicord from ' + $m.Groups[1].Value } else { '    ' + $n + ' (' + $a.Name + '): normal Discord, no Equicord' } }; if (-not $any) { '    No Discord found in ' + $env:LOCALAPPDATA }"
 echo     This Equicord: %EQ%
+if exist "%EQ%\dist\desktop\patcher.js" (echo     Built: yes) else (echo     Built: NO - Repair builds it)
+powershell -NoProfile -Command "$s = Join-Path $env:APPDATA 'Equicord\settings\settings.json'; if (Test-Path $s) { '    Equicord has started inside Discord - last on ' + (Get-Item $s).LastWriteTime.ToString('d MMM, h:mm tt') } else { '    Equicord has NEVER started inside Discord on this PC' }; if (Get-AppxPackage -Name '*Discord*' -EA 0) { '    Found the Microsoft Store Discord - Equicord can''t mod that one. Use the one from discord.com.' }"
 exit /b 0
 
 rem  Connects Equicord to Discord if it isn't already. Fails if it still isn't.

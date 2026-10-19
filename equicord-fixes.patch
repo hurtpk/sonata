@@ -1,3 +1,41 @@
+diff --git a/src/main/patcher.ts b/src/main/patcher.ts
+index a93f78848..5bd65543b 100644
+--- a/src/main/patcher.ts
++++ b/src/main/patcher.ts
+@@ -26,15 +26,24 @@ import { IS_VANILLA } from "./utils/constants";
+ 
+ console.log("[Equicord] Starting up...");
+ 
++// Discord's entry module. require.main is missing when Electron starts the app through
++// Node's ESM loader (seen on some PCs: "Cannot read properties of undefined (reading
++// 'filename')"), so fall back to the injector's own loaded module, then to where it always
++// lives. Made the main module again so Discord's own code finds it too.
++const mainModule: { filename: string; } = require.main
++    ?? Object.values(require.cache).find(m => m && /[\\/]app\.asar[\\/]index\.js$/i.test(m.filename))
++    ?? { filename: join(process.resourcesPath, "app.asar", "index.js") };
++if (!require.main) (process as any).mainModule = mainModule;
++
+ // Our injector file at app/index.js
+-const injectorPath = require.main!.filename;
++const injectorPath = mainModule.filename;
+ 
+ // The original app.asar
+ const asarPath = join(dirname(injectorPath), "..", "_app.asar");
+ 
+ const discordPkg = require(join(asarPath, "package.json"));
+-require.main!.filename = join(asarPath, discordPkg.main);
+-if (IS_VESKTOP || IS_EQUIBOP) require.main!.filename = join(dirname(injectorPath), "..", "..", "package.json");
++mainModule.filename = join(asarPath, discordPkg.main);
++if (IS_VESKTOP || IS_EQUIBOP) mainModule.filename = join(dirname(injectorPath), "..", "..", "package.json");
+ 
+ // @ts-expect-error Untyped method? Dies from cringe
+ app.setAppPath(asarPath);
+@@ -156,4 +165,4 @@ if (!IS_VANILLA) {
+ }
+ 
+ console.log("[Equicord] Loading original Discord app.asar");
+-require(require.main!.filename);
++require(mainModule.filename);
 diff --git a/src/plugins/_core/concatenatedComponentExtractor.tsx b/src/plugins/_core/concatenatedComponentExtractor.tsx
 index 2c01bb36b..bcdc3c836 100644
 --- a/src/plugins/_core/concatenatedComponentExtractor.tsx
