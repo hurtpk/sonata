@@ -30,7 +30,6 @@ In PowerShell, go to where you want it (Documents works) and download it:
 cd ~\Documents
 git clone https://github.com/Equicord/Equicord
 cd Equicord
-pnpm install
 ```
 
 ## 3. Add Sonata
@@ -45,18 +44,31 @@ git clone https://github.com/hurtpk/sonata src\userplugins\sonata
 
 You should end up with `Documents\Equicord\src\userplugins\sonata\index.tsx`.
 
-## 4. Build and install
+## 4. Match Equicord to Sonata
+
+Sonata is made for one Equicord version, because newer Equicords sometimes change things Sonata uses. That version is the long code in `equicord-version.txt`. Put Equicord on it and add Sonata's small Equicord fixes:
+
+```powershell
+git checkout -B sonata <the code from equicord-version.txt>
+git apply src\userplugins\sonata\equicord-fixes.patch
+```
+
+## 5. Build and install
 
 Still in the `Equicord` folder in PowerShell:
 
 ```powershell
+pnpm install
+pnpm install --dir src\userplugins\sonata --ignore-workspace --prod
 pnpm build
 pnpm inject
 ```
 
+The second line installs a few extra parts that only Sonata needs, into Sonata's own folder.
+
 `pnpm inject` asks which Discord to install into. Pick yours (usually **Stable**). Then fully close Discord (right-click its tray icon → **Quit Discord**) and open it again.
 
-## 5. First start
+## 6. First start
 
 - Sonata is on automatically. Open it with the **♫ button** in the dock under your profile picture.
 - A short **welcome tour** helps you pick a starting set of features:
@@ -76,14 +88,15 @@ Or by hand, in the `Equicord` folder:
 
 ```powershell
 git -C src\userplugins\sonata pull
+pnpm install --dir src\userplugins\sonata --ignore-workspace --prod
 pnpm build
 ```
 
-Then press **Ctrl+R** in Discord.
+Then press **Ctrl+R** in Discord. If `equicord-version.txt` changed, do step 4 and `pnpm install` first.
 
 **What's new** opens by itself to show what changed.
 
-To update Equicord itself, run `git pull`, then `pnpm install`, then `pnpm build`.
+Don't update Equicord on its own. Sonata keeps it on the version Sonata is made for, and moves it forward when Sonata is ready.
 
 ## Sharing your look and setup
 

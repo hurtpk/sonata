@@ -21,6 +21,8 @@ Service. People rarely get in trouble for using one, but it's your call.
    then the download button.)
 
 2. Double-click "Install Sonata.bat".
+   (Tried an older installer and it failed with "Could not resolve"?
+   Just run the new one - it fixes that install.)
 
    If Windows says "Windows protected your PC", click "More info",
    then "Run anyway" - Windows says this about any downloaded .bat file.
@@ -64,7 +66,6 @@ Service. People rarely get in trouble for using one, but it's your call.
      cd ~\Documents
      git clone https://github.com/Equicord/Equicord
      cd Equicord
-     pnpm install
 
 3. Still in PowerShell, download Sonata into Equicord's plugin folder:
 
@@ -78,14 +79,24 @@ Service. People rarely get in trouble for using one, but it's your call.
 
      Documents\Equicord\src\userplugins\sonata\index.tsx
 
-4. Back in PowerShell (still in the Equicord folder), run:
+4. Put Equicord on the version Sonata is made for (newer Equicords
+   sometimes change things Sonata uses), with Sonata's small fixes.
+   The version is the long code in
+   src\userplugins\sonata\equicord-version.txt:
 
+     git checkout -B sonata <the code from equicord-version.txt>
+     git apply src\userplugins\sonata\equicord-fixes.patch
+
+5. Back in PowerShell (still in the Equicord folder), run:
+
+     pnpm install
+     pnpm install --dir src\userplugins\sonata --ignore-workspace --prod
      pnpm build
      pnpm inject
 
    Pick your Discord (usually "Stable") when it asks.
 
-5. Fully close Discord (tray icon -> Quit Discord) and open it again.
+6. Fully close Discord (tray icon -> Quit Discord) and open it again.
 
 
 ----------------------------------------------------------------------
@@ -116,9 +127,14 @@ that)? Run it and pick "Repair" - it rebuilds Sonata and reconnects it.
 By hand: in PowerShell, in the Equicord folder, run
 
      git -C src\userplugins\sonata pull
+     pnpm install --dir src\userplugins\sonata --ignore-workspace --prod
      pnpm build
 
-then press Ctrl+R in Discord.
+then press Ctrl+R in Discord. (If equicord-version.txt changed, do
+step 4 of the manual way and "pnpm install" first.)
+
+Don't update Equicord on its own - Sonata keeps it on the version it's
+made for, and moves it forward when Sonata is ready.
 
 
 ----------------------------------------------------------------------

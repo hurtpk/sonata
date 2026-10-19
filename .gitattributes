@@ -1,3 +1,4 @@
 # Windows needs .bat files with Windows line endings.
 *.bat text eol=crlf
 *.txt text eol=crlf
+*.patch text eol=lf

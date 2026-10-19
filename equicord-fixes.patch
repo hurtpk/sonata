@@ -1,0 +1,51 @@
+diff --git a/src/plugins/_core/concatenatedComponentExtractor.tsx b/src/plugins/_core/concatenatedComponentExtractor.tsx
+index 2c01bb36b..bcdc3c836 100644
+--- a/src/plugins/_core/concatenatedComponentExtractor.tsx
++++ b/src/plugins/_core/concatenatedComponentExtractor.tsx
+@@ -26,7 +26,8 @@ export default definePlugin({
+         {
+             find: /="ltr",orientation:\i="vertical"[^}]+?customTheme:/,
+             replacement: {
+-                match: /(?=function (\i)\(\i,\i,\i\)\{.{0,20}?return \i\.forwardRef\(function\(\i,\i\)\{let\{[^}]+?="ltr",orientation:)/,
++                // Discord dropped forwardRef here (refs are passed as a prop now); match both shapes.
++                match: /(?=function (\i)\(\i,\i,\i\)\{.{0,20}?return (?:\i\.forwardRef\()?function\(\i(?:,\i)?\)\{let\{[^}]+?="ltr",orientation:)/,
+                 replace: "$self.setCreateScroller($1);"
+             }
+         },
+diff --git a/src/webpack/common/utils.ts b/src/webpack/common/utils.ts
+index 47903155b..36a752d2c 100644
+--- a/src/webpack/common/utils.ts
++++ b/src/webpack/common/utils.ts
+@@ -100,7 +100,31 @@ export const createToast: t.createToast = findByCodeLazy('variant:"default",icon
+  * Show a simple toast. If you need more options, use Toasts.show manually
+  */
+ export function showToast(message: string, type: t.ToastType = "message", options?: ToastOptions) {
+-    Toasts.show(createToast({ message, type, options }));
++    // Old-style callers pass the whole { message, type, options } object as the message. Drawing that
++    // object crashes Discord's window (React error #31), so take it apart instead.
++    const raw: any = message;
++    if (raw && typeof raw === "object" && !raw.$$typeof) {
++        console.warn("[Equicord] showToast was given an object instead of text — fix the caller:", new Error().stack);
++        type = raw.type ?? type;
++        options = raw.options ?? options;
++        message = typeof raw.message === "string" ? raw.message : String(raw.message ?? "");
++    }
++    // Discord's toast maker is now (text, type, options); it used to take one { message, type, options }
++    // object. Try the new way first, and fall back to the old one if the text didn't land where it should.
++    const make = createToast as any;
++    let toast: any;
++    try { toast = make(message, type, options ?? {}); } catch { }
++    if (!toast || typeof toast !== "object" || toast.text !== message) {
++        try { toast = make({ message, type, options }); } catch { toast = null; }
++    }
++    // Whatever happens, never hand Discord a toast whose text isn't text: drawing that
++    // crashes the whole window (React error #31).
++    const text = toast?.text;
++    if (!toast || typeof toast !== "object" || "message" in toast || (text && typeof text === "object" && !text.$$typeof)) {
++        console.warn("[Equicord] Couldn't show a toast (Discord changed how toasts work):", message);
++        return;
++    }
++    Toasts.show(toast);
+ }
+ 
+ export const UserUtils = {

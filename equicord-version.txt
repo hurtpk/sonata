@@ -1,0 +1,4 @@
+# The Equicord version Sonata is made and tested for. Newer Equicords
+# sometimes change things Sonata uses, so Install Sonata.bat puts Equicord
+# on this one (plus the small fixes in equicord-fixes.patch).
+33bc116426c64deefed72f690524aeabb260ba27

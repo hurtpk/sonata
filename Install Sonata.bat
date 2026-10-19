@@ -107,6 +107,8 @@ if exist "%EQ%\package.json" (
     echo   Downloading Equicord into "%EQ%"...
     git clone https://github.com/Equicord/Equicord "%EQ%"
     if errorlevel 1 goto :failed
+    rem  Marks it as this installer's own, so it can keep it on Sonata's version without asking.
+    echo.>"%EQ%\.git\sonata-installed"
 )
 
 rem ---- Sonata: this folder's copy, or the newest one from GitHub ----
@@ -120,9 +122,12 @@ git clone %REPO% "%TARGET%"
 if errorlevel 1 goto :failed
 
 :build
+call :matchequicord
 cd /d "%EQ%"
 call :step "Installing Equicord's parts (this is the slow bit)"
 call pnpm install
+if errorlevel 1 goto :failed
+call :sonataparts
 if errorlevel 1 goto :failed
 call :step "Building Equicord and Sonata"
 call pnpm build
@@ -331,17 +336,77 @@ if errorlevel 8 exit /b 1
 echo   Copied Sonata from this folder into "%TARGET%".
 exit /b 0
 
-rem  Rebuilds Equicord with Sonata (installing Equicord's parts first if they're missing).
+rem  Rebuilds Equicord with Sonata (installing Equicord's parts first if they're
+rem  missing or Equicord just changed version).
 :rebuild
+set "EQCHANGED=0"
+call :matchequicord
 cd /d "%EQ%"
-if not exist "%EQ%\node_modules" (
+if not exist "%EQ%\node_modules" set "EQCHANGED=1"
+if "%EQCHANGED%"=="1" (
     call :step "Installing Equicord's parts"
     call pnpm install
     if errorlevel 1 exit /b 1
 )
+call :sonataparts
+if errorlevel 1 exit /b 1
 call :step "Building"
 call pnpm build
 exit /b %errorlevel%
+
+rem  Sonata's own extra parts (listed in its package.json) go in its own folder,
+rem  so Equicord's files stay untouched.
+:sonataparts
+if not exist "%TARGET%\package.json" exit /b 0
+call :step "Installing Sonata's parts"
+call pnpm install --dir "%TARGET%" --ignore-workspace --lockfile=false --prod --no-optional
+exit /b %errorlevel%
+
+rem  Sonata is made for one Equicord version (equicord-version.txt), plus a few
+rem  small fixes (equicord-fixes.patch). Newer Equicords sometimes change things
+rem  Sonata uses, so this puts Equicord on that version: without asking if this
+rem  installer downloaded that Equicord, otherwise only if you say yes.
+:matchequicord
+set "PIN="
+if exist "%TARGET%\equicord-version.txt" for /f "usebackq eol=# tokens=1" %%h in ("%TARGET%\equicord-version.txt") do set "PIN=%%h"
+if not defined PIN exit /b 0
+if not exist "%EQ%\.git" exit /b 0
+set "EQHEAD="
+for /f %%h in ('git -C "%EQ%" rev-parse HEAD 2^>nul') do set "EQHEAD=%%h"
+if /i "%EQHEAD%"=="%PIN%" goto :fixequicord
+if exist "%EQ%\.git\sonata-installed" goto :switchequicord
+echo.
+echo   Sonata is made for a particular version of Equicord, and yours is
+echo   a different one - so some of Sonata may not build or work right.
+echo   Switching Equicord to Sonata's version fixes that. ^(Say no if you
+echo   change Equicord's own files yourself.^)
+echo.
+choice /c YN /n /m "  Switch Equicord to Sonata's version? [Y/N] "
+if errorlevel 2 exit /b 0
+:switchequicord
+call :step "Matching Equicord to Sonata"
+git -C "%EQ%" checkout --quiet -B sonata %PIN% 2>nul
+if not errorlevel 1 goto :switched
+git -C "%EQ%" fetch --quiet origin
+git -C "%EQ%" checkout --quiet -B sonata %PIN%
+if errorlevel 1 (
+    echo   Couldn't switch Equicord ^(it may have changes of its own^) - carrying on.
+    exit /b 0
+)
+:switched
+echo   Equicord is on Sonata's version.
+set "EQCHANGED=1"
+:fixequicord
+if not exist "%TARGET%\equicord-fixes.patch" exit /b 0
+git -C "%EQ%" apply --reverse --check "%TARGET%\equicord-fixes.patch" >nul 2>nul
+if not errorlevel 1 exit /b 0
+git -C "%EQ%" apply --whitespace=nowarn "%TARGET%\equicord-fixes.patch" >nul 2>nul
+if errorlevel 1 (
+    echo   Couldn't add Sonata's small Equicord fixes - carrying on without them.
+    exit /b 0
+)
+echo   Added Sonata's small Equicord fixes.
+exit /b 0
 
 rem  Sonata's version, from the top of its changelog: call :versionof "<sonata folder>" VAR
 :versionof
