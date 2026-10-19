@@ -106,8 +106,12 @@ Then fully close and reopen Discord.
  UPDATING SONATA
 ----------------------------------------------------------------------
 
-Double-click "Install Sonata.bat" again. It downloads the newest Sonata
-from GitHub and rebuilds. Then press Ctrl+R in Discord (or restart it).
+Double-click "Install Sonata.bat" again. Once Sonata is installed, it
+just checks GitHub for a newer version: it shows what changed and asks
+before updating (about a minute). Then fully close and reopen Discord.
+
+Up to date but Sonata vanished from Discord (a Discord update can do
+that)? Run it and pick "Repair" - it rebuilds Sonata and reconnects it.
 
 By hand: in PowerShell, in the Equicord folder, run
 
