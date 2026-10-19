@@ -33,7 +33,7 @@ export const CHANGELOG: ChangeEntry[] = [
         date: "October 19, 2026",
         title: "Update bar",
         items: [
-            { icon: "🔔", text: "When there's a newer Sonata on GitHub, a blue bar shows at the top of Discord — like Discord's own notices — with an Update button that opens the installer (it shows what changed and asks first). It checks a minute after Discord starts and every six hours. Switch it off, or check right away, in Updates." },
+            { icon: "🔔", text: "When there's a newer Sonata on GitHub, a blue bar shows at the top of Discord — like Discord's own notices — with an Update button that opens the installer (it shows what changed and asks first). It checks a minute after Discord starts and every 15 minutes. Switch it off, or check right away, in Updates." },
         ],
     },
     {

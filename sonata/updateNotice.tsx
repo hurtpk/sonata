@@ -6,7 +6,7 @@
 
 // "Sonata 2026.10.20 is out" — a blue bar along the top of Discord, like
 // Discord's own notices, when GitHub has a newer Sonata than this one. It
-// looks a minute after Discord starts and then every six hours, shows each
+// looks a minute after Discord starts and then every 15 minutes, shows each
 // new version once, and its Update button opens Install Sonata.bat (which
 // shows what changed and asks before updating). Switch it off in Updates.
 
@@ -18,7 +18,7 @@ import { LATEST } from "./changelog";
 const native = () => VencordNative.pluginHelpers.Sonata as any;
 
 const STYLE_ID = "sonata-update-notice";
-const SIX_HOURS = 6 * 3600_000;
+const EVERY = 15 * 60_000;
 let timers: ReturnType<typeof setTimeout>[] = [];
 let shown = new Set<string>();
 
@@ -61,7 +61,7 @@ async function check(isOn: () => boolean) {
 export function startUpdateNotice(isOn: () => boolean) {
     stopUpdateNotice();
     timers.push(setTimeout(() => void check(isOn), 60_000));
-    timers.push(setInterval(() => void check(isOn), SIX_HOURS) as any);
+    timers.push(setInterval(() => void check(isOn), EVERY) as any);
 }
 
 export function stopUpdateNotice() {
