@@ -104,7 +104,9 @@ Your settings aren't stored in this folder, so sharing the folder only shares So
 
 ## Uninstalling
 
-In the `Equicord` folder, run:
+Run **Install Sonata.bat** and press **U** (Uninstall) on its menu. You can remove just Sonata (Equicord stays, with any other plugins), or everything (Equicord is disconnected from Discord first, then deleted, so Discord goes back to normal). It asks before deleting anything.
+
+By hand instead: in the `Equicord` folder, run:
 
 ```powershell
 pnpm uninject

@@ -7,7 +7,8 @@ rem  Sonata installer and updater.
 rem  Not installed yet: installs Git, Node.js and pnpm if they're missing,
 rem  downloads Equicord and Sonata, builds them and installs them into Discord.
 rem  Already installed: checks GitHub for a newer Sonata, shows what changed,
-rem  and updates it if you say yes - or repairs it (rebuild and reconnect).
+rem  and updates it if you say yes - or repairs it (rebuild and reconnect),
+rem  or uninstalls it ([U] on the menu, or run it with --uninstall).
 rem  Inside a "sonata" folder (next to index.tsx), it uses that folder's copy.
 
 set "REPO=https://github.com/hurtpk/sonata"
@@ -33,6 +34,10 @@ if not defined EQ (
 )
 set "TARGET=%EQ%\src\userplugins\sonata"
 set "PATH=%PATH%;%ProgramFiles%\Git\cmd;%ProgramFiles%\nodejs;%APPDATA%\npm"
+
+rem ---- The uninstaller: [U] on the menu, or this file run with --uninstall ----
+if /i "%~1"=="--uninstall" goto :uninstall
+if /i "%~1"=="--uninstall-run" goto :uninstallnow
 
 rem ---- Already installed? Then just check for updates. ----
 if exist "%TARGET%\index.tsx" if exist "%EQ%\package.json" goto :updatemode
@@ -216,7 +221,8 @@ echo.
 echo   What changed:
 git -C "%TARGET%" log --format="     - %%s" -n 12 HEAD..@{u}
 echo.
-choice /c YN /n /m "  Update now? [Y/N] "
+choice /c YNU /n /m "  Update now? [Y/N]   [U] Uninstall instead "
+if errorlevel 3 goto :uninstall
 if errorlevel 2 goto :noupdate
 call :step "Updating Sonata"
 git -C "%TARGET%" pull --ff-only
@@ -247,7 +253,8 @@ echo   Sonata won't show up. Press R to repair that.
 echo.
 call :showdiscords
 echo.
-choice /c QR /n /m "  [Q] Close   [R] Repair "
+choice /c QRU /n /m "  [Q] Close   [R] Repair   [U] Uninstall "
+if errorlevel 3 goto :uninstall
 if errorlevel 2 goto :repair
 exit /b 0
 :uptodateok
@@ -261,7 +268,8 @@ if not exist "%APPDATA%\Equicord\settings\settings.json" (
 echo   If Sonata went missing from Discord ^(a Discord update can do that^),
 echo   Repair rebuilds it and connects it to Discord again.
 echo.
-choice /c QR /n /m "  [Q] Close   [R] Repair "
+choice /c QRU /n /m "  [Q] Close   [R] Repair   [U] Uninstall "
+if errorlevel 3 goto :uninstall
 if errorlevel 2 goto :repair
 exit /b 0
 
@@ -270,7 +278,8 @@ echo.
 echo   Couldn't reach GitHub to check for updates - are you online?
 echo   You have Sonata %CUR%.
 echo.
-choice /c QR /n /m "  [Q] Close   [R] Repair (rebuild and reconnect to Discord) "
+choice /c QRU /n /m "  [Q] Close   [R] Repair (rebuild and reconnect to Discord)   [U] Uninstall "
+if errorlevel 3 goto :uninstall
 if errorlevel 2 goto :repair
 exit /b 0
 
@@ -347,8 +356,187 @@ pause
 exit /b 0
 
 rem ================================================================
+rem   UNINSTALLING
+rem ================================================================
+
+rem  This file may be inside the very folders it's about to delete, and Windows
+rem  reads a .bat as it runs - so the uninstaller runs from a copy in TEMP.
+:uninstall
+copy /y "%~f0" "%TEMP%\Sonata uninstaller.bat" >nul
+if errorlevel 1 goto :failed
+cd /d "%TEMP%"
+"%TEMP%\Sonata uninstaller.bat" --uninstall-run
+
+:uninstallnow
+cd /d "%TEMP%"
+title Sonata uninstaller
+echo.
+echo  ==============================================================
+echo                         SONATA UNINSTALLER
+echo  ==============================================================
+echo.
+if not exist "%TARGET%\index.tsx" if not exist "%EQ%\package.json" (
+    echo   Sonata isn't installed on this PC - there's nothing to remove.
+    goto :uninstallend
+)
+echo   [S] Remove Sonata only. Equicord stays, with any other plugins.
+echo   [E] Remove everything: Sonata and Equicord. Discord goes back to normal.
+echo   [C] Cancel
+echo.
+choice /c SEC /n /m "  Pick one: "
+if errorlevel 3 goto :uninstallcancel
+if errorlevel 2 goto :uninstallall
+
+rem ---- Sonata only: delete its folder and rebuild Equicord without it ----
+if not exist "%TARGET%" (
+    echo   Sonata's folder isn't there - nothing to remove.
+    goto :uninstallend
+)
+echo.
+echo   This deletes Sonata's folder:
+echo     %TARGET%
+echo   Sonata's saved things ^(notes, reminders, themes...^) are lost with it.
+echo.
+choice /c YN /n /m "  Remove Sonata? [Y/N] "
+if errorlevel 2 goto :uninstallcancel
+call :step "Removing Sonata"
+call :deletefolder "%TARGET%"
+if errorlevel 1 goto :removefailed
+echo   Sonata is removed.
+if not exist "%EQ%\package.json" goto :uninstalled
+call :step "Rebuilding Equicord without Sonata"
+cd /d "%EQ%"
+call pnpm build
+set "BUILDERR=%errorlevel%"
+cd /d "%TEMP%"
+if not "%BUILDERR%"=="0" goto :failed
+call :checkconnected
+call :freshdiscord
+goto :uninstalled
+
+rem ---- Everything: disconnect Equicord from Discord, then delete it ----
+:uninstallall
+echo.
+echo   This disconnects Equicord from Discord, then deletes:
+echo     %EQ%
+if not exist "%EQ%\.git\sonata-installed" (
+    echo.
+    echo   Heads-up: this Equicord wasn't set up by the Sonata installer, so it
+    echo   may have other plugins or changes of your own in it.
+)
+echo.
+choice /c YN /n /m "  Remove everything? [Y/N] "
+if errorlevel 2 goto :uninstallcancel
+call :checkconnected
+set "WASDISCORDS=%DISCORDS%"
+if "%CONNECTED%"=="0" goto :disconnected
+call :closediscord
+:disconnectagain
+call :step "Disconnecting Equicord from Discord"
+echo   In the next screen, pick your Discord ^(usually "Stable"^) and press Enter.
+echo.
+cd /d "%EQ%"
+call pnpm uninject
+cd /d "%TEMP%"
+call :checkconnected
+if "%CONNECTED%"=="0" goto :disconnected
+rem  Discord loads Equicord from its folder, so deleting it while still connected
+rem  would stop Discord from starting. Never delete it until nothing uses it.
+echo.
+echo   Equicord is still connected to: %DISCORDS%
+echo   ^(Pick that one in the next screen.^) Equicord isn't deleted until it's
+echo   disconnected from every Discord.
+choice /c RQ /n /m "  [R] Disconnect again   [Q] Stop here "
+if errorlevel 2 goto :uninstallcancel
+goto :disconnectagain
+:disconnected
+echo   Equicord is disconnected from Discord.
+call :step "Deleting Equicord"
+call :deletefolder "%EQ%"
+if errorlevel 1 goto :removefailed
+echo   Equicord and Sonata are deleted.
+if not exist "%APPDATA%\Equicord" goto :startafter
+echo.
+echo   Equicord's saved settings are still in "%APPDATA%\Equicord".
+choice /c YN /n /m "  Delete those too? [Y/N] "
+if errorlevel 2 goto :startafter
+call :deletefolder "%APPDATA%\Equicord"
+if errorlevel 1 (echo   Couldn't delete them - you can delete that folder yourself.) else (echo   Settings deleted.)
+:startafter
+set "DISCORDS=%WASDISCORDS%"
+call :startdiscord
+goto :uninstalled
+
+:uninstallcancel
+echo.
+echo   Nothing was removed.
+goto :uninstallend
+
+:removefailed
+echo.
+echo   Couldn't delete everything - a file may be in use. Close Discord, and
+echo   anything open in that folder, then run this again.
+goto :uninstallend
+
+:uninstalled
+echo.
+echo  ==============================================================
+echo                       SONATA IS UNINSTALLED
+echo  ==============================================================
+echo.
+echo   Git, Node.js and pnpm were left installed, since other programs can
+echo   use them. You can uninstall them from Windows Settings ^> Apps.
+echo   You can delete this installer file now.
+:uninstallend
+echo.
+pause
+rem  Removes this copy from TEMP once it's finished (it only ever runs as that copy).
+if /i not "%~1"=="--uninstall-run" exit /b 0
+(goto) 2>nul & del "%~f0"
+
+rem ================================================================
 rem   HELPERS
 rem ================================================================
+
+rem  call :deletefolder "<folder>" - deletes a folder and everything in it. Falls
+rem  back to PowerShell for the very long paths Equicord's parts can have.
+:deletefolder
+if not exist "%~1" exit /b 0
+rmdir /s /q "%~1" 2>nul
+if not exist "%~1" exit /b 0
+set "DELDIR=%~1"
+powershell -NoProfile -Command "Remove-Item -LiteralPath ('\\?\' + $env:DELDIR) -Recurse -Force -ErrorAction SilentlyContinue" 2>nul
+if exist "%~1" exit /b 1
+exit /b 0
+
+rem  Closes every Discord.
+:closediscord
+echo   Closing Discord...
+for %%n in (Discord DiscordPTB DiscordCanary DiscordDevelopment) do taskkill /f /t /im %%n.exe >nul 2>nul
+timeout /t 3 /nobreak >nul
+for %%n in (Discord DiscordPTB DiscordCanary DiscordDevelopment) do taskkill /f /t /im %%n.exe >nul 2>nul
+exit /b 0
+
+rem  Starts the Discords in DISCORDS (or just Discord) from their newest app-* folder.
+:startdiscord
+echo   Starting Discord...
+powershell -NoProfile -Command "$names = @(($env:DISCORDS -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }); if (-not $names) { $names = @('Discord') }; foreach ($n in $names) { $a = Get-ChildItem (Join-Path $env:LOCALAPPDATA $n) -Directory -Filter 'app-*' -EA 0 | Sort-Object { try { [version]$_.Name.Substring(4) } catch { [version]'0.0' } } | Select-Object -Last 1; if ($a) { $exe = Join-Path $a.FullName ($n + '.exe'); if (Test-Path $exe) { Start-Process $exe -WorkingDirectory $a.FullName; '    Started ' + $n + ' (' + $a.Name + ')' } } }"
+exit /b 0
+
+rem  After removing Sonata: Discord has to start fresh to stop loading it.
+:freshdiscord
+echo.
+echo   Discord has to start completely fresh to drop Sonata. This closes
+echo   Discord ^(if it's open^) and starts it again.
+choice /c YN /n /m "  Restart Discord now? [Y/N] "
+if errorlevel 2 (
+    echo   Then fully close Discord yourself: right-click its icon by the clock
+    echo   ^(bottom-right^), choose "Quit Discord", and open it again.
+    exit /b 0
+)
+call :closediscord
+call :startdiscord
+exit /b 0
 
 :step
 echo.

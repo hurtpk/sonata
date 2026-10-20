@@ -143,7 +143,15 @@ made for, and moves it forward when Sonata is ready.
  UNINSTALLING
 ----------------------------------------------------------------------
 
-In PowerShell:
+Run Install Sonata.bat and press U (Uninstall) on its menu. Pick:
+
+     S - remove Sonata only (Equicord stays, with any other plugins)
+     E - remove everything (Equicord is disconnected from Discord
+         first, then deleted - Discord goes back to normal)
+
+It asks before it deletes anything.
+
+By hand instead, in PowerShell:
 
      cd ~\Documents\Equicord
      pnpm uninject
