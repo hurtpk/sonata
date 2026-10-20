@@ -175,7 +175,7 @@
 .vc-schedmsg-segment-active,
 .vc-schedmsg-segment-active:hover {
     color: #fff;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
 }
 
 .vc-schedmsg-summary {
@@ -227,11 +227,11 @@
 
 .vc-schedmsg-btn-primary {
     color: #fff;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
 }
 
 .vc-schedmsg-btn-primary:hover:not(:disabled) {
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
     filter: brightness(1.1);
 }
 
@@ -285,7 +285,7 @@
     bottom: -1px;
     height: 2px;
     border-radius: 2px 2px 0 0;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
     transform: scaleX(0);
     transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -628,9 +628,9 @@
 .vc-schedmsg-textarea { min-height: 110px; }
 .vc-schedmsg-chip { border-radius: 99px; padding: 6px 12px; transition: background 0.15s, box-shadow 0.15s; }
 .vc-schedmsg-chip:hover { background: color-mix(in srgb, var(--tl-accent) 22%, transparent); box-shadow: var(--sw-noglow, 0 0 12px -4px var(--tl-accent)); }
-.vc-schedmsg-segment-active, .vc-schedmsg-segment-active:hover { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); color: #fff; box-shadow: none; }
+.vc-schedmsg-segment-active, .vc-schedmsg-segment-active:hover { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); color: #fff; box-shadow: none; }
 .vc-schedmsg-summary { border-radius: calc(11px * var(--sw-r, 1)); background: color-mix(in srgb, var(--tl-accent) 10%, transparent); border: 1px solid var(--sw-line, color-mix(in srgb, var(--tl-accent) 25%, transparent)); }
-.vc-schedmsg-btn-primary { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-schedmsg-btn-primary { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-schedmsg-btn-sure { color: #fff; background: hsl(358 75% 50% / 0.9); }
 .vc-schedmsg-list-body { gap: 10px; max-height: 520px; }
 

@@ -29,7 +29,7 @@
 /* Kaomoji take a wider tile. */
 .vc-chars-wide { grid-column: span 3; font-size: 15px; padding: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.vc-chars-flash { background: var(--tl-accent); color: #fff; }
+.vc-chars-flash { background: var(--sw-accent-fill, var(--tl-accent)); color: #fff; }
 
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-chars-grid { gap: 6px; }

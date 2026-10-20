@@ -99,8 +99,8 @@
 }
 
 .vc-mquote-btn:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.14)); }
-.vc-mquote-btn-primary { color: #fff; background: var(--tl-accent); }
-.vc-mquote-btn-primary:hover { background: var(--tl-accent); filter: brightness(1.1); }
+.vc-mquote-btn-primary { color: #fff; background: var(--sw-accent-fill, var(--tl-accent)); }
+.vc-mquote-btn-primary:hover { background: var(--sw-accent-fill, var(--tl-accent)); filter: brightness(1.1); }
 .vc-mquote-btn:focus-visible, .vc-mquote-icon-btn:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
 .vc-mquote-empty { padding: 34px 16px; text-align: center; font-size: 13.5px; line-height: 1.5; color: var(--text-muted); }
 

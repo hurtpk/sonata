@@ -11,11 +11,11 @@
 // swapped for the accent — with lighter and darker shades mixed from it.
 // Updates live when the accent changes, and is undone when Sonata stops.
 
-import { SettingsStore } from "@api/Settings";
+import { Settings, SettingsStore } from "@api/Settings";
 
 import { getChannelSettingsAccent } from "../controller/accent";
 import { QOL_NAME } from "../featureSettings";
-import { DEFAULT_ACCENT } from "./accent";
+import { accentColors, DEFAULT_ACCENT, onAlbumChange } from "./accent";
 
 /** Class prefixes of Sonata's feature windows. */
 const PREFIXES = [
@@ -23,7 +23,7 @@ const PREFIXES = [
     "vc-bday-", "vc-bpf-", "vc-cachec-", "vc-autoreact-", "vc-declutter-", "vc-dmprev-", "vc-fakedms-", "vc-fprev-", "vc-fx-",
     "vc-gifmaker-", "vc-gp-", "vc-imgzoom-", "vc-invm-", "vc-liverpc-", "vc-ml-modal-", "vc-mquote-", "vc-msg-logger-enhanced-",
     "vc-msgtimer-", "vc-ocr-", "vc-otd-", "vc-permviewer-", "vc-pindms-", "vc-purger-", "vc-qolcc-", "vc-schedmsg-", "vc-shc-",
-    "vc-sq-", "vc-trans-", "vc-vmsg-", "vc-vtl-", "vc-zip-preview-", "vc-chsettings-", "vc-embedsender-", "vc-voice-", "vc-sstudio-", "vc-mg-", "vc-cg-", "vc-sset-", "vc-doc-", "vc-sonata-tray", "vc-avb-", "vc-streak-", "vc-wave-", "vc-ascii-", "vc-font-", "vc-remw-", "vc-todo-", "vc-conv-", "vc-fconv-", "vc-vedit-", "vc-cmdsc-", "vc-ptag-", "vc-tts-", "vc-wallet-", "vc-shield-", "vc-ttt-", "vc-rbx-", "vc-steam-", "vc-qtext-", "vc-cnotes-", "vc-whisper", "vc-dl-", "vc-ts-", "vc-bm-",
+    "vc-sq-", "vc-trans-", "vc-vmsg-", "vc-vtl-", "vc-zip-preview-", "vc-chsettings-", "vc-embedsender-", "vc-voice-", "vc-sstudio-", "vc-mg-", "vc-cg-", "vc-sset-", "vc-doc-", "vc-sonata-tray", "vc-avb-", "vc-streak-", "vc-wave-", "vc-ascii-", "vc-font-", "vc-remw-", "vc-todo-", "vc-conv-", "vc-fconv-", "vc-vedit-", "vc-cmdsc-", "vc-ptag-", "vc-tts-", "vc-wallet-", "vc-shield-", "vc-ttt-", "vc-rbx-", "vc-steam-", "vc-qtext-", "vc-cnotes-", "vc-whisper", "vc-dl-", "vc-ts-", "vc-bm-", "vc-cbadge-",
 ];
 
 const STYLE_ID = "sonata-feature-accent";
@@ -105,17 +105,80 @@ ${each("::-webkit-scrollbar-thumb:hover")} { background: color-mix(in srgb, ${a}
 ${each("::-webkit-scrollbar-thumb:active")} { background: ${a}; background-clip: padding-box; }`;
 }
 
+/**
+ * With a two-colour accent (Gradient, Seasons & holidays, Album art), filled buttons, on-switches and
+ * picked tabs in Sonata's windows fade between both colours instead of showing only the first.
+ */
+function gradientCss(a: string, b: string) {
+    const grad = `linear-gradient(135deg, ${a}, ${b})`;
+    const inside = (sel: string) => [".vc-sw", ".sonata-window", ".vc-tool-wrap"].map(w => `${w} ${sel}`).join(", ");
+    return `
+/* A two-colour accent: filled buttons and switches fade between both colours. */
+:root { --vc-sonata-accent-2: ${b}; --vc-sonata-gradient: ${grad}; }
+.vc-sw.vc-sw, .vc-sw-styled.vc-sw-styled, .sonata-window, .vc-tool-wrap.vc-tool-wrap { --sw-accent-fill: ${grad}; }
+${inside(".vc-btn-primary")}, ${inside(".vc-tool-primary")}, ${inside(".vc-sw-switch-on")} { background-image: ${grad} !important; border-color: transparent !important; }
+${inside(".vc-btn-primary:hover:not(:disabled)")}, ${inside(".vc-tool-primary:hover:not(:disabled)")} { filter: brightness(1.08); }
+.vc-sw .vc-sw-tab-on, .vc-sw .vc-tool-tab-on { box-shadow: none !important; background: ${grad} bottom / 100% 2px no-repeat !important; }
+.vc-sw .vc-sw-dot { background: ${grad}; }
+.vc-sw button[class*="colorBrand"] { background-image: ${grad} !important; }
+
+/* Accent-coloured text in windows (links, highlighted numbers) as gradient text. */
+.vc-sw .vc-tool-link, .vc-sw .vc-tool-stat-accent > b { background: ${grad}; -webkit-background-clip: text; background-clip: text; color: transparent !important; text-decoration-color: ${a}; filter: none; }
+
+/* Accent-coloured icons fill with the gradient (the shared one in the page, see accentDefs);
+   "currentColor" after it is the plain colour if that gradient isn't there. */
+${ICONS.map(s => `${s} [fill="currentColor"], ${s}[fill="currentColor"]`).join(",\n")} { fill: url(#${GRADIENT_ID}) currentColor; }
+${ICONS.map(s => `${s} [stroke="currentColor"], ${s}[stroke="currentColor"]`).join(",\n")} { stroke: url(#${GRADIENT_ID}) currentColor; }
+#vc-spotify-progress-bar > [class*="slider"]:hover [class*="barFill"] { background-image: ${grad} !important; }`;
+}
+
+/** Icons drawn in the accent colour: Spotify's on-buttons, the dock in Accent, feature card and window top-card icons. */
+const ICONS = [
+    "#vc-spotify-player :is(.vc-spotify-shuffle-on, .vc-spotify-repeat-context, .vc-spotify-repeat-track, .vc-spotify-lyrics-on) svg",
+    ":root[data-sonata-dock-color=\"accent\"] .vc-plugin-dock-item:not(.vc-plugin-dock-glowing, .vc-plugin-dock-glow-green, .vc-plugin-dock-selected) button svg",
+    ".vc-qolcc-card-icon svg",
+    ".vc-sw .vc-tool-hero-icon svg",
+];
+
+const GRADIENT_ID = "vc-sonata-accent-gradient";
+const DEFS_ID = "sonata-accent-defs";
+
+/** SVG icons can't use a CSS gradient, but they can fill from an SVG one in the page: this keeps one there. */
+function accentDefs(a: string, b: string | null) {
+    const found = document.getElementById(DEFS_ID);
+    if (!b) { found?.remove(); return; }
+    let svg: Element | null = found;
+    if (!svg) {
+        const made = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        made.id = DEFS_ID;
+        made.setAttribute("aria-hidden", "true");
+        made.setAttribute("width", "0");
+        made.setAttribute("height", "0");
+        made.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
+        document.body.appendChild(made);
+        svg = made;
+    }
+    svg.innerHTML = `<defs><linearGradient id="${GRADIENT_ID}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>`;
+}
+
 function apply() {
     // Never picked an accent? Sonata shows its default, so the windows do too.
     const accent = getChannelSettingsAccent() ?? DEFAULT_ACCENT;
+    const store = (Settings.plugins as any)[QOL_NAME];
+    const mode = store?.sonataAccentMode;
+    const [a, b] = mode && mode !== "solid" ? accentColors(store) : [accent, accent];
     let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
     if (!el) {
         el = document.createElement("style");
         el.id = STYLE_ID;
         document.head.appendChild(el);
     }
-    el.textContent = css(accent);
+    const two = !!b && b.toLowerCase() !== a.toLowerCase();
+    el.textContent = css(accent) + (two ? gradientCss(a, b) : "");
+    accentDefs(a, two ? b : null);
 }
+
+let stopAlbum: (() => void) | null = null;
 
 const onChange = (_: unknown, path: string) => {
     if (!path.startsWith(`plugins.${QOL_NAME}.`)) return;
@@ -125,9 +188,14 @@ const onChange = (_: unknown, path: string) => {
 export function startFeatureAccent() {
     apply();
     SettingsStore.addGlobalChangeListener(onChange);
+    // Album art: new colours with each new song.
+    stopAlbum = onAlbumChange(() => { if ((Settings.plugins as any)[QOL_NAME]?.sonataAccentMode === "album") apply(); });
 }
 
 export function stopFeatureAccent() {
     SettingsStore.removeGlobalChangeListener(onChange);
+    stopAlbum?.();
+    stopAlbum = null;
     document.getElementById(STYLE_ID)?.remove();
+    document.getElementById(DEFS_ID)?.remove();
 }

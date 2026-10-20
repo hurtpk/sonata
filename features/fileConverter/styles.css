@@ -44,7 +44,7 @@
 
 .vc-fconv-busy { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-muted); }
 .vc-fconv-bar { height: 6px; border-radius: calc(3px * var(--sw-r, 1)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); overflow: hidden; }
-.vc-fconv-bar div { height: 100%; border-radius: calc(3px * var(--sw-r, 1)); background: var(--tl-accent); transition: width 0.25s ease; }
+.vc-fconv-bar div { height: 100%; border-radius: calc(3px * var(--sw-r, 1)); background: var(--sw-accent-fill, var(--tl-accent)); transition: width 0.25s ease; }
 .vc-fconv-bar-wait div { width: 35% !important; animation: vc-fconv-wait 1.2s ease-in-out infinite; }
 @keyframes vc-fconv-wait { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
 
@@ -85,7 +85,7 @@
 /* Two range inputs stacked on the strip; only their handles take clicks. */
 .vc-fconv-handle { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
 .vc-fconv-handle::-webkit-slider-runnable-track { height: 100%; background: none; }
-.vc-fconv-handle::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 12px; height: 54px; border-radius: calc(4px * var(--sw-r, 1)); background: var(--tl-accent, #5865f2); cursor: ew-resize; box-shadow: 0 0 0 2px hsl(0 0% 0% / 0.35); }
+.vc-fconv-handle::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 12px; height: 54px; border-radius: calc(4px * var(--sw-r, 1)); background: var(--sw-accent-fill, var(--tl-accent, #5865f2)); cursor: ew-resize; box-shadow: 0 0 0 2px hsl(0 0% 0% / 0.35); }
 .vc-fconv-trim-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .vc-fconv-trim-exact summary { cursor: pointer; font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px; }
 
@@ -97,7 +97,7 @@
 .vc-fconv-drop b { font-size: 17px; }
 .vc-fconv-drop:hover, .vc-fconv-drop-over { border-color: var(--tl-accent); background: var(--sw-card, radial-gradient(420px 220px at 50% 0%, color-mix(in srgb, var(--tl-accent) 28%, transparent), transparent 70%), hsl(0 0% 0% / 0.15)); box-shadow: none; }
 .vc-fconv-drop-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: calc(20px * var(--sw-r, 1)); font-size: 32px !important; color: #fff !important;
-    background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000))); box-shadow: none; }
+    background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000)))); box-shadow: none; }
 .vc-fconv-files { gap: 6px; padding: 8px; border-radius: calc(16px * var(--sw-r, 1)); border-color: var(--sw-line, hsl(0 0% 100% / 0.07)); max-height: 220px; background: var(--sw-card, hsl(0 0% 0% / 0.14)); }
 .vc-fconv-file { padding: 9px 11px; border-radius: calc(11px * var(--sw-r, 1)); background: var(--sw-card, linear-gradient(90deg, hsl(0 0% 100% / 0.04), transparent)); }
 .vc-fconv-file:hover { background: var(--sw-card, linear-gradient(90deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), transparent)); }
@@ -112,7 +112,7 @@
 .vc-fconv-results { gap: 8px; }
 .vc-fconv-result { position: relative; overflow: hidden; padding: 10px 12px 10px 16px; border-radius: calc(14px * var(--sw-r, 1)); border-color: var(--sw-line, hsl(0 0% 100% / 0.07));
     background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.16) 65%)); }
-.vc-fconv-result::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
+.vc-fconv-result::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sw-accent-fill, var(--tl-accent)); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
 .vc-fconv-thumb, .vc-fconv-thumb-icon { border-radius: calc(10px * var(--sw-r, 1)); }
 
 /* Batch rename */

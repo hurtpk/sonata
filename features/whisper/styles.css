@@ -14,7 +14,7 @@
 .vc-whisper-hint, .vc-whisper-locked { font-size: 12.5px; color: var(--text-muted); }
 .vc-whisper-input { flex: 1; min-width: 120px; height: 28px; padding: 0 10px; border-radius: calc(8px * var(--sw-r, 1)); border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-inner, hsl(0 0% 0% / 0.25)); color: var(--text-default, var(--text-normal)); font: inherit; font-size: 13px; outline: none; }
 .vc-whisper-input:focus { border-color: var(--vc-tool-accent, var(--brand-500)); }
-.vc-whisper-btn { height: 28px; padding: 0 12px; border: 0; border-radius: calc(8px * var(--sw-r, 1)); background: var(--vc-tool-accent, var(--brand-500)); color: #fff; font: 600 13px var(--font-primary); cursor: pointer; }
+.vc-whisper-btn { height: 28px; padding: 0 12px; border: 0; border-radius: calc(8px * var(--sw-r, 1)); background: var(--sw-accent-fill, var(--vc-tool-accent, var(--brand-500))); color: #fff; font: 600 13px var(--font-primary); cursor: pointer; }
 .vc-whisper-btn:disabled { opacity: 0.5; cursor: default; }
 .vc-whisper-wrong { font-size: 12.5px; font-weight: 600; color: #f87171; }
 

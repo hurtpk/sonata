@@ -69,7 +69,7 @@
 }
 
 .vc-ocr-btn:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.14)); }
-.vc-ocr-btn-primary { color: #fff; background: var(--tl-accent); }
+.vc-ocr-btn-primary { color: #fff; background: var(--sw-accent-fill, var(--tl-accent)); }
 .vc-ocr-btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
 .vc-ocr-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 .vc-ocr-btn:focus-visible, .vc-ocr-btn-primary:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
@@ -92,7 +92,7 @@
     background: var(--sw-card, linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
 .vc-ocr-tabs { padding: 4px; border-radius: 99px; background: var(--sw-inner, hsl(0 0% 0% / 0.28)); }
 .vc-ocr-tab { border-radius: 99px; }
-.vc-ocr-tab-on { color: #fff; background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-ocr-tab-on { color: #fff; background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-ocr-text { border-radius: calc(12px * var(--sw-r, 1)); transition: border-color 0.15s, box-shadow 0.15s; }
 .vc-ocr-text:focus { box-shadow: var(--sw-noglow, 0 0 0 3px color-mix(in srgb, var(--tl-accent) 22%, transparent)); }
-.vc-ocr-btn-primary { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-ocr-btn-primary { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }

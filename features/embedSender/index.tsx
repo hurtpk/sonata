@@ -694,7 +694,7 @@ const editorCss = `
 .vc-es2-tab:hover { color: #fff; background: var(--es2-surface-2); }
 .vc-es2-tab-on, .vc-es2-tab-on:hover { color: #fff; background: rgb(255 255 255 / 0.09); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); }
 .vc-es2-tab:focus-visible { outline: 2px solid var(--vc-tool-accent, #5865f2); }
-.vc-es2-tab-n { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; display: grid; place-items: center; font-size: 11px; background: var(--vc-tool-accent, #5865f2); color: #fff; }
+.vc-es2-tab-n { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; display: grid; place-items: center; font-size: 11px; background: var(--sw-accent-fill, var(--vc-tool-accent, #5865f2)); color: #fff; }
 
 .vc-es2-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 14px; padding: 0 8px 24px 0; }
 
@@ -1010,7 +1010,7 @@ const editorCss = `
 .vc-es-step-body > b { display: block; margin-bottom: 2px; }
 .vc-es-step code { padding: 0 5px; border-radius: 4px; background: rgba(0,0,0,0.35); font-size: 12px; }
 .vc-es-step a { color: var(--text-link, #00a8fc); }
-.vc-es-step-n { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--vc-tool-accent, #5865f2); color: #fff; font-size: 12px; font-weight: 800; }
+.vc-es-step-n { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--sw-accent-fill, var(--vc-tool-accent, #5865f2)); color: #fff; font-size: 12px; font-weight: 800; }
 .vc-es-step-done .vc-es-step-n { background: #248046; }
 .vc-es-step-body { flex: 1; min-width: 0; }
 .vc-es-step-actions { margin-top: 6px; display: flex; gap: 6px; }

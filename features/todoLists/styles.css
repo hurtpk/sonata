@@ -40,7 +40,7 @@
 
 .vc-todo-check { all: unset; flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 2px solid hsl(0 0% 100% / 0.28); cursor: pointer; transition: background 0.15s, border-color 0.15s, box-shadow 0.15s; }
 .vc-todo-check:hover { border-color: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 10px -2px var(--tl-accent)); }
-.vc-todo-check-on { background: var(--tl-accent); border-color: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 12px -2px var(--tl-accent)); }
+.vc-todo-check-on { background: var(--sw-accent-fill, var(--tl-accent)); border-color: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 12px -2px var(--tl-accent)); }
 .vc-todo-check svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; animation: vc-todo-tick 0.25s ease-out; }
 @keyframes vc-todo-tick { from { stroke-dasharray: 14; stroke-dashoffset: 14; } to { stroke-dasharray: 14; stroke-dashoffset: 0; } }
 
@@ -67,4 +67,4 @@
 .vc-todo-list-count { font-size: 12px; color: color-mix(in srgb, var(--tl-accent) 70%, #fff); font-weight: 700; }
 .vc-todo-list-peek { grid-column: 1 / -1; font-size: 12.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-todo-list-bar { grid-column: 1 / -1; height: 5px; margin-top: 4px; border-radius: calc(3px * var(--sw-r, 1)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); overflow: hidden; }
-.vc-todo-list-bar i { display: block; height: 100%; border-radius: calc(3px * var(--sw-r, 1)); background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 8px var(--tl-accent)); }
+.vc-todo-list-bar i { display: block; height: 100%; border-radius: calc(3px * var(--sw-r, 1)); background: var(--sw-accent-fill, var(--tl-accent)); box-shadow: var(--sw-noglow, 0 0 8px var(--tl-accent)); }

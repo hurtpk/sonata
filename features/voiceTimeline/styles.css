@@ -180,7 +180,7 @@
 .vc-vtl-segment-active,
 .vc-vtl-segment-active:hover {
     color: #fff;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
 }
 
 .vc-vtl-summary {
@@ -257,7 +257,7 @@
 .vc-vtl-session-active,
 .vc-vtl-session-active:hover {
     color: #fff;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
     border-color: var(--tl-accent);
 }
 
@@ -371,7 +371,7 @@
 .vc-vtl-event-leave .vc-vtl-event-dot { background: var(--vtl-bad); }
 .vc-vtl-event-moved .vc-vtl-event-dot { background: var(--vtl-warn); }
 .vc-vtl-event-you-joined .vc-vtl-event-dot,
-.vc-vtl-event-you-left .vc-vtl-event-dot { background: var(--tl-accent); }
+.vc-vtl-event-you-left .vc-vtl-event-dot { background: var(--sw-accent-fill, var(--tl-accent)); }
 
 .vc-vtl-event-you-joined,
 .vc-vtl-event-you-left {
@@ -431,7 +431,7 @@
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-vtl-wrap { background-image: none; display: flex; flex-direction: column; gap: 14px; }
 .vc-vtl-card { border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); background: var(--sw-card, linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
-.vc-vtl-session-active, .vc-vtl-session-active:hover { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-vtl-session-active, .vc-vtl-session-active:hover { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-vtl-count { box-shadow: var(--sw-noglow, 0 0 12px -4px var(--tl-accent)); }
 
 /* ─── This week (recap) ─── */
@@ -450,5 +450,5 @@
 .vc-vtl-recap-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .vc-vtl-recap-who b { overflow: hidden; font-size: 13.5px; text-overflow: ellipsis; white-space: nowrap; color: var(--text-default, var(--text-normal)); }
 .vc-vtl-recap-bar { height: 4px; border-radius: calc(4px * var(--sw-r, 1)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); overflow: hidden; }
-.vc-vtl-recap-bar i { display: block; height: 100%; border-radius: calc(4px * var(--sw-r, 1)); background: var(--tl-accent); }
+.vc-vtl-recap-bar i { display: block; height: 100%; border-radius: calc(4px * var(--sw-r, 1)); background: var(--sw-accent-fill, var(--tl-accent)); }
 .vc-vtl-recap-ms { flex: none; font-size: 12.5px; font-weight: 700; color: var(--text-default, var(--text-normal)); font-variant-numeric: tabular-nums; }

@@ -28,7 +28,7 @@
     background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 14%, transparent), hsl(0 0% 0% / 0.2) 65%));
     transition: border-color 0.15s, transform 0.12s;
 }
-.vc-streak-row::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
+.vc-streak-row::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sw-accent-fill, var(--tl-accent)); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
 .vc-streak-row:hover { border-color: color-mix(in srgb, var(--tl-accent) 40%, transparent); transform: translateY(-1px); }
 .vc-streak-row-risk { --tl-accent: #f0b232; border-color: hsl(38 95% 55% / 0.5); box-shadow: none; }
 .vc-streak-avatar { width: 42px; height: 42px; border-radius: 50%; flex: none; box-shadow: var(--sw-noglow, 0 0 0 2px color-mix(in srgb, var(--tl-accent) 55%, transparent), 0 0 16px -4px var(--tl-accent)); }

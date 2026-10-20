@@ -21,9 +21,13 @@ export const CHANGELOG: ChangeEntry[] = [
         date: "October 20, 2026",
         title: "Dock layout, sizes and a new icon picker",
         items: [
+            { icon: "🚫", text: "New: Antiquest. Discord's Quests are gone: the promo card above your profile (quests, \"watch the video to win Orbs\" and sponsored ads), the Quests tab above your DMs and in Discovery, quest icons in member lists and the Active Now quest promos. Discord doesn't even load them. It only hides things; it never does quests for you." },
+            { icon: "🏅", text: "New: Custom Badges. Put badges on your own profile that only you can see: any of Discord's badge pictures, your own picture (GIFs move) or an emoji, with your own hover text and an optional link. Put all your badges in any order and hide any of them, your real ones too, under Arrange all badges. It includes every Nitro badge: Bronze, Silver, Gold, Platinum, Diamond, Emerald, Ruby and Opal. Nothing changes for anyone else." },
             { icon: "↔️", text: "Sonata → Dock → Layout: Stack wraps the buttons onto more rows when they don't fit; One line squeezes them all into a single row." },
             { icon: "🔍", text: "Sonata → Dock → Size: Small, Normal or Large buttons and icons." },
             { icon: "🛠", text: "Fixed: installing or updating could fail with \"No matching export … Toasts\" when Equicord had changes of its own (often left by an earlier install). Those changes are now put aside so Equicord can switch to the version Sonata needs." },
+            { icon: "🌈", text: "Buttons that use your accent follow your accent style too: with Gradient, Seasons & holidays or Album art, filled buttons, on-switches, picked tabs, chips and choices in every Sonata window fade between both colours, and so do accent icons (Spotify Controls' shuffle, repeat and lyrics, the dock in Accent, feature card icons) and accent links. Album art updates with every new song." },
+            { icon: "🎙", text: "Fixed: Voice Messages (send and preview recordings) broke after a Discord update. It finds Discord's voice player again." },
             { icon: "🗑", text: "Install Sonata.bat can uninstall too: press U on its menu to remove just Sonata, or everything (Equicord is disconnected from Discord first, so Discord goes back to normal). It asks before deleting anything." },
             { icon: "🪟", text: "Fake DMs' window now matches every other Sonata window: \"sonata — fake dms\" along the top, its message types as tabs, and Send along the bottom. Everything inside works the same." },
             { icon: "💬", text: "Fake DMs no longer needs something newer Equicords removed (\"Toasts\"), so it builds on any Equicord version." },

@@ -107,7 +107,7 @@
     cursor: pointer;
 }
 
-.vc-shot-seg-on { background: var(--tl-accent); color: #fff; }
+.vc-shot-seg-on { background: var(--sw-accent-fill, var(--tl-accent)); color: #fff; }
 
 .vc-shot-bar-row { display: flex; gap: 6px; }
 
@@ -139,7 +139,7 @@
 .vc-shot-btn:hover:not(:disabled) { background: var(--sw-hi, hsl(0 0% 100% / 0.14)); }
 .vc-shot-btn:disabled { opacity: 0.5; cursor: default; }
 .vc-shot-btn:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
-.vc-shot-btn-primary { background: var(--tl-accent); color: #fff; }
+.vc-shot-btn-primary { background: var(--sw-accent-fill, var(--tl-accent)); color: #fff; }
 .vc-shot-btn-primary:hover:not(:disabled) { background: hsl(from var(--tl-accent) h s calc(l - 6)); }
 
 .vc-shot-link {
@@ -178,7 +178,7 @@
 .vc-shot-chip:hover:not(:disabled) { color: var(--text-default, var(--text-normal)); background: var(--sw-hi, hsl(0 0% 100% / 0.11)); }
 .vc-shot-chip:disabled { opacity: 0.4; cursor: default; }
 .vc-shot-chip:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 1px; }
-.vc-shot-chip-on, .vc-shot-chip-on:hover:not(:disabled) { color: #fff; background: var(--tl-accent); }
+.vc-shot-chip-on, .vc-shot-chip-on:hover:not(:disabled) { color: #fff; background: var(--sw-accent-fill, var(--tl-accent)); }
 
 .vc-shot-hint { font-size: 12px; color: var(--text-muted); line-height: 1.35; }
 
@@ -216,13 +216,13 @@
     box-shadow: none; }
 .vc-shot-canvas { max-height: calc(62vh - 26px); }
 .vc-shot-empty-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: calc(20px * var(--sw-r, 1)); font-size: 30px;
-    background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000))); box-shadow: none; }
+    background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000)))); box-shadow: none; }
 .vc-shot-empty-title { font-size: 18px; font-weight: 800; color: #fff; }
 .vc-shot-controls { max-height: calc(62vh - 40px); border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07));
     background: var(--sw-card, linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
 .vc-shot-seg { border-radius: 99px; padding: 4px; }
 .vc-shot-seg-btn { border-radius: 99px; }
-.vc-shot-seg-on { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-shot-seg-on { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-shot-chip { border-radius: 99px; }
-.vc-shot-chip-on, .vc-shot-chip-on:hover:not(:disabled) { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-shot-chip-on, .vc-shot-chip-on:hover:not(:disabled) { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-shot-btn-primary { background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)) !important; box-shadow: none; }

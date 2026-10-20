@@ -39,7 +39,7 @@
     font-size: 13px;
     font-weight: 600;
     color: #fff;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
 }
 
 .vc-mg-btn:hover { filter: brightness(1.1); }

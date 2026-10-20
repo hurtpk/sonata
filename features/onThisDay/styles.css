@@ -93,7 +93,7 @@
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-otd-wrap { max-height: 70vh; }
 .vc-otd-year { position: relative; overflow: hidden; gap: 10px; padding: 14px 14px 14px 18px; border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); background: var(--sw-card, linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.16) 65%)); }
-.vc-otd-year::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
+.vc-otd-year::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sw-accent-fill, var(--tl-accent)); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
 .vc-otd-ago { font-size: 17px; color: #fff; }
 .vc-otd-count { color: #fff; background: color-mix(in srgb, var(--tl-accent) 35%, transparent); box-shadow: var(--sw-noglow, 0 0 12px -4px var(--tl-accent)); }
 .vc-otd-msg { padding: 8px 10px; border-radius: calc(11px * var(--sw-r, 1)); transition: background 0.15s; }

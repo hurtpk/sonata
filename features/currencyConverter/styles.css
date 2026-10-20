@@ -75,7 +75,7 @@
     background: var(--sw-card, linear-gradient(170deg, color-mix(in srgb, var(--tl-accent) 9%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
 .vc-conv-kind { flex: none; padding: 8px 11px; border-radius: calc(10px * var(--sw-r, 1)); transition: background 0.12s, color 0.12s, box-shadow 0.12s; }
 .vc-conv-kind:hover { background: color-mix(in srgb, var(--tl-accent) 10%, transparent); }
-.vc-conv-kind-on { color: #fff; background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-conv-kind-on { color: #fff; background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-conv-main { gap: 14px; }
 .vc-conv-input { font-size: 18px; padding: 14px 16px; border-radius: calc(13px * var(--sw-r, 1)); }
 .vc-conv-star { width: 48px; border-radius: calc(13px * var(--sw-r, 1)); }
@@ -99,7 +99,7 @@
     border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06)); background: var(--sw-card, linear-gradient(135deg, hsl(0 0% 100% / 0.04), hsl(0 0% 0% / 0.14))); transition: border-color 0.15s, transform 0.12s, background 0.15s; }
 .vc-conv-row:hover { border-color: color-mix(in srgb, var(--tl-accent) 40%, transparent); background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.14))); transform: translateY(-1px); }
 .vc-conv-row-strong { border-color: var(--sw-line, color-mix(in srgb, var(--tl-accent) 35%, transparent)); background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 16%, transparent), hsl(0 0% 0% / 0.14))); }
-.vc-conv-row-strong::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 10px var(--tl-accent)); }
+.vc-conv-row-strong::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--sw-accent-fill, var(--tl-accent)); box-shadow: var(--sw-noglow, 0 0 10px var(--tl-accent)); }
 .vc-conv-value { font-size: 16px; font-weight: 700; color: #fff; overflow-wrap: anywhere; }
 .vc-conv-label { text-align: left; width: 100%; font-size: 12.5px; }
 .vc-conv-ins { position: absolute; top: 8px; right: 8px; }

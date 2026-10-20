@@ -125,7 +125,7 @@
     content: "";
     width: 3px;
     height: 11px;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
     border-radius: 2px;
 }
 

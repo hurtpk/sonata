@@ -13,7 +13,7 @@
 }
 
 .vc-sstudio-chip:hover { color: var(--text-default, var(--text-normal)); }
-.vc-sstudio-chip-on, .vc-sstudio-chip-on:hover { color: #fff; background: var(--tl-accent); border-color: transparent; }
+.vc-sstudio-chip-on, .vc-sstudio-chip-on:hover { color: #fff; background: var(--sw-accent-fill, var(--tl-accent)); border-color: transparent; }
 
 .vc-sstudio-list { display: flex; flex-direction: column; gap: 6px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }
 
@@ -48,7 +48,7 @@
 
 .vc-sstudio-play:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.16)); }
 .vc-sstudio-play:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
-.vc-sstudio-play-custom { color: #fff; background: var(--tl-accent); }
+.vc-sstudio-play-custom { color: #fff; background: var(--sw-accent-fill, var(--tl-accent)); }
 .vc-sstudio-play-custom:hover { background: hsl(from var(--tl-accent) h s calc(l - 6)); }
 
 .vc-sstudio-info { flex: 1; min-width: 0; }
@@ -63,7 +63,7 @@
 
 .vc-sstudio-switch { all: unset; position: relative; width: 34px; height: 20px; border-radius: 99px; cursor: pointer; background: hsl(0 0% 100% / 0.15); transition: background 0.15s; flex: none; }
 .vc-sstudio-switch i { position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.15s; }
-.vc-sstudio-switch-on { background: var(--tl-accent); }
+.vc-sstudio-switch-on { background: var(--sw-accent-fill, var(--tl-accent)); }
 .vc-sstudio-switch-on i { transform: translateX(14px); }
 .vc-sstudio-switch:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
 
@@ -75,15 +75,15 @@
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-sstudio-chip { transition: background 0.15s, box-shadow 0.15s, color 0.15s; }
 .vc-sstudio-chip:hover { background: color-mix(in srgb, var(--tl-accent) 14%, transparent); }
-.vc-sstudio-chip-on, .vc-sstudio-chip-on:hover { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-sstudio-chip-on, .vc-sstudio-chip-on:hover { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-sstudio-list { gap: 8px; max-height: 50vh; }
 .vc-sstudio-row { position: relative; overflow: hidden; gap: 12px; padding: 11px 12px 11px 16px; border-radius: calc(14px * var(--sw-r, 1)); border-color: var(--sw-line, hsl(0 0% 100% / 0.06));
     background: var(--sw-card, linear-gradient(135deg, hsl(0 0% 100% / 0.04), hsl(0 0% 0% / 0.16) 65%)); }
 .vc-sstudio-row:hover { border-color: color-mix(in srgb, var(--tl-accent) 35%, transparent); }
 .vc-sstudio-row-custom { border-color: var(--sw-line, color-mix(in srgb, var(--tl-accent) 40%, transparent)); background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 16%, transparent), hsl(0 0% 0% / 0.16) 65%)); }
-.vc-sstudio-row-custom::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
+.vc-sstudio-row-custom::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sw-accent-fill, var(--tl-accent)); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
 .vc-sstudio-play { width: 34px; height: 34px; transition: background 0.15s, box-shadow 0.15s; }
 .vc-sstudio-play:hover { background: color-mix(in srgb, var(--tl-accent) 35%, transparent); box-shadow: var(--sw-noglow, 0 0 14px -4px var(--tl-accent)); }
-.vc-sstudio-play-custom { color: #fff; background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-sstudio-play-custom { color: #fff; background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-sstudio-remove { color: #f23f43 !important; }
 .vc-sstudio-remove:hover { color: #fff !important; background: hsl(358 75% 50% / 0.9) !important; }

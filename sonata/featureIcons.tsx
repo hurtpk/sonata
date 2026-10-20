@@ -93,6 +93,8 @@ export const FEATURE_ICONS: Record<string, string> = {
     channelNotes: "notes",
     themeStudio: "brush",
     botManager: "robot",
+    antiquest: "xCircle",
+    customBadges: "medal",
     roleColorEverywhere: "palette",
     scheduledMessages: "scheduled",
     screenshotStyler: "screenshot",

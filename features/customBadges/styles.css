@@ -1,0 +1,40 @@
+/* Custom Badges */
+.vc-sw-body-flush .vc-cbadge { height: 100%; min-height: 0; gap: 0; padding: 0; }
+.vc-cbadge .vc-sw-pic > img { width: 22px; height: 22px; object-fit: contain; }
+.vc-cbadge-none { padding: 8px 6px; }
+
+.vc-cbadge-head { display: flex; flex-direction: column; gap: 3px; }
+.vc-cbadge-head b { font-size: 18px; color: var(--sw-text); }
+.vc-cbadge-head span { font-size: 12.5px; color: var(--sw-soft); }
+
+.vc-cbadge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; padding: 10px; }
+.vc-cbadge-tile { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px; border-radius: var(--sw-rc); border: 1px solid transparent; cursor: pointer; text-align: center; }
+.vc-cbadge-tile img { width: 28px; height: 28px; object-fit: contain; }
+.vc-cbadge-tile span { font-size: 11.5px; line-height: 1.3; color: var(--sw-soft); }
+.vc-cbadge-tile:hover { background: var(--sw-hover); border-color: var(--sw-line2); }
+.vc-cbadge-tile:hover span { color: var(--sw-text); }
+.vc-cbadge-tile:focus-visible { outline: 2px solid var(--sw-accent); outline-offset: -2px; }
+.vc-cbadge-emoji { max-width: 90px; text-align: center; font-size: 18px; }
+
+.vc-cbadge-hero { display: flex; align-items: center; gap: 14px; }
+.vc-cbadge-hero > img { width: 48px; height: 48px; object-fit: contain; padding: 8px; border-radius: var(--sw-rp); background: var(--sw-chip); border: 1px solid var(--sw-line); }
+.vc-cbadge-hero b { display: block; font-size: 20px; color: var(--sw-text); }
+.vc-cbadge-hero span { font-size: 12.5px; color: var(--sw-soft); }
+
+.vc-cbadge-preview { padding: 14px 16px; }
+.vc-cbadge-row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 4px 6px; border-radius: 8px; background: var(--sw-inner); border: 1px solid var(--sw-line); }
+
+/* Arrange: every badge on your profile, in order, each with ← → and a show switch */
+.vc-cbadge-line { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--sw-line); }
+.vc-cbadge-line:last-child { border-bottom: 0; }
+.vc-cbadge-line .vc-sw-pic { width: 32px; height: 28px; }
+.vc-cbadge-line .vc-sw-pic > img { width: 20px; height: 20px; object-fit: contain; }
+.vc-cbadge-line-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.vc-cbadge-line-text b { font-size: 13.5px; color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-cbadge-line-text small { font-size: 11.5px; color: var(--sw-soft); }
+.vc-cbadge-line-off .vc-sw-pic, .vc-cbadge-line-off .vc-cbadge-line-text { opacity: 0.45; }
+.vc-cbadge-letter { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; background: var(--sw-chip); font-size: 11px; font-weight: 700; color: var(--sw-text); }
+.vc-cbadge-row > span { display: inline-grid; place-items: center; border-radius: 5px; }
+.vc-cbadge-row > span img { width: 22px; height: 22px; object-fit: contain; padding: 1px; }
+.vc-cbadge-row > small { padding: 2px 4px; font-size: 12px; color: var(--sw-muted); }
+.vc-cbadge-row > .vc-cbadge-row-on { outline: 2px solid var(--sw-accent); outline-offset: 1px; }

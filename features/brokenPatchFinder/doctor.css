@@ -95,4 +95,4 @@
 .vc-doc-speed-row input { accent-color: var(--vc-tool-accent, #5865f2); }
 .vc-doc-speed-facts { display: flex; flex-direction: column; align-items: flex-end; font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .vc-doc-speed-facts small { font-size: 11px; opacity: 0.8; }
-.vc-doc-speed-tag { margin-left: 6px; padding: 0 6px; border-radius: 99px; font-style: normal; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #fff; background: var(--vc-tool-accent, #5865f2); }
+.vc-doc-speed-tag { margin-left: 6px; padding: 0 6px; border-radius: 99px; font-style: normal; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #fff; background: var(--sw-accent-fill, var(--vc-tool-accent, #5865f2)); }

@@ -20,6 +20,9 @@
     --sw-muted: #8f8f8f;
     --sw-faint: #555555;
     --sw-accent: var(--vc-tool-accent, var(--brand-500));
+    /* What accent-filled things (picked buttons, chips, tabs) are painted with: the accent, or a
+       gradient between both colours when the accent style has two (set by featureAccent.ts). */
+    --sw-accent-fill: var(--sw-accent);
     --sw-on: #ffffff;
     --sw-mono: var(--font-code, ui-monospace, Consolas, monospace);
     --sw-rw: calc(22px * var(--sw-r));
@@ -241,7 +244,7 @@
 .vc-sw-foot-item { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .vc-sw-foot-item:first-child { flex-shrink: 1; }
 .vc-sw-foot-right { margin-left: auto; }
-.vc-sw-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--sw-accent); }
+.vc-sw-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--sw-accent-fill); }
 
 /* ── List + details ── */
 
@@ -375,7 +378,7 @@
 }
 
 .vc-sw-switch > i { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--sw-muted); transition: left 0.15s, background 0.15s; }
-.vc-sw-switch-on { background: var(--sw-accent); border-color: var(--sw-accent); }
+.vc-sw-switch-on { background: var(--sw-accent-fill); border-color: var(--sw-accent); }
 .vc-sw-switch-on > i { left: 18px; background: var(--sw-on); }
 .vc-sw-switch:disabled { opacity: 0.45; cursor: default; }
 .vc-sw-switch:focus-visible { outline: 2px solid var(--sw-accent); outline-offset: 2px; }
@@ -434,7 +437,7 @@
 }
 
 .vc-sw .vc-tool-btn:hover:not(:disabled) { background: var(--sw-hover); color: var(--sw-text); }
-.vc-sw .vc-tool-primary, .vc-sw .vc-tool-primary:hover:not(:disabled) { background: var(--sw-accent); border-color: var(--sw-accent); color: var(--sw-on); font-weight: 700; box-shadow: none; }
+.vc-sw .vc-tool-primary, .vc-sw .vc-tool-primary:hover:not(:disabled) { background: var(--sw-accent-fill); border-color: var(--sw-accent); color: var(--sw-on); font-weight: 700; box-shadow: none; }
 .vc-sw .vc-tool-primary:hover:not(:disabled) { filter: brightness(1.08); }
 .vc-sw .vc-tool-danger { color: var(--status-danger, #f23f43); border-color: color-mix(in srgb, var(--status-danger, #f23f43) 35%, transparent); }
 
@@ -478,7 +481,7 @@
 .vc-sw .vc-tool-empty-icon { filter: none; }
 .vc-sw .vc-tool-stage { border-radius: var(--sw-rc); background: var(--sw-inner); border-color: var(--sw-line); }
 .vc-sw .vc-tool-bar { background: var(--sw-chip); }
-.vc-sw .vc-tool-bar > div { background: var(--sw-accent); box-shadow: none; }
+.vc-sw .vc-tool-bar > div { background: var(--sw-accent-fill); box-shadow: none; }
 
 .vc-sw .vc-tool-hero { border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); box-shadow: none; }
 .vc-sw .vc-tool-hero-icon { border-radius: var(--sw-rp); background: var(--sw-chip); color: var(--sw-accent); box-shadow: none; border: 1px solid var(--sw-line); }
@@ -535,7 +538,7 @@
 .vc-sw-mini-card small { width: 70%; height: 5px; border-radius: 3px; background: #262626; }
 .vc-sw-mini-btns { display: flex; gap: 6px; }
 .vc-sw-mini-btns > span { flex: 1; height: 22px; border-radius: var(--sw-rb); border: 1px solid var(--sw-line2); }
-.vc-sw-mini-btns > .vc-sw-mini-primary { background: var(--sw-accent); border-color: var(--sw-accent); }
+.vc-sw-mini-btns > .vc-sw-mini-primary { background: var(--sw-accent-fill); border-color: var(--sw-accent); }
 .vc-sw-mini-foot { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-top: 1px solid var(--sw-line); font-family: var(--sw-mono); font-size: 10px; color: var(--sw-muted); }
 
 .vc-sw-range { width: 100%; margin: 0; accent-color: var(--sn-hi, var(--brand-500)); cursor: pointer; }

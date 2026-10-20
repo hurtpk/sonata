@@ -193,7 +193,7 @@
 .vc-steam-notes h4:first-child { margin-top: 0; }
 .vc-steam-notes p { margin: 0; }
 .vc-steam-notes-li { position: relative; padding-left: 18px; }
-.vc-steam-notes-li::before { content: ""; position: absolute; left: 4px; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 8px var(--tl-accent)); }
+.vc-steam-notes-li::before { content: ""; position: absolute; left: 4px; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--sw-accent-fill, var(--tl-accent)); box-shadow: var(--sw-noglow, 0 0 8px var(--tl-accent)); }
 
 /* ─── My Steam ─── */
 
@@ -210,7 +210,7 @@
 }
 
 .vc-steam-link-card > b { font-size: 18px; color: #fff; }
-.vc-steam-link-icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: calc(18px * var(--sw-r, 1)); font-size: 26px; background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000))); box-shadow: none; }
+.vc-steam-link-icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: calc(18px * var(--sw-r, 1)); font-size: 26px; background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000)))); box-shadow: none; }
 .vc-steam-link-bar { display: flex; gap: 8px; width: min(560px, 100%); }
 
 .vc-steam-profile {

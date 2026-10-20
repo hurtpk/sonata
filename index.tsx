@@ -47,6 +47,7 @@ import type { ReactNode } from "react";
 import { FeatureStatus, openOptions, QolApi } from "./controller/ControlCenter";
 import anonymiseFileNames from "./features/anonymiseFileNames";
 import antimod from "./features/antimod";
+import antiquest from "./features/antiquest";
 import asciiArt from "./features/asciiArt";
 import autoCorrect from "./features/autoCorrect";
 import autoReact from "./features/autoReact";
@@ -67,6 +68,7 @@ import coloredText from "./features/coloredText";
 import commandShortcuts from "./features/commandShortcuts";
 import crashHandler from "./features/crashHandler";
 import currencyConverter from "./features/currencyConverter";
+import customBadges from "./features/customBadges";
 import declutter from "./features/declutter";
 import disableCallIdle from "./features/disableCallIdle";
 import embedCopier from "./features/embedCopier";
@@ -315,7 +317,7 @@ const FEATURES: Record<string, Feature> = {
     gameActivityToggle, platformSpoofer, showRolesInChat, soundStudio, miniGames,
     typingSounds, autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
     smoothChat, currencyConverter, giftWrap, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
-    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio, botManager,
+    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges,
     antimod, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
 

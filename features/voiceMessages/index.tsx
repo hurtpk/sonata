@@ -103,7 +103,9 @@ export default definePlugin({
 
     patches: [
         {
-            find: "#{intl::PAUSE_VOICE_MESSAGE_A11Y_LABEL}",
+            // The voice message player: the only module that unpacks playbackCacheKey from its props.
+            // (Its pause label now also appears in another module, which Equicord found first.)
+            find: /playbackCacheKey:\i\}=\i/,
             replacement: {
                 match: /(?<=\i=)(?=\i\.memo\(.{0,50}?=1,onVolumeChange:[^}]+?waveform:[^}]+?playbackCacheKey:)/,
                 replace: "$self.VoiceMessage=",

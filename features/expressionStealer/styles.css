@@ -68,7 +68,7 @@
     font-size: 13px;
     font-weight: 700;
     color: #fff;
-    background: var(--tl-accent);
+    background: var(--sw-accent-fill, var(--tl-accent));
     transition: filter 0.15s;
 }
 

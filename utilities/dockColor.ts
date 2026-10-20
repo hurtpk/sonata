@@ -36,7 +36,9 @@ function apply() {
     const root = document.documentElement;
     let css = dockLayoutCss(dockLayoutOf(store), dockSizeOf(store));
     if (v) css += dockColorCss(v === "accent" ? (getChannelSettingsAccent() ?? DEFAULT_ACCENT) : v);
-    root.toggleAttribute("data-sonata-dock-color", !!v);
+    // "accent" lets the two-colour accent styles fade the icons too (featureAccent.ts).
+    if (v) root.setAttribute("data-sonata-dock-color", v === "accent" ? "accent" : "color");
+    else root.removeAttribute("data-sonata-dock-color");
 
     let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
     if (!css) { el?.remove(); return; }

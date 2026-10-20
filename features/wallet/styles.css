@@ -169,7 +169,7 @@
 .vc-wallet-reqgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .vc-wallet-reqcard { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 14px 18px; border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07));
     background: var(--sw-card, linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
-.vc-wallet-reqcard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); }
+.vc-wallet-reqcard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sw-accent-fill, var(--tl-accent)); }
 .vc-wallet-reqcard-done::before { background: var(--status-positive, #23a55a); }
 .vc-wallet-reqcard-head { display: flex; align-items: baseline; gap: 10px; }
 .vc-wallet-reqcard-head b { font-size: 24px; font-weight: 900; color: #fff; }
@@ -203,14 +203,14 @@
 .vc-wallet-owe-option:hover { background: var(--sw-hover, hsl(0 0% 100% / 0.06)); }
 .vc-wallet-owe-picked { padding: 7px 12px 7px 8px; border-radius: calc(12px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); border: 1px solid color-mix(in srgb, var(--tl-accent) 40%, transparent); }
 .vc-wallet-owe-face { flex: none; border-radius: 50%; object-fit: cover; background: var(--sw-chip, hsl(0 0% 100% / 0.08)); }
-.vc-wallet-owe-letter { display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff; background: var(--sw-accent, linear-gradient(135deg, var(--tl-accent), color-mix(in oklab, var(--tl-accent) 60%, black))); }
+.vc-wallet-owe-letter { display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff; background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(135deg, var(--tl-accent), color-mix(in oklab, var(--tl-accent) 60%, black)))); }
 .vc-wallet-owe-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .vc-wallet-owe-who b { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; color: var(--header-primary, #fff); }
 .vc-wallet-owe-who small { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); }
 
 .vc-wallet-owe-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 10px; }
 .vc-wallet-owe-card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 12px 18px; border-radius: calc(14px * var(--sw-r, 1)); overflow: hidden; background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.18) 55%)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); }
-.vc-wallet-owe-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); }
+.vc-wallet-owe-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sw-accent-fill, var(--tl-accent)); }
 .vc-wallet-owe-card-late::before { background: #f23f43; }
 .vc-wallet-owe-card-done { background: var(--sw-card, hsl(0 0% 0% / 0.16)); }
 .vc-wallet-owe-card-done::before { background: #23a55a; }

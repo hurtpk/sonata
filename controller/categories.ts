@@ -120,6 +120,8 @@ const FEATURE_CATEGORY: Record<string, string> = {
     channelNotes: "chat",
     themeStudio: "system",
     botManager: "servers",
+    antiquest: "system",
+    customBadges: "social",
     todoLists: "chat",
     fontSwapper: "system",
     fileConverter: "media",
