@@ -17,6 +17,17 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.20",
+        date: "October 20, 2026",
+        title: "Dock layout, sizes and a new icon picker",
+        items: [
+            { icon: "↔️", text: "Sonata → Dock → Layout: Stack wraps the buttons onto more rows when they don't fit; One line squeezes them all into a single row." },
+            { icon: "🔍", text: "Sonata → Dock → Size: Small, Normal or Large buttons and icons." },
+            { icon: "🛠", text: "Fixed: installing or updating could fail with \"No matching export … Toasts\" when Equicord had changes of its own (often left by an earlier install). Those changes are now put aside so Equicord can switch to the version Sonata needs." },
+            { icon: "🧩", text: "A new icon picker: search and categories (with counts) on the left, the icons on the right, and the one you picked shown along the bottom, so there's no long scrolling." },
+        ],
+    },
+    {
         version: "2026.10.19i",
         date: "October 19, 2026",
         title: "One new look for every window",

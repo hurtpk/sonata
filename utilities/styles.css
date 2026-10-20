@@ -816,45 +816,6 @@
     border-radius: 10px !important;
 }
 
-.vc-chsettings-dock-icon-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-    gap: 8px;
-    /* Over 200 icons: scroll within the picker instead of stretching the page. */
-    max-height: 320px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-
-.vc-chsettings-dock-icon-choice {
-    all: unset;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    color: var(--text-muted);
-    background: var(--neutral-82, hsl(0 0% 100% / 0.04));
-    border: 1px solid hsl(0 0% 100% / 0.05);
-    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
-}
-
-.vc-chsettings-dock-icon-choice:hover {
-    color: var(--text-default);
-    background: hsl(0 0% 100% / 0.08);
-    transform: translateY(-1px);
-}
-
-.vc-chsettings-dock-icon-choice-selected,
-.vc-chsettings-dock-icon-choice-selected:hover {
-    color: #fff;
-    background: var(--vc-chsettings-accent, var(--brand-500));
-    border-color: var(--vc-chsettings-accent, var(--brand-500));
-    box-shadow: 0 0 0 1px var(--vc-chsettings-accent, var(--brand-500)), 0 0 14px hsl(from var(--vc-chsettings-accent, var(--brand-500)) h s l / 0.4);
-}
-
 .vc-chsettings-dock-add-actions {
     display: flex;
     justify-content: flex-end;
@@ -1250,33 +1211,6 @@
 .vc-chsettings-dock-visibility-locked { cursor: not-allowed; opacity: 0.55; }
 
 /* Icon picker: a search box, and the icons in labelled groups. */
-.vc-chsettings-dock-icon-search {
-    all: unset;
-    box-sizing: border-box;
-    width: 100%;
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 13.5px;
-    color: var(--text-default);
-    background: hsl(0 0% 0% / 0.22);
-    border: 1px solid hsl(0 0% 100% / 0.08);
-}
-
-.vc-chsettings-dock-icon-search:focus { border-color: var(--brand-500); }
-
-.vc-chsettings-dock-icon-group {
-    grid-column: 1 / -1;
-    margin-top: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-}
-
-.vc-chsettings-dock-icon-group:first-child { margin-top: 0; }
-
 /* Editing a dock button (right-click in the Dock tab). */
 .vc-chsettings-dock-edit-form { margin-top: 12px; border-color: color-mix(in srgb, var(--brand-500) 55%, transparent) !important; }
 .vc-chsettings-dock-edit-title { font-size: 14px; color: var(--text-default); margin-bottom: 4px; }
@@ -1294,3 +1228,38 @@
 .vc-chsettings-dock-color-any { display: grid; place-items: center; background: var(--cp-color); font-size: 14px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px #000a; }
 .vc-chsettings-dock-color-on { outline: 2px solid var(--vc-chsettings-accent, var(--brand-500)); outline-offset: 2px; }
 .vc-chsettings-dock-color-chip.vc-chsettings-dock-color-on { outline-offset: 0; border-color: transparent; }
+
+/* Dock → Look: colour, layout and size, one card */
+.vc-chsettings-dock-look { display: flex; flex-direction: column; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.08); background: hsl(0 0% 0% / 0.16); overflow: hidden; }
+.vc-chsettings-dock-look > .vc-chsettings-dock-color { border: 0; border-radius: 0; background: none; }
+.vc-chsettings-dock-look > .vc-chsettings-dock-color + .vc-chsettings-dock-color { border-top: 1px solid hsl(0 0% 100% / 0.07); }
+.vc-chsettings-dock-look-seg { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Icon picker: search and categories on the left, the icons on the right, what's picked along the bottom */
+.vc-chsettings-dock-ip { display: grid; grid-template-columns: 190px minmax(0, 1fr); height: 300px; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.08); background: hsl(0 0% 0% / 0.2); overflow: hidden; }
+.vc-chsettings-dock-ip-side { display: flex; flex-direction: column; gap: 8px; min-height: 0; padding: 10px; border-right: 1px solid hsl(0 0% 100% / 0.07); }
+.vc-chsettings-dock-ip-search { all: unset; box-sizing: border-box; width: 100%; padding: 7px 10px; border-radius: 9px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 0% / 0.25); font-size: 13px; color: var(--text-default, var(--text-normal)); }
+.vc-chsettings-dock-ip-search:focus { border-color: var(--vc-chsettings-accent, var(--brand-500)); }
+.vc-chsettings-dock-ip-search::placeholder { color: var(--text-muted); }
+.vc-chsettings-dock-ip-groups { display: flex; flex-direction: column; gap: 2px; min-height: 0; overflow-y: auto; margin-right: -4px; padding-right: 4px; }
+.vc-chsettings-dock-ip-group { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 6px 9px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted); cursor: pointer; }
+.vc-chsettings-dock-ip-group span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-chsettings-dock-ip-group small { font-size: 11px; font-variant-numeric: tabular-nums; opacity: 0.7; }
+.vc-chsettings-dock-ip-group:hover:not(:disabled) { color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.04); }
+.vc-chsettings-dock-ip-group:disabled { opacity: 0.35; cursor: default; }
+.vc-chsettings-dock-ip-group-on, .vc-chsettings-dock-ip-group-on:hover { color: var(--text-default, #fff); font-weight: 600; background: hsl(0 0% 100% / 0.07); box-shadow: inset 2px 0 0 var(--vc-chsettings-accent, var(--brand-500)); }
+.vc-chsettings-dock-ip-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.vc-chsettings-dock-ip-head { flex: none; padding: 10px 12px 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.vc-chsettings-dock-ip-grid { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); align-content: start; gap: 4px; padding: 0 12px 10px; }
+.vc-chsettings-dock-ip-icon { all: unset; box-sizing: border-box; display: grid; place-items: center; aspect-ratio: 1; border-radius: 9px; color: var(--interactive-normal, #b5bac1); cursor: pointer; }
+.vc-chsettings-dock-ip-icon:hover { color: var(--text-default, #fff); background: hsl(0 0% 100% / 0.06); }
+.vc-chsettings-dock-ip-icon:focus-visible { outline: 2px solid var(--vc-chsettings-accent, var(--brand-500)); outline-offset: -2px; }
+.vc-chsettings-dock-ip-icon-on, .vc-chsettings-dock-ip-icon-on:hover { color: #fff; background: color-mix(in srgb, var(--vc-chsettings-accent, var(--brand-500)) 30%, transparent); box-shadow: inset 0 0 0 1px var(--vc-chsettings-accent, var(--brand-500)); }
+.vc-chsettings-dock-ip-empty { flex: 1; padding: 20px 14px; font-size: 13px; color: var(--text-muted); }
+.vc-chsettings-dock-ip-foot { flex: none; display: flex; align-items: center; min-height: 48px; padding: 0 12px; border-top: 1px solid hsl(0 0% 100% / 0.07); }
+.vc-chsettings-dock-ip-pick { display: flex; align-items: center; gap: 10px; }
+.vc-chsettings-dock-ip-pick-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; color: #fff; background: hsl(0 0% 100% / 0.07); }
+.vc-chsettings-dock-ip-pick b { display: block; font-size: 13.5px; color: var(--text-default, var(--text-normal)); }
+.vc-chsettings-dock-ip-pick small { font-size: 11.5px; color: var(--text-muted); }
+.vc-chsettings-dock-ip-none { font-size: 13px; color: var(--text-muted); }
+@media (max-width: 560px) { .vc-chsettings-dock-ip { grid-template-columns: 1fr; height: auto; } .vc-chsettings-dock-ip-side { border-right: 0; border-bottom: 1px solid hsl(0 0% 100% / 0.07); } .vc-chsettings-dock-ip-groups { flex-direction: row; flex-wrap: wrap; } .vc-chsettings-dock-ip-grid { max-height: 220px; } }

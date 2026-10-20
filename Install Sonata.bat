@@ -416,14 +416,21 @@ choice /c YN /n /m "  Switch Equicord to Sonata's version? [Y/N] "
 if errorlevel 2 exit /b 0
 :switchequicord
 call :step "Matching Equicord to Sonata"
-git -C "%EQ%" checkout --quiet -B sonata %PIN% 2>nul
+call :trycheckout
 if not errorlevel 1 goto :switched
-git -C "%EQ%" fetch --quiet origin
+rem  Changes in Equicord's own files stop the switch - usually from installing its
+rem  parts (pnpm-lock.yaml) or an older set of Sonata's fixes. Put them aside with
+rem  git stash (nothing is lost: "git stash pop" brings them back) and try again.
+echo   Equicord has changes of its own - putting them aside ^(git stash^) to switch.
+git -C "%EQ%" stash push --quiet -m "Sonata: Equicord changes put aside before switching versions" >nul 2>nul
+call :trycheckout
+if not errorlevel 1 goto :switched
+echo.
+echo   Couldn't switch Equicord to Sonata's version, so the build may fail.
+echo   What git said:
 git -C "%EQ%" checkout --quiet -B sonata %PIN%
-if errorlevel 1 (
-    echo   Couldn't switch Equicord ^(it may have changes of its own^) - carrying on.
-    exit /b 0
-)
+echo.
+exit /b 0
 :switched
 echo   Equicord is on Sonata's version.
 set "EQCHANGED=1"
@@ -444,6 +451,14 @@ if errorlevel 1 (
 :fixesadded
 echo   Added Sonata's small Equicord fixes.
 exit /b 0
+
+rem  Puts Equicord on Sonata's version (fetching it first if it isn't downloaded yet).
+:trycheckout
+git -C "%EQ%" checkout --quiet -B sonata %PIN% 2>nul
+if not errorlevel 1 exit /b 0
+git -C "%EQ%" fetch --quiet origin
+git -C "%EQ%" checkout --quiet -B sonata %PIN% 2>nul
+exit /b %errorlevel%
 
 rem  call :restorefile "a/<path>" - puts one Equicord file back as it came.
 :restorefile

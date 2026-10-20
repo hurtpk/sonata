@@ -114,9 +114,17 @@ async function doUpdate(eq: string) {
     const head = (await run("git", ["-C", eq, "rev-parse", "HEAD"], eq, 30_000)).out.trim();
     const managed = existsSync(join(eq, ".git", "sonata-installed")) || (!!oldPin && head === oldPin);
     if (pin && head !== pin && managed) {
-        let co = await run("git", ["-C", eq, "checkout", "--quiet", "-B", "sonata", pin], eq, 120_000);
-        if (co.code !== 0) { await run("git", ["-C", eq, "fetch", "--quiet", "origin"], eq, 300_000); co = await run("git", ["-C", eq, "checkout", "--quiet", "-B", "sonata", pin], eq, 120_000); }
+        const checkout = () => run("git", ["-C", eq, "checkout", "--quiet", "-B", "sonata", pin], eq, 120_000);
+        let co = await checkout();
+        if (co.code !== 0) { await run("git", ["-C", eq, "fetch", "--quiet", "origin"], eq, 300_000); co = await checkout(); }
+        if (co.code !== 0) {
+            // Changes in Equicord's own files stop the switch — usually from installing its parts (pnpm-lock.yaml)
+            // or an older set of Sonata's fixes. Put them aside (git stash keeps them) and try again.
+            await run("git", ["-C", eq, "stash", "push", "--quiet", "-m", "Sonata: Equicord changes put aside before switching versions"], eq, 60_000);
+            co = await checkout();
+        }
         if (co.code === 0) j.equicordChanged = true;
+        else return fail("Couldn't put Equicord on the version Sonata needs.", co.out);
     }
     const patch = join(sonata, "equicord-fixes.patch");
     if (existsSync(patch) && (await run("git", ["-C", eq, "apply", "--reverse", "--check", patch], eq, 30_000)).code !== 0) {

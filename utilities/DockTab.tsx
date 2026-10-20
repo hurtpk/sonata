@@ -9,7 +9,7 @@ import { Select, Tooltip, useCallback, useEffect, useMemo, useState } from "@web
 
 import { ColorPicker } from "../features/_shared/ColorPicker";
 import { addDockMutationListener, getDockItems, PINNED_DOCK_ID, refreshDock, removeDockMutationListener } from "./dock";
-import { dockColorOf } from "./dockColor";
+import { dockColorOf, dockLayoutOf, dockSizeOf } from "./dockColor";
 import { DEFAULT_DOCK_ICON_KEY, DOCK_ICON_GROUPS, DOCK_ICON_LIBRARY, DOCK_ICON_MAP } from "./icons";
 import {
     cl,
@@ -32,69 +32,117 @@ interface DockSettings {
     dockIcons: string;
     /** The buttons' colour: "" (Discord's), "accent", or a hex code. */
     dockColor?: string;
+    /** "stack" (rows) or "line" (one line). */
+    dockLayout?: string;
+    /** "small", "normal" or "large". */
+    dockSize?: string;
 }
 
 const DOCK_SWATCHES = ["#ffffff", "#b5bac1", "#5b8cff", "#a855f7", "#ff6fae", "#ff5c6c", "#ffb020", "#3ddc84", "#22d3ee"];
 
-/** One colour for every dock button: Discord's, your accent, a swatch or any colour. */
-function DockColorRow({ settings }: { settings: DockSettings; }) {
+function LookChoice<T extends string>({ value, options, onChange }: { value: T; options: [T, string][]; onChange(v: T): void; }) {
+    return (
+        <div className={cl("dock-look-seg")} role="radiogroup">
+            {options.map(([id, label]) => (
+                <button key={id} type="button" role="radio" aria-checked={value === id} className={classes(cl("dock-color-chip"), value === id && cl("dock-color-on"))} onClick={() => onChange(id)}>{label}</button>
+            ))}
+        </div>
+    );
+}
+
+/** How the dock looks: one colour for every button, rows or one line, and the buttons' size. */
+function DockLook({ settings }: { settings: DockSettings; }) {
     const v = dockColorOf(settings);
     const custom = v && v !== "accent" && !DOCK_SWATCHES.includes(v) ? v : null;
     const set = (c: string) => { settings.dockColor = c; };
     return (
-        <div className={cl("dock-color")}>
-            <div className={cl("dock-color-text")}>
-                <b>Icon colour</b>
-                <span>All the dock's buttons at once. A Theme Studio theme can set one too; this wins when it's set.</span>
+        <div className={cl("dock-look")}>
+            <div className={cl("dock-color")}>
+                <div className={cl("dock-color-text")}>
+                    <b>Icon colour</b>
+                    <span>All the buttons at once. A Theme Studio theme can set one too; this wins when it's set.</span>
+                </div>
+                <div className={cl("dock-color-pick")}>
+                    <button type="button" className={classes(cl("dock-color-chip"), !v && cl("dock-color-on"))} onClick={() => set("")}>Discord's</button>
+                    <button type="button" className={classes(cl("dock-color-chip"), v === "accent" && cl("dock-color-on"))} onClick={() => set("accent")}>Accent</button>
+                    {DOCK_SWATCHES.map(c => (
+                        <button key={c} type="button" title={c} aria-label={`Colour ${c}`} className={classes(cl("dock-color-dot"), v === c && cl("dock-color-on"))}
+                            style={{ "--dc": c } as React.CSSProperties} onClick={() => set(c)} />
+                    ))}
+                    <ColorPicker className={classes(cl("dock-color-dot"), cl("dock-color-any"), custom && cl("dock-color-on"))} label="Any colour"
+                        value={custom ?? (v && v !== "accent" ? v : "#5b8cff")} onChange={set}>+</ColorPicker>
+                </div>
             </div>
-            <div className={cl("dock-color-pick")}>
-                <button type="button" className={classes(cl("dock-color-chip"), !v && cl("dock-color-on"))} onClick={() => set("")}>Discord's</button>
-                <button type="button" className={classes(cl("dock-color-chip"), v === "accent" && cl("dock-color-on"))} onClick={() => set("accent")}>Accent</button>
-                {DOCK_SWATCHES.map(c => (
-                    <button key={c} type="button" title={c} aria-label={`Colour ${c}`} className={classes(cl("dock-color-dot"), v === c && cl("dock-color-on"))}
-                        style={{ "--dc": c } as React.CSSProperties} onClick={() => set(c)} />
-                ))}
-                <ColorPicker className={classes(cl("dock-color-dot"), cl("dock-color-any"), custom && cl("dock-color-on"))} label="Any colour"
-                    value={custom ?? (v && v !== "accent" ? v : "#5b8cff")} onChange={set}>+</ColorPicker>
+            <div className={cl("dock-color")}>
+                <div className={cl("dock-color-text")}>
+                    <b>Layout</b>
+                    <span>Stack wraps the buttons onto more rows when they don't fit. One line squeezes them all into a single row.</span>
+                </div>
+                <LookChoice value={dockLayoutOf(settings)} options={[["stack", "Stack"], ["line", "One line"]]} onChange={l => { settings.dockLayout = l; }} />
+            </div>
+            <div className={cl("dock-color")}>
+                <div className={cl("dock-color-text")}>
+                    <b>Size</b>
+                    <span>How big the buttons and their icons are.</span>
+                </div>
+                <LookChoice value={dockSizeOf(settings)} options={[["small", "Small"], ["normal", "Normal"], ["large", "Large"]]} onChange={s => { settings.dockSize = s; }} />
             </div>
         </div>
     );
 }
 
-/** A searchable, grouped grid of every icon. */
+/** One icon, bigger, with its name — what's picked right now. */
+function IconPreview({ iconKey }: { iconKey: string; }) {
+    const def = DOCK_ICON_MAP[iconKey];
+    if (!def) return <span className={cl("dock-ip-none")}>Pick an icon</span>;
+    const { Icon } = def;
+    return (
+        <span className={cl("dock-ip-pick")}>
+            <span className={cl("dock-ip-pick-icon")}><Icon width={22} height={22} /></span>
+            <span><b>{def.label}</b><small>{def.group}</small></span>
+        </span>
+    );
+}
+
+/** Pick an icon: search and categories on the left, the icons on the right, and what's picked along the bottom. */
 export function IconPicker({ selected, onSelect }: { selected: string; onSelect(key: string): void; }) {
     const [query, setQuery] = useState("");
+    const [group, setGroup] = useState<string>(() => DOCK_ICON_MAP[selected]?.group ?? DOCK_ICON_GROUPS[0]);
     const q = query.trim().toLowerCase();
+    const matches = (i: typeof DOCK_ICON_LIBRARY[number]) => !q || i.label.toLowerCase().includes(q) || i.key.toLowerCase().includes(q) || i.group.toLowerCase().includes(q);
+    const counts = useMemo(() => Object.fromEntries(DOCK_ICON_GROUPS.map(g => [g, DOCK_ICON_LIBRARY.filter(i => i.group === g && matches(i)).length])), [q]);
+    // While searching, every category's matches show together.
+    const shown = DOCK_ICON_LIBRARY.filter(i => matches(i) && (q ? true : i.group === group));
     return (
-        <>
-            <input
-                className={cl("dock-icon-search")}
-                value={query}
-                placeholder={`Search ${DOCK_ICON_LIBRARY.length} icons — music, shield, translate…`}
-                onChange={e => setQuery(e.currentTarget.value)}
-            />
-            <div className={cl("dock-icon-grid")}>
-                {DOCK_ICON_GROUPS.map(group => {
-                    const icons = DOCK_ICON_LIBRARY.filter(i => i.group === group && (!q || i.label.toLowerCase().includes(q) || i.key.toLowerCase().includes(q) || group.toLowerCase().includes(q)));
-                    if (!icons.length) return null;
-                    return [
-                        <div key={`h-${group}`} className={cl("dock-icon-group")}>{group}</div>,
-                        ...icons.map(({ key, label, Icon }) => (
-                            <button
-                                key={key}
-                                type="button"
-                                className={classes(cl("dock-icon-choice"), key === selected && cl("dock-icon-choice-selected"))}
-                                onClick={() => onSelect(key)}
-                                aria-label={label}
-                                title={label}
-                            >
+        <div className={cl("dock-ip")}>
+            <div className={cl("dock-ip-side")}>
+                <input className={cl("dock-ip-search")} value={query} placeholder={`Search ${DOCK_ICON_LIBRARY.length} icons`} aria-label="Search icons"
+                    onChange={e => setQuery(e.currentTarget.value)} />
+                <div className={cl("dock-ip-groups")} role="tablist">
+                    {DOCK_ICON_GROUPS.map(g => (
+                        <button key={g} type="button" role="tab" aria-selected={!q && g === group} disabled={!counts[g]}
+                            className={classes(cl("dock-ip-group"), !q && g === group && cl("dock-ip-group-on"))}
+                            onClick={() => { setGroup(g); setQuery(""); }}>
+                            <span>{g}</span><small>{counts[g]}</small>
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <div className={cl("dock-ip-main")}>
+                <div className={cl("dock-ip-head")}>{q ? `${shown.length} match${shown.length === 1 ? "" : "es"} for “${query.trim()}”` : group}</div>
+                {shown.length ? (
+                    <div className={cl("dock-ip-grid")}>
+                        {shown.map(({ key, label, Icon }) => (
+                            <button key={key} type="button" aria-label={label} title={label} aria-pressed={key === selected}
+                                className={classes(cl("dock-ip-icon"), key === selected && cl("dock-ip-icon-on"))} onClick={() => onSelect(key)}>
                                 <Icon width={20} height={20} />
                             </button>
-                        )),
-                    ];
-                })}
+                        ))}
+                    </div>
+                ) : <div className={cl("dock-ip-empty")}>No icons match “{query.trim()}”. Try a simpler word, like music, lock or star.</div>}
+                <div className={cl("dock-ip-foot")}><IconPreview iconKey={selected} /></div>
             </div>
-        </>
+        </div>
     );
 }
 
@@ -257,7 +305,7 @@ export function DockTab({ settings }: { settings: DockSettings; }) {
 
     return (
         <div className={cl("dock-wrap")}>
-            <DockColorRow settings={settings} />
+            <DockLook settings={settings} />
             <div className={cl("dock-hint")}>Drag icons to reorder. <b>Right-click an icon to edit it</b> — change its icon, or for plugins you added, which plugin it opens. Hover for a quick × to hide it (or remove it, for plugins you added), or use the toggle underneath.</div>
 
             {items.length === 0 ? (

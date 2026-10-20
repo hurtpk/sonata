@@ -778,6 +778,8 @@ const qolDef: SettingsDefinition = {
     dockIcons: { type: OptionType.STRING, description: "Icons chosen for built-in dock buttons (JSON).", default: "{}", hidden: true },
     dockHidden: { type: OptionType.STRING, description: "Hidden dock buttons (JSON).", default: "[]", hidden: true },
     dockColor: { type: OptionType.STRING, description: "Dock buttons' colour: empty for Discord's, \"accent\", or a hex code.", default: "", hidden: true },
+    dockLayout: { type: OptionType.STRING, description: "Dock layout: stack (rows) or line (one line).", default: "stack", hidden: true },
+    dockSize: { type: OptionType.STRING, description: "Dock button size: small, normal or large.", default: "normal", hidden: true },
     keybindMap: { type: OptionType.STRING, description: "Keybinds for on/off settings (JSON).", default: "{}", hidden: true },
     customDock: { type: OptionType.STRING, description: "Plugins added to the dock (JSON).", default: "{}", hidden: true },
     aboutAmbientColor: { type: OptionType.STRING, description: "Accent color (hex) — set in Plugin Utilities → About.", default: "", hidden: true },
