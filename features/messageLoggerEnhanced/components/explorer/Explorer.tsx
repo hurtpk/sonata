@@ -8,8 +8,9 @@ import "../../../_shared/tool.css";
 import "./explorer.css";
 
 import { RenderModalProps } from "@vencord/discord-types";
-import { Modal, React, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { React, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
+import { Window } from "../../../_shared/Window";
 import { Avatar, Backend, backendCtx, cl, classes, GuildIcon, useBackend } from "./bits";
 import { applyFilters, applyMeta, buildIndex, Entry, exportCsv, exportJson, exportText, Filters, fmtBytes, fmtWhen, HasFilter, inScope, LogIndex, LogRecord, Media, MetaMap, NO_FILTERS, Period, sameScope, Scope, TypeFilter, whereText } from "./data";
 import { Detail } from "./Detail";
@@ -208,7 +209,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
     const total = index?.entries.length ?? 0;
 
     return (
-        <Modal {...modalProps} size="xxl" title="Message Logs" subtitle="Deleted and edited messages, ghost pings and the pictures in them — saved on this computer">
+        <Window {...modalProps} size="xxl" title="Message Logs" subtitle="Deleted and edited messages, ghost pings and the pictures in them — saved on this computer">
             <BackendProvider value={backend}>
                 <div className={classes("vc-tool-wrap", cl("root"), selected && cl("root-detail"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined} onKeyDown={onKey} tabIndex={-1}>
                     {index && <Side index={index} scope={scope} onScope={setScope} total={total} />}
@@ -343,7 +344,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                     )}
                 </div>
             </BackendProvider>
-        </Modal>
+        </Window>
     );
 }
 

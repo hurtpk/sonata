@@ -92,6 +92,7 @@ export const FEATURE_ICONS: Record<string, string> = {
     quickText: "keyboard",
     channelNotes: "notes",
     themeStudio: "brush",
+    botManager: "robot",
     roleColorEverywhere: "palette",
     scheduledMessages: "scheduled",
     screenshotStyler: "screenshot",

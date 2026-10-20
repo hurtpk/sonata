@@ -14,10 +14,11 @@ import { classes } from "@utils/misc";
 import { ModalProps, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { Modal, React, showToast, useState } from "@webpack/common";
+import { React, showToast, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
+import { Window } from "../_shared/Window";
 
 const MediaEngineStore = findByPropsLazy("getMediaEngine");
 const cl = classNameFactory("vc-sq-");
@@ -379,13 +380,9 @@ function StreamQualityModal({ modalProps }: { modalProps: ModalProps; }) {
 
     const accent = windowAccent("streamQuality");
     return (
-        <Modal {...modalProps} size="lg" title="Stream Quality" subtitle="Your screen-share's quality, its badge and its preview picture">
+        <Window {...modalProps} size="lg" title="Stream Quality" subtitle="Your screen-share's quality, its badge and its preview picture"
+            tabs={[["quality", "Quality"], ["preview", "Preview picture"]]} tab={tab} onTab={id => setTab(id as typeof tab)}>
             <div className={classes(tl("wrap"), cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <div className={tl("tabs")}>
-                    {([["quality", "🎥 Quality"], ["preview", "🖼️ Preview picture"]] as const).map(([id, label]) => (
-                        <button key={id} type="button" className={classes(tl("tab"), tab === id && tl("tab-on"))} onClick={() => setTab(id)}>{label}</button>
-                    ))}
-                </div>
                 {tab === "quality" && <QualityTab refresh={refresh} />}
                 {tab === "preview" && (
                     cropSrc ? (
@@ -425,7 +422,7 @@ function StreamQualityModal({ modalProps }: { modalProps: ModalProps; }) {
                     <button type="button" className={classes(tl("btn"), tl("primary"))} onClick={modalProps.onClose}>Done</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

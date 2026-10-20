@@ -11,10 +11,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildMemberStore, GuildStore, Modal, NavigationRouter, openModal, SortedGuildStore, useEffect, useMemo, useReducer, UserStore, useState } from "@webpack/common";
+import { ChannelStore, GuildMemberStore, GuildStore, NavigationRouter, openModal, SortedGuildStore, useEffect, useMemo, useReducer, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { cancelWatch, getRules, saveRules, settings } from "./index";
 import { clearLog, newRule, onGreeterChange, previewOf, Rule, sentLog, Trigger, VARIABLES, watching } from "./rules";
 
@@ -236,7 +237,7 @@ function GreeterModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const add = () => { const r = newRule(rules.length + 1); saveRules([...rules, r]); setSelected(r.id); };
 
     return (
-        <Modal {...modalProps} size="lg" title="Channel Greeter" subtitle="Greets new channels in a category — like tickets — the moment someone posts">
+        <Window {...modalProps} size="lg" title="Channel Greeter" subtitle="Greets new channels in a category — like tickets — the moment someone posts">
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={s.active ? "👋" : "⏸️"} kicker={s.active ? "Greeting" : "Paused"}
                     title={s.active ? `${rules.filter(r => r.on).length} of ${rules.length} greeter${rules.length === 1 ? "" : "s"} running` : "Nothing will be sent"}
@@ -271,7 +272,7 @@ function GreeterModal({ modalProps }: { modalProps: RenderModalProps; }) {
 
                 <Activity />
             </div>
-        </Modal>
+        </Window>
     );
 }
 

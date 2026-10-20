@@ -9,11 +9,12 @@ import { openPrivateChannel } from "@utils/discord";
 import { classes } from "@utils/misc";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, Modal, NavigationRouter, openModal, showToast, useMemo, useState } from "@webpack/common";
+import { ChannelStore, NavigationRouter, openModal, showToast, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { isFeatureRunning } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { useBirthdays } from "../birthdayReminders/store";
 import { openScheduler } from "../scheduledMessages/Panel";
 import { useQueue } from "../scheduledMessages/store";
@@ -225,7 +226,7 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
         : new Date(next.at).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }) + (next.allDay ? "" : ` · ${timeText(next.at)}`));
 
     return (
-        <Modal {...modalProps} size="lg" title="Calendar" subtitle={today.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}>
+        <Window {...modalProps} size="lg" title="Calendar" subtitle={today.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={next ? KINDS.find(k => k.kind === next.kind)!.icon : "📅"} kicker={next ? "Coming up" : "Calendar"}
                     title={next ? next.title : "Nothing coming up"}
@@ -284,7 +285,7 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
                     </section>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

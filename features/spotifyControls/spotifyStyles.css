@@ -6,8 +6,8 @@
     border-top-right-radius: 10px;
     border-bottom: 1px solid var(--border-subtle);
 
-    /* so custom themes can easily change it */
-    --vc-spotify-green: var(--spotify, #1db954);
+    /* Sonata's accent colour (custom themes can still change it with --spotify) */
+    --vc-spotify-green: var(--spotify, var(--vc-sonata-accent, #1db954));
     --vc-spotify-green-90: color-mix(in hsl, var(--vc-spotify-green), transparent 90%);
     --vc-spotify-green-80: color-mix(in hsl, var(--vc-spotify-green), transparent 80%);
 }
@@ -97,7 +97,7 @@
 #vc-spotify-album-image {
     height: 90%;
     object-fit: contain;
-    border-radius: 3px;
+    border-radius: calc(3px * var(--sw-r, 1));
     transition: filter 0.2s;
 }
 
@@ -281,8 +281,8 @@
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(180deg, hsl(0 0% 0% / 0.35), hsl(0 0% 0% / 0.6)),
-        radial-gradient(130% 100% at 50% 0%, transparent 35%, hsl(0 0% 0% / 0.45));
+        var(--sw-card, linear-gradient(180deg, hsl(0 0% 0% / 0.35), hsl(0 0% 0% / 0.6)),
+        radial-gradient(130% 100% at 50% 0%, transparent 35%, hsl(0 0% 0% / 0.45)));
 }
 
 /* Paused music → the ambience stops and dims. */
@@ -370,7 +370,7 @@
 
 /* At the top of the user area: round all corners and leave a little gap. */
 .vc-spotify-top-slot #vc-spotify-player {
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     border-bottom: none;
     margin-bottom: 6px;
 }

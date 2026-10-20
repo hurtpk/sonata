@@ -10,10 +10,10 @@ import { classNameFactory } from "@utils/css";
 import { copyWithToast, sendMessage } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, SelectedChannelStore, showToast, useEffect, UserStore, useState } from "@webpack/common";
+import { openModal, SelectedChannelStore, showToast, useEffect, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
-import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { SetupCard } from "./Card";
 import { collect, decode, describe, encode, Part, Setup, summaryLine } from "./setup";
 
@@ -69,15 +69,10 @@ function ShareModal({ modalProps }: { modalProps: RenderModalProps; }) {
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Share My Setup" subtitle="Send your Sonata look to a friend, or try theirs">
+        <Window {...modalProps} size="lg" title="Share My Setup" subtitle="Send your Sonata look to a friend, or try theirs"
+            tabs={[["send", "Share mine"], ["import", "Use a code"]]} tab={tab} onTab={id => setTab(id as typeof tab)}
+            status={[tab === "send" ? `${parts.length} thing${parts.length === 1 ? "" : "s"} picked — your friend sees a card they can try with one click` : "you can see a code before anything changes"]}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <ToolHero icon={tab === "send" ? "🎁" : "📥"} kicker="Share My Setup"
-                    title={tab === "send" ? "Send your Sonata look" : "Try a friend's look"}
-                    sub={tab === "send" ? `${parts.length} thing${parts.length === 1 ? "" : "s"} picked — your friend sees a card they can try with one click.` : "Paste the code they sent you — you can see it before anything changes."} />
-                <div className={cl("seg")}>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "send" && cl("seg-on"))} onClick={() => setTab("send")}>🎁 Share mine</button>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "import" && cl("seg-on"))} onClick={() => setTab("import")}>📥 Use a code</button>
-                </div>
 
                 {tab === "send" ? (
                     <>
@@ -111,7 +106,7 @@ function ShareModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

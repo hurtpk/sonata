@@ -7,10 +7,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { Channel, RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, Constants, GuildMemberStore, Modal, NavigationRouter, openModal, RestAPI, useEffect, UserStore, useState } from "@webpack/common";
+import { ChannelStore, Constants, GuildMemberStore, NavigationRouter, openModal, RestAPI, useEffect, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { DayWindow, inDay, pastDays, timeOf } from "./dates";
 
 const cl = classNameFactory("vc-otd-");
@@ -102,7 +103,7 @@ function OnThisDayModal({ modalProps, channel }: { modalProps: RenderModalProps;
     const today = new Date().toLocaleDateString(undefined, { month: "long", day: "numeric" });
 
     return (
-        <Modal {...modalProps} size="lg" title={`On This Day · ${today}`} subtitle={`In ${where}`}>
+        <Window {...modalProps} size="lg" title={`On This Day · ${today}`} subtitle={`In ${where}`}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="📅" kicker={`In ${where}`} title={today}
                     sub={!done ? `Looking back ${results.length + 1} year${results.length ? "s" : ""}…` : withMessages.length ? "Here's what was said on this day before." : "A quiet day in past years."}
@@ -139,7 +140,7 @@ function OnThisDayModal({ modalProps, channel }: { modalProps: RenderModalProps;
                     <div className={cl("empty")}>Nothing was said here on {today} in the past {days.length === 1 ? "year" : `${days.length} years`}.</div>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

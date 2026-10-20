@@ -1,5 +1,5 @@
 /* Link Cleaner — the "where does this link go?" bubble. */
-.vc-lc-tip { position: fixed; z-index: 10000; display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; border-radius: 10px; border: 1px solid hsl(0 0% 100% / 0.1); background: var(--background-floating, #111214); box-shadow: 0 8px 24px hsl(0 0% 0% / 0.45); font-size: 13px; color: var(--text-default, #dbdee1); pointer-events: none; opacity: 0; transform: translateY(-3px); transition: opacity 0.12s, transform 0.12s; }
+.vc-lc-tip { position: fixed; z-index: 10000; display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; border-radius: calc(10px * var(--sw-r, 1)); border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--background-floating, #111214); box-shadow: 0 8px 24px hsl(0 0% 0% / 0.45); font-size: 13px; color: var(--text-default, #dbdee1); pointer-events: none; opacity: 0; transform: translateY(-3px); transition: opacity 0.12s, transform 0.12s; }
 .vc-lc-tip-on { opacity: 1; transform: none; }
 .vc-lc-tip b { color: var(--text-default, #fff); }
 .vc-lc-tip > span { overflow-wrap: anywhere; }

@@ -10,9 +10,10 @@ import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { RenderModalProps } from "@vencord/discord-types";
 import { extractAndLoadChunksLazy } from "@webpack";
-import { Modal, openModalLazy, useMemo, useRef, useState } from "@webpack/common";
+import { openModalLazy, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { Window } from "../../_shared/Window";
 import { pickCharacters } from "../../charactersPicker";
 import { DEFAULT_COLOR, SWATCHES } from "../constants";
 import { categoryLen, createCategory, getCategory } from "../data";
@@ -90,7 +91,7 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
     const solidHex = hexOf(color);
 
     return (
-        <Modal {...modalProps} size="md" title={`${categoryId ? "Edit" : "New"} Category`} subtitle="Pinned DMs, grouped your way">
+        <Window {...modalProps} size="md" title={`${categoryId ? "Edit" : "New"} Category`} subtitle="Pinned DMs, grouped your way">
             <form
                 className={cl("wrap")}
                 style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}
@@ -187,7 +188,7 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
                     <button type="submit" className={classes(cl("btn"), cl("primary"))} disabled={!name.trim()}>{categoryId ? "Save" : "Create"}</button>
                 </div>
             </form>
-        </Modal>
+        </Window>
     );
 }
 

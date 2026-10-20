@@ -8,10 +8,11 @@ import { classNameFactory } from "@utils/css";
 import { sendMessage } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, Modal, openModal, SelectedChannelStore, showToast, UserStore, useState } from "@webpack/common";
+import { ChannelStore, openModal, SelectedChannelStore, showToast, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { gameMessage } from "./Board";
 import { FleetPlacer } from "./DuelBoards";
 import { encodeFleet, fleetCells, randomFleet, scramble, Ship, validWord, WD_LEN } from "./duelRules";
@@ -71,7 +72,7 @@ function StartModal({ modalProps, channelId }: { modalProps: RenderModalProps; c
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Mini Games" subtitle={other ? "Play right here in this DM" : "Play in this channel — the first person to answer joins"}>
+        <Window {...modalProps} size="lg" title="Mini Games" subtitle={other ? "Play right here in this DM" : "Play in this channel — the first person to answer joins"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={GAMES.find(g => g.kind === kind)?.emoji ?? "🎮"} kicker={other ? `With ${(UserStore.getUser(other) as any)?.globalName ?? UserStore.getUser(other)?.username ?? "them"}` : "Anyone here can join"}
                     title={GAME_NAMES[kind]} sub={GAMES.find(g => g.kind === kind)?.blurb}>
@@ -116,7 +117,7 @@ function StartModal({ modalProps, channelId }: { modalProps: RenderModalProps; c
                     <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={start}>Start {GAME_NAMES[kind]}</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

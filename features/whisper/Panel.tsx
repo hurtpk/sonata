@@ -12,10 +12,10 @@
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildStore, Modal, NavigationRouter, openModal, SelectedChannelStore, showToast, useEffect, useRef, UserStore, useState } from "@webpack/common";
+import { ChannelStore, GuildStore, NavigationRouter, openModal, SelectedChannelStore, showToast, useEffect, useRef, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
-import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { hide, lengthOf, LIMIT, pairMessage, Secret } from "./codec";
 import { clearHistory, forget, useHistory } from "./historyStore";
 import { myIdentity, noteOffer, offeredTo, removePair, removePassword, renamePassword, savePassword, useKeys } from "./keys";
@@ -303,17 +303,13 @@ function WhisperModal({ modalProps, start, tab: startTab }: { modalProps: Render
     const [tab, setTab] = useState<Tab>(startTab ?? "write");
     const close = modalProps.onClose;
     return (
-        <Modal {...modalProps} size="md" title="Whisper" subtitle="Hidden messages only people with Sonata can read">
+        <Window {...modalProps} size="md" title="Whisper" subtitle="Hidden messages only people with Sonata can read"
+            tabs={[["write", "Write"], ["history", "History"], ["keys", "Keys"]]} tab={tab} onTab={id => setTab(id as Tab)}
+            status={["everyone sees the cover — people with Sonata can tap to read what's underneath"]}>
             <div className="vc-tool-wrap vc-whisper" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <ToolHero icon="🤫" kicker="Whisper" title="Say it quietly" sub="Everyone sees the cover. People with Sonata can tap to read what's hidden underneath." />
-                <div className="vc-tool-seg" role="tablist">
-                    {([["write", "✍️ Write"], ["history", "📜 History"], ["keys", "🔑 Keys"]] as [Tab, string][]).map(([id, label]) => (
-                        <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("vc-tool-seg-btn", tab === id && "vc-tool-seg-on")} onClick={() => setTab(id)}>{label}</button>
-                    ))}
-                </div>
                 {tab === "write" ? <WriteTab start={start} close={close} /> : tab === "history" ? <HistoryTab close={close} /> : <KeysTab close={close} />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

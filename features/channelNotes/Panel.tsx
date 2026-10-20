@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, Modal, NavigationRouter, openModal, useEffect, useRef, useState } from "@webpack/common";
+import { ChannelStore, NavigationRouter, openModal, useEffect, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
-import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { allNotes, channelKey, guildKey, Note, noteOf, placeName, setNote, useNotes } from "./store";
 
 function ago(t: number) {
@@ -86,25 +85,23 @@ function NotesModal({ modalProps, channelId, guildId, startKey }: { modalProps: 
     const note = current ? noteOf(current) : null;
 
     return (
-        <Modal {...modalProps} size="lg" title="Channel Notes" subtitle="Your private notes on channels, DMs and servers — only you can see them">
+        <Window {...modalProps} size="lg" title="Channel Notes" subtitle="Your private notes on channels, DMs and servers — only you can see them"
+            tabs={[
+                ...(here ? [[here, `${placeName(here).split(" · ")[0]}${noteOf(here) ? " •" : ""}`] as const] : []),
+                ...(server ? [[server, `Server${noteOf(server) ? " •" : ""}`] as const] : []),
+                ...(current && current !== here && current !== server ? [[current, placeName(current).split(" · ")[0]] as const] : []),
+                ["all", `All notes · ${list.length}`] as const,
+            ]}
+            tab={current ?? "all"} onTab={id => setTab(id)}
+            status={[current ? (note ? `last changed ${ago(note.at)}` : "no note here yet — start typing") : `${list.length} note${list.length === 1 ? "" : "s"}`, "only you can see them"]}>
             <div className="vc-tool-wrap vc-cnotes-wrap" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <ToolHero icon="📝" kicker={current ? (current.startsWith("g:") ? "Server note" : "Channel note") : "All your notes"}
-                    title={current ? placeName(current) : `${list.length} note${list.length === 1 ? "" : "s"}`}
-                    sub={current ? (note ? `Last changed ${ago(note.at)}` : "No note here yet — start typing below.") : "Click one to read or change it."}
-                    numbers={[{ value: list.length, label: list.length === 1 ? "note" : "notes" }]} />
-                <div className="vc-tool-seg">
-                    {here && <button type="button" className={classes("vc-tool-seg-btn", tab === here && "vc-tool-seg-on")} onClick={() => setTab(here)}>💬 {placeName(here).split(" · ")[0]}{noteOf(here) ? " •" : ""}</button>}
-                    {server && <button type="button" className={classes("vc-tool-seg-btn", tab === server && "vc-tool-seg-on")} onClick={() => setTab(server)}>🏠 Server{noteOf(server) ? " •" : ""}</button>}
-                    {current && current !== here && current !== server && <button type="button" className="vc-tool-seg-btn vc-tool-seg-on">📝 {placeName(current).split(" · ")[0]}</button>}
-                    <button type="button" className={classes("vc-tool-seg-btn", tab === "all" && "vc-tool-seg-on")} onClick={() => setTab("all")}>📚 All notes · {list.length}</button>
-                </div>
                 {current ? <NoteEditor k={current} /> : list.length ? (
                     <div className="vc-cnotes-grid">{list.map(([k, n]) => <NoteCard key={k} k={k} n={n} onOpen={() => setTab(k)} close={modalProps.onClose} />)}</div>
                 ) : (
                     <div className="vc-tool-empty"><span className="vc-tool-empty-icon">📝</span>No notes yet. Open one from the 📝 button in any chat, or right-click a channel or server.</div>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -8,7 +8,7 @@
     margin-left: 4px;
     vertical-align: -2px;
     flex: none;
-    filter: drop-shadow(0 0 2.5px rgb(125 211 252 / 0.75)) drop-shadow(0 0 6px rgb(186 230 253 / 0.35));
+    filter: var(--sw-nofilter, drop-shadow(0 0 2.5px rgb(125 211 252 / 0.75)) drop-shadow(0 0 6px rgb(186 230 253 / 0.35)));
     animation: vc-snb-float 3.2s ease-in-out infinite;
     cursor: default;
 }
@@ -32,7 +32,7 @@
     inset: -50% auto -50% -60%;
     width: 45%;
     rotate: 25deg;
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.95), transparent);
+    background: var(--sw-card, linear-gradient(90deg, transparent, rgb(255 255 255 / 0.95), transparent));
     animation: vc-snb-shine 3.6s ease-in-out infinite;
 }
 

@@ -28,12 +28,13 @@ import definePlugin, { OptionType } from "@utils/types";
 import { chooseFile } from "@utils/web";
 import { RenderModalProps } from "@vencord/discord-types";
 import { CloudUploadPlatform } from "@vencord/discord-types/enums";
-import { CloudUploader, Constants, FluxDispatcher, lodash, Menu, MessageActions, Modal, openModal, PendingReplyStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, useEffect, useState } from "@webpack/common";
+import { CloudUploader, Constants, FluxDispatcher, lodash, Menu, MessageActions, openModal, PendingReplyStore, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, useEffect, useState } from "@webpack/common";
 import { ComponentType } from "react";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { VoiceRecorderDesktop } from "./components/DesktopRecorder";
 import { VoiceMessageProps, VoicePreview } from "./components/VoicePreview";
 import { VoiceRecorderWeb } from "./components/WebRecorder";
@@ -240,7 +241,7 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
     };
 
     return (
-        <Modal {...modalProps} size="md" title="Voice Message" subtitle="Record yourself, or pick a sound file, then send it as a voice message">
+        <Window {...modalProps} size="md" title="Voice Message" subtitle="Record yourself, or pick a sound file, then send it as a voice message">
             <div className="vc-tool-wrap vc-vmsg-window" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
             <ToolHero icon={isRecording ? "🔴" : "🎤"} kicker={isRecording ? "Recording…" : blob ? "Ready to send" : "Voice Message"}
                 title={isRecording ? "Talk away" : blob ? `${Math.round(meta?.duration ?? 0)} second${Math.round(meta?.duration ?? 0) === 1 ? "" : "s"}` : "Record or pick a file"}
@@ -294,6 +295,6 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
                 <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!blob} onClick={send}>Send</button>
             </div>
             </div>
-        </Modal>
+        </Window>
     );
 }

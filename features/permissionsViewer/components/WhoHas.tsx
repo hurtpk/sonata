@@ -11,10 +11,11 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { classNameFactory } from "@utils/css";
 import { openUserProfile } from "@utils/discord";
 import type { Guild, RenderModalProps, Role } from "@vencord/discord-types";
-import { GuildMemberStore, GuildRoleStore, IconUtils, Modal, openModal, PermissionsBits, useMemo, UserStore, useState } from "@webpack/common";
+import { GuildMemberStore, GuildRoleStore, IconUtils, openModal, PermissionsBits, useMemo, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
 import { ToolHero } from "../../_shared/ToolHero";
+import { Window } from "../../_shared/Window";
 import { roleFill } from "./RoleInfo";
 
 const cl = classNameFactory("vc-permviewer-");
@@ -64,7 +65,7 @@ function WhoHasModal({ modalProps, guild, bit, title }: { modalProps: RenderModa
     for (const h of shown.slice(0, MAX_SHOWN)) groups.set(h.via, [...(groups.get(h.via) ?? []), h]);
 
     return (
-        <Modal {...modalProps} size="lg" title={`Who can: ${title}`} subtitle={`In ${guild.name} · from the ${loaded.toLocaleString()} members Discord has loaded`}>
+        <Window {...modalProps} size="lg" title={`Who can: ${title}`} subtitle={`In ${guild.name} · from the ${loaded.toLocaleString()} members Discord has loaded`}>
             <div className={classNameFactory("vc-tool-")("wrap")} style={{ paddingBottom: 12, display: "flex", flexDirection: "column", gap: 10, ...(accent ? { "--vc-tool-accent": accent } : {}) } as React.CSSProperties}>
                 <ToolHero icon="🛡️" kicker={`Who can · ${guild.name}`} title={title}
                     sub={everyone ? "Everyone can — the @everyone role allows it." : `From the ${loaded.toLocaleString()} members Discord has loaded`}
@@ -91,7 +92,7 @@ function WhoHasModal({ modalProps, guild, bit, title }: { modalProps: RenderModa
                 {shown.length > MAX_SHOWN && <span className="vc-tool-hint">Showing the first {MAX_SHOWN} — search to find others.</span>}
                 <span className="vc-tool-hint">Only server-wide roles count here — a channel can still allow or block it for someone.</span>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

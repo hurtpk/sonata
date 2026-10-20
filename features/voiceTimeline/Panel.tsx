@@ -7,9 +7,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildMemberStore, GuildStore, Modal, openModal, useEffect, UserStore, useState } from "@webpack/common";
+import { ChannelStore, GuildMemberStore, GuildStore, openModal, useEffect, UserStore, useState } from "@webpack/common";
 
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { windowAccent } from "./accent";
 import { RecapView } from "./RecapView";
 import { getCurrent, getPast, Session, useTimeline, VtEvent } from "./tracker";
@@ -151,7 +152,7 @@ function TimelineModal({ modalProps }: { modalProps: RenderModalProps; }) {
         : "Not in a voice channel";
 
     return (
-        <Modal {...modalProps} size="lg" title="Voice Timeline" subtitle={subtitle}>
+        <Window {...modalProps} size="lg" title="Voice Timeline" subtitle={subtitle}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className="vc-tool-seg" role="tablist">
                     <button type="button" role="tab" aria-selected={view === "calls"} className={classes("vc-tool-seg-btn", view === "calls" && "vc-tool-seg-on")} onClick={() => setView("calls")}>🎙️ Calls</button>
@@ -218,7 +219,7 @@ function TimelineModal({ modalProps }: { modalProps: RenderModalProps; }) {
                 )}
                 </>}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -9,8 +9,9 @@
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal } from "@webpack/common";
+import { openModal } from "@webpack/common";
 
+import { Window } from "../_shared/Window";
 import { KindId, kindOf } from "./kinds";
 
 const open = (url: string) => VencordNative.native.openExternal(url);
@@ -43,7 +44,7 @@ const STEPS: [string, string][] = [
 function GuideModal({ modalProps, kind }: { modalProps: RenderModalProps; kind?: KindId; }) {
     const k = kind ? kindOf(kind) : null;
     return (
-        <Modal {...modalProps} size="md" title={k ? `Turning ${k.name} into US dollars` : "Turning crypto into US dollars"} subtitle="Send it to an exchange, sell it there, and withdraw to your bank">
+        <Window {...modalProps} size="md" title={k ? `Turning ${k.name} into US dollars` : "Turning crypto into US dollars"} subtitle="Send it to an exchange, sell it there, and withdraw to your bank">
             <div className="vc-tool-wrap vc-wallet-guide">
                 {k && NOTES[k.id] && (
                     <div className="vc-wallet-guide-note" style={{ "--k": k.color } as React.CSSProperties}>
@@ -80,7 +81,7 @@ function GuideModal({ modalProps, kind }: { modalProps: RenderModalProps; kind?:
                     </ul>
                 </section>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

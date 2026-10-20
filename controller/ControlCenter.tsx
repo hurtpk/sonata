@@ -12,13 +12,15 @@
 import "./styles.css";
 
 import { isSettingHidden } from "@api/PluginManager";
-import { OptionComponentMap } from "@components/settings/tabs/plugins/components";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { DefinedSettings, OptionType, PluginSettingDef } from "@utils/types";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, ScrollerThin, TextInput, useMemo, useState } from "@webpack/common";
+import { openModal, ScrollerThin, TextInput, useMemo, useState } from "@webpack/common";
 
+import { OptionRow } from "../features/_shared/SettingsForm";
+import { Window } from "../features/_shared/Window";
+import { FormGroup } from "../features/_shared/WindowParts";
 import { FeatureIcon, featureIconsOn } from "../sonata/featureIcons";
 import { UtilitiesView } from "../utilities/UtilitiesView";
 import { getChannelSettingsAccent } from "./accent";
@@ -140,7 +142,7 @@ function OptionsModal({ api, featureKey, modalProps }: { api: QolApi; featureKey
     });
 
     return (
-        <Modal
+        <Window
             {...modalProps}
             size="md"
             title={name}
@@ -153,18 +155,17 @@ function OptionsModal({ api, featureKey, modalProps }: { api: QolApi; featureKey
                 ) : optionKeys.length === 0 ? (
                     <div className={cl("modal-empty")}>Nothing to configure — it just works.</div>
                 ) : (
-                    <div className={cl("modal-options")}>
+                    <FormGroup title="Options">
                         {optionKeys.map(k => {
                             const def = api.settings.def[k] as PluginSettingDef;
-                            const Component = OptionComponentMap[def.type];
                             return (
-                                <Component
+                                <OptionRow
                                     key={k}
                                     id={k}
-                                    setting={def as any}
-                                    pluginSettings={pluginSettings as any}
-                                    definedSettings={api.settings}
-                                    closePluginSettings={modalProps.onClose}
+                                    def={def}
+                                    store={pluginSettings as any}
+                                    settings={api.settings}
+                                    onClose={modalProps.onClose}
                                     onChange={(v: any) => {
                                         (pluginSettings as any)[k] = v;
                                         if ((def as any).restartNeeded) api.markOptionPending(featureKey);
@@ -172,10 +173,10 @@ function OptionsModal({ api, featureKey, modalProps }: { api: QolApi; featureKey
                                 />
                             );
                         })}
-                    </div>
+                    </FormGroup>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

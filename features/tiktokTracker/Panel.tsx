@@ -9,9 +9,10 @@ import "../_shared/tool.css";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, React, useEffect, useMemo, useState } from "@webpack/common";
+import { openModal, React, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { checkAll, checkOne, onProgress, opts, progress, refreshPosts, refreshRoblox, stopChecking } from "./refresh";
 import { Account, addAccount, ago, at, date, dateTime, getAccounts, loadAccounts, onChange, parseTikTok, Post, removeAccount, short, signed, update } from "./store";
 
@@ -359,11 +360,11 @@ function TrackerModal({ modalProps, initial }: { modalProps: RenderModalProps; i
     const accounts = useData();
     const accent = windowAccent("tiktokTracker");
     return (
-        <Modal {...modalProps} size="lg" title="TikTok Tracker" subtitle={`Watching ${accounts.length} creator${accounts.length === 1 ? "" : "s"} · checked every ${opts.minutes >= 60 ? `${opts.minutes / 60} h` : `${opts.minutes} min`} while Discord is open`}>
+        <Window {...modalProps} size="lg" title="TikTok Tracker" subtitle={`Watching ${accounts.length} creator${accounts.length === 1 ? "" : "s"} · checked every ${opts.minutes >= 60 ? `${opts.minutes / 60} h` : `${opts.minutes} min`} while Discord is open`}>
             <div className={classes("vc-tool-wrap", tt("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {open ? <Detail username={open} onBack={() => setOpen(null)} /> : <List onOpen={setOpen} />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -119,6 +119,7 @@ const FEATURE_CATEGORY: Record<string, string> = {
     quickText: "chat",
     channelNotes: "chat",
     themeStudio: "system",
+    botManager: "servers",
     todoLists: "chat",
     fontSwapper: "system",
     fileConverter: "media",

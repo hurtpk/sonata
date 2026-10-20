@@ -19,10 +19,11 @@ import { copyWithToast, insertTextIntoChatInputBox, sendMessage } from "@utils/d
 import { classes } from "@utils/misc";
 import definePlugin, { IconProps, OptionType } from "@utils/types";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, React, SelectedChannelStore, useState } from "@webpack/common";
+import { openModal, React, SelectedChannelStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
+import { Window } from "../_shared/Window";
 import { asMessage, Options, render, Style, STYLES, supported, widthOf } from "./font";
 
 const cl = classNameFactory("vc-ascii-");
@@ -57,7 +58,7 @@ function AsciiWindow({ modalProps }: { modalProps: RenderModalProps; }) {
     const accent = windowAccent("asciiArt");
 
     return (
-        <Modal {...modalProps} size="lg" title="ASCII Art" subtitle="Type something, pick a style, send it as big letters">
+        <Window {...modalProps} size="lg" title="ASCII Art" subtitle="Type something, pick a style, send it as big letters">
             <div className={classes(tl("wrap"), cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <textarea className={classes(tl("area"), cl("input"))} rows={2} value={text} autoFocus maxLength={80} placeholder="Your text (Enter for a new line)" onChange={e => setText(e.currentTarget.value)} />
                 <div className={tl("seg")}>
@@ -97,7 +98,7 @@ function AsciiWindow({ modalProps }: { modalProps: RenderModalProps; }) {
                     <button type="button" className={classes(tl("btn"), tl("primary"))} disabled={!art || tooLong || !channelId} onClick={() => { sendMessage(channelId!, { content: message }); modalProps.onClose(); }}>Send</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

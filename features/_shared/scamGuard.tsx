@@ -13,11 +13,12 @@ import "./scam.css";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, useEffect, useRef, useState } from "@webpack/common";
+import { openModal, useEffect, useRef, useState } from "@webpack/common";
 
 import { isShortener, whereItGoes } from "../linkCleaner/preview";
 import { linksIn, siteOf, Verdict } from "./scam";
 import { logEvent, Outcome, placeOf, verdictEntry } from "./scamLog";
+import { Window } from "./Window";
 
 export interface GuardConfig {
     check(raw: string, shown: string, context: string): Verdict;
@@ -82,7 +83,7 @@ export function makeGuard(cfg: GuardConfig) {
                 : kind === "link" ? ["It really goes to", v.host || v.url.slice(0, 60)] : null;
         const reasons = [...new Set([...v.reasons, ...also])];
         return (
-            <Modal {...modalProps} size="sm" title={title} subtitle={subtitle}>
+            <Window {...modalProps} size="sm" title={title} subtitle={subtitle}>
                 <div className={classes("vc-tool-wrap", "vc-scam-modal", scam && "vc-scam-modal-bad")}>
                     {where && (
                         <div className="vc-scam-where">
@@ -105,7 +106,7 @@ export function makeGuard(cfg: GuardConfig) {
                         {(kind === "link" || kind === "file") && <button type="button" className="vc-tool-btn vc-tool-danger" onClick={open}>{kind === "file" ? "Download anyway" : "Open anyway"}</button>}
                     </div>
                 </div>
-            </Modal>
+            </Window>
         );
     }
 

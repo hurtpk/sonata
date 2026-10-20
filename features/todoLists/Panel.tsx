@@ -8,10 +8,11 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildStore, Modal, NavigationRouter, openModal, showToast, useEffect, useReducer, UserStore, useState } from "@webpack/common";
+import { ChannelStore, GuildStore, NavigationRouter, openModal, showToast, useEffect, useReducer, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { newReminder, remindersRunning } from "../reminders";
 import { addItem, addLines, asText, clearDone, getList, getLists, Item, loadTodos, moveItem, onTodoChange, removeItem, renameItem, toggleItem } from "./store";
 
@@ -157,19 +158,17 @@ function TodoModal({ modalProps, channelId }: { modalProps: RenderModalProps; ch
     const pct = items.length ? Math.round(done / items.length * 100) : 0;
 
     return (
-        <Modal {...modalProps} size="lg" title="To-do" subtitle={showing ? channelTitle(showing) : "Every list you have"}>
+        <Window {...modalProps} size="lg" title="To-do" subtitle={showing ? channelTitle(showing) : "Every list you have"}
+            tabs={[...(picked ? [["here", picked !== channelId ? channelTitle(picked) : "This chat"] as const] : []), ["all", "All lists"] as const]} tab={tab} onTab={id => setTab(id as typeof tab)}
+            status={[items.length ? `${open} to do · ${done} done` : "nothing on this list", "right-click a message → Add to to-do list"]}>
             <div className={cl("wrap")} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="✅" kicker={showing ? channelTitle(showing) : `${all.filter(l => l.items.length).length} lists`}
                     title={!items.length ? "Nothing on your list" : open ? `${open} thing${open === 1 ? "" : "s"} to do` : "All done! 🎉"}
                     sub={items.length ? <span className={td("hero-bar")}><i style={{ width: `${pct}%` }} /></span> : "Add things below, or right-click a message → Add to to-do list."}
                     numbers={items.length ? [{ value: `${pct}%`, label: "done" }, { value: done, label: "ticked off" }] : []} />
-                <div className={cl("seg")}>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "here" && cl("seg-on"))} disabled={!picked} onClick={() => setTab("here")}>{picked && picked !== channelId ? channelTitle(picked) : "This chat"}</button>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "all" && cl("seg-on"))} onClick={() => setTab("all")}>All lists</button>
-                </div>
                 {showing ? <ListView key={showing} channelId={showing} /> : <AllLists onPick={id => { setPicked(id); setTab("here"); }} />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

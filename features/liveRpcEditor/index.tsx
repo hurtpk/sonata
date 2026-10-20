@@ -15,11 +15,13 @@ import { getCurrentChannel } from "@utils/discord";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import { extractAndLoadChunksLazy, findByCodeLazy, findComponentByCodeLazy, findStoreLazy } from "@webpack";
+
+import { Window } from "../_shared/Window";
 // Fetches activity metadata (e.g. button_urls) when Discord doesn't include it in presence
 const getMetadataFromApi = findByCodeLazy("null/undefined") as ((activity: Activity, userId: string) => Promise<{ button_urls?: string[] } | null>) | undefined;
 import { ModalProps, openModal } from "@utils/modal";
 import type { Activity } from "@vencord/discord-types";
-import { ApplicationAssetUtils, FluxDispatcher, Menu, Modal, React, ScrollerThin, showToast, useEffect, useMemo, useRef, UserStore, useState } from "@webpack/common";
+import { ApplicationAssetUtils, FluxDispatcher, Menu, React, ScrollerThin, showToast, useEffect, useMemo, useRef, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
@@ -501,7 +503,7 @@ function LiveRpcEditorModal({ modalProps }: { modalProps: ModalProps }) {
     const accent = windowAccent("liveRpcEditor");
 
     return (
-        <Modal {...modalProps} size="lg" title="Live RPC Editor" subtitle="Show any game or app as your activity — with images, buttons and timers">
+        <Window {...modalProps} size="lg" title="Live RPC Editor" subtitle="Show any game or app as your activity — with images, buttons and timers">
             <div className={classes(tl("wrap"), cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
             <div className={tl("head")}>
                 <span className={tl("label")}>Your custom activity</span>
@@ -767,7 +769,7 @@ function LiveRpcEditorModal({ modalProps }: { modalProps: ModalProps }) {
                 <Button color={Button.Colors.BRAND} onClick={modalProps.onClose}>Done</Button>
             </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

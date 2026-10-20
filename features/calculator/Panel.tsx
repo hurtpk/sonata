@@ -8,9 +8,10 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useMemo, useRef, useState } from "@webpack/common";
+import { openModal, showToast, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { DatesTab } from "./Dates";
 import { AngleMode, asFraction, CalcError, evaluateFull, formatResult, inBases, Rounding } from "./engine";
 import { GraphsTab } from "./Graphs";
@@ -36,7 +37,7 @@ const SCI = [
 ];
 
 type Tab = "calc" | "graphs" | "money" | "dates" | "tools";
-const TABS: [Tab, string][] = [["calc", "🧮 Calculator"], ["graphs", "📈 Graphs"], ["money", "💰 Money"], ["dates", "📅 Dates & time"], ["tools", "🛠️ Tools"]];
+const TABS: [Tab, string][] = [["calc", "Calculator"], ["graphs", "Graphs"], ["money", "Money"], ["dates", "Dates & time"], ["tools", "Tools"]];
 
 const ROUNDINGS: [Rounding, string][] = [["auto", "Auto"], ["0", "0"], ["2", "0.00"], ["4", "4 dp"], ["6", "6 dp"], ["sig3", "3 sig"], ["sig5", "5 sig"]];
 
@@ -49,14 +50,12 @@ function CalcModal({ modalProps, prefs: initial, setPrefs: save }: { modalProps:
     const setPrefs = (p: Partial<CalcPrefs>) => { setPrefsState(s => ({ ...s, ...p })); save(p); };
     const accent = windowAccent("calculator");
     return (
-        <Modal {...modalProps} size="lg" title="Calculator" subtitle={tab === "calc" ? (prefs.angle === "deg" ? "Angles in degrees" : "Angles in radians") : tab === "graphs" ? "Draw y = anything — drag, zoom and hover" : tab === "money" ? "Answers as you type — click one to copy it" : tab === "dates" ? "Days, ages and durations" : "Statistics, graphs and more"}>
+        <Window {...modalProps} size="lg" title="Calculator" subtitle={tab === "calc" ? (prefs.angle === "deg" ? "Angles in degrees" : "Angles in radians") : tab === "graphs" ? "Draw y = anything — drag, zoom and hover" : tab === "money" ? "Answers as you type — click one to copy it" : tab === "dates" ? "Days, ages and durations" : "Statistics, ratios, number words and more"}
+            tabs={TABS} tab={tab} onTab={id => setTab(id as Tab)}>
             <div className={cl("wrap")} style={accent ? ({ "--vc-calc-accent": accent, "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <div className={cl("tabs")} role="tablist">
-                    {TABS.map(([id, label]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes(cl("tab"), tab === id && cl("tab-on"))} onClick={() => setTab(id)}>{label}</button>)}
-                </div>
                 {tab === "calc" ? <CalcTab prefs={prefs} setPrefs={setPrefs} /> : tab === "graphs" ? <GraphsTab /> : tab === "money" ? <MoneyTab /> : tab === "dates" ? <DatesTab /> : <ToolsTab />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

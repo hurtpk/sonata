@@ -3,7 +3,7 @@
 .vc-msgtimer-status { flex-direction: row; align-items: center; gap: 12px; }
 .vc-msgtimer-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted); }
 .vc-msgtimer-status-on { border-color: hsl(from var(--tl-accent) h s l / 0.5); background: hsl(from var(--tl-accent) h s l / 0.1); }
-.vc-msgtimer-status-on .vc-msgtimer-dot { background: var(--tl-accent); box-shadow: 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.25); }
+.vc-msgtimer-status-on .vc-msgtimer-dot { background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.25)); }
 .vc-msgtimer-status-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .vc-msgtimer-status-main b { font-size: 15px; color: var(--text-default, var(--text-normal)); }
 .vc-msgtimer-status-main span { font-size: 12.5px; color: var(--text-muted); }
@@ -11,7 +11,7 @@
 .vc-msgtimer-amount { width: 90px; }
 .vc-msgtimer-custom .vc-tool-seg { flex: 1; }
 .vc-msgtimer-queue { border-color: hsl(from var(--status-warning, #f0b232) h s l / 0.45); background: hsl(from var(--status-warning, #f0b232) h s l / 0.08); font-size: 13.5px; color: var(--text-default, var(--text-normal)); }
-.vc-msgtimer-kbd { padding: 1px 6px; border-radius: 5px; border: 1px solid var(--tl-line); border-bottom-width: 2px; font-family: var(--font-code, monospace); font-size: 11px; }
+.vc-msgtimer-kbd { padding: 1px 6px; border-radius: calc(5px * var(--sw-r, 1)); border: 1px solid var(--tl-line); border-bottom-width: 2px; font-family: var(--font-code, monospace); font-size: 11px; }
 
 /* Outside the window (chat bar, menus) — as before. */
 

@@ -8,9 +8,10 @@ import { copyWithToast, openUserProfile } from "@utils/discord";
 import { LazyComponent } from "@utils/react";
 import { Channel, RenderModalProps, type User } from "@vencord/discord-types";
 import { find, findByCodeLazy } from "@webpack";
-import { Alerts, ChannelStore, closeAllModals, ContextMenuApi, FluxDispatcher, GuildStore, Menu, Modal, NavigationRouter, openModal, React, useMemo, useRef, useState } from "@webpack/common";
+import { Alerts, ChannelStore, closeAllModals, ContextMenuApi, FluxDispatcher, GuildStore, Menu, NavigationRouter, openModal, React, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { Window } from "../../_shared/Window";
 import { DBMessageRecord, deleteMessageIDB, deleteMessagesBulkIDB } from "../db";
 import { cl, clearLogs, settings } from "../index";
 import { LoggedMessage, LoggedMessageJSON } from "../types";
@@ -80,7 +81,7 @@ export function LogsModal({ modalProps, initalQuery }: Props) {
     });
 
     return (
-        <Modal {...modalProps} size="lg" title="Message Logs" subtitle="Deleted and edited messages, and pings that vanished — saved on this computer">
+        <Window {...modalProps} size="lg" title="Message Logs" subtitle="Deleted and edited messages, and pings that vanished — saved on this computer">
             <div className={`vc-tool-wrap ${cl("window")}`} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
             <div className="vc-tool-tabs">
                 {([[LogTabs.DELETED, "🗑️ Deleted"], [LogTabs.EDITED, "✏️ Edited"], [LogTabs.GHOST_PING, "👻 Ghost pings"]] as const).map(([t, label]) => (
@@ -126,7 +127,7 @@ export function LogsModal({ modalProps, initalQuery }: Props) {
                 <button type="button" className="vc-tool-btn vc-tool-danger" onClick={clearAll}>Clear all logs</button>
             </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

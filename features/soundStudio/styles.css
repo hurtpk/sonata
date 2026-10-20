@@ -8,7 +8,7 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--text-muted);
-    background: hsl(0 0% 100% / 0.05);
+    background: var(--sw-card, hsl(0 0% 100% / 0.05));
     border: 1px solid var(--tl-line);
 }
 
@@ -22,13 +22,13 @@
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
-    border-radius: 12px;
+    border-radius: calc(12px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
-    background: hsl(0 0% 100% / 0.03);
+    background: var(--sw-card, hsl(0 0% 100% / 0.03));
     transition: border-color 0.15s, background 0.15s;
 }
 
-.vc-sstudio-row:hover { border-color: hsl(0 0% 100% / 0.16); }
+.vc-sstudio-row:hover { border-color: var(--sw-line2, hsl(0 0% 100% / 0.16)); }
 .vc-sstudio-row-custom { border-color: hsl(from var(--tl-accent) h s l / 0.45); background: hsl(from var(--tl-accent) h s l / 0.07); }
 .vc-sstudio-row-off { opacity: 0.6; }
 .vc-sstudio-row-drop { border-style: dashed; border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.15); }
@@ -43,10 +43,10 @@
     place-items: center;
     cursor: pointer;
     color: var(--text-default, var(--text-normal));
-    background: hsl(0 0% 100% / 0.08);
+    background: var(--sw-chip, hsl(0 0% 100% / 0.08));
 }
 
-.vc-sstudio-play:hover { background: hsl(0 0% 100% / 0.16); }
+.vc-sstudio-play:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.16)); }
 .vc-sstudio-play:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
 .vc-sstudio-play-custom { color: #fff; background: var(--tl-accent); }
 .vc-sstudio-play-custom:hover { background: hsl(from var(--tl-accent) h s calc(l - 6)); }
@@ -75,15 +75,15 @@
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-sstudio-chip { transition: background 0.15s, box-shadow 0.15s, color 0.15s; }
 .vc-sstudio-chip:hover { background: color-mix(in srgb, var(--tl-accent) 14%, transparent); }
-.vc-sstudio-chip-on, .vc-sstudio-chip-on:hover { background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)); box-shadow: none; }
+.vc-sstudio-chip-on, .vc-sstudio-chip-on:hover { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
 .vc-sstudio-list { gap: 8px; max-height: 50vh; }
-.vc-sstudio-row { position: relative; overflow: hidden; gap: 12px; padding: 11px 12px 11px 16px; border-radius: 14px; border-color: hsl(0 0% 100% / 0.06);
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.04), hsl(0 0% 0% / 0.16) 65%); }
+.vc-sstudio-row { position: relative; overflow: hidden; gap: 12px; padding: 11px 12px 11px 16px; border-radius: calc(14px * var(--sw-r, 1)); border-color: var(--sw-line, hsl(0 0% 100% / 0.06));
+    background: var(--sw-card, linear-gradient(135deg, hsl(0 0% 100% / 0.04), hsl(0 0% 0% / 0.16) 65%)); }
 .vc-sstudio-row:hover { border-color: color-mix(in srgb, var(--tl-accent) 35%, transparent); }
-.vc-sstudio-row-custom { border-color: color-mix(in srgb, var(--tl-accent) 40%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 16%, transparent), hsl(0 0% 0% / 0.16) 65%); }
-.vc-sstudio-row-custom::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); box-shadow: 0 0 12px var(--tl-accent); }
+.vc-sstudio-row-custom { border-color: var(--sw-line, color-mix(in srgb, var(--tl-accent) 40%, transparent)); background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 16%, transparent), hsl(0 0% 0% / 0.16) 65%)); }
+.vc-sstudio-row-custom::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 12px var(--tl-accent)); }
 .vc-sstudio-play { width: 34px; height: 34px; transition: background 0.15s, box-shadow 0.15s; }
-.vc-sstudio-play:hover { background: color-mix(in srgb, var(--tl-accent) 35%, transparent); box-shadow: 0 0 14px -4px var(--tl-accent); }
-.vc-sstudio-play-custom { color: #fff; background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)); box-shadow: none; }
+.vc-sstudio-play:hover { background: color-mix(in srgb, var(--tl-accent) 35%, transparent); box-shadow: var(--sw-noglow, 0 0 14px -4px var(--tl-accent)); }
+.vc-sstudio-play-custom { color: #fff; background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
 .vc-sstudio-remove { color: #f23f43 !important; }
 .vc-sstudio-remove:hover { color: #fff !important; background: hsl(358 75% 50% / 0.9) !important; }

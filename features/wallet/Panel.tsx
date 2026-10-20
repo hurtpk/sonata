@@ -13,8 +13,9 @@ import { copyToClipboard } from "@utils/clipboard";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useMemo, UserStore, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
+import { Window } from "../_shared/Window";
 import { makeQr, qrPng } from "../qrCodes/qr";
 import { alerts, checkNow, lastSeen, onStatus, status } from "./alerts";
 import { openGuide } from "./Guide";
@@ -447,15 +448,10 @@ function WalletModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 
     return (
-        <Modal {...modalProps} size="lg" title="Wallet" subtitle="Your payment links and addresses — kept only on this computer">
+        <Window {...modalProps} size="lg" title="Wallet" subtitle="Your payment links and addresses — kept only on this computer"
+            tabs={editing || picking ? undefined : [["wallet", "Wallet"], ["requests", "Requests"], ["owed", "Who owes me"]]} tab={tab} onTab={id => setTab(id as typeof tab)}
+            status={[`${apps.length} payment app${apps.length === 1 ? "" : "s"} · ${crypto.length} crypto`, "kept only on this computer"]}>
             <div className="vc-tool-wrap vc-wallet">
-                {!editing && !picking && (
-                    <div className="vc-tool-seg" role="tablist">
-                        {([["wallet", "👛 Wallet"], ["requests", "💸 Requests"], ["owed", "🧾 Who owes me"]] as const).map(([id, label]) => (
-                            <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("vc-tool-seg-btn", tab === id && "vc-tool-seg-on")} onClick={() => setTab(id)}>{label}</button>
-                        ))}
-                    </div>
-                )}
                 {editing ? (
                     <Form start={editing === "new" ? null : editing} onDone={() => setEditing(null)} />
                 ) : tab === "requests" ? (
@@ -499,7 +495,7 @@ function WalletModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

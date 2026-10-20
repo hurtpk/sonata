@@ -11,10 +11,11 @@
 
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, DraftType, Modal, openModal, SelectedChannelStore, showToast, UploadHandler, useEffect, useState } from "@webpack/common";
+import { ChannelStore, DraftType, openModal, SelectedChannelStore, showToast, UploadHandler, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { isSpotify, looksLikePlaylist, singleIn, siteOf } from "./links";
 import { cancelDownload, cancelWaiting, clearFinished, Info, isActive, Item, native, Playlist, queueMany, removeItem, settings, startDownload, useItems } from "./store";
 
@@ -267,7 +268,7 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
     const waitingCount = items.filter(i => i.job.status === "queued").length;
 
     return (
-        <Modal {...modalProps} size="lg" title="Media Downloader" subtitle="Save videos, music and whole playlists from YouTube, SoundCloud, TikTok, Instagram, X, Reddit and a thousand more sites">
+        <Window {...modalProps} size="lg" title="Media Downloader" subtitle="Save videos, music and whole playlists from YouTube, SoundCloud, TikTok, Instagram, X, Reddit and a thousand more sites">
             <div className="vc-tool-wrap vc-dl" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="⬇️" kicker="Media Downloader" title={running ? `Downloading ${running}…${waitingCount ? ` · ${waitingCount} waiting` : ""}` : "Paste a link"}
                     sub={setup?.version ? `yt-dlp ${setup.version}${setup.ffmpeg ? " · FFmpeg ready" : ""}` : "Videos as MP4, music as MP3 — saved on your computer."}
@@ -313,7 +314,7 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
                 )}
                 <span className="vc-tool-hint">What you save is up to you — keep to things you're allowed to download. Private and sign-in-only posts can't be downloaded.</span>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

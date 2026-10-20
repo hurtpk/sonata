@@ -6,7 +6,7 @@
     cursor: pointer;
     width: 24px;
     height: 24px;
-    border-radius: 6px;
+    border-radius: calc(6px * var(--sw-r, 1));
     box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.2);
 }
 
@@ -14,7 +14,7 @@
 .vc-ansi-swatch:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
 
 /* "None": a diagonal line through an empty square. */
-.vc-ansi-none { background: linear-gradient(135deg, transparent 45%, #f23f43 45%, #f23f43 55%, transparent 55%); }
+.vc-ansi-none { background: var(--sw-card, linear-gradient(135deg, transparent 45%, #f23f43 45%, #f23f43 55%, transparent 55%)); }
 
 /* Looks like Discord's code block, with its colours. */
 .vc-ansi-preview {
@@ -22,7 +22,7 @@
     max-height: 26vh;
     overflow-y: auto;
     padding: 10px 12px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
     background: #2b2d31;
     color: #b9bbbe;
@@ -33,11 +33,11 @@
     word-break: break-word;
 }
 
-.vc-ansi-inline { display: inline; min-height: 0; padding: 1px 6px; border-radius: 4px; }
+.vc-ansi-inline { display: inline; min-height: 0; padding: 1px 6px; border-radius: calc(4px * var(--sw-r, 1)); }
 
 /* 2026-10 refresh: roomier, with colour fades and glows. */
-.vc-ansi-bar { gap: 8px; padding: 10px 12px; border-radius: 14px; border: 1px solid hsl(0 0% 100% / 0.07); background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 7%, transparent), hsl(0 0% 0% / 0.16) 65%); }
+.vc-ansi-bar { gap: 8px; padding: 10px 12px; border-radius: calc(14px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); background: var(--sw-card, linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 7%, transparent), hsl(0 0% 0% / 0.16) 65%)); }
 .vc-ansi-bar .vc-tool-label { width: 44px; }
-.vc-ansi-swatch { width: 28px; height: 28px; border-radius: 9px; transition: transform 0.12s, box-shadow 0.15s; }
+.vc-ansi-swatch { width: 28px; height: 28px; border-radius: calc(9px * var(--sw-r, 1)); transition: transform 0.12s, box-shadow 0.15s; }
 .vc-ansi-swatch:hover { transform: translateY(-2px) scale(1.06); box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.5), 0 6px 14px -6px hsl(0 0% 0% / 0.8); }
-.vc-ansi-preview:not(.vc-ansi-inline) { min-height: 70px; padding: 14px 16px; border-radius: 14px; border-color: color-mix(in srgb, var(--tl-accent) 25%, transparent); box-shadow: none; }
+.vc-ansi-preview:not(.vc-ansi-inline) { min-height: 70px; padding: 14px 16px; border-radius: calc(14px * var(--sw-r, 1)); border-color: var(--sw-line, color-mix(in srgb, var(--tl-accent) 25%, transparent)); box-shadow: none; }

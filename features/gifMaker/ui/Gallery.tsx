@@ -10,9 +10,10 @@
 import { getCurrentChannel } from "@utils/discord";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, React, showToast, UploadHandler, useEffect, useMemo, useState } from "@webpack/common";
+import { openModal, React, showToast, UploadHandler, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { Window } from "../../_shared/Window";
 import { getRecent, Recent, removeRecent } from "../store";
 import { cl } from "./controls";
 import { openEditor, pickFiles } from "./Editor";
@@ -71,7 +72,7 @@ function RecentModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const [list, setList] = useState<Recent[] | null>(null);
     useEffect(() => void getRecent().then(setList), []);
     return (
-        <Modal {...modalProps} size="lg" title="Recent GIFs" subtitle="The last GIFs you made — send one again, save it or keep editing">
+        <Window {...modalProps} size="lg" title="Recent GIFs" subtitle="The last GIFs you made — send one again, save it or keep editing">
             <div className="vc-tool-wrap" style={tint()}>
                 <div className={cl("recents")}>
                     {list == null ? <span className={cl("hint")}>Loading…</span>
@@ -79,7 +80,7 @@ function RecentModal({ modalProps }: { modalProps: RenderModalProps; }) {
                             : list.map(r => <RecentCard key={r.id} r={r} close={modalProps.onClose} onRemove={() => void removeRecent(r.id).then(setList)} />)}
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 
@@ -95,7 +96,7 @@ function StartModal({ modalProps }: { modalProps: RenderModalProps; }) {
         openEditor(inputs, { ownedUrls: urls });
     };
     return (
-        <Modal {...modalProps} size="lg" title="GIF Maker" subtitle="Make a GIF from a video, a GIF or pictures">
+        <Window {...modalProps} size="lg" title="GIF Maker" subtitle="Make a GIF from a video, a GIF or pictures">
             <div className="vc-tool-wrap" style={tint()}>
             <div className={cl("start")}>
                 <button type="button" className={cl("start-card")} onClick={fromComputer}>
@@ -111,7 +112,7 @@ function StartModal({ modalProps }: { modalProps: RenderModalProps; }) {
             </div>
             <p className={cl("hint", "start-tip")}>Or right-click any picture, GIF or video in chat → <b>Make GIF</b>. Several pictures in one message → <b>Make slideshow GIF</b>.</p>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

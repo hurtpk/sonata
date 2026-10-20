@@ -36,12 +36,12 @@
 
 /* 2026-10 refresh */
 .vc-trans-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; align-items: start; }
-.vc-trans-hero-arrow { color: color-mix(in srgb, var(--tl-accent) 65%, #fff); text-shadow: 0 0 14px var(--tl-accent); }
-.vc-trans-arrow { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 2px; padding: 0; border-radius: 50%; font-size: 16px; color: #fff; background: color-mix(in srgb, var(--tl-accent) 28%, transparent); box-shadow: 0 0 14px -4px var(--tl-accent); flex: none; }
+.vc-trans-hero-arrow { color: color-mix(in srgb, var(--tl-accent) 65%, #fff); text-shadow: var(--sw-noglow, 0 0 14px var(--tl-accent)); }
+.vc-trans-arrow { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 2px; padding: 0; border-radius: 50%; font-size: 16px; color: #fff; background: color-mix(in srgb, var(--tl-accent) 28%, transparent); box-shadow: var(--sw-noglow, 0 0 14px -4px var(--tl-accent)); flex: none; }
 
 /* Hold Alt over a message: its translation in a bubble. */
 .vc-trans-hover { position: fixed; z-index: 3000; max-width: min(460px, calc(100vw - 16px)); display: flex; flex-direction: column; gap: 4px; padding: 9px 12px 10px;
-    border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.08); border-left: 3px solid var(--brand-500); pointer-events: none;
+    border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08)); border-left: 3px solid var(--brand-500); pointer-events: none;
     background: var(--background-surface-higher, #2b2d31); color: var(--text-default, var(--text-normal));
     animation: vc-trans-hover-in 0.12s ease-out; }
 .vc-trans-hover-head { font-size: 11px; font-weight: 800; letter-spacing: 0.02em; color: var(--text-muted); }

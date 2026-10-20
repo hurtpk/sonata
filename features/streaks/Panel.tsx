@@ -7,10 +7,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, Modal, NavigationRouter, openModal, UserStore, useState } from "@webpack/common";
+import { ChannelStore, NavigationRouter, openModal, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { atRiskNow, settings, todayNote, useStreaks } from "./index";
 import { knownChannels, Rule, scanHistory, streakOf } from "./store";
 
@@ -55,7 +56,7 @@ function StreaksModal({ modalProps }: { modalProps: RenderModalProps; }) {
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Streaks" subtitle={rule === "both" ? "Days in a row you've both messaged" : "Days in a row either of you messaged"}>
+        <Window {...modalProps} size="lg" title="Streaks" subtitle={rule === "both" ? "Days in a row you've both messaged" : "Days in a row either of you messaged"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="🔥" kicker={atRisk ? `${atRisk} about to break` : top ? "Your longest streak" : "Streaks"}
                     title={top ? <>{top.user.globalName || top.user.username} · {top.streak.count} day{top.streak.count === 1 ? "" : "s"}</> : "No streaks yet"}
@@ -88,7 +89,7 @@ function StreaksModal({ modalProps }: { modalProps: RenderModalProps; }) {
                 )}
                 <div className={cl("hint")}>Sonata counts days from the messages it sees, so streaks from before you turned this on need a scan. Scanning reads your own DM history only until it finds where each streak broke. Everything stays on this computer.</div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

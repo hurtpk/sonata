@@ -8,9 +8,10 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { BASES, customConvert, CustomStyle, STYLES, WRAPS } from "./styles";
 
 const cl = classNameFactory("vc-fancy-");
@@ -143,7 +144,7 @@ function FancyModal({ modalProps, store }: { modalProps: RenderModalProps; store
     );
 
     return (
-        <Modal {...modalProps} size="lg" title="Fancy Text" subtitle="Type below, then click a style to put it in your message">
+        <Window {...modalProps} size="lg" title="Fancy Text" subtitle="Type below, then click a style to put it in your message">
             <div className={classes(tl("wrap"), cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <input className={classes(tl("input"), cl("input"))} autoFocus value={text} placeholder="Type your text…" spellCheck={false}
                     onChange={e => setText(e.currentTarget.value)}
@@ -168,7 +169,7 @@ function FancyModal({ modalProps, store }: { modalProps: RenderModalProps; store
                     </div>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

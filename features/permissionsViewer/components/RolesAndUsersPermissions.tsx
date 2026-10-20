@@ -27,9 +27,10 @@ import { classes } from "@utils/misc";
 import { Guild, RenderModalProps, Role, RoleOrUserPermission, UnicodeEmoji, User } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
 import { findByCodeLazy } from "@webpack";
-import { ContextMenuApi, FluxDispatcher, GuildMemberStore, GuildRoleStore, i18n, Menu, Modal, openModalLazy, PermissionsBits, ScrollerThin, Tooltip, useEffect, useMemo, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
+import { ContextMenuApi, FluxDispatcher, GuildMemberStore, GuildRoleStore, i18n, Menu, openModalLazy, PermissionsBits, ScrollerThin, Tooltip, useEffect, useMemo, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { Window } from "../../_shared/Window";
 import { settings } from "..";
 import { cl, getGuildPermissionSpecMap, loadGetGuildPermissionSpecMap } from "../utils";
 import { CompareView, RolePicker } from "./Compare";
@@ -107,7 +108,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
     }
 
     return (
-        <Modal
+        <Window
             {...modalProps}
             size="xl"
             title={`${header} Permissions`}
@@ -253,7 +254,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                 </div>
             )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

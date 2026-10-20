@@ -11,9 +11,10 @@
 import "../_shared/tool.css";
 
 import type { Channel } from "@vencord/discord-types";
-import { ChannelStore, DraftType, GuildStore, Modal, openModal, SelectedChannelStore, UploadHandler, UserStore, useState } from "@webpack/common";
+import { ChannelStore, DraftType, GuildStore, openModal, SelectedChannelStore, UploadHandler, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { shrinkToFit } from "./convert";
 import { kindOf, MB, sizeText } from "./formats";
 import { openFileConverter } from "./Panel";
@@ -60,7 +61,7 @@ function ShrinkPrompt({ modalProps, files, channel, limit }: { modalProps: any; 
     };
 
     return (
-        <Modal {...modalProps} size="md" title="Too big to upload" subtitle={`You can send up to ${sizeText(limit)} here`}>
+        <Window {...modalProps} size="md" title="Too big to upload" subtitle={`You can send up to ${sizeText(limit)} here`}>
             <div className="vc-tool-wrap" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className="vc-tool-list">
                     {files.map((f, i) => (
@@ -91,7 +92,7 @@ function ShrinkPrompt({ modalProps, files, channel, limit }: { modalProps: any; 
                     <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!!busy || !shrinkable.length} onClick={shrink}>{busy ? "Shrinking…" : `Shrink ${shrinkable.length > 1 ? `${shrinkable.length} files` : "it"} to fit`}</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

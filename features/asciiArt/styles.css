@@ -5,8 +5,8 @@
 .vc-ascii-row > span:first-child { min-width: 82px; }
 .vc-ascii-char { width: 48px; text-align: center; font-size: 16px; padding: 6px; }
 .vc-ascii-emoji-pick { display: flex; flex-direction: column; gap: 6px; }
-.vc-ascii-emoji { all: unset; cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; }
-.vc-ascii-emoji:hover { background: hsl(0 0% 100% / 0.08); }
+.vc-ascii-emoji { all: unset; cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; border-radius: calc(8px * var(--sw-r, 1)); font-size: 18px; }
+.vc-ascii-emoji:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.08)); }
 .vc-ascii-emoji-on { box-shadow: inset 0 0 0 2px var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.15); }
 
 .vc-ascii-preview { min-height: 140px; max-height: 340px; overflow: auto; }
@@ -16,10 +16,10 @@
 .vc-ascii-notes:empty { display: none; }
 
 /* 2026-10 refresh: roomier, with colour fades and glows. */
-.vc-ascii-preview { min-height: 160px; border-radius: 18px; border-color: color-mix(in srgb, var(--tl-accent) 28%, transparent);
-    background: radial-gradient(500px 240px at 50% 0%, color-mix(in srgb, var(--tl-accent) 18%, transparent), transparent 70%), hsl(0 0% 0% / 0.3); box-shadow: none; }
-.vc-ascii-preview pre { color: color-mix(in srgb, var(--tl-accent) 35%, #fff); text-shadow: 0 0 14px color-mix(in srgb, var(--tl-accent) 55%, transparent); }
+.vc-ascii-preview { min-height: 160px; border-radius: calc(18px * var(--sw-r, 1)); border-color: var(--sw-line, color-mix(in srgb, var(--tl-accent) 28%, transparent));
+    background: var(--sw-card, radial-gradient(500px 240px at 50% 0%, color-mix(in srgb, var(--tl-accent) 18%, transparent), transparent 70%), hsl(0 0% 0% / 0.3)); box-shadow: none; }
+.vc-ascii-preview pre { color: color-mix(in srgb, var(--tl-accent) 35%, #fff); text-shadow: var(--sw-noglow, 0 0 14px color-mix(in srgb, var(--tl-accent) 55%, transparent)); }
 .vc-ascii-preview-emoji pre { text-shadow: none; }
 .vc-ascii-input { font-size: 16px; }
 .vc-ascii-emoji { transition: transform 0.12s, box-shadow 0.15s; }
-.vc-ascii-emoji-on { box-shadow: 0 0 0 2px var(--tl-accent), 0 0 14px -2px var(--tl-accent); }
+.vc-ascii-emoji-on { box-shadow: var(--sw-noglow, 0 0 0 2px var(--tl-accent), 0 0 14px -2px var(--tl-accent)); }

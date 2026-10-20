@@ -13,7 +13,7 @@
     height: 88px;
     display: grid;
     place-items: center;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
     background: repeating-conic-gradient(hsl(0 0% 100% / 0.04) 0 25%, transparent 0 50%) 0 0 / 14px 14px;
 }
@@ -26,16 +26,16 @@
     box-sizing: border-box;
     width: 100%;
     padding: 9px 12px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
-    background: hsl(0 0% 0% / 0.25);
+    background: var(--sw-inner, hsl(0 0% 0% / 0.25));
     color: var(--text-default);
     font-family: inherit;
     font-size: 14px;
     outline: none;
 }
 
-.vc-steal-input:focus { border-color: var(--tl-accent); box-shadow: 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.18); }
+.vc-steal-input:focus { border-color: var(--tl-accent); box-shadow: var(--sw-noglow, 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.18)); }
 .vc-steal-input-bad { border-color: var(--status-danger, #f23f43); }
 .vc-steal-hint { font-size: 12px; color: var(--text-muted); }
 .vc-steal-error { font-size: 12px; font-weight: 600; color: var(--status-danger, #f23f43); }
@@ -47,14 +47,14 @@
     align-items: center;
     gap: 12px;
     padding: 8px 10px;
-    border-radius: 12px;
+    border-radius: calc(12px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
     background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
 }
 
 .vc-steal-row-full { opacity: 0.5; }
-.vc-steal-icon { width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px; object-fit: cover; }
-.vc-steal-icon-text { display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--text-default); background: hsl(0 0% 100% / 0.08); }
+.vc-steal-icon { width: 38px; height: 38px; flex-shrink: 0; border-radius: calc(12px * var(--sw-r, 1)); object-fit: cover; }
+.vc-steal-icon-text { display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--text-default); background: var(--sw-chip, hsl(0 0% 100% / 0.08)); }
 .vc-steal-row-text { flex: 1; min-width: 0; }
 .vc-steal-row-name { font-size: 14px; font-weight: 700; color: var(--text-default); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-steal-row-sub { font-size: 12px; color: var(--text-muted); }
@@ -64,7 +64,7 @@
     cursor: pointer;
     flex-shrink: 0;
     padding: 7px 16px;
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sw-r, 1));
     font-size: 13px;
     font-weight: 700;
     color: #fff;
@@ -79,12 +79,12 @@
 .vc-steal-empty { padding: 26px 12px; text-align: center; font-size: 13.5px; color: var(--text-muted); }
 
 /* 2026-10 refresh: roomier, with colour fades and glows. */
-.vc-steal-top { gap: 18px; align-items: center; padding: 16px 18px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--tl-accent) 28%, transparent);
-    background: radial-gradient(360px 200px at 0% 0%, color-mix(in srgb, var(--tl-accent) 22%, transparent), transparent 70%), hsl(0 0% 0% / 0.22); box-shadow: none; }
-.vc-steal-preview { box-shadow: 0 0 24px -6px var(--tl-accent); }
+.vc-steal-top { gap: 18px; align-items: center; padding: 16px 18px; border-radius: calc(18px * var(--sw-r, 1)); border: 1px solid var(--sw-line, color-mix(in srgb, var(--tl-accent) 28%, transparent));
+    background: var(--sw-card, radial-gradient(360px 200px at 0% 0%, color-mix(in srgb, var(--tl-accent) 22%, transparent), transparent 70%), hsl(0 0% 0% / 0.22)); box-shadow: none; }
+.vc-steal-preview { box-shadow: var(--sw-noglow, 0 0 24px -6px var(--tl-accent)); }
 .vc-steal-list { gap: 8px; max-height: 380px; }
-.vc-steal-row { position: relative; overflow: hidden; padding: 11px 12px 11px 16px; border-radius: 14px; border: 1px solid hsl(0 0% 100% / 0.06);
-    background: linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.16) 65%); transition: border-color 0.15s, transform 0.12s; }
+.vc-steal-row { position: relative; overflow: hidden; padding: 11px 12px 11px 16px; border-radius: calc(14px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06));
+    background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.16) 65%)); transition: border-color 0.15s, transform 0.12s; }
 .vc-steal-row:hover { border-color: color-mix(in srgb, var(--tl-accent) 40%, transparent); transform: translateY(-1px); }
-.vc-steal-icon { width: 42px; height: 42px; border-radius: 14px; }
+.vc-steal-icon { width: 42px; height: 42px; border-radius: calc(14px * var(--sw-r, 1)); }
 .vc-steal-done { padding: 4px 10px; border-radius: 99px; background: hsl(145 63% 42% / 0.16); }

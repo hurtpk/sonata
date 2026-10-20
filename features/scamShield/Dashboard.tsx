@@ -12,9 +12,10 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { copyWithToast } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, NavigationRouter, openModal, useMemo, useState } from "@webpack/common";
+import { NavigationRouter, openModal, useMemo, useState } from "@webpack/common";
 
 import { clearLog, LogEntry, logPrefs, removeLog, useLog } from "../_shared/scamLog";
+import { Window } from "../_shared/Window";
 import { openChecker } from "./Checker";
 
 export interface DashboardHooks { trusted(): string[]; untrust(site: string): void; }
@@ -121,7 +122,7 @@ function DashboardModal({ modalProps, hooks }: { modalProps: RenderModalProps; h
     const headline = !protectedList.length ? "Nothing risky yet" : scams.length ? `${scams.length} scam${scams.length === 1 ? "" : "s"} caught` : `${protectedList.length} warning${protectedList.length === 1 ? "" : "s"}`;
 
     return (
-        <Modal {...modalProps} size="lg" title="Scam Shield" subtitle="What it's protected you from, and the links you've checked">
+        <Window {...modalProps} size="lg" title="Scam Shield" subtitle="What it's protected you from, and the links you've checked">
             <div className="vc-tool-wrap vc-shield-dash">
                 <div className="vc-shield-hero">
                     <div className="vc-shield-hero-badge" aria-hidden>
@@ -198,7 +199,7 @@ function DashboardModal({ modalProps, hooks }: { modalProps: RenderModalProps; h
                     )}
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -2,7 +2,7 @@
 .vc-vmsg-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 .vc-vmsg-stop, .vc-vmsg-stop:hover:not(:disabled) { background: var(--status-danger, #f23f43); color: #fff; }
 
-.vc-vmsg-preview { position: relative; display: flex; align-items: center; height: 52px; padding: 0 16px; border-radius: 26px; border: 1px solid var(--tl-line); background: hsl(0 0% 0% / 0.28); color: var(--text-default, var(--text-normal)); }
+.vc-vmsg-preview { position: relative; display: flex; align-items: center; height: 52px; padding: 0 16px; border-radius: calc(26px * var(--sw-r, 1)); border: 1px solid var(--tl-line); background: var(--sw-inner, hsl(0 0% 0% / 0.28)); color: var(--text-default, var(--text-normal)); }
 .vc-vmsg-preview-indicator { width: 14px; height: 14px; border-radius: 50%; background: hsl(0 0% 100% / 0.2); transition: background 0.2s; }
 .vc-vmsg-preview-recording { border-color: hsl(from var(--status-danger, #f23f43) h s l / 0.5); }
 .vc-vmsg-preview-recording .vc-vmsg-preview-indicator { background: var(--status-danger, #f23f43); animation: vc-vmsg-blink 1s ease-in-out infinite; }

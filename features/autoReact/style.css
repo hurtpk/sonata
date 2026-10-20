@@ -1,8 +1,8 @@
 /* Auto React — the shared window kit (_shared/tool.css) does most of it. */
 .vc-autoreact-panel { padding-bottom: 12px; }
 
-.vc-autoreact-status { all: unset; display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: var(--text-muted); background: hsl(0 0% 100% / 0.06); cursor: pointer; }
-.vc-autoreact-status:hover { background: hsl(0 0% 100% / 0.1); }
+.vc-autoreact-status { all: unset; display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); cursor: pointer; }
+.vc-autoreact-status:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.1)); }
 .vc-autoreact-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
 .vc-autoreact-status-active { color: var(--status-positive, #23a55a); background: hsl(from var(--status-positive, #23a55a) h s l / 0.14); }
 .vc-autoreact-status-active .vc-autoreact-status-dot { background: var(--status-positive, #23a55a); box-shadow: 0 0 0 3px hsl(from var(--status-positive, #23a55a) h s l / 0.25); animation: vc-autoreact-pulse 1.6s ease-in-out infinite; }
@@ -13,15 +13,15 @@
 .vc-autoreact-emoji-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; font-size: 16px; cursor: default; }
 .vc-autoreact-emoji-add { font-size: 13px; }
 
-.vc-autoreact-emoji-card { all: unset; display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 12px; border: 1px dashed var(--tl-line); cursor: pointer; }
+.vc-autoreact-emoji-card { all: unset; display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: calc(12px * var(--sw-r, 1)); border: 1px dashed var(--tl-line); cursor: pointer; }
 .vc-autoreact-emoji-card:hover { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.08); }
 .vc-autoreact-emoji-big { font-size: 34px; line-height: 1; }
 .vc-autoreact-value { font-size: 14px; color: var(--text-default, var(--text-normal)); font-variant-numeric: tabular-nums; }
 
 .vc-autoreact-keys { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); }
-.vc-autoreact-kbd { padding: 2px 6px; border-radius: 5px; border: 1px solid var(--tl-line); border-bottom-width: 2px; font-family: var(--font-code, monospace); font-size: 11px; color: var(--text-default, var(--text-normal)); }
+.vc-autoreact-kbd { padding: 2px 6px; border-radius: calc(5px * var(--sw-r, 1)); border: 1px solid var(--tl-line); border-bottom-width: 2px; font-family: var(--font-code, monospace); font-size: 11px; color: var(--text-default, var(--text-normal)); }
 
 .vc-autoreact-picker-backdrop { position: fixed; inset: 0; z-index: 10000; background: rgb(0 0 0 / 50%); animation: vc-autoreact-fade-in 0.15s ease; }
-.vc-autoreact-picker-container { position: fixed; z-index: 10001; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 40px rgb(0 0 0 / 50%); animation: vc-autoreact-scale-in 0.2s ease; }
+.vc-autoreact-picker-container { position: fixed; z-index: 10001; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: calc(12px * var(--sw-r, 1)); overflow: hidden; box-shadow: 0 12px 40px rgb(0 0 0 / 50%); animation: vc-autoreact-scale-in 0.2s ease; }
 @keyframes vc-autoreact-fade-in { from { opacity: 0; } }
 @keyframes vc-autoreact-scale-in { from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); } }

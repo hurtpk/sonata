@@ -7,10 +7,11 @@
 import ErrorBoundary from "@components/ErrorBoundary";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { GuildStore, Modal, openModal, useState } from "@webpack/common";
+import { GuildStore, openModal, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { describe, loadRecent, loadShortcuts, runCommand, saveShortcuts, Shortcut, textOf, Used } from ".";
 
 const ago = (t: number) => {
@@ -50,7 +51,7 @@ function ShortcutsModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const move = (i: number, d: number) => { const n = [...list]; [n[i], n[i + d]] = [n[i + d], n[i]]; write(n); };
 
     return (
-        <Modal {...modalProps} size="lg" title="Command shortcuts" subtitle="Bot commands you use a lot, one click away — from the ⚡ button in the chat bar">
+        <Window {...modalProps} size="lg" title="Command shortcuts" subtitle="Bot commands you use a lot, one click away — from the ⚡ button in the chat bar">
             <div className={classes("vc-tool-wrap", "vc-cmdsc-wrap")} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="⚡" kicker="Command shortcuts" title={list.length ? `${list.length} shortcut${list.length === 1 ? "" : "s"}` : "No shortcuts yet"}
                     sub="Bot commands you use a lot, one click away from the ⚡ button in the chat bar." />
@@ -87,7 +88,7 @@ function ShortcutsModal({ modalProps }: { modalProps: RenderModalProps; }) {
                 )) : <div className="vc-tool-hint">Use any bot's slash command the normal way (type / in the chat box), and it shows up here to save.</div>}
                 <span className="vc-tool-hint">A shortcut runs in whichever channel you're looking at, just like typing it — the bot has to be in that server. If a bot changes its command, run it once more and save it again.</span>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

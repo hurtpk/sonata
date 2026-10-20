@@ -1,0 +1,102 @@
+/* Sonata's colour picker (ColorPicker.tsx). In the window look: dark, squarish, no glows.
+   The swatch's own rules are kept weak (:where) so a feature's class can size and shape it. */
+
+:where(.vc-cp-swatch) {
+    all: unset;
+    box-sizing: border-box;
+    flex: none;
+    cursor: pointer;
+    background: var(--cp-color);
+    box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.16);
+}
+
+:where(.vc-cp-swatch):focus-visible { outline: 2px solid var(--sw-accent, var(--brand-500)); outline-offset: 2px; }
+
+.vc-cp {
+    position: fixed;
+    z-index: 10000;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border-radius: calc(14px * var(--sw-r, 1));
+    background: var(--sw-card, #171717);
+    border: 1px solid var(--sw-line2, #2a2a2a);
+    box-shadow: 0 12px 32px hsl(0 0% 0% / 0.5);
+    color: var(--sw-text, #ededed);
+    font-family: var(--font-primary, sans-serif);
+    animation: vc-cp-in 0.12s ease-out;
+}
+
+@keyframes vc-cp-in { from { opacity: 0; transform: translateY(-3px); } }
+
+.vc-cp-square {
+    position: relative;
+    height: 140px;
+    border-radius: calc(10px * var(--sw-r, 1));
+    background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, var(--cp-hue));
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.vc-cp-strip {
+    position: relative;
+    height: 12px;
+    border-radius: 99px;
+    background: linear-gradient(to right, #f00, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00);
+    cursor: pointer;
+    touch-action: none;
+}
+
+.vc-cp-knob {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px hsl(0 0% 0% / 0.45);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.vc-cp-strip > .vc-cp-knob { top: 50%; width: 16px; height: 16px; }
+
+.vc-cp-row { display: flex; align-items: center; gap: 8px; }
+
+.vc-cp-drop {
+    all: unset;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: calc(9px * var(--sw-r, 1));
+    border: 1px solid var(--sw-line2, #2a2a2a);
+    color: var(--sw-soft, #a3a3a3);
+    cursor: pointer;
+}
+
+.vc-cp-drop:hover { color: var(--sw-text, #ededed); background: var(--sw-hover, #1d1d1d); }
+.vc-cp-now { flex: none; width: 30px; height: 30px; border-radius: calc(9px * var(--sw-r, 1)); box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.16); }
+
+.vc-cp-hex {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 30px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border-radius: calc(9px * var(--sw-r, 1));
+    background: var(--sw-inner, #1b1b1b);
+    border: 1px solid var(--sw-line, #232323);
+}
+
+.vc-cp-hex:focus-within { border-color: var(--sw-accent, var(--brand-500)); }
+.vc-cp-hex > span { font-family: var(--sw-mono, var(--font-code, monospace)); font-size: 10px; letter-spacing: 0.08em; color: var(--sw-muted, #8f8f8f); }
+.vc-cp-hex > input { all: unset; flex: 1; min-width: 0; font-family: var(--sw-mono, var(--font-code, monospace)); font-size: 13px; color: var(--sw-text, #ededed); }
+
+@media (prefers-reduced-motion: reduce) { .vc-cp { animation: none; } }

@@ -14,8 +14,9 @@ import { getCurrentChannel } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, React, showToast, UploadHandler, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "@webpack/common";
+import { openModal, React, showToast, UploadHandler, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "@webpack/common";
 
+import { Window } from "../../_shared/Window";
 import { Cancel, encode, Encoded, formatBytes } from "../render/export";
 import { cropAspect, renderFrame, RenderResult, rotatedSize, setStickerListener } from "../render/frame";
 import { loadSource, MediaInput, slidesSource, Source } from "../render/source";
@@ -478,7 +479,7 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
     const over = fresh && enc.out!.blob.size > 10 * 1024 * 1024;
 
     return (
-        <Modal {...modalProps} size="xl" title="GIF Maker" subtitle="Trim, crop, caption, decorate — then send"
+        <Window {...modalProps} size="xl" title="GIF Maker" subtitle="Trim, crop, caption, decorate — then send"
             actionBarInput={<span className={cl("status", over && "status-warn")} title={over ? "Over Discord's 10 MB upload limit without Nitro" : undefined}>{over ? "⚠ " : ""}{status}</span>}
             actions={[
                 { text: finishing === "send" ? "Making it…" : "Send", variant: "primary", onClick: () => void finish("send"), disabled: !src || !!finishing },
@@ -534,6 +535,6 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
                     </div>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }

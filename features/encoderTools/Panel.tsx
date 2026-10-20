@@ -10,9 +10,10 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useMemo, useState } from "@webpack/common";
+import { openModal, showToast, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { CODECS, detect } from "./codecs";
 
 const cl = classNameFactory("vc-tool-");
@@ -48,7 +49,7 @@ function EncoderModal({ modalProps, initial, initialCodec, initialDirection, onU
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Encoder Tools" subtitle="Turn text into Morse, binary, Base64 and more, or back again">
+        <Window {...modalProps} size="lg" title="Encoder Tools" subtitle="Turn text into Morse, binary, Base64 and more, or back again">
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("seg")}>
                     {CODECS.map(c => (
@@ -100,7 +101,7 @@ function EncoderModal({ modalProps, initial, initialCodec, initialDirection, onU
                     <button type="button" className={classes(cl("btn"), cl("primary"))} disabled={!out} onClick={insert}>Insert into message</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -16,14 +16,14 @@
     justify-content: center;
     width: 56px;
     height: 26px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sw-r, 1));
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.02em;
     white-space: nowrap;
     color: var(--interactive-icon-default, var(--interactive-normal, #b5bac1));
     background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
-    border: 1px solid hsl(0 0% 100% / 0.09);
+    border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.09));
     cursor: pointer;
     user-select: none;
     transition:
@@ -36,9 +36,9 @@
 
 .vc-ranb-button:hover {
     color: var(--interactive-icon-active, #fff);
-    background: hsl(0 0% 100% / 0.08);
+    background: var(--sw-hi, hsl(0 0% 100% / 0.08));
     border-color: hsl(from var(--brand-500) h s l / 0.65);
-    box-shadow: 0 0 12px hsl(from var(--brand-500) h s l / 0.3);
+    box-shadow: var(--sw-noglow, 0 0 12px hsl(from var(--brand-500) h s l / 0.3));
     transform: translateY(-1px);
 }
 
@@ -58,7 +58,7 @@
     color: #fff;
     background: var(--status-positive, #23a55a);
     border-color: transparent;
-    box-shadow: 0 0 14px rgb(35 165 90 / 45%);
+    box-shadow: var(--sw-noglow, 0 0 14px rgb(35 165 90 / 45%));
 }
 
 .vc-ranb-button::after {
@@ -66,7 +66,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle, hsl(0 0% 100% / 0.45) 0%, transparent 65%);
+    background: var(--sw-card, radial-gradient(circle, hsl(0 0% 100% / 0.45) 0%, transparent 65%));
     opacity: 0;
     pointer-events: none;
 }

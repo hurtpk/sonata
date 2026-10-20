@@ -7,8 +7,9 @@
 import { BaseText } from "@components/BaseText";
 import { openImageModal } from "@utils/discord";
 import { RenderModalProps } from "@vencord/discord-types";
-import { Modal,React } from "@webpack/common";
+import { React } from "@webpack/common";
 
+import { Window } from "../../../_shared/Window";
 import { SpotifyStore, Track } from "../../SpotifyStore";
 import { cl, NoteSvg, scrollClasses, useLyrics } from "./util";
 
@@ -53,7 +54,7 @@ export function LyricsModal({ props }: { props: RenderModalProps; }) {
     const currentLyrics = lyricsInfo?.lyricsVersions[lyricsInfo.useLyric];
 
     return (
-        <Modal {...props} size="md" title={getTitleNode(track)}>
+        <Window {...props} size="md" title={getTitleNode(track)}>
             <div className={`${cl("lyrics-modal-container")} ${scrollClasses.auto}`}>
                 {currentLyrics ? (
                     currentLyrics.map((line, i) => (
@@ -75,6 +76,6 @@ export function LyricsModal({ props }: { props: RenderModalProps; }) {
                     </BaseText>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }

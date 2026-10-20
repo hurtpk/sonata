@@ -8,9 +8,10 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useRef, useState } from "@webpack/common";
+import { openModal, showToast, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { BACKGROUNDS, colorOf, fromAnsi, PLAIN, runs, Style, TEXT_COLORS, toAnsi } from "./ansi";
 
 const cl = classNameFactory("vc-tool-");
@@ -88,7 +89,7 @@ function ColoredTextModal({ modalProps, initial }: { modalProps: RenderModalProp
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Colored Text" subtitle="Select some text, then pick a colour or style">
+        <Window {...modalProps} size="lg" title="Colored Text" subtitle="Select some text, then pick a colour or style">
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={ct("bar")}>
                     <span className={cl("label")}>Text</span>
@@ -126,7 +127,7 @@ function ColoredTextModal({ modalProps, initial }: { modalProps: RenderModalProp
                     <button type="button" className={classes(cl("btn"), cl("primary"))} disabled={!output} onClick={insert}>Insert into message</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

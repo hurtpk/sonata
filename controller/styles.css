@@ -21,8 +21,8 @@
     container-type: inline-size;
     background-color: var(--background-base-lowest, var(--background-base-lower));
     background-image:
-        radial-gradient(900px 600px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.06), transparent 60%),
-        radial-gradient(800px 600px at 100% 100%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.045), transparent 60%);
+        var(--sw-card, radial-gradient(900px 600px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.06), transparent 60%),
+        radial-gradient(800px 600px at 100% 100%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.045), transparent 60%));
 }
 
 .vc-qolcc-page > *:not(.vc-qolcc-particles) {
@@ -55,8 +55,8 @@
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(900px 200px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.07), transparent 60%),
-        radial-gradient(600px 200px at 100% 0%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.05), transparent 60%);
+        var(--sw-card, radial-gradient(900px 200px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.07), transparent 60%),
+        radial-gradient(600px 200px at 100% 0%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.05), transparent 60%));
     pointer-events: none;
 }
 
@@ -127,7 +127,7 @@
     gap: 3px;
     padding: 3px;
     border-radius: 99px;
-    border: 1px solid hsl(0 0% 100% / 0.1);
+    border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1));
     background: var(--neutral-82, hsl(0 0% 100% / 0.04));
 }
 
@@ -145,7 +145,7 @@
 
 .vc-qolcc-view-btn:hover {
     color: var(--text-default);
-    background: hsl(0 0% 100% / 0.06);
+    background: var(--sw-hover, hsl(0 0% 100% / 0.06));
 }
 
 .vc-qolcc-view-btn:focus-visible {
@@ -157,7 +157,7 @@
 .vc-qolcc-view-btn-active:hover {
     color: #fff;
     background: var(--qolcc-accent);
-    box-shadow: 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.35);
+    box-shadow: var(--sw-noglow, 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.35));
 }
 
 /* All on / All off — styled like ChannelSettings' filter chips. */
@@ -176,15 +176,15 @@
     font-weight: 600;
     color: var(--text-default);
     background: var(--neutral-82, hsl(0 0% 100% / 0.04));
-    border: 1px solid hsl(0 0% 100% / 0.1);
+    border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1));
     border-radius: 99px;
     transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .vc-qolcc-bulk-btn:hover:not(:disabled) {
-    background: hsl(0 0% 100% / 0.08);
+    background: var(--sw-hi, hsl(0 0% 100% / 0.08));
     border-color: hsl(from var(--qolcc-accent) h s l / 0.6);
-    box-shadow: 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.25);
+    box-shadow: var(--sw-noglow, 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.25));
 }
 
 .vc-qolcc-bulk-btn:disabled {
@@ -203,7 +203,7 @@
     display: flex;
     gap: 2px;
     padding: 0 32px;
-    border-bottom: 1px solid hsl(0 0% 100% / 0.06);
+    border-bottom: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06));
     overflow-x: auto;
     scrollbar-width: none;
 }
@@ -219,7 +219,7 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--text-muted);
-    border-radius: 8px 8px 0 0;
+    border-radius: calc(8px * var(--sw-r, 1)) calc(8px * var(--sw-r, 1)) 0 0;
     position: relative;
     transition: color 0.18s ease, background 0.18s ease;
 }
@@ -240,7 +240,7 @@
 
 .vc-qolcc-tab:hover {
     color: var(--text-default);
-    background: hsl(0 0% 100% / 0.03);
+    background: var(--sw-hover, hsl(0 0% 100% / 0.03));
 }
 
 .vc-qolcc-tab:focus-visible {
@@ -262,7 +262,7 @@
     padding: 1px 7px;
     border-radius: 99px;
     color: var(--text-muted);
-    background: hsl(0 0% 100% / 0.06);
+    background: var(--sw-chip, hsl(0 0% 100% / 0.06));
 }
 
 .vc-qolcc-tab-active .vc-qolcc-tab-count {
@@ -388,14 +388,14 @@
     font-weight: 600;
     color: var(--text-muted);
     background: var(--neutral-82, hsl(0 0% 100% / 0.04));
-    border: 1px solid hsl(0 0% 100% / 0.08);
+    border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08));
     border-radius: 99px;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .vc-qolcc-filter-chip:hover {
     color: var(--text-default);
-    background: hsl(0 0% 100% / 0.08);
+    background: var(--sw-hi, hsl(0 0% 100% / 0.08));
 }
 
 .vc-qolcc-filter-chip:focus-visible {
@@ -408,7 +408,7 @@
     color: #fff;
     background: var(--qolcc-accent);
     border-color: var(--qolcc-accent);
-    box-shadow: 0 0 0 1px var(--qolcc-accent), 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.35);
+    box-shadow: var(--sw-noglow, 0 0 0 1px var(--qolcc-accent), 0 0 14px hsl(from var(--qolcc-accent) h s l / 0.35));
 }
 
 .vc-qolcc-filter-badge {
@@ -437,9 +437,9 @@
     align-items: center;
     gap: 14px;
     padding: 20px 22px;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sw-r, 1));
     background: var(--background-surface-high);
-    border: 1px solid hsl(0 0% 100% / 0.1);
+    border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1));
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.18s, background 0.18s, opacity 0.2s;
 }
 
@@ -486,7 +486,7 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 2px 6px;
-    border-radius: 5px;
+    border-radius: calc(5px * var(--sw-r, 1));
     color: var(--qolcc-accent);
     background: hsl(from var(--qolcc-accent) h s l / 0.15);
     border: 1px solid hsl(from var(--qolcc-accent) h s l / 0.35);
@@ -523,7 +523,7 @@
 }
 
 .vc-qolcc-status-active { color: var(--text-feedback-positive, var(--status-positive, #23a55a)); }
-.vc-qolcc-status-active .vc-qolcc-status-dot { box-shadow: 0 0 8px currentColor; }
+.vc-qolcc-status-active .vc-qolcc-status-dot { box-shadow: var(--sw-noglow, 0 0 8px currentColor); }
 .vc-qolcc-status-apply-on,
 .vc-qolcc-status-apply-off,
 .vc-qolcc-status-needs { color: var(--qolcc-amber); }
@@ -540,7 +540,7 @@
     all: unset;
     cursor: pointer;
     padding: 8px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sw-r, 1));
     color: var(--text-muted);
     display: flex;
     align-items: center;
@@ -589,7 +589,7 @@
 .vc-qolcc-toggle-on,
 .vc-qolcc-toggle-on:hover {
     background: var(--qolcc-accent);
-    box-shadow: 0 0 0 1px var(--qolcc-accent), 0 0 16px hsl(from var(--qolcc-accent) h s l / 0.35);
+    box-shadow: var(--sw-noglow, 0 0 0 1px var(--qolcc-accent), 0 0 16px hsl(from var(--qolcc-accent) h s l / 0.35));
 }
 
 .vc-qolcc-toggle-knob {
@@ -650,7 +650,7 @@
     gap: 12px;
     margin: auto 0 16px;
     padding: 9px 10px 9px 16px;
-    border-radius: 12px;
+    border-radius: calc(12px * var(--sw-r, 1));
     border: 1px solid var(--qolcc-line);
     background: rgb(10 12 15 / 82%);
     backdrop-filter: blur(14px);
@@ -669,12 +669,12 @@
     flex-shrink: 0;
     border-radius: 50%;
     background: var(--qolcc-accent);
-    box-shadow: 0 0 10px var(--qolcc-accent);
+    box-shadow: var(--sw-noglow, 0 0 10px var(--qolcc-accent));
 }
 
 .vc-qolcc-apply-bar-pending .vc-qolcc-apply-dot {
     background: var(--qolcc-amber);
-    box-shadow: 0 0 10px var(--qolcc-amber);
+    box-shadow: var(--sw-noglow, 0 0 10px var(--qolcc-amber));
     animation: vc-qolcc-pulse 1.6s ease-in-out infinite;
 }
 
@@ -704,7 +704,7 @@
 .vc-qolcc-apply-btn {
     all: unset;
     padding: 7px 14px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sw-r, 1));
     background: var(--qolcc-amber);
     color: #241600;
     font-size: 13px;
@@ -738,8 +738,8 @@
 
 .vc-qolcc-modal-empty {
     padding: 22px;
-    border-radius: 12px;
-    border: 1px dashed hsl(0 0% 100% / 0.12);
+    border-radius: calc(12px * var(--sw-r, 1));
+    border: 1px dashed var(--sw-line2, hsl(0 0% 100% / 0.12));
     text-align: center;
     font-size: 13px;
     color: var(--text-muted);
@@ -779,5 +779,5 @@
 }
 
 /* Feature icons */
-.vc-qolcc-card-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; margin-right: 12px; border-radius: 10px; color: var(--vc-qolcc-accent, var(--brand-500)); background: color-mix(in srgb, var(--vc-qolcc-accent, #5865f2) 14%, transparent); }
-.vc-qolcc-card-disabled .vc-qolcc-card-icon { color: var(--text-muted); background: hsl(0 0% 100% / 0.05); }
+.vc-qolcc-card-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; margin-right: 12px; border-radius: calc(10px * var(--sw-r, 1)); color: var(--vc-qolcc-accent, var(--brand-500)); background: color-mix(in srgb, var(--vc-qolcc-accent, #5865f2) 14%, transparent); }
+.vc-qolcc-card-disabled .vc-qolcc-card-icon { color: var(--text-muted); background: var(--sw-card, hsl(0 0% 100% / 0.05)); }

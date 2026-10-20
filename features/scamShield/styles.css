@@ -1,11 +1,11 @@
 /* Check a link */
 .vc-shield-checker { display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px; }
 .vc-shield-input { resize: vertical; min-height: 64px; font-family: var(--font-code, monospace); font-size: 13px; }
-.vc-shield-result { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 12px; border: 1px solid; }
+.vc-shield-result { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid; }
 .vc-shield-bad { background: hsl(358 75% 50% / 0.1); border-color: hsl(358 75% 55% / 0.45); }
 .vc-shield-warn { background: hsl(40 90% 55% / 0.08); border-color: hsl(40 90% 55% / 0.4); }
 .vc-shield-good { background: hsl(140 60% 40% / 0.1); border-color: hsl(140 60% 45% / 0.4); }
-.vc-shield-plain { background: hsl(0 0% 0% / 0.2); border-color: hsl(0 0% 100% / 0.08); }
+.vc-shield-plain { background: var(--sw-card, hsl(0 0% 0% / 0.2)); border-color: var(--sw-line, hsl(0 0% 100% / 0.08)); }
 .vc-shield-result-head { display: flex; align-items: center; gap: 12px; }
 .vc-shield-result-head > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .vc-shield-result-head b { font-size: 16px; color: var(--header-primary, #fff); }
@@ -23,25 +23,25 @@
 
 /* The Scam Shield window */
 .vc-shield-dash { display: flex; flex-direction: column; gap: 14px; padding-bottom: 12px; }
-.vc-shield-hero { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 16px; background: linear-gradient(120deg, color-mix(in srgb, var(--tl-accent, var(--brand-500)) 22%, transparent), hsl(0 0% 0% / 0.12)); border: 1px solid hsl(140 55% 50% / 0.25); }
-.vc-shield-hero-badge { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #23a55a, #1a7f45); box-shadow: none; }
+.vc-shield-hero { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: calc(16px * var(--sw-r, 1)); background: var(--sw-card, linear-gradient(120deg, color-mix(in srgb, var(--tl-accent, var(--brand-500)) 22%, transparent), hsl(0 0% 0% / 0.12))); border: 1px solid hsl(140 55% 50% / 0.25); }
+.vc-shield-hero-badge { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: calc(16px * var(--sw-r, 1)); color: #fff; background: linear-gradient(135deg, #23a55a, #1a7f45); box-shadow: none; }
 .vc-shield-hero-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .vc-shield-hero-text b { font-size: 19px; color: var(--header-primary, #fff); }
 .vc-shield-hero-text span { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
 .vc-shield-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.vc-shield-stat { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: hsl(0 0% 0% / 0.2); border: 1px solid hsl(0 0% 100% / 0.06); min-width: 0; }
+.vc-shield-stat { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: calc(12px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06)); min-width: 0; }
 .vc-shield-stat span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
 .vc-shield-stat b { font-size: 24px; color: var(--header-primary, #fff); font-variant-numeric: tabular-nums; }
 .vc-shield-stat small { font-size: 12px; color: var(--text-muted); }
 .vc-shield-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .vc-shield-tools { display: flex; flex-direction: column; gap: 8px; }
 .vc-shield-list { display: flex; flex-direction: column; gap: 6px; }
-.vc-shield-row { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px 10px 16px; border-radius: 12px; background: hsl(0 0% 0% / 0.18); border: 1px solid hsl(0 0% 100% / 0.06); overflow: hidden; }
+.vc-shield-row { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px 10px 16px; border-radius: calc(12px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.18)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06)); overflow: hidden; }
 .vc-shield-row::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--row, #80848e); }
 .vc-shield-row-bad { --row: #f23f43; }
 .vc-shield-row-warn { --row: #f0b232; }
 .vc-shield-row-good { --row: #23a55a; }
-.vc-shield-row-icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: hsl(0 0% 100% / 0.06); font-size: 17px; }
+.vc-shield-row-icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); font-size: 17px; }
 .vc-shield-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .vc-shield-row-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .vc-shield-row-title { font-size: 14.5px; color: var(--header-primary, #fff); word-break: break-all; }
@@ -50,10 +50,10 @@
 .vc-shield-row-meta { font-size: 12px; color: var(--text-muted); }
 .vc-shield-row-actions { display: flex; gap: 2px; flex: none; opacity: 0.55; transition: opacity 0.12s; }
 .vc-shield-row:hover .vc-shield-row-actions { opacity: 1; }
-.vc-shield-pill { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 9px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.vc-shield-pill { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: calc(9px * var(--sw-r, 1)); font-size: 11px; font-weight: 700; white-space: nowrap; }
 .vc-shield-pill-bad { background: hsl(358 75% 50% / 0.18); color: #ff7a7d; }
 .vc-shield-pill-warn { background: hsl(40 90% 55% / 0.16); color: #f0b232; }
 .vc-shield-pill-good { background: hsl(140 60% 40% / 0.18); color: #57e389; }
-.vc-shield-pill-plain { background: hsl(0 0% 100% / 0.08); color: var(--text-muted); }
+.vc-shield-pill-plain { background: var(--sw-chip, hsl(0 0% 100% / 0.08)); color: var(--text-muted); }
 .vc-shield-foot { display: flex; align-items: center; gap: 8px; }
 @media (max-width: 760px) { .vc-shield-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

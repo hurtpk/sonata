@@ -10,10 +10,10 @@
     container-type: inline-size;
     margin: 0 -4px 8px;
     padding: 4px;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sw-r, 1));
     background-image:
-        radial-gradient(700px 400px at 0% 0%, hsl(from var(--tl-accent) h s l / 0.07), transparent 60%),
-        radial-gradient(600px 400px at 100% 100%, hsl(from var(--tl-accent) calc(h + 50) s l / 0.05), transparent 60%);
+        var(--sw-none, radial-gradient(700px 400px at 0% 0%, hsl(from var(--tl-accent) h s l / 0.07), transparent 60%),
+        radial-gradient(600px 400px at 100% 100%, hsl(from var(--tl-accent) calc(h + 50) s l / 0.05), transparent 60%));
 }
 
 .vc-vtl-content {
@@ -44,7 +44,7 @@
     flex-direction: column;
     gap: 14px;
     padding: 16px;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
     background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
 }
@@ -91,9 +91,9 @@
     box-sizing: border-box;
     width: 100%;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
-    background: hsl(0 0% 0% / 0.25);
+    background: var(--sw-inner, hsl(0 0% 0% / 0.25));
     color: var(--text-default);
     font-family: inherit;
     font-size: 14px;
@@ -114,7 +114,7 @@
 .vc-vtl-textarea:focus,
 .vc-vtl-datetime:focus {
     border-color: var(--tl-accent);
-    box-shadow: 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.18);
+    box-shadow: var(--sw-noglow, 0 0 0 3px hsl(from var(--tl-accent) h s l / 0.18));
 }
 
 .vc-vtl-chips {
@@ -155,7 +155,7 @@
     display: flex;
     gap: 4px;
     padding: 3px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
     background: var(--vtl-surface);
 }
@@ -166,7 +166,7 @@
     flex: 1;
     text-align: center;
     padding: 7px 0;
-    border-radius: 7px;
+    border-radius: calc(7px * var(--sw-r, 1));
     font-size: 13px;
     font-weight: 600;
     color: var(--text-muted);
@@ -185,7 +185,7 @@
 
 .vc-vtl-summary {
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     background: hsl(from var(--tl-accent) h s l / 0.1);
     border: 1px solid hsl(from var(--tl-accent) h s l / 0.3);
     font-size: 13px;
@@ -271,7 +271,7 @@
     height: 7px;
     border-radius: 50%;
     background: var(--vtl-good);
-    box-shadow: 0 0 8px var(--vtl-good);
+    box-shadow: var(--sw-noglow, 0 0 8px var(--vtl-good));
     animation: vc-vtl-pulse 1.6s ease-in-out infinite;
 }
 
@@ -289,12 +289,12 @@
     align-items: center;
     gap: 10px;
     padding: 7px 8px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     transition: background 0.12s;
 }
 
 .vc-vtl-person:hover {
-    background: hsl(0 0% 100% / 0.04);
+    background: var(--sw-hover, hsl(0 0% 100% / 0.04));
 }
 
 .vc-vtl-person-gone {
@@ -307,7 +307,7 @@
     border-radius: 50%;
     flex-shrink: 0;
     object-fit: cover;
-    background: hsl(0 0% 100% / 0.06);
+    background: var(--sw-chip, hsl(0 0% 100% / 0.06));
 }
 
 .vc-vtl-person-text {
@@ -346,7 +346,7 @@
     align-items: center;
     gap: 9px;
     padding: 6px 8px;
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sw-r, 1));
     font-size: 13px;
     color: var(--text-default);
 }
@@ -430,9 +430,9 @@
 
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-vtl-wrap { background-image: none; display: flex; flex-direction: column; gap: 14px; }
-.vc-vtl-card { border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.07); background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%); }
-.vc-vtl-session-active, .vc-vtl-session-active:hover { background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)); box-shadow: none; }
-.vc-vtl-count { box-shadow: 0 0 12px -4px var(--tl-accent); }
+.vc-vtl-card { border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); background: var(--sw-card, linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
+.vc-vtl-session-active, .vc-vtl-session-active:hover { background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000))); box-shadow: none; }
+.vc-vtl-count { box-shadow: var(--sw-noglow, 0 0 12px -4px var(--tl-accent)); }
 
 /* ─── This week (recap) ─── */
 .vc-vtl-recap { display: flex; flex-direction: column; gap: 12px; }
@@ -441,14 +441,14 @@
 .vc-vtl-recap-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 6px 2px 2px; }
 .vc-vtl-recap-day { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
 .vc-vtl-recap-time { min-height: 15px; font-size: 11px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
-.vc-vtl-recap-track { position: relative; width: 100%; max-width: 46px; height: 110px; border-radius: 10px; background: hsl(0 0% 100% / 0.05); overflow: hidden; }
-.vc-vtl-recap-track i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 10px; background: linear-gradient(to top, color-mix(in srgb, var(--tl-accent) 70%, transparent), var(--tl-accent)); transition: height 0.3s ease; }
+.vc-vtl-recap-track { position: relative; width: 100%; max-width: 46px; height: 110px; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 100% / 0.05)); overflow: hidden; }
+.vc-vtl-recap-track i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-card, linear-gradient(to top, color-mix(in srgb, var(--tl-accent) 70%, transparent), var(--tl-accent))); transition: height 0.3s ease; }
 .vc-vtl-recap-label { font-size: 12px; font-weight: 700; color: var(--text-default, var(--text-normal)); }
 .vc-vtl-recap-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; }
 .vc-vtl-recap-rank { flex: none; width: 20px; text-align: center; font-size: 12px; font-weight: 800; color: var(--text-muted); }
-.vc-vtl-recap-avatar { flex: none; width: 30px; height: 30px; border-radius: 50%; background: hsl(0 0% 100% / 0.08); object-fit: cover; }
+.vc-vtl-recap-avatar { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--sw-chip, hsl(0 0% 100% / 0.08)); object-fit: cover; }
 .vc-vtl-recap-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .vc-vtl-recap-who b { overflow: hidden; font-size: 13.5px; text-overflow: ellipsis; white-space: nowrap; color: var(--text-default, var(--text-normal)); }
-.vc-vtl-recap-bar { height: 4px; border-radius: 4px; background: hsl(0 0% 100% / 0.07); overflow: hidden; }
-.vc-vtl-recap-bar i { display: block; height: 100%; border-radius: 4px; background: var(--tl-accent); }
+.vc-vtl-recap-bar { height: 4px; border-radius: calc(4px * var(--sw-r, 1)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); overflow: hidden; }
+.vc-vtl-recap-bar i { display: block; height: 100%; border-radius: calc(4px * var(--sw-r, 1)); background: var(--tl-accent); }
 .vc-vtl-recap-ms { flex: none; font-size: 12.5px; font-weight: 700; color: var(--text-default, var(--text-normal)); font-variant-numeric: tabular-nums; }

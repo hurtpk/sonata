@@ -9,6 +9,8 @@
 // roundness, a font, how see-through the backgrounds are, a picture or moving
 // colours behind Discord, and hover animations.
 
+import { dockColorCss } from "../../utilities/dockColorCss";
+
 export type ListFx = "none" | "slide" | "bar" | "tint" | "grow";
 
 export interface Effects {
@@ -63,6 +65,8 @@ export interface Theme {
     msgIn: "none" | "fade" | "slide" | "pop";
     /** The red number badges: Discord's own (null), "accent", or a colour. */
     badge: string | null;
+    /** The dock buttons' colour: Discord's own (null), "accent", or a colour. Sonata → Dock's own colour wins over this. */
+    dock?: string | null;
     at: number;
     /** Old: how much of the picture showed through. Now `opacity`. */
     see?: number;
@@ -144,6 +148,7 @@ export function normalize(t: Partial<Theme> & Pick<Theme, "id" | "name" | "bg" |
         bubblesRight: t.bubblesRight !== false,
         msgIn: (["none", "fade", "slide", "pop"] as const).includes(t.msgIn as any) ? t.msgIn! : "none",
         badge: t.badge === undefined ? null : t.badge,
+        dock: t.dock ?? null,
         at: t.at ?? Date.now(),
     };
 }
@@ -424,6 +429,7 @@ function extrasCss(t: Theme, found: FoundClasses) {
         css += `${found.badge} { background-color: ${c} !important; ${t.badge === "accent" && grad ? `background-image: ${grad} !important;` : ""} color: ${contrast("#ffffff", c) >= 3 ? "#fff" : "#111"} !important; }\n`;
     }
     if (grad && found.brandButton) css += `${found.brandButton} { background-image: ${grad} !important; }\n`;
+    if (t.dock) css += `${dockColorCss(t.dock === "accent" ? a : t.dock, false)}\n`;
     return css;
 }
 

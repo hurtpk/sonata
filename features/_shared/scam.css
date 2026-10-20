@@ -1,5 +1,5 @@
 /* Scam warnings (Roblox Tools and Scam Shield) */
-.vc-scam { display: flex; align-items: center; gap: 10px; max-width: 560px; margin-top: 6px; padding: 8px 10px 8px 12px; border-radius: 10px; border: 1px solid; font-size: 13px; line-height: 1.35; }
+.vc-scam { display: flex; align-items: center; gap: 10px; max-width: 560px; margin-top: 6px; padding: 8px 10px 8px 12px; border-radius: calc(10px * var(--sw-r, 1)); border: 1px solid; font-size: 13px; line-height: 1.35; }
 .vc-scam-bad { background: hsl(358 75% 50% / 0.12); border-color: hsl(358 75% 55% / 0.5); }
 .vc-scam-warn { background: hsl(40 90% 55% / 0.1); border-color: hsl(40 90% 55% / 0.45); }
 .vc-scam-icon { font-size: 18px; }
@@ -7,12 +7,12 @@
 .vc-scam-bad .vc-scam-text b { color: #ff7a7d; }
 .vc-scam-warn .vc-scam-text b { color: #f0b232; }
 .vc-scam-modal { display: flex; flex-direction: column; gap: 12px; padding-bottom: 12px; }
-.vc-scam-where { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: hsl(0 0% 0% / 0.3); }
+.vc-scam-where { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-inner, hsl(0 0% 0% / 0.3)); }
 .vc-scam-where span { font-size: 12px; color: var(--text-muted); }
 .vc-scam-where b { font: 600 15px var(--font-code, monospace); color: #fff; word-break: break-all; }
 .vc-scam-modal-bad .vc-scam-where b { color: #ff7a7d; }
 .vc-scam-why { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; line-height: 1.45; color: var(--text-default, #dbdee1); }
-.vc-scam-tip { padding: 10px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); background: hsl(0 0% 100% / 0.03); }
+.vc-scam-tip { padding: 10px 12px; border-radius: calc(10px * var(--sw-r, 1)); font-size: 12.5px; line-height: 1.5; color: var(--text-muted); background: var(--sw-card, hsl(0 0% 100% / 0.03)); }
 .vc-scam-actions { display: flex; align-items: center; gap: 8px; }
 .vc-scam + .vc-scam { margin-top: 4px; }
 .vc-scam-file { font: 600 12.5px var(--font-code, monospace); word-break: break-all; }

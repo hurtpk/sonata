@@ -20,10 +20,11 @@ import "../_shared/tool.css";
 
 import { classes } from "@utils/misc";
 import { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, SearchableSelect, useMemo } from "@webpack/common";
+import { openModal, SearchableSelect, useMemo } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { resetLanguageDefaults, settings } from "./settings";
 import { getLanguages } from "./utils";
 
@@ -67,7 +68,7 @@ export function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) 
     const deepl = s.service === "deepl" || s.service === "deepl-pro";
 
     return (
-        <Modal {...rootProps} size="lg" title="Translate" subtitle="Translate messages you get, and what you send — with the 🌐 button in the chat bar">
+        <Window {...rootProps} size="lg" title="Translate" subtitle="Translate messages you get, and what you send — with the 🌐 button in the chat bar">
             <div className="vc-tool-wrap vc-trans-window" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="🌐" kicker={`Using ${SERVICES.find(x => x.id === s.service)?.name ?? "Google Translate"}`}
                     title={<>{name(s.receivedInput)} <span className="vc-trans-hero-arrow">→</span> {name(s.receivedOutput)}</>}
@@ -125,7 +126,7 @@ export function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) 
                     <button type="button" className="vc-tool-btn vc-tool-primary" onClick={rootProps.onClose}>Done</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

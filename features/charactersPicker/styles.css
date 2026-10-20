@@ -15,8 +15,8 @@
     display: grid;
     place-items: center;
     height: 44px;
-    border-radius: 10px;
-    background: hsl(0 0% 100% / 0.05);
+    border-radius: calc(10px * var(--sw-r, 1));
+    background: var(--sw-card, hsl(0 0% 100% / 0.05));
     color: var(--text-default, var(--text-normal));
     font-size: 22px;
     line-height: 1;
@@ -33,7 +33,7 @@
 
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-chars-grid { gap: 6px; }
-.vc-chars-char { border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.07); background: linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 6%, transparent), hsl(0 0% 0% / 0.16) 65%); transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s, background 0.15s; }
+.vc-chars-char { border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); background: var(--sw-card, linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 6%, transparent), hsl(0 0% 0% / 0.16) 65%)); transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s, background 0.15s; }
 .vc-chars-char:hover { transform: translateY(-2px) scale(1.06); border-color: color-mix(in srgb, var(--tl-accent) 55%, transparent); background: color-mix(in srgb, var(--tl-accent) 22%, transparent); box-shadow: none; }
-.vc-chars-flash { border-color: var(--tl-accent); background: color-mix(in srgb, var(--tl-accent) 40%, transparent); box-shadow: 0 0 18px -4px var(--tl-accent); }
+.vc-chars-flash { border-color: var(--tl-accent); background: color-mix(in srgb, var(--tl-accent) 40%, transparent); box-shadow: var(--sw-noglow, 0 0 18px -4px var(--tl-accent)); }
 .vc-chars-grid .vc-tool-empty { grid-column: 1 / -1; }

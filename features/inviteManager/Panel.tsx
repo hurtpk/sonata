@@ -8,10 +8,11 @@ import { copyToClipboard } from "@utils/clipboard";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { canRevoke, collectInvites, Progress, revokeInvite } from "./fetch";
 import { applyView, expiringSoon, Filter, InviteRow, isStale, neverExpires, OLD_AFTER_DAYS, relative, Sort, usesText } from "./invites";
 import { forgetInvite, setLabel, useInviteStore } from "./store";
@@ -140,7 +141,7 @@ function InviteModal({ modalProps, everyoneDefault, setEveryoneDefault }: { moda
     ];
 
     return (
-        <Modal {...modalProps} size="lg" title="Invite Manager"
+        <Window {...modalProps} size="lg" title="Invite Manager"
             subtitle={progress ? `Checking ${progress.label || "…"} (${Math.min(progress.done + 1, progress.total)} of ${progress.total})`
                 : `${rows.length} invite${rows.length === 1 ? "" : "s"}${counts.stale ? ` · ${counts.stale} old and never expiring` : ""}${data ? ` · checked ${relative(data.at)}` : ""}`}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
@@ -192,7 +193,7 @@ function InviteModal({ modalProps, everyoneDefault, setEveryoneDefault }: { moda
                     {data?.problems.length ? ` Couldn't check: ${data.problems.join(", ")}.` : ""}
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

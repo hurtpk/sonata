@@ -10,9 +10,10 @@ import { classNameFactory } from "@utils/css";
 import { sendMessage } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, SelectedChannelStore, showToast, UserStore, useState } from "@webpack/common";
+import { openModal, SelectedChannelStore, showToast, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { encodeGift, Gift, PAPERS, RIBBONS } from "./gift";
 import { Box } from "./Present";
 
@@ -48,7 +49,7 @@ function WrapModal({ modalProps }: { modalProps: RenderModalProps; }) {
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Gift Wrap" subtitle="Wrap a message, link or picture as a present">
+        <Window {...modalProps} size="lg" title="Gift Wrap" subtitle="Wrap a message, link or picture as a present">
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className="vc-gw-layout">
                 <div className="vc-gw-preview">
@@ -99,7 +100,7 @@ function WrapModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     <button type="button" className={classes(cl("btn"), cl("primary"))} disabled={!content.trim() || tooLong || !channelId || !unlockOk} onClick={send}>Send gift 🎁</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

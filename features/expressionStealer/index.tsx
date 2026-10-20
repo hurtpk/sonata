@@ -30,10 +30,11 @@ import definePlugin from "@utils/types";
 import { Guild, GuildSticker, Message } from "@vencord/discord-types";
 import { StickerFormatType } from "@vencord/discord-types/enums";
 import { findByCodeLazy } from "@webpack";
-import { Constants, EmojiStore, FluxDispatcher, GuildStore, IconUtils, Menu, Modal, openModalLazy, PermissionsBits, PermissionStore, React, RestAPI, showToast, StickersStore, UserStore } from "@webpack/common";
+import { Constants, EmojiStore, FluxDispatcher, GuildStore, IconUtils, Menu, openModalLazy, PermissionsBits, PermissionStore, React, RestAPI, showToast, StickersStore, UserStore } from "@webpack/common";
 import { Promisable } from "type-fest";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 
 const cl = classNameFactory("vc-steal-");
 
@@ -299,9 +300,9 @@ function buildMenuItem(type: "Emoji" | "Sticker", fetchData: () => Promisable<Om
                     const url = getUrl(data, 128);
 
                     return modalProps => (
-                        <Modal {...modalProps} size="md" title={`Steal ${type === "Emoji" ? "emoji" : "sticker"}`} subtitle="Pick a server to add it to">
+                        <Window {...modalProps} size="md" title={`Steal ${type === "Emoji" ? "emoji" : "sticker"}`} subtitle="Pick a server to add it to">
                             <StealModal data={data} />
-                        </Modal>
+                        </Window>
                     );
                 })
             }

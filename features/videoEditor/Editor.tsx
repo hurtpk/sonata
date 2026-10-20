@@ -13,9 +13,10 @@ import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, DraftType, Modal, openModal, React, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { ChannelStore, DraftType, openModal, React, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { realDuration } from "../fileConverter/Trimmer";
 import { captionUrl } from "./captions";
 import { Exported, exportVideo, GifOptions, stopExport } from "./engine";
@@ -178,7 +179,7 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
     const props: PanelProps = { p, change, now, sel, total, pick, setPick, setTab, setNow };
 
     return (
-        <Modal {...modalProps} size="xxl" title="Video Editor" subtitle="Trim, cut, caption, blur and add music — then export. It all happens on your computer.">
+        <Window {...modalProps} size="xxl" title="Video Editor" subtitle="Trim, cut, caption, blur and add music — then export. It all happens on your computer.">
             <div className={classes(cl("wrap"), ve("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}
                 onDragOver={e => { if ([...e.dataTransfer.types].includes("Files")) { e.preventDefault(); setOver(true); } }}
                 onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(false); }}
@@ -239,7 +240,7 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
                 )}
                 {over && p.clips.length > 0 && <div className={ve("drop-overlay")}>Drop to add to the end</div>}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

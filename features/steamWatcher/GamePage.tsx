@@ -12,9 +12,10 @@ import { classNameFactory } from "@utils/css";
 import { openImageModal } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { checkGames, opts } from "./check";
 import type { SteamAchievement, SteamDetails, SteamItem, SteamReviewSummary } from "./native";
 import { isWatched, profile, unwatch, useSteam, watch } from "./store";
@@ -160,7 +161,7 @@ function GameModal({ modalProps, appid }: { modalProps: RenderModalProps; appid:
     const watching = isWatched(appid);
 
     return (
-        <Modal {...modalProps} size="xl" title={d?.name ?? "Steam game"} subtitle={d ? [d.developers[0], d.release].filter(Boolean).join(" · ") : "Loading from Steam…"}>
+        <Window {...modalProps} size="xl" title={d?.name ?? "Steam game"} subtitle={d ? [d.developers[0], d.release].filter(Boolean).join(" · ") : "Loading from Steam…"}>
             <div className={classes("vc-tool-wrap", "vc-steam-wrap", gp("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {error ? <div className={cl("error")}>{error}</div> : !d ? <div className={cl("empty")}><span className={cl("empty-icon")}>⏳</span>Loading…</div> : (
                     <>
@@ -226,7 +227,7 @@ function GameModal({ modalProps, appid }: { modalProps: RenderModalProps; appid:
                     </>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

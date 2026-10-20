@@ -17,6 +17,40 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.19i",
+        date: "October 19, 2026",
+        title: "One new look for every window",
+        items: [
+            { icon: "🪟", text: "Every Sonata window has a new, darker look: \"sonata — name\" along the top, tabs underlined in your accent colour, flat cards with squarer corners, and no glows." },
+            { icon: "📍", text: "A status line along the bottom of each window says what's going on, like how many bots you're watching or when Steam was last checked." },
+            { icon: "🤖", text: "Bot Manager, Theme Studio and Roblox Tools show your list on the left and the one you picked on the right, so there's less scrolling." },
+            { icon: "⚙️", text: "Each feature's options now line up: the name and a line about it on the left, the switch or choice on the right." },
+            { icon: "🧹", text: "Thin, clean scroll bars everywhere in Sonata, including the update log, instead of the white bar with arrows. Coloured glows are gone from every window." },
+            { icon: "🎨", text: "Theme Studio has its own colour picker: a colour square, a colour strip, an eyedropper and the hex code (like #6e8bff) to type or copy, instead of R, G and B boxes." },
+            { icon: "🎛", text: "Pick one colour for all your dock buttons in Sonata → Dock (Discord's, your accent, a swatch or any colour), or in a Theme Studio theme under Chat → Dock buttons. The Dock setting wins when both are set." },
+            { icon: "🎵", text: "Spotify Controls' buttons (shuffle, repeat, lyrics and the rest) use your accent colour instead of Spotify green." },
+            { icon: "📈", text: "Calculator has one graph now: the Graphs tab, which can also show an exact x range (type \"x from … to …\"). The small duplicate graph in Tools is gone." },
+            { icon: "🎚️", text: "Appearance → Windows lets you pick how round the corners are, how dark windows are (Dark, Darker or Black), how clear the borders are, and whether to show the status line, with a live preview." },
+        ],
+    },
+    {
+        version: "2026.10.19h",
+        date: "October 19, 2026",
+        title: "Bot Manager",
+        items: [
+            { icon: "🤖", text: "New: Bot Manager. All your Discord bots in one place: who's online, how many servers each is in, which ones you share, with buttons to open each one in the Developer Portal, invite it or copy its ID. It never sees your bots' tokens." },
+            { icon: "🔔", text: "Online check: tick Watch on a bot to get a notification when it goes offline, and when it's back." },
+            { icon: "📘", text: "A step-by-step guide to making your first bot, from creating the app to keeping it running, with your progress saved." },
+            { icon: "🔗", text: "Invite builder: tick permissions with a plain-English note on each (presets for chat, music, moderation and welcome bots), warnings for risky ones like Administrator, and a permissions-number converter." },
+            { icon: "📦", text: "Starter project: pick JavaScript or Python and what the bot should do, and download a ready-to-run project. Paste your token into .env and double-click Start bot.bat." },
+            { icon: "⌨️", text: "Commands: every slash command a bot has registered, everywhere or in a server you share, with each command's options, subcommands and choices, so you can check they all showed up." },
+            { icon: "🧩", text: "Command builder: describe a slash command in boxes (options, required or not, allowed choices, what it replies, private replies, managers only) and get ready-to-paste JavaScript or Python, with a plain-English note when something isn't right yet." },
+            { icon: "☁️", text: "Hosting guide: four ways to keep a bot online 24/7 (this PC, a spare computer, a small rented server, a hosting service), with the good, the bad and the steps for each." },
+            { icon: "🧱", text: "More starter parts: moderation (/kick, /ban, /timeout, /clear), role buttons, a log channel for deleted and edited messages, a \"Playing…\" status, and a music player for songs in the bot's music folder. One click sets up the invite with the right permissions." },
+            { icon: "🛠", text: "Fix problems: the issues people hit most, like offline bots, missing slash commands, Missing Permissions (50013), disallowed intents and \"This interaction failed\", each with the fix. You can search by the error you see." },
+        ],
+    },
+    {
         version: "2026.10.19g",
         date: "October 19, 2026",
         title: "Updates right inside Discord",

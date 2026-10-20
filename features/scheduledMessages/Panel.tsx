@@ -7,10 +7,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, SelectedChannelStore, useEffect, useState } from "@webpack/common";
+import { openModal, SelectedChannelStore, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { sendOne } from "./scheduler";
 import * as Q from "./store";
 import { TargetChip, TargetPicker } from "./TargetPicker";
@@ -299,7 +300,7 @@ function SchedulerModal({ modalProps, initialChannelId, prefill }: { modalProps:
     ].filter(Boolean).join(" · ");
 
     return (
-        <Modal {...modalProps} size="lg" title="Scheduled Messages" subtitle={subtitle}>
+        <Window {...modalProps} size="lg" title="Scheduled Messages" subtitle={subtitle}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={missedCount ? "⚠️" : "🕑"}
                     kicker={missedCount ? `${missedCount} missed` : next ? "Next message" : "Scheduled Messages"}
@@ -328,7 +329,7 @@ function SchedulerModal({ modalProps, initialChannelId, prefill }: { modalProps:
                     />
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

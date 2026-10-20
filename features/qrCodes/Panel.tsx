@@ -7,10 +7,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useMemo, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { getBytes } from "../_shared/media";
+import { Window } from "../_shared/Window";
 import { checkLink, makeQr, qrPng, readQrImage } from "./qr";
 
 const cl = classNameFactory("vc-qr-");
@@ -47,7 +48,7 @@ function MakeModal({ modalProps, initial }: { modalProps: RenderModalProps; init
     };
 
     return (
-        <Modal {...modalProps} size="md" title="QR Code" subtitle="Scan it with your phone's camera">
+        <Window {...modalProps} size="md" title="QR Code" subtitle="Scan it with your phone's camera">
             <div className={classes(tl("wrap"), cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("make")}>
                     <div className={cl("code")}>{t ? <QrSvg text={t} px={220} /> : <span className={cl("code-empty")}><span aria-hidden>▦</span>Your code shows up here</span>}</div>
@@ -62,7 +63,7 @@ function MakeModal({ modalProps, initial }: { modalProps: RenderModalProps; init
                     </div>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 
@@ -85,7 +86,7 @@ function ScanModal({ modalProps, src }: { modalProps: RenderModalProps; src: str
     };
 
     return (
-        <Modal {...modalProps} size="md" title="Scan QR code" subtitle="Check where it leads before opening it">
+        <Window {...modalProps} size="md" title="Scan QR code" subtitle="Check where it leads before opening it">
             <div className={classes(tl("wrap"), cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {state.status === "loading" && <div className={tl("empty")}><span className={tl("empty-icon")}>🔍</span>Reading the image…</div>}
                 {state.status === "none" && <div className={tl("empty")}><span className={tl("empty-icon")}>🤷</span>No QR code found in this image.</div>}
@@ -116,7 +117,7 @@ function ScanModal({ modalProps, src }: { modalProps: RenderModalProps; src: str
                     </>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

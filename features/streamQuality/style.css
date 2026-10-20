@@ -12,7 +12,7 @@
 
 .vc-sq-preview { padding: 0; }
 .vc-sq-preview img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
-.vc-sq-drop { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 16px; border-radius: 14px; border: 1px dashed var(--tl-line); text-align: center; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+.vc-sq-drop { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 16px; border-radius: calc(14px * var(--sw-r, 1)); border: 1px dashed var(--tl-line); text-align: center; color: var(--text-muted); font-size: 13px; cursor: pointer; }
 .vc-sq-drop:hover { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.07); }
 .vc-sq-drop b { font-size: 14px; color: var(--text-default, var(--text-normal)); }
 .vc-sq-zoom { max-width: 220px; }
@@ -28,16 +28,16 @@
 .vc-sq-crop-viewport {
     position: relative;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     cursor: grab;
     user-select: none;
     touch-action: none;
     background-color: #1a1a1d;
     background-image:
-        linear-gradient(45deg, #232428 25%, transparent 25%),
+        var(--sw-card, linear-gradient(45deg, #232428 25%, transparent 25%),
         linear-gradient(-45deg, #232428 25%, transparent 25%),
         linear-gradient(45deg, transparent 75%, #232428 75%),
-        linear-gradient(-45deg, transparent 75%, #232428 75%);
+        linear-gradient(-45deg, transparent 75%, #232428 75%));
     background-size: 16px 16px;
     background-position: 0 0, 0 8px, 8px -8px, -8px 0;
 }

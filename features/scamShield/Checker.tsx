@@ -11,10 +11,11 @@
 import ErrorBoundary from "@components/ErrorBoundary";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, useEffect, useState } from "@webpack/common";
+import { openModal, useEffect, useState } from "@webpack/common";
 
 import { Brand, checkLinkFor, DISCORD, EPIC, linksIn, PAYPAL, ROBLOX, siteOf, STEAM, Verdict } from "../_shared/scam";
 import { logEvent, verdictEntry } from "../_shared/scamLog";
+import { Window } from "../_shared/Window";
 import { whereItGoes } from "../linkCleaner/preview";
 import { fileWarning, GENERAL_TALK, isIpLogger } from "./checks";
 
@@ -113,7 +114,7 @@ function CheckerModal({ modalProps, initial }: { modalProps: RenderModalProps; i
     }, [results]);
 
     return (
-        <Modal {...modalProps} size="md" title="Check a link" subtitle="Paste a link — or a whole message — to see what it really is">
+        <Window {...modalProps} size="md" title="Check a link" subtitle="Paste a link — or a whole message — to see what it really is">
             <div className="vc-tool-wrap vc-shield-checker">
                 <textarea className="vc-tool-input vc-shield-input" autoFocus value={text} rows={3} spellCheck={false}
                     placeholder="https://… or a message with links in it" onChange={e => setText(e.currentTarget.value)} />
@@ -129,7 +130,7 @@ function CheckerModal({ modalProps, initial }: { modalProps: RenderModalProps; i
                     </span>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -5,14 +5,12 @@
  */
 
 // The Calculator's Tools tab: statistics for a list of numbers, aspect
-// ratios, numbers in words and Roman numerals, programmer number bases, and
-// a little graph of y = f(x).
+// ratios, numbers in words and Roman numerals, and programmer number bases.
+// (Graphs have their own tab.)
 
 import { useMemo, useState } from "@webpack/common";
 
-import { evaluate } from "./engine";
 import { Card, Chips, Field, fmtN, num, ok, Out, Row } from "./ui";
-import { getVars } from "./variables";
 import { fromRoman, numberToWords, toRoman } from "./words";
 
 function StatsCard() {
@@ -124,65 +122,10 @@ function ProgrammerCard() {
     );
 }
 
-function GraphCard() {
-    const [fx, setFx] = useState("x^2 - 3");
-    const [from, setFrom] = useState("-5");
-    const [to, setTo] = useState("5");
-    const W = 520, H = 260;
-    const graph = useMemo(() => {
-        const a = num(from), b = num(to);
-        if (!ok(a, b) || a >= b) return { error: "Pick a range where \"from\" is less than \"to\"" };
-        const pts: [number, number][] = [];
-        const saved = getVars();
-        let error: string | null = null;
-        for (let i = 0; i <= 400; i++) {
-            const x = a + (b - a) * i / 400;
-            try { const y = evaluate(fx, { mode: "rad", vars: { ...saved, x } }); pts.push([x, y]); } catch (e) { if (!error && i === 200) error = (e as Error).message; pts.push([x, NaN]); }
-        }
-        const ys = pts.map(p => p[1]).filter(Number.isFinite);
-        if (!ys.length) return { error: error ?? "Nothing to draw — use x, like x^2 or sin(x)" };
-        // Ignore wild spikes (like 1/x near 0) when choosing the height.
-        const sorted = [...ys].sort((p, q) => p - q);
-        let lo = sorted[Math.floor(sorted.length * 0.02)], hi = sorted[Math.ceil(sorted.length * 0.98) - 1];
-        if (lo === hi) { lo -= 1; hi += 1; }
-        const pad = (hi - lo) * 0.08;
-        lo -= pad; hi += pad;
-        const sx = (x: number) => (x - a) / (b - a) * W, sy = (y: number) => H - (y - lo) / (hi - lo) * H;
-        let d = "", pen = false;
-        for (const [x, y] of pts) {
-            if (!Number.isFinite(y) || y < lo - (hi - lo) * 2 || y > hi + (hi - lo) * 2) { pen = false; continue; }
-            d += `${pen ? "L" : "M"}${sx(x).toFixed(1)} ${sy(y).toFixed(1)}`;
-            pen = true;
-        }
-        return { d, x0: a <= 0 && b >= 0 ? sx(0) : null, y0: lo <= 0 && hi >= 0 ? sy(0) : null, lo, hi, a, b };
-    }, [fx, from, to]);
-    return (
-        <Card title="Graph" icon="📈" wide>
-            <Row>
-                <Field label="y =" value={fx} onChange={setFx} placeholder="x^2 - 3, sin(x), 2x + 1" />
-                <Field label="x from" value={from} onChange={setFrom} width={90} />
-                <Field label="to" value={to} onChange={setTo} width={90} />
-            </Row>
-            {"error" in graph ? <div className="vc-tool-hint">{graph.error}</div> : (
-                <svg className="vc-calc-graph" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label={`Graph of y = ${fx}`}>
-                    {graph.x0 != null && <line x1={graph.x0} x2={graph.x0} y1={0} y2={H} className="vc-calc-axis" />}
-                    {graph.y0 != null && <line x1={0} x2={W} y1={graph.y0} y2={graph.y0} className="vc-calc-axis" />}
-                    <path d={graph.d} className="vc-calc-curve" />
-                    <text x={4} y={12} className="vc-calc-tick">{fmtN(graph.hi, 2)}</text>
-                    <text x={4} y={H - 4} className="vc-calc-tick">{fmtN(graph.lo, 2)}</text>
-                    <text x={W - 4} y={H - 4} className="vc-calc-tick" textAnchor="end">x = {fmtN(graph.b, 2)}</text>
-                </svg>
-            )}
-            <span className="vc-tool-hint">Angles here are in radians. Anything the calculator understands works: sin(x), sqrt(x), abs(x - 2), your saved variables…</span>
-        </Card>
-    );
-}
-
 export function ToolsTab() {
     return (
         <div className="vc-calc-tools">
             <StatsCard />
-            <GraphCard />
             <RatioCard />
             <WordsCard />
             <ProgrammerCard />

@@ -7,10 +7,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { allSounds, CATEGORIES, Category, clearSounds, customSounds, exportPack, importPack, isAudioFile, onSoundsChange, preview, previewOriginal, removeSound, setSoundFile, SoundInfo, stopPreview, updateSound } from "./sounds";
 
 const cl = classNameFactory("vc-tool-");
@@ -90,7 +91,7 @@ function StudioModal({ modalProps }: { modalProps: RenderModalProps; }) {
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Sound Studio" subtitle="Swap any of Discord's sounds for your own MP3, WAV or OGG">
+        <Window {...modalProps} size="lg" title="Sound Studio" subtitle="Swap any of Discord's sounds for your own MP3, WAV or OGG">
             <div className={classes(cl("wrap"), ss("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="🔊" kicker="Sound Studio"
                     title={count ? `${count} sound${count === 1 ? "" : "s"} made yours` : "Every sound is Discord's own"}
@@ -130,7 +131,7 @@ function StudioModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={modalProps.onClose}>Done</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -211,14 +211,8 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 6px 30px 40px;
-    scrollbar-width: thin;
-    scrollbar-color: rgb(var(--sn-ink-rgb) / 0.16) transparent;
 }
 
-.sonata-pane::-webkit-scrollbar { width: 10px; }
-.sonata-pane::-webkit-scrollbar-thumb { background: rgb(var(--sn-ink-rgb) / 0.14); border-radius: 99px; border: 3px solid transparent; background-clip: padding-box; }
-.sonata-pane::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--sn-accent) 60%, transparent); }
-.sonata-pane::-webkit-scrollbar-track { background: transparent; }
 
 .sonata-pane-inner { width: min(1440px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 .sonata-pane-narrow { width: min(1000px, 100%); }

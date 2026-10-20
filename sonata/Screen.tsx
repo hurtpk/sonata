@@ -39,6 +39,7 @@ import { ProfilesButton } from "./Profiles";
 import { layersOn, presetOf, readLayers } from "./scenes/presets";
 import { unseenCount, UpdateLog } from "./UpdateLog";
 import { Welcome, WhatsNew } from "./Welcome";
+import { WindowStylePanel } from "./WindowStylePanel";
 
 export const ACCENTS: { name: string; hex: string; }[] = [
     { name: "Sapphire", hex: "#3b82f6" },
@@ -650,6 +651,7 @@ function AppearanceTab({ store }: { store: any; }) {
                                 <div className="sonata-field-hint">An icon on each feature's card here and on the Quality of Life page. Open a feature's card to pick a different one.</div>
                             </div>
                         </div>
+                        <WindowStylePanel store={store} />
                     </div>
                 </div>
             </div>

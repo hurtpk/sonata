@@ -9,10 +9,11 @@ import { classNameFactory } from "@utils/css";
 import { openPrivateChannel } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, IconUtils, Modal, openModal, RelationshipStore, showToast, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
+import { ChannelStore, IconUtils, openModal, RelationshipStore, showToast, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
 
 import { isFeatureRunning } from "../../featureSettings";
 import { playEffect } from "../_shared/effects";
+import { Window } from "../_shared/Window";
 import { openScheduler } from "../scheduledMessages/Panel";
 import { Birthday, colorOf, daysInMonth, daysUntil, formatDate, MONTH_COLORS, MONTHS, nextOccurrence, sortByUpcoming, turning } from "./dates";
 import { patchBirthday, removeBirthday, setBirthday, useBirthdays } from "./store";
@@ -361,7 +362,7 @@ function BirthdayModal({ modalProps, focusUserId, hour, confetti }: { modalProps
     ];
 
     return (
-        <Modal {...modalProps} size="lg" title="Birthdays" subtitle={`${list.length} saved · reminders at ${hour}:00`}>
+        <Window {...modalProps} size="lg" title="Birthdays" subtitle={`${list.length} saved · reminders at ${hour}:00`}>
             <div className={classes("vc-tool-wrap", cl("wrap"))}>
                 <Hero list={list} hasMine={!!mine} onAdd={() => { setEditing("new"); setEditorKey(k => k + 1); }} onAddMine={addMine} />
 
@@ -400,7 +401,7 @@ function BirthdayModal({ modalProps, focusUserId, hour, confetti }: { modalProps
                 {list.length > 0 && !shown.length && <div className="vc-tool-empty">Nobody matches that.</div>}
                 <span className="vc-tool-hint">Tip: right-click anyone → Set birthday. Their countdown shows on their profile too (only you see it).</span>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

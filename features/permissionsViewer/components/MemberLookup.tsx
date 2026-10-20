@@ -16,10 +16,11 @@ import { classes } from "@utils/misc";
 import type { Channel, Guild, GuildMember, Role, User } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, closeAllModals, FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, Modal, openModal, PermissionsBits, PresenceStore, RelationshipStore, SelectedChannelStore, SortedGuildStore, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
+import { ChannelStore, closeAllModals, FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, openModal, PermissionsBits, PresenceStore, RelationshipStore, SelectedChannelStore, SortedGuildStore, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
 import { ToolHero } from "../../_shared/ToolHero";
+import { Window } from "../../_shared/Window";
 import { settings } from "..";
 import { getGuildPermissionSpecMap, getSortedRolesForMember, loadGetGuildPermissionSpecMap } from "../utils";
 import openRolesAndUsersPermissionsModal from "./RolesAndUsersPermissions";
@@ -222,7 +223,7 @@ function MemberLookupModal({ modalProps, initialGuildId, initialQuery }: { modal
     }, []);
 
     return (
-        <Modal {...modalProps} size="lg" title="Member Lookup" subtitle="Paste someone's ID, @mention or username to see their roles, permissions and details">
+        <Window {...modalProps} size="lg" title="Member Lookup" subtitle="Paste someone's ID, @mention or username to see their roles, permissions and details">
             <div className="vc-tool-wrap vc-permlookup" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {!found && !choices && (
                     <ToolHero icon="🔎" kicker={guild?.name ?? "Member Lookup"} title="Look someone up"
@@ -269,7 +270,7 @@ function MemberLookupModal({ modalProps, initialGuildId, initialQuery }: { modal
 
                 {found && guild && <Result guild={guild} found={found} onClose={modalProps.onClose} />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -12,9 +12,10 @@ import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { RenderModalProps } from "@vencord/discord-types";
 import { findCssClassesLazy } from "@webpack";
-import { Modal, openModal, useState } from "@webpack/common";
+import { openModal, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { parseEditContent, settings } from ".";
 
 const CodeContainerClasses = findCssClassesLazy("markup", "codeContainer");
@@ -44,7 +45,7 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
     const when = (t: Date) => t.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
     return (
-        <Modal {...modalProps} size="lg" title="Edit history" subtitle={`${contents.length} versions of this message`}>
+        <Window {...modalProps} size="lg" title="Edit history" subtitle={`${contents.length} versions of this message`}>
             <div className={classes("vc-tool-wrap", cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className="vc-tool-chips">
                     {unlogged && (
@@ -71,6 +72,6 @@ export function HistoryModal({ modalProps, message }: { modalProps: RenderModalP
                     <button type="button" className="vc-tool-btn vc-tool-primary" onClick={modalProps.onClose}>Done</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }

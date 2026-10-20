@@ -11,10 +11,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, Modal, openModal, useEffect, useReducer, UserStore, useState } from "@webpack/common";
+import { ChannelStore, openModal, useEffect, useReducer, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { activity, allowAlways, inCall, LogEntry, onBalancerChange, peopleNow, PersonState, release, resetEveryone, unmuteNow } from "./balancer";
 import { settings } from "./index";
 
@@ -160,7 +161,7 @@ function AutoVolumeModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const where = channel?.name ? `🔊 ${channel.name}` : "In a call";
 
     return (
-        <Modal {...modalProps} size="lg" title="Auto Volume" subtitle={channelId ? `${where} · ${people.length} other${people.length === 1 ? "" : "s"}${muted.length ? ` · ${muted.length} muted` : ""}` : "Not in a call"}>
+        <Window {...modalProps} size="lg" title="Auto Volume" subtitle={channelId ? `${where} · ${people.length} other${people.length === 1 ? "" : "s"}${muted.length ? ` · ${muted.length} muted` : ""}` : "Not in a call"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {channelId && (
                     <ToolHero icon="🎚️" kicker={where} title={`${people.length} other${people.length === 1 ? "" : "s"} in the call`}
@@ -211,7 +212,7 @@ function AutoVolumeModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     <button type="button" className={cl("btn")} onClick={resetEveryone} disabled={!people.length}>Reset everyone to 100%</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

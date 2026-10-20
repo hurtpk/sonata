@@ -11,10 +11,11 @@ import { copyToClipboard } from "@utils/clipboard";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useReducer, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { doctor, DoctorFeature } from "../../sonata/doctorBridge";
+import { Window } from "../_shared/Window";
 import { featureIssue, fullReport, Hint, measureFps, memoryMb, performanceHints, problemFeatures, resetSetting, settingProblems, summary } from "./checks";
 import { culpritActive, startCulpritHunt, stopCulpritHunt } from "./culprit";
 import { checkLayout, onLayoutChecked, runLayoutCheck } from "./layout";
@@ -302,23 +303,19 @@ function DoctorModal({ modalProps, start }: { modalProps: RenderModalProps; star
     useRefresh();
     const s = summary();
     const badge: Record<Tab, number> = { overview: 0, features: s.features, patches: s.patches + s.layout, settings: s.settings, performance: s.performance };
+    const problems = s.features + s.patches + s.layout + s.settings + s.performance;
     return (
-        <Modal {...modalProps} size="lg" title="Sonata Insights" subtitle="Problems, broken patches and performance — with one-click fixes">
+        <Window {...modalProps} size="lg" title="Sonata Insights" subtitle="Problems, broken patches and performance — with one-click fixes"
+            tabs={TABS.map(t => [t.id, <>{t.label}{badge[t.id] ? <span className="vc-sw-count">{badge[t.id]}</span> : null}</>] as const)} tab={tab} onTab={id => setTab(id as Tab)}
+            status={[problems ? `${problems} thing${problems === 1 ? "" : "s"} to look at` : "everything looks fine"]}>
             <div className={dr("wrap")} style={accent ? ({ "--doc-accent": accent, "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <div className={dr("tabs")}>
-                    {TABS.map(t => (
-                        <button key={t.id} type="button" className={classes(dr("tab"), tab === t.id && dr("tab-on"))} onClick={() => setTab(t.id)}>
-                            {t.label}{badge[t.id] ? <span className={dr("badge")}>{badge[t.id]}</span> : null}
-                        </button>
-                    ))}
-                </div>
                 {tab === "overview" && <Overview go={setTab} />}
                 {tab === "features" && <Features />}
                 {tab === "patches" && <><LayoutSection /><PatchesSection /></>}
                 {tab === "settings" && <Settings />}
                 {tab === "performance" && <Performance />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

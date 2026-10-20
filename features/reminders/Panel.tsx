@@ -7,10 +7,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useReducer, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { playSound } from "./Banner";
 import { addReminder, COLOR_IDS, ColorId, COLORS, getReminders, loadReminders, onRemindersChange, quickTimes, Reminder, removeReminder, Repeat, REPEATS, toLocalInput, updateReminder, whenText } from "./store";
 
@@ -124,7 +125,7 @@ function RemindersModal({ modalProps, draft, defaultColor }: { modalProps: Rende
     const todayCount = list.filter(r => day(r.at) === "Today").length;
 
     return (
-        <Modal {...modalProps} size="lg" title="Reminders" subtitle="A banner drops down at the top of Discord when one is due — in its colour.">
+        <Window {...modalProps} size="lg" title="Reminders" subtitle="A banner drops down at the top of Discord when one is due — in its colour.">
             <div className={cl("wrap")} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="⏰" kicker={next ? (next.at <= Date.now() ? "Due now" : "Next up") : "Reminders"}
                     title={next ? (next.text || (next.link ? "That message" : "Reminder")) : "Nothing coming up"}
@@ -142,7 +143,7 @@ function RemindersModal({ modalProps, draft, defaultColor }: { modalProps: Rende
                     </div>
                 )) : <div className={cl("empty")}><span className={cl("empty-icon")}>⏰</span>No reminders yet. You can also right-click any message → Remind me about this.</div>)}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

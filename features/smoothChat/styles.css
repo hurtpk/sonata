@@ -18,7 +18,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(90deg, hsl(from var(--brand-500) h s l / 0.16), transparent 70%);
+    background: var(--sw-card, linear-gradient(90deg, hsl(from var(--brand-500) h s l / 0.16), transparent 70%));
     animation: vc-smooth-glow calc(var(--smooth-speed, 0.3s) * 5) ease-out both;
 }
 

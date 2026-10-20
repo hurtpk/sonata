@@ -32,9 +32,9 @@
 .vc-permviewer-modal-user-img { border-radius: 50%; width: 22px; height: 22px; }
 
 .vc-permviewer-modal-perms { flex: 1 1 0; max-height: 100%; min-width: 0; min-height: 0; overflow: auto; gap: 2px; }
-.vc-permviewer-modal-perms-item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; }
+.vc-permviewer-modal-perms-item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: calc(8px * var(--sw-r, 1)); }
 .vc-permviewer-modal-perms-item:hover { background: var(--tl-hover); }
-.vc-permviewer-modal-perms-item-icon { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; flex: none; }
+.vc-permviewer-modal-perms-item-icon { display: grid; place-items: center; width: 24px; height: 24px; border-radius: calc(7px * var(--sw-r, 1)); flex: none; }
 .vc-permviewer-perm-allowed .vc-permviewer-modal-perms-item-icon { background: hsl(from var(--status-positive, #23a55a) h s l / 0.16); color: var(--status-positive, #23a55a); }
 .vc-permviewer-perm-denied .vc-permviewer-modal-perms-item-icon { background: hsl(from var(--status-danger, #f23f43) h s l / 0.14); color: var(--status-danger, #f23f43); }
 .vc-permviewer-perm-denied .vc-permviewer-perm-name { color: var(--text-muted); }
@@ -74,10 +74,10 @@
 .vc-permlookup-bar { display: flex; gap: 8px; }
 .vc-permlookup-bar .vc-tool-input { flex: 1; min-width: 0; }
 .vc-permlookup-guild { max-width: 200px; }
-.vc-permlookup-choice { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.vc-permlookup-choice { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: calc(10px * var(--sw-r, 1)); cursor: pointer; }
 .vc-permlookup-choice:hover { background: var(--tl-hover); }
-.vc-permlookup-hero { flex-direction: row; align-items: center; gap: 14px; flex-wrap: wrap; border-color: hsl(from var(--vc-permlookup-color, var(--tl-accent)) h s l / 0.4); background: linear-gradient(120deg, hsl(from var(--vc-permlookup-color, var(--tl-accent)) h s l / 0.16), var(--tl-soft) 60%); }
-.vc-permlookup-avatar { flex: none; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 3px hsl(from var(--vc-permlookup-color, var(--tl-accent)) h s l / 0.5); }
+.vc-permlookup-hero { flex-direction: row; align-items: center; gap: 14px; flex-wrap: wrap; border-color: hsl(from var(--vc-permlookup-color, var(--tl-accent)) h s l / 0.4); background: var(--sw-card, linear-gradient(120deg, hsl(from var(--vc-permlookup-color, var(--tl-accent)) h s l / 0.16), var(--tl-soft) 60%)); }
+.vc-permlookup-avatar { flex: none; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; box-shadow: var(--sw-noglow, 0 0 0 3px hsl(from var(--vc-permlookup-color, var(--tl-accent)) h s l / 0.5)); }
 .vc-permlookup-who { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 3px; }
 .vc-permlookup-who > b { font-size: 20px; color: var(--text-default, #fff); }
 .vc-permlookup-who > span { font-size: 13px; color: var(--text-muted); }
@@ -92,12 +92,12 @@
 .vc-permlookup-keys { display: flex; flex-wrap: wrap; gap: 6px; }
 .vc-permlookup-key { padding: 4px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 600; cursor: help; }
 .vc-permlookup-key.vc-permlookup-yes { background: hsl(from var(--status-positive, #23a55a) h s l / 0.18); color: var(--status-positive, #23a55a); }
-.vc-permlookup-key.vc-permlookup-no { background: hsl(0 0% 100% / 0.06); color: var(--text-muted); }
-.vc-permlookup-note { padding: 8px 12px; border-radius: 10px; border: 1px solid hsl(from var(--status-warning, #f0b232) h s l / 0.45); background: hsl(from var(--status-warning, #f0b232) h s l / 0.1); font-size: 13px; color: var(--text-default, var(--text-normal)); }
+.vc-permlookup-key.vc-permlookup-no { background: var(--sw-chip, hsl(0 0% 100% / 0.06)); color: var(--text-muted); }
+.vc-permlookup-note { padding: 8px 12px; border-radius: calc(10px * var(--sw-r, 1)); border: 1px solid hsl(from var(--status-warning, #f0b232) h s l / 0.45); background: hsl(from var(--status-warning, #f0b232) h s l / 0.1); font-size: 13px; color: var(--text-default, var(--text-normal)); }
 .vc-permlookup-filter { display: flex; gap: 8px; flex-wrap: wrap; }
 .vc-permlookup-filter .vc-tool-input { flex: 1; min-width: 160px; padding: 7px 10px; }
 .vc-permlookup-perms { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px; max-height: 340px; overflow-y: auto; }
-.vc-permlookup-perm { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 9px; background: hsl(0 0% 0% / 0.15); cursor: help; }
+.vc-permlookup-perm { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: calc(9px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.15)); cursor: help; }
 .vc-permlookup-mark { flex: none; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; font-size: 11px; font-weight: 800; }
 .vc-permlookup-perm.vc-permlookup-yes .vc-permlookup-mark { background: hsl(from var(--status-positive, #23a55a) h s l / 0.25); color: var(--status-positive, #23a55a); }
 .vc-permlookup-perm.vc-permlookup-no .vc-permlookup-mark { background: hsl(from var(--status-danger, #f23f43) h s l / 0.2); color: var(--status-danger, #f23f43); }
@@ -105,10 +105,10 @@
 .vc-permlookup-perm-main b { font-size: 13px; color: var(--text-default, var(--text-normal)); }
 .vc-permlookup-perm-main span { font-size: 11.5px; color: var(--text-muted); }
 .vc-permlookup-badges { display: flex; flex-wrap: wrap; gap: 6px; }
-.vc-permlookup-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 99px; background: hsl(0 0% 100% / 0.06); font-size: 12.5px; color: var(--text-default, var(--text-normal)); }
+.vc-permlookup-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 99px; background: var(--sw-chip, hsl(0 0% 100% / 0.06)); font-size: 12.5px; color: var(--text-default, var(--text-normal)); }
 .vc-permlookup-badge img { width: 20px; height: 20px; }
 .vc-permlookup-accounts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
-.vc-permlookup-account { display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 10px; border-radius: 10px; background: hsl(0 0% 0% / 0.15); min-width: 0; }
+.vc-permlookup-account { display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 10px; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.15)); min-width: 0; }
 .vc-permlookup-account-icon { font-size: 18px; flex: none; }
 .vc-permlookup-account-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .vc-permlookup-account-main b { overflow: hidden; font-size: 13.5px; color: var(--text-default, var(--text-normal)); text-overflow: ellipsis; white-space: nowrap; }
@@ -121,9 +121,9 @@
 .vc-permviewer-clickable-role > * { cursor: pointer; }
 
 /* The role card */
-.vc-permviewer-role-info { display: flex; flex-direction: column; gap: 10px; padding: 12px; margin-bottom: 12px; border-radius: 12px; background: hsl(0 0% 0% / 0.2); border: 1px solid hsl(0 0% 100% / 0.06); }
+.vc-permviewer-role-info { display: flex; flex-direction: column; gap: 10px; padding: 12px; margin-bottom: 12px; border-radius: calc(12px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06)); }
 .vc-permviewer-role-info-head { display: flex; align-items: center; gap: 12px; }
-.vc-permviewer-role-info-swatch { flex: none; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.15); }
+.vc-permviewer-role-info-swatch { flex: none; width: 40px; height: 40px; border-radius: calc(12px * var(--sw-r, 1)); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.15); }
 .vc-permviewer-role-info-swatch img { width: 26px; height: 26px; object-fit: contain; filter: drop-shadow(0 1px 2px #0008); }
 .vc-permviewer-role-info-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .vc-permviewer-role-info-title b { font-size: 16px; color: var(--header-primary, #fff); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -131,8 +131,8 @@
 .vc-permviewer-role-info-rows { display: flex; flex-direction: column; gap: 8px; }
 .vc-permviewer-role-info-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 30px; }
 .vc-permviewer-role-info-label { flex: 0 0 86px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: var(--text-muted); }
-.vc-permviewer-role-info-row code { font: 13px var(--font-code, monospace); padding: 3px 8px; border-radius: 6px; background: hsl(0 0% 0% / 0.3); user-select: all; }
-.vc-permviewer-role-info-hex { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 4px; border-radius: 999px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 0% / 0.25); color: var(--text-default, #dbdee1); font: 600 12.5px var(--font-code, monospace); cursor: pointer; }
+.vc-permviewer-role-info-row code { font: 13px var(--font-code, monospace); padding: 3px 8px; border-radius: calc(6px * var(--sw-r, 1)); background: var(--sw-inner, hsl(0 0% 0% / 0.3)); user-select: all; }
+.vc-permviewer-role-info-hex { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 4px; border-radius: 999px; border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-inner, hsl(0 0% 0% / 0.25)); color: var(--text-default, #dbdee1); font: 600 12.5px var(--font-code, monospace); cursor: pointer; }
 .vc-permviewer-role-info-hex:hover { border-color: hsl(0 0% 100% / 0.25); }
 .vc-permviewer-role-info-hex i { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.2); }
 .vc-permviewer-role-info-icon { width: 32px; height: 32px; object-fit: contain; }
@@ -141,42 +141,42 @@
 .vc-permviewer-who-btn { margin-left: auto; opacity: 0; transition: opacity 0.12s; font-size: 13px; }
 .vc-permviewer-modal-perms-item:hover .vc-permviewer-who-btn, .vc-permviewer-who-btn:focus-visible { opacity: 1; }
 .vc-permviewer-modal-perms-item .vc-permviewer-who-btn + .vc-info-icon { margin-left: 0; }
-.vc-permviewer-who-note { padding: 8px 12px; border-radius: 10px; font-size: 13px; background: hsl(from var(--status-positive, #23a55a) h s l / 0.12); color: var(--text-default, #dbdee1); }
+.vc-permviewer-who-note { padding: 8px 12px; border-radius: calc(10px * var(--sw-r, 1)); font-size: 13px; background: hsl(from var(--status-positive, #23a55a) h s l / 0.12); color: var(--text-default, #dbdee1); }
 .vc-permviewer-who-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
-.vc-permviewer-who-avatar { width: 28px; height: 28px; border-radius: 50%; flex: none; background: hsl(0 0% 100% / 0.08); }
+.vc-permviewer-who-avatar { width: 28px; height: 28px; border-radius: 50%; flex: none; background: var(--sw-chip, hsl(0 0% 100% / 0.08)); }
 
 /* Comparing two roles */
 .vc-permviewer-cmp-pick { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .vc-permviewer-cmp-pick .vc-permviewer-rp { flex: 1; max-width: 300px; }
 .vc-permviewer-cmp { display: flex; flex-direction: column; gap: 10px; }
 .vc-permviewer-cmp-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.vc-permviewer-cmp-summary > div { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; background: hsl(0 0% 0% / 0.2); font-size: 13px; color: var(--text-muted); }
+.vc-permviewer-cmp-summary > div { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); font-size: 13px; color: var(--text-muted); }
 .vc-permviewer-cmp-summary small { color: #f0b232; font-size: 12px; }
 .vc-permviewer-cmp-role { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; color: var(--header-primary, #fff); min-width: 0; }
 .vc-permviewer-cmp-role i, .vc-permviewer-cmp-headrow i { flex: none; width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 .vc-permviewer-cmp-table { display: flex; flex-direction: column; gap: 2px; }
-.vc-permviewer-cmp-row { display: grid; grid-template-columns: 1fr 56px 56px; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 14px; color: var(--text-default, #dbdee1); }
+.vc-permviewer-cmp-row { display: grid; grid-template-columns: 1fr 56px 56px; align-items: center; gap: 8px; padding: 6px 8px; border-radius: calc(8px * var(--sw-r, 1)); font-size: 14px; color: var(--text-default, #dbdee1); }
 .vc-permviewer-cmp-row > :not(:first-child) { justify-self: center; }
 .vc-permviewer-cmp-headrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
 .vc-permviewer-cmp-diff { background: hsl(40 90% 55% / 0.07); }
-.vc-permviewer-cmp-mark { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; font-weight: 800; font-size: 13px; }
+.vc-permviewer-cmp-mark { display: grid; place-items: center; width: 24px; height: 24px; border-radius: calc(7px * var(--sw-r, 1)); font-weight: 800; font-size: 13px; }
 .vc-permviewer-cmp-yes { background: hsl(from var(--status-positive, #23a55a) h s l / 0.16); color: var(--status-positive, #23a55a); }
 .vc-permviewer-cmp-no { background: hsl(from var(--status-danger, #f23f43) h s l / 0.12); color: var(--status-danger, #f23f43); }
 .vc-permviewer-cmp-admin { background: hsl(40 90% 55% / 0.14); color: #f0b232; }
 
 /* The role dropdown (looks like the role list) */
 .vc-permviewer-rp { position: relative; }
-.vc-permviewer-rp-button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; padding: 6px 10px; border-radius: 10px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 0% / 0.3); color: var(--text-default, #dbdee1); font: 500 14px var(--font-primary); text-align: left; cursor: pointer; box-sizing: border-box; }
+.vc-permviewer-rp-button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; padding: 6px 10px; border-radius: calc(10px * var(--sw-r, 1)); border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-inner, hsl(0 0% 0% / 0.3)); color: var(--text-default, #dbdee1); font: 500 14px var(--font-primary); text-align: left; cursor: pointer; box-sizing: border-box; }
 .vc-permviewer-rp-button:hover, .vc-permviewer-rp-button-open { border-color: hsl(0 0% 100% / 0.22); }
 .vc-permviewer-rp-placeholder { flex: 1; color: var(--text-muted); }
 .vc-permviewer-rp-caret { margin-left: auto; flex: none; color: var(--text-muted); transition: transform 0.15s; }
 .vc-permviewer-rp-button-open .vc-permviewer-rp-caret { transform: rotate(180deg); }
-.vc-permviewer-rp-menu { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.08); background: var(--background-floating, #111214); box-shadow: 0 12px 32px hsl(0 0% 0% / 0.5); }
+.vc-permviewer-rp-menu { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08)); background: var(--background-floating, #111214); box-shadow: 0 12px 32px hsl(0 0% 0% / 0.5); }
 .vc-permviewer-rp-search { width: 100%; box-sizing: border-box; }
-.vc-permviewer-rp-list { display: flex; flex-direction: column; gap: 2px; max-height: 340px; overflow-y: auto; scrollbar-width: thin; }
-.vc-permviewer-rp-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 34px; padding: 6px 10px; border: 1px solid transparent; border-radius: 9px; background: none; color: var(--text-default, #dbdee1); font: 500 14px var(--font-primary); text-align: left; cursor: pointer; box-sizing: border-box; }
-.vc-permviewer-rp-item:hover { background: hsl(0 0% 100% / 0.05); }
-.vc-permviewer-rp-item-on { border-color: hsl(0 0% 100% / 0.14); background: hsl(0 0% 100% / 0.07); }
+.vc-permviewer-rp-list { display: flex; flex-direction: column; gap: 2px; max-height: 340px; overflow-y: auto; }
+.vc-permviewer-rp-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 34px; padding: 6px 10px; border: 1px solid transparent; border-radius: calc(9px * var(--sw-r, 1)); background: none; color: var(--text-default, #dbdee1); font: 500 14px var(--font-primary); text-align: left; cursor: pointer; box-sizing: border-box; }
+.vc-permviewer-rp-item:hover { background: var(--sw-hover, hsl(0 0% 100% / 0.05)); }
+.vc-permviewer-rp-item-on { border-color: var(--sw-line2, hsl(0 0% 100% / 0.14)); background: var(--sw-hi, hsl(0 0% 100% / 0.07)); }
 .vc-permviewer-rp-clear { color: var(--text-muted); font-size: 13px; }
 .vc-permviewer-rp-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; }
 .vc-permviewer-rp-icon { flex: none; width: 20px; height: 20px; object-fit: contain; }

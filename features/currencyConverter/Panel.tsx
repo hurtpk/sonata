@@ -8,9 +8,10 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useMemo, useReducer, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { CURRENCIES, currentRates, ensureRates, findPrices, money, mySystem, onRatesChange, settings } from "./index";
 import { askFor, priceResult, usePrice } from "./prices";
 import { robuxResult } from "./robux";
@@ -223,7 +224,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
     const units = mode !== "auto" && mode !== "tz" && mode !== "numbers" && mode !== "crypto" && mode !== "stocks" && mode !== "robux" ? (mode === "currency" ? CURRENCIES.map(c => ({ id: c[0], name: `${c[0]} — ${c[2]}` })) : categoryById(mode)?.units.map(u => ({ id: u.id, name: `${u.symbol} — ${u.name}` })) ?? []) : [];
 
     return (
-        <Modal {...modalProps} size="lg" title="Converter" subtitle="Type an amount with its unit — it shows up in every other one.">
+        <Window {...modalProps} size="lg" title="Converter" subtitle="Type an amount with its unit — it shows up in every other one.">
             <div className={classes(cl("wrap"), cv("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <nav className={cv("kinds")}>
                     <button type="button" className={classes(cv("kind"), mode === "auto" && cv("kind-on"))} onClick={() => pickMode("auto")}>✨ Anything</button>
@@ -272,7 +273,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                     <span className={cl("hint")}>Click a result to copy it, or ↵ to put it in your message. Your units: {mySystem() === "metric" ? "metric" : "imperial"} · your currency: {mine} (change in the feature's settings).</span>
                 </section>}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

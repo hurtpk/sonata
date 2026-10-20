@@ -7,10 +7,11 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useMemo, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { getBytes, MediaNative } from "../_shared/media";
+import { Window } from "../_shared/Window";
 import { decodeText, extensionOf, formatSize, LIMITS, PreviewKind, previewKind } from "./formats";
 import { highlight, isCode, languageName, MAX_COLOURED } from "./highlight";
 import { ArchiveView, FontView, VideoView } from "./MediaViews";
@@ -52,7 +53,7 @@ function ViewerModal({ modalProps, file, kind }: { modalProps: RenderModalProps;
     };
 
     return (
-        <Modal {...modalProps} size="lg" title={file.filename} subtitle={`${formatSize(file.size)} · previewed without saving it`}>
+        <Window {...modalProps} size="lg" title={file.filename} subtitle={`${formatSize(file.size)} · previewed without saving it`}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("toolbar")}>
                     {kind === "table" && (
@@ -78,7 +79,7 @@ function ViewerModal({ modalProps, file, kind }: { modalProps: RenderModalProps;
                         : kind === "table" && !raw ? <TableView text={shown} filename={file.filename} />
                             : <TextView text={shown} wrap={wrap} ext={kind === "text" ? ext : undefined} colours={colours} />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 
@@ -117,10 +118,10 @@ function MediaModal({ modalProps, file, kind }: { modalProps: RenderModalProps; 
         : kind === "archive" ? `${formatSize(file.size)} · cached until you switch channels`
             : `${formatSize(file.size)} · font preview`;
     return (
-        <Modal {...modalProps} size="lg" title={file.filename} subtitle={subtitle}>
+        <Window {...modalProps} size="lg" title={file.filename} subtitle={subtitle}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {kind === "video" ? <VideoView url={file.url} /> : kind === "font" ? <FontLoader file={file} /> : <ArchiveView url={file.url} filename={file.filename} />}
             </div>
-        </Modal>
+        </Window>
     );
 }

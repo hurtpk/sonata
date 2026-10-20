@@ -12,11 +12,12 @@ import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Menu, Modal, openModal, showToast, useEffect, useState } from "@webpack/common";
+import { Menu, openModal, showToast, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { imageFromMenu, MediaNative } from "../_shared/media";
+import { Window } from "../_shared/Window";
 import { GoogleLanguages } from "../translate/languages";
 import { translateWithGoogle } from "../translate/utils";
 
@@ -93,7 +94,7 @@ function OcrModal({ modalProps, src }: { modalProps: RenderModalProps; src: stri
     const lines = text ? text.split("\n").length : 0;
 
     return (
-        <Modal {...modalProps} size="lg" title="Text from image"
+        <Window {...modalProps} size="lg" title="Text from image"
             subtitle={state.status === "done" ? (text ? `${lines} line${lines === 1 ? "" : "s"} found — edit anything before copying` : "No text found") : "Read on your computer — nothing is uploaded"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("layout")}>
@@ -131,7 +132,7 @@ function OcrModal({ modalProps, src }: { modalProps: RenderModalProps; src: stri
                     </div>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

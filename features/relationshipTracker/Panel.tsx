@@ -9,9 +9,10 @@ import { classNameFactory } from "@utils/css";
 import { openUserProfile } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, useEffect, useState } from "@webpack/common";
+import { openModal, useEffect, useState } from "@webpack/common";
 
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { windowAccent } from "./accent";
 import { avatarOf, byLabel, describe, friendshipDetails, nameOf } from "./describe";
 import { clearLog, LogEntry, useLog } from "./tracker";
@@ -150,7 +151,7 @@ function LogModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const weekCount = log.filter(e => e.t > Date.now() - 7 * 86_400_000).length;
 
     return (
-        <Modal {...modalProps} size="lg" title="Relationship Log" subtitle={`${log.length} ${log.length === 1 ? "event" : "events"} logged`}>
+        <Window {...modalProps} size="lg" title="Relationship Log" subtitle={`${log.length} ${log.length === 1 ? "event" : "events"} logged`}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("content")}>
                     <ToolHero icon={latest ? (latest.user ? <Avatar e={latest} /> : "💞") : "💞"} kicker={latest ? `Latest · ${dayLabel(latest.t)}, ${timeOf(latest.t)}` : "Relationship Log"}
@@ -224,7 +225,7 @@ function LogModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </div>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

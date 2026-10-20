@@ -5,13 +5,14 @@
  */
 
 import { ApplicationCommandInputType } from "@api/Commands";
-import { ModalCloseButton as LegacyModalCloseButton, ModalContent as LegacyModalContent, ModalFooter as LegacyModalFooter, ModalHeader as LegacyModalHeader, ModalRoot as LegacyModalRoot, ModalSize, openModal } from "@utils/modal";
+import { openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { findCssClassesLazy } from "@webpack";
 import { ChannelStore, Parser, React, ReactDOM, SelectedChannelStore, showToast as discordToast, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 
 type BtnProps = { children: React.ReactNode; onClick?(): void; disabled?: boolean; color?: string; size?: string; style?: React.CSSProperties; };
 const Button = Object.assign(({ children, onClick, disabled, color, style }: BtnProps) => (
@@ -40,15 +41,7 @@ import { openWebhookPicker } from "./webhookPicker";
 // hidden because the editor already has its own Webhook URL / Username /
 // Avatar fields and writes back into these — showing both would give two
 // out-of-sync copies of the same inputs on one page.
-// This Equicord types the legacy modal pieces as `never` (deprecated) and no
-// longer exports ModalProps; they still work at runtime, which is what this
-// window has always used.
 type ModalProps = RenderModalProps;
-const ModalCloseButton = LegacyModalCloseButton as unknown as React.ComponentType<any>;
-const ModalContent = LegacyModalContent as unknown as React.ComponentType<any>;
-const ModalFooter = LegacyModalFooter as unknown as React.ComponentType<any>;
-const ModalHeader = LegacyModalHeader as unknown as React.ComponentType<any>;
-const ModalRoot = LegacyModalRoot as unknown as React.ComponentType<any>;
 
 const settings = defineFeatureSettings("embedSender", {
     editor: {
@@ -671,11 +664,7 @@ const editorCss = `
 .vc-embedsender-title b { font-size: 20px; color: var(--text-default, #fff); }
 .vc-embedsender-title span { font-size: 13px; color: var(--text-muted); }
 .vc-embedsender-panel .vc-tool-input { font-size: 14px; }
-.vc-embedsender-modal {
-    width: min(1560px, 96vw) !important;
-    max-width: min(1560px, 96vw) !important;
-    max-height: 94vh !important;
-}
+.vc-sw.vc-embedsender-modal { max-width: 1560px; height: 100%; }
 .vc-embedsender-panel {
     container-type: inline-size;
     color: #fff;
@@ -696,7 +685,7 @@ const editorCss = `
     height: min(78vh, 980px);
     min-height: 420px;
 }
-.vc-embedsender-modal .vc-es2 { height: calc(94vh - 170px); }
+.vc-embedsender-modal .vc-es2 { height: calc(100vh - 64px - 54px - 60px - 34px - 34px); }
 .vc-es2-form, .vc-es2-preview { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 
 /* Tabs */
@@ -968,8 +957,6 @@ const editorCss = `
     border-top: 1px solid var(--tl-line);
 }
 .vc-embedsender-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.18) transparent;
 }
 .vc-embedsender-scroll::-webkit-scrollbar {
     width: 6px;
@@ -2347,32 +2334,23 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
 
     if (modalProps) {
         return (
-            <ModalRoot {...modalProps} size={ModalSize.LARGE} className="vc-embedsender-modal">
-                <style>{editorCss}</style>
-                <Toast toast={toast} onClose={dismissToast} />
-                <ModalHeader>
-                    <div className="vc-embedsender-title">
-                        <b>Embed Editor</b>
-                        <span>Build a rich embed with a live preview, then send it through a webhook</span>
-                    </div>
-                    <ModalCloseButton onClick={modalProps.onClose} />
-                </ModalHeader>
-                <ModalContent>
-                    <div className="vc-tool-wrap vc-embedsender-panel" style={{ padding: "4px 0 0", ...(accent ? { "--vc-tool-accent": accent } : {}) } as React.CSSProperties}>
-                        {editorBody}
-                        <div ref={setTestHost} className="vc-es-test-host" />
-                    </div>
-                </ModalContent>
-                <ModalFooter>
-                    <div className="vc-tool-footer" style={{ width: "100%" }}>
+            <Window {...modalProps} size="xl" title="Embed Editor" subtitle="Build a rich embed with a live preview, then send it through a webhook" className="vc-embedsender-modal"
+                actionBarInput={
+                    <div className="vc-tool-footer">
                         <span className="vc-tool-spacer" />
                         {testButton}
-                        <Button onClick={() => setTab("schedule")}>⏰ Send later</Button>
-                        <Button onClick={() => { persist(); modalProps.onClose(); }}>Save &amp; close</Button>
-                        <Button color={Button.Colors.BRAND} onClick={handleSend}>{sendLabel}</Button>
+                        <button type="button" className="vc-tool-btn" onClick={() => setTab("schedule")}>⏰ Send later</button>
+                        <button type="button" className="vc-tool-btn" onClick={() => { persist(); modalProps.onClose(); }}>Save &amp; close</button>
+                        <button type="button" className="vc-tool-btn vc-tool-primary" onClick={handleSend}>{sendLabel}</button>
                     </div>
-                </ModalFooter>
-            </ModalRoot>
+                }>
+                <style>{editorCss}</style>
+                <Toast toast={toast} onClose={dismissToast} />
+                <div className="vc-tool-wrap vc-embedsender-panel" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
+                    {editorBody}
+                    <div ref={setTestHost} className="vc-es-test-host" />
+                </div>
+            </Window>
         );
     }
 

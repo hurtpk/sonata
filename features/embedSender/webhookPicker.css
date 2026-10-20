@@ -9,9 +9,9 @@
     height: 240px;
     overflow-y: auto;
     padding: 4px;
-    border-radius: 12px;
+    border-radius: calc(12px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
-    background: hsl(0 0% 0% / 0.22);
+    background: var(--sw-card, hsl(0 0% 0% / 0.22));
 }
 
 .vc-whp-item {
@@ -22,25 +22,25 @@
     gap: 10px;
     width: 100%;
     padding: 6px 8px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sw-r, 1));
     cursor: pointer;
     color: var(--text-default, var(--text-normal));
 }
 
-.vc-whp-item:hover { background: hsl(0 0% 100% / 0.06); }
+.vc-whp-item:hover { background: var(--sw-hover, hsl(0 0% 100% / 0.06)); }
 .vc-whp-item:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: -2px; }
 .vc-whp-item-on, .vc-whp-item-on:hover { background: hsl(from var(--tl-accent) h s l / 0.25); box-shadow: inset 0 0 0 1px hsl(from var(--tl-accent) h s l / 0.6); }
 
 .vc-whp-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; }
-.vc-whp-item-meta { flex: none; padding: 1px 7px; border-radius: 99px; font-size: 11px; font-weight: 700; color: var(--text-muted); background: hsl(0 0% 100% / 0.06); }
+.vc-whp-item-meta { flex: none; padding: 1px 7px; border-radius: 99px; font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); }
 .vc-whp-hash { flex: none; width: 18px; text-align: center; font-size: 16px; color: var(--text-muted); }
 
-.vc-whp-guild-icon { flex: none; width: 30px; height: 30px; border-radius: 10px; object-fit: cover; }
-.vc-whp-guild-initials { display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.1); }
+.vc-whp-guild-icon { flex: none; width: 30px; height: 30px; border-radius: calc(10px * var(--sw-r, 1)); object-fit: cover; }
+.vc-whp-guild-initials { display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.1)); }
 
 .vc-whp-hooks { display: flex; flex-direction: column; gap: 6px; max-height: 210px; overflow-y: auto; }
 
-.vc-whp-hook { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; background: hsl(0 0% 100% / 0.04); }
+.vc-whp-hook { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 100% / 0.04)); }
 .vc-whp-hook-editing { background: hsl(from var(--tl-accent) h s l / 0.12); }
 .vc-whp-hook-avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; object-fit: cover; }
 .vc-whp-hook-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: var(--text-default, var(--text-normal)); }
@@ -79,7 +79,7 @@
 }
 
 .vc-whp-avatar-button:hover span, .vc-whp-avatar-button:focus-visible span { opacity: 1; }
-.vc-whp-avatar-button:focus-visible { box-shadow: 0 0 0 2px var(--tl-accent); }
+.vc-whp-avatar-button:focus-visible { box-shadow: var(--sw-noglow, 0 0 0 2px var(--tl-accent)); }
 
 .vc-whp-avatar-clear {
     all: unset;

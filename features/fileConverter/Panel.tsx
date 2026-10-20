@@ -8,10 +8,11 @@ import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, DraftType, Modal, openModal, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { ChannelStore, DraftType, openModal, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { applyPreset, convert, ImageOptions, imagesIntoPdf, Result, zipFiles, zipResults } from "./convert";
 import { Kind, kindOf, MB, presetsFor, sizeText, targetsFor } from "./formats";
 import { BgOptions, decodeImage, DEFAULT_BG, removeBackground } from "./image";
@@ -287,7 +288,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
     const isOn = (c: Choice) => !!choice && choice.type === c.type && ("id" in c ? "id" in choice && choice.id === c.id : true);
 
     return (
-        <Modal {...modalProps} size="lg" title="File Converter" subtitle="Everything happens on your computer — nothing is uploaded anywhere.">
+        <Window {...modalProps} size="lg" title="File Converter" subtitle="Everything happens on your computer — nothing is uploaded anywhere.">
             <div className={cl("wrap")} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}
                 onDragOver={e => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={e => { e.preventDefault(); setOver(false); dropped(e.dataTransfer); }}>
                 <input ref={picker} type="file" multiple hidden onChange={e => { addFiles(e.currentTarget.files); e.currentTarget.value = ""; }} />
@@ -409,7 +410,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                     </div>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

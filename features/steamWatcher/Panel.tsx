@@ -8,10 +8,11 @@ import { classNameFactory } from "@utils/css";
 import { openImageModal } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useMemo, useReducer, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { checkGames, isUpdate, onStatus, opts, runCheck, status } from "./check";
 import { openGame } from "./GamePage";
 import type { SteamFriend, SteamNews, SteamSearchHit } from "./native";
@@ -159,7 +160,7 @@ function NewsModal({ modalProps, appid, gid }: { modalProps: RenderModalProps; a
     }, [appid]);
     const item = news?.find(n => n.gid === pick) ?? news?.[0];
     return (
-        <Modal {...modalProps} size="xl" title={g?.name ?? "Steam news"} subtitle="Updates and announcements from the developer">
+        <Window {...modalProps} size="xl" title={g?.name ?? "Steam news"} subtitle="Updates and announcements from the developer">
             <div className={classes("vc-tool-wrap", sw("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {error ? <div className={cl("error")}>{error}</div> : !news ? <div className={cl("empty")}><span className={cl("empty-icon")}>⏳</span>Loading…</div> : !item ? (
                     <div className={cl("empty")}><span className={cl("empty-icon")}>📭</span>No announcements yet.</div>
@@ -184,7 +185,7 @@ function NewsModal({ modalProps, appid, gid }: { modalProps: RenderModalProps; a
                     </>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 
@@ -634,7 +635,11 @@ function WatcherModal({ modalProps, start }: { modalProps: RenderModalProps; sta
     const best = [...onSale].sort((a, b) => (b.price!.pct) - (a.price!.pct))[0];
 
     return (
-        <Modal {...modalProps} size="xl" title="Steam Watcher" subtitle="Sales, updates and releases for the games you care about">
+        <Window {...modalProps} size="xl" title="Steam Watcher" subtitle="Sales, updates and releases for the games you care about"
+            tabs={[["watch", `Watchlist · ${list.length}`], ["activity", unread && tab !== "activity" ? `Activity · ${unread} new` : "Activity"], ["friends", "Friends"], ["profile", "My Steam"]]}
+            tab={tab} onTab={id => setTab(id as Tab)}
+            status={[st.running ? "checking Steam…" : `watching ${list.length} game${list.length === 1 ? "" : "s"}`, st.lastRun ? `checked ${ago(st.lastRun)}` : "not checked yet"]}
+            statusRight={st.nextRun ? `next check ${until(st.nextRun)}` : undefined}>
             <div className={classes("vc-tool-wrap", sw("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={best ? <Cover src={best.header} appid={best.appid} className={sw("hero-cover")} /> : "🎮"}
                     kicker={st.running ? "Checking Steam…" : best ? "Best deal right now" : "Steam Watcher"}
@@ -645,16 +650,9 @@ function WatcherModal({ modalProps, start }: { modalProps: RenderModalProps; sta
                     <button type="button" className={cl("btn")} disabled={st.running || !list.length} onClick={() => void runCheck()}>{st.running ? "Checking…" : "↻ Check now"}</button>
                 </ToolHero>
 
-                <div className={cl("seg")}>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "watch" && cl("seg-on"))} onClick={() => setTab("watch")}>🎮 Watchlist · {list.length}</button>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "activity" && cl("seg-on"))} onClick={() => setTab("activity")}>🔔 Activity{unread && tab !== "activity" ? ` · ${unread} new` : ""}</button>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "friends" && cl("seg-on"))} onClick={() => setTab("friends")}>👥 Friends</button>
-                    <button type="button" className={classes(cl("seg-btn"), tab === "profile" && cl("seg-on"))} onClick={() => setTab("profile")}>👤 My Steam</button>
-                </div>
-
                 {tab === "watch" ? <WatchTab list={list} /> : tab === "activity" ? <ActivityTab items={data.feed} /> : tab === "friends" ? <FriendsTab goProfile={() => setTab("profile")} /> : <ProfileTab />}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

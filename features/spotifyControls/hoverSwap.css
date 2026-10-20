@@ -49,8 +49,8 @@
 
 /* With the big cover open, the buttons sit on a dark strip over it, so they stay readable. */
 #vc-spotify-player:has(#vc-spotify-album-expanded-wrapper) > .vc-spotify-button-row {
-    border-radius: 10px;
-    background: hsl(0 0% 0% / 0.6);
+    border-radius: calc(10px * var(--sw-r, 1));
+    background: var(--sw-inner, hsl(0 0% 0% / 0.6));
 }
 
 /* The buttons ripple in left to right. */

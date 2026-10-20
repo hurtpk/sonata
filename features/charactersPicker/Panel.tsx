@@ -8,9 +8,10 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useMemo, useRef, useState } from "@webpack/common";
+import { openModal, showToast, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { ALL_CHARS, CATEGORIES } from "./chars";
 
 const cl = classNameFactory("vc-tool-");
@@ -49,7 +50,7 @@ function CharsModal({ modalProps, recent, onPick, insert, target }: { modalProps
     const tabs: [string, string][] = [...(recents.length ? [["recent", "Recent"] as [string, string]] : []), ...CATEGORIES.map(c => [c.id, c.name] as [string, string])];
 
     return (
-        <Modal {...modalProps} size="lg" title="Characters" subtitle={`Click to add to ${target ?? "your message"} · Shift-click to add and close · Right-click to copy`}>
+        <Window {...modalProps} size="lg" title="Characters" subtitle={`Click to add to ${target ?? "your message"} · Shift-click to add and close · Right-click to copy`}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <input className={cl("input")} autoFocus value={query} placeholder="Search — heart, treble clef, chess, circled 3, shrug…" onChange={e => setQuery(e.currentTarget.value)}
                     onKeyDown={e => { if (e.key === "Enter" && shown[0]) { e.preventDefault(); pick(shown[0].ch, true); } }} />
@@ -71,7 +72,7 @@ function CharsModal({ modalProps, recent, onPick, insert, target }: { modalProps
                 </div>
                 <div className={cl("hint")}>{flash ? `Added ${flash}` : q ? `${shown.length} found` : tab === "recent" ? "The ones you picked lately." : ""}</div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

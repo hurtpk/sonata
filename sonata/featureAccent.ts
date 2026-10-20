@@ -23,7 +23,7 @@ const PREFIXES = [
     "vc-bday-", "vc-bpf-", "vc-cachec-", "vc-autoreact-", "vc-declutter-", "vc-dmprev-", "vc-fakedms-", "vc-fprev-", "vc-fx-",
     "vc-gifmaker-", "vc-gp-", "vc-imgzoom-", "vc-invm-", "vc-liverpc-", "vc-ml-modal-", "vc-mquote-", "vc-msg-logger-enhanced-",
     "vc-msgtimer-", "vc-ocr-", "vc-otd-", "vc-permviewer-", "vc-pindms-", "vc-purger-", "vc-qolcc-", "vc-schedmsg-", "vc-shc-",
-    "vc-sq-", "vc-trans-", "vc-vmsg-", "vc-vtl-", "vc-zip-preview-", "vc-chsettings-", "vc-embedsender-", "vc-voice-", "vc-sstudio-", "vc-mg-", "vc-cg-", "vc-sset-", "vc-doc-", "vc-sonata-tray", "vc-avb-", "vc-streak-", "vc-wave-", "vc-ascii-", "vc-font-", "vc-remw-", "vc-todo-", "vc-conv-", "vc-fconv-", "vc-vedit-", "vc-cmdsc-", "vc-ptag-", "vc-tts-", "vc-wallet-", "vc-shield-", "vc-ttt-", "vc-rbx-", "vc-steam-", "vc-qtext-", "vc-cnotes-", "vc-whisper", "vc-dl-", "vc-ts-",
+    "vc-sq-", "vc-trans-", "vc-vmsg-", "vc-vtl-", "vc-zip-preview-", "vc-chsettings-", "vc-embedsender-", "vc-voice-", "vc-sstudio-", "vc-mg-", "vc-cg-", "vc-sset-", "vc-doc-", "vc-sonata-tray", "vc-avb-", "vc-streak-", "vc-wave-", "vc-ascii-", "vc-font-", "vc-remw-", "vc-todo-", "vc-conv-", "vc-fconv-", "vc-vedit-", "vc-cmdsc-", "vc-ptag-", "vc-tts-", "vc-wallet-", "vc-shield-", "vc-ttt-", "vc-rbx-", "vc-steam-", "vc-qtext-", "vc-cnotes-", "vc-whisper", "vc-dl-", "vc-ts-", "vc-bm-",
 ];
 
 const STYLE_ID = "sonata-feature-accent";
@@ -56,6 +56,9 @@ function css(accent: string) {
     const darker = (n: number) => `color-mix(in oklab, ${a} ${100 - n}%, black)`;
     const lighter = (n: number) => `color-mix(in oklab, ${a} ${100 - n}%, white)`;
     return `
+/* The accent by name, for Sonata bits outside its windows (like the Spotify player's buttons). */
+:root { --vc-sonata-accent: ${a}; }
+
 /* Windows that belong to a Sonata feature use Sonata's accent instead of Discord's blue. */
 ${WINDOW}, ${scope} {
     --brand-500: ${a};
@@ -84,8 +87,8 @@ ${WINDOW}, ${scope} {
     --vc-tool-accent: ${a};
 }
 
-/* Scroll bars in Sonata's windows and pages: thin, rounded and see-through,
-   glowing in Sonata's colour on hover — never the system's white bar. */
+/* Scroll bars in Sonata's windows and pages: thin, rounded and see-through, in the
+   accent on hover — never the system's white bar. The same look as window.css. */
 ${bars(WINDOW, a)}`;
 }
 
@@ -93,12 +96,12 @@ function bars(scope: string, a: string) {
     // The scrolling element itself, or anything inside one of Sonata's windows.
     const each = (part: string) => scope.split(", ").flatMap(sel => [`${sel}${part}`, `${sel} ${part}`]).join(", ");
     return `
-${each("::-webkit-scrollbar")} { width: 10px; height: 10px; background: transparent; }
+${each("::-webkit-scrollbar")} { width: 8px; height: 8px; background: transparent; }
 ${each("::-webkit-scrollbar-track")} { background: transparent; border: 0; }
 ${each("::-webkit-scrollbar-button")} { display: none; width: 0; height: 0; }
 ${each("::-webkit-scrollbar-corner")} { background: transparent; }
-${each("::-webkit-scrollbar-thumb")} { min-height: 40px; border: 3px solid transparent; border-radius: 99px; background: hsl(0 0% 100% / 0.14); background-clip: padding-box; }
-${each("::-webkit-scrollbar-thumb:hover")} { background: color-mix(in srgb, ${a} 70%, transparent); background-clip: padding-box; }
+${each("::-webkit-scrollbar-thumb")} { min-height: 40px; border: 2px solid transparent; border-radius: 99px; background: color-mix(in srgb, currentColor 18%, transparent); background-clip: padding-box; }
+${each("::-webkit-scrollbar-thumb:hover")} { background: color-mix(in srgb, ${a} 65%, transparent); background-clip: padding-box; }
 ${each("::-webkit-scrollbar-thumb:active")} { background: ${a}; background-clip: padding-box; }`;
 }
 

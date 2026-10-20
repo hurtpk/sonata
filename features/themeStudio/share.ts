@@ -58,6 +58,7 @@ function rebuild(raw: any): Theme | null {
         scrollbars: raw.scrollbars === "discord" ? "discord" : "accent",
         msgIn: raw.msgIn,
         badge: raw.badge === "accent" ? "accent" : hexOrNull(raw.badge),
+        dock: raw.dock === "accent" ? "accent" : hexOrNull(raw.dock),
         image: media(raw.image, IMAGE_DATA), video: media(raw.video, VIDEO_DATA),
         fx: { ...DEFAULT_FX, ...fx },
     });

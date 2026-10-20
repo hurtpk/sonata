@@ -5,8 +5,9 @@
  */
 
 // The Calculator's Graphs tab: draw up to five functions, drag to move
-// around, scroll to zoom, hover to read every curve, and see where each one
-// crosses zero and turns around. Anything the calculator understands works.
+// around, scroll to zoom or type the exact x range, hover to read every
+// curve, and see where each one crosses zero and turns around. Anything the
+// calculator understands works.
 
 import { classes } from "@utils/misc";
 import { useEffect, useMemo, useRef, useState } from "@webpack/common";
@@ -60,6 +61,24 @@ function special(f: (x: number) => number, v: View) {
     }
     const uniq = (xs: number[]) => xs.filter((x, i) => i === 0 || Math.abs(x - xs[i - 1]) > (v.x1 - v.x0) / 400);
     return { zeros: uniq(zeros).slice(0, 8), turns: turns.slice(0, 6) };
+}
+
+/** A number box that shows the current value while you're not typing in it, and applies what you type when it's a number. */
+function EdgeBox({ value, label, onSet }: { value: number; label: string; onSet(n: number): boolean; }) {
+    const [draft, setDraft] = useState<string | null>(null);
+    const shown = draft ?? String(Number(value.toPrecision(4)));
+    const apply = () => {
+        const n = Number(draft);
+        if (draft != null && draft.trim() !== "" && Number.isFinite(n)) onSet(n);
+        setDraft(null);
+    };
+    return (
+        <input className="vc-tool-input vc-calc-edge" aria-label={label} value={shown} inputMode="decimal"
+            onFocus={e => { setDraft(shown); e.currentTarget.select(); }}
+            onChange={e => setDraft(e.currentTarget.value)}
+            onBlur={apply}
+            onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setDraft(null); e.currentTarget.blur(); } }} />
+    );
 }
 
 export function GraphsTab() {
@@ -122,15 +141,23 @@ export function GraphsTab() {
     const gx = step(view.x1 - view.x0, W / 80), gy = step(view.y1 - view.y0, H / 60);
     const lines = (lo: number, hi: number, s: number) => { const out: number[] = []; for (let v = Math.ceil(lo / s) * s; v <= hi; v += s) out.push(Math.abs(v) < s / 1e6 ? 0 : v); return out.slice(0, 80); };
 
-    const fitY = () => {
+    // The height that fits what's drawn between x0 and x1 (ignoring wild spikes, like 1/x near 0).
+    const fitY = (x0 = view.x0, x1 = view.x1) => {
         const ys: number[] = [];
-        for (const c of curves) if (c.f) for (let i = 0; i <= 300; i++) { const y = c.f(view.x0 + (view.x1 - view.x0) * i / 300); if (Number.isFinite(y)) ys.push(y); }
+        for (const c of curves) if (c.f) for (let i = 0; i <= 300; i++) { const y = c.f(x0 + (x1 - x0) * i / 300); if (Number.isFinite(y)) ys.push(y); }
         if (!ys.length) return;
         ys.sort((a, b) => a - b);
         let lo = ys[Math.floor(ys.length * 0.02)], hi = ys[Math.ceil(ys.length * 0.98) - 1];
         if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
         const pad = (hi - lo) * 0.1;
         setView(v => ({ ...v, y0: lo - pad, y1: hi + pad }));
+    };
+    /** Typed x range: shows exactly that stretch, with the height fitted to it. */
+    const setRange = (x0: number, x1: number) => {
+        if (!(x0 < x1)) return false;
+        setView(v => ({ ...v, x0, x1 }));
+        fitY(x0, x1);
+        return true;
     };
     const zoom = (k: number) => setView(v => { const cx = (v.x0 + v.x1) / 2, cy = (v.y0 + v.y1) / 2; return { x0: cx - (cx - v.x0) * k, x1: cx + (v.x1 - cx) * k, y0: cy - (cy - v.y0) * k, y1: cy + (v.y1 - cy) * k }; });
     const setFn = (id: number, patch: Partial<Fn>) => setFns(list => list.map(f => f.id === id ? { ...f, ...patch } : f));
@@ -201,8 +228,12 @@ export function GraphsTab() {
                 <div className="vc-calc-plot-tools">
                     <button type="button" className="vc-tool-icon" title="Zoom in" onClick={() => zoom(1 / 1.5)}>＋</button>
                     <button type="button" className="vc-tool-icon" title="Zoom out" onClick={() => zoom(1.5)}>－</button>
-                    <button type="button" className="vc-tool-chip" title="Fit the height to what's drawn" onClick={fitY}>Fit</button>
+                    <button type="button" className="vc-tool-chip" title="Fit the height to what's drawn" onClick={() => fitY()}>Fit</button>
                     <button type="button" className="vc-tool-chip" onClick={() => setView(START)}>Reset</button>
+                    <span className="vc-calc-range">
+                        x from <EdgeBox label="x from" value={view.x0} onSet={n => setRange(n, view.x1)} />
+                        to <EdgeBox label="x to" value={view.x1} onSet={n => setRange(view.x0, n)} />
+                    </span>
                     <span className="vc-tool-spacer" />
                     <div className="vc-tool-seg">
                         <button type="button" className={classes("vc-tool-seg-btn", mode === "rad" && "vc-tool-seg-on")} onClick={() => setMode("rad")}>Radians</button>
@@ -221,7 +252,7 @@ export function GraphsTab() {
                     ].filter(Boolean);
                     return <span key={c.fn.id}><i style={{ background: c.color }} /><b>y = {body(c.fn.text)}</b>{parts.length ? ` — ${parts.join(" · ")}` : " — no crossings or turns in view"}</span>;
                 })}
-                <span className="vc-tool-hint">Drag to move around, scroll to zoom, hover to read the values. Your saved variables work here too.</span>
+                <span className="vc-tool-hint">Drag to move around, scroll to zoom (or type an exact x range), hover to read the values. Your saved variables work here too.</span>
             </div>
         </div>
     );

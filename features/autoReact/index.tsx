@@ -12,11 +12,12 @@ import { classes, sleep } from "@utils/misc";
 import { ModalProps, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
-import { ChannelStore, FluxDispatcher, GuildMemberStore, IconUtils, MessageStore, Modal, ReactDOM, RestAPI, SearchableSelect, SelectedChannelStore, showToast, useEffect, useMemo, UserStore, useState } from "@webpack/common";
+import { ChannelStore, FluxDispatcher, GuildMemberStore, IconUtils, MessageStore, ReactDOM, RestAPI, SearchableSelect, SelectedChannelStore, showToast, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 
 const cl = classNameFactory("vc-autoreact-");
 const tl = classNameFactory("vc-tool-");
@@ -534,7 +535,7 @@ function AutoReactPanel({ modalProps }: { modalProps?: ModalProps; }) {
     );
 
     return modalProps
-        ? <Modal {...modalProps} size="lg" title="Auto React" subtitle="React to someone's messages automatically">{content}</Modal>
+        ? <Window {...modalProps} size="lg" title="Auto React" subtitle="React to someone's messages automatically">{content}</Window>
         : content;
 }
 

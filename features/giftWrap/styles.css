@@ -1,5 +1,5 @@
 /* ─── The gift card under a message ─── */
-.vc-gw-card { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; min-width: 220px; max-width: 420px; margin-top: 6px; padding: 16px 18px 14px; border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.08); background: radial-gradient(120% 90% at 50% 0%, hsl(330 80% 60% / 0.1), transparent 70%), hsl(0 0% 100% / 0.03); }
+.vc-gw-card { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; min-width: 220px; max-width: 420px; margin-top: 6px; padding: 16px 18px 14px; border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08)); background: var(--sw-card, radial-gradient(120% 90% at 50% 0%, hsl(330 80% 60% / 0.1), transparent 70%), hsl(0 0% 100% / 0.03)); }
 .vc-gw-card-open { align-items: stretch; }
 .vc-gw-bad { font-size: 13px; color: var(--text-muted); }
 
@@ -21,12 +21,12 @@
 }
 
 .vc-gw-box:disabled { cursor: default; }
-.vc-gw-box:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 6px; border-radius: 8px; }
+.vc-gw-box:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 6px; border-radius: calc(8px * var(--sw-r, 1)); }
 .vc-gw-small { --gw-size: 64px; }
 
 .vc-gw-body, .vc-gw-lid { position: absolute; left: 0; right: 0; background: var(--gw-paper); }
-.vc-gw-body { bottom: 0; height: 66%; margin: 0 6%; border-radius: 4px 4px 7px 7px; }
-.vc-gw-lid { top: 18%; height: 22%; border-radius: 5px; z-index: 2; box-shadow: 0 3px 0 rgb(0 0 0 / 0.18); }
+.vc-gw-body { bottom: 0; height: 66%; margin: 0 6%; border-radius: calc(4px * var(--sw-r, 1)) calc(4px * var(--sw-r, 1)) calc(7px * var(--sw-r, 1)) calc(7px * var(--sw-r, 1)); }
+.vc-gw-lid { top: 18%; height: 22%; border-radius: calc(5px * var(--sw-r, 1)); z-index: 2; box-shadow: 0 3px 0 rgb(0 0 0 / 0.18); }
 
 /* The ribbon: a vertical band on both parts, and a band across the lid. */
 .vc-gw-body::before, .vc-gw-lid::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 14%; translate: -50% 0; background: var(--gw-ribbon); box-shadow: inset 2px 0 0 rgb(255 255 255 / 0.35), inset -2px 0 0 rgb(0 0 0 / 0.12); }
@@ -39,7 +39,7 @@
 .vc-gw-bow::after { right: -6%; rotate: 28deg; scale: -1 1; }
 
 /* The tag hanging off the side. */
-.vc-gw-tag { position: absolute; z-index: 3; right: -34%; top: 46%; max-width: 110%; padding: 3px 7px; rotate: 8deg; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #3b2a1a; background: #fff7e6; box-shadow: 0 2px 4px rgb(0 0 0 / 0.25); }
+.vc-gw-tag { position: absolute; z-index: 3; right: -34%; top: 46%; max-width: 110%; padding: 3px 7px; rotate: 8deg; border-radius: calc(4px * var(--sw-r, 1)); font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #3b2a1a; background: #fff7e6; box-shadow: 0 2px 4px rgb(0 0 0 / 0.25); }
 .vc-gw-small .vc-gw-tag { display: none; }
 
 @keyframes vc-gw-wobble {
@@ -80,7 +80,7 @@
 @keyframes vc-gw-reveal { from { opacity: 0; scale: 0.92; } to { opacity: 1; scale: 1; } }
 .vc-gw-note { font-size: 13px; font-weight: 800; color: #f9a8d4; }
 .vc-gw-content { font-size: 15px; line-height: 1.45; color: var(--text-default, var(--text-normal)); word-break: break-word; }
-.vc-gw-image { max-width: 100%; max-height: 320px; border-radius: 10px; object-fit: contain; }
+.vc-gw-image { max-width: 100%; max-height: 320px; border-radius: calc(10px * var(--sw-r, 1)); object-fit: contain; }
 .vc-gw-from { font-size: 12.5px; color: var(--text-muted); text-align: right; }
 .vc-gw-again { all: unset; cursor: pointer; align-self: flex-end; font-size: 12px; color: var(--text-muted); }
 .vc-gw-again:hover { color: var(--text-default, var(--text-normal)); text-decoration: underline; }
@@ -88,9 +88,9 @@
 /* ─── Wrapping window ─── */
 .vc-gw-preview { display: grid; place-items: center; padding: 34px 0 10px; }
 .vc-gw-pick { display: flex; flex-wrap: wrap; gap: 8px; }
-.vc-gw-swatch { all: unset; cursor: pointer; width: 34px; height: 34px; border-radius: 9px; background: var(--gw-paper); box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.15); }
+.vc-gw-swatch { all: unset; cursor: pointer; width: 34px; height: 34px; border-radius: calc(9px * var(--sw-r, 1)); background: var(--gw-paper); box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.15); }
 .vc-gw-swatch-round { border-radius: 50%; width: 26px; height: 26px; }
-.vc-gw-swatch-on { box-shadow: 0 0 0 2px var(--background-base-low, #1a1a1e), 0 0 0 4px var(--tl-accent); }
+.vc-gw-swatch-on { box-shadow: var(--sw-noglow, 0 0 0 2px var(--background-base-low, #1a1a1e), 0 0 0 4px var(--tl-accent)); }
 .vc-gw-swatch:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -100,16 +100,16 @@
 /* 2026-10 refresh: roomier, with colour fades and glows. */
 .vc-gw-layout { display: grid; grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: stretch; }
 @container (max-width: 640px) { .vc-gw-layout { grid-template-columns: minmax(0, 1fr); } }
-.vc-gw-preview { padding: 40px 10px 20px; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--tl-accent) 28%, transparent);
-    background: radial-gradient(320px 260px at 50% 30%, color-mix(in srgb, var(--tl-accent) 24%, transparent), transparent 70%), hsl(0 0% 0% / 0.26); box-shadow: none; }
+.vc-gw-preview { padding: 40px 10px 20px; border-radius: calc(20px * var(--sw-r, 1)); border: 1px solid var(--sw-line, color-mix(in srgb, var(--tl-accent) 28%, transparent));
+    background: var(--sw-card, radial-gradient(320px 260px at 50% 30%, color-mix(in srgb, var(--tl-accent) 24%, transparent), transparent 70%), hsl(0 0% 0% / 0.26)); box-shadow: none; }
 .vc-gw-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.vc-gw-swatch { width: 38px; height: 38px; border-radius: 11px; transition: transform 0.12s, box-shadow 0.15s; }
+.vc-gw-swatch { width: 38px; height: 38px; border-radius: calc(11px * var(--sw-r, 1)); transition: transform 0.12s, box-shadow 0.15s; }
 .vc-gw-swatch:hover { transform: translateY(-2px); }
 
 /* "Not until…": the date picker when wrapping, and the waiting box. */
 .vc-gw-when { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .vc-gw-when input { flex: 1; min-width: 190px; color-scheme: dark; }
-.vc-gw-lock { padding: 3px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: var(--header-primary, #fff); background: hsl(0 0% 100% / 0.08); font-variant-numeric: tabular-nums; }
+.vc-gw-lock { padding: 3px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: var(--header-primary, #fff); background: var(--sw-chip, hsl(0 0% 100% / 0.08)); font-variant-numeric: tabular-nums; }
 .vc-gw-nudge .vc-gw-box { animation: vc-gw-nope 0.5s ease; }
 @keyframes vc-gw-nope { 20% { translate: -6px 0; rotate: -4deg; } 40% { translate: 6px 0; rotate: 4deg; } 60% { translate: -4px 0; rotate: -2deg; } 80% { translate: 3px 0; } }
 @media (prefers-reduced-motion: reduce) { .vc-gw-nudge .vc-gw-box { animation: none; } }

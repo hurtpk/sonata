@@ -4,31 +4,31 @@
 .vc-ptag-in-list { margin-left: 4px; }
 .vc-ptag {
     --ptag: #5865f2;
-    display: inline-flex; align-items: center; height: 16px; padding: 0 6px; border-radius: 8px;
+    display: inline-flex; align-items: center; height: 16px; padding: 0 6px; border-radius: calc(8px * var(--sw-r, 1));
     font: 600 10.5px/1 var(--font-primary); letter-spacing: 0.01em; white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis;
     color: color-mix(in srgb, var(--ptag) 70%, white);
     background: color-mix(in srgb, var(--ptag) 18%, transparent);
-    border: 1px solid color-mix(in srgb, var(--ptag) 45%, transparent);
+    border: 1px solid var(--sw-line, color-mix(in srgb, var(--ptag) 45%, transparent));
 }
 .vc-ptag-in-list .vc-ptag { height: 15px; font-size: 10px; max-width: 80px; }
 .vc-ptag-more { --ptag: #99aab5; }
 
 /* The window */
 .vc-ptag-manager { display: flex; flex-direction: column; gap: 14px; padding-bottom: 12px; }
-.vc-ptag-row { display: flex; flex-direction: column; gap: 8px; padding: 6px 8px; border-radius: 10px; border: 1px solid transparent; cursor: pointer; }
-.vc-ptag-row:hover { background: hsl(0 0% 100% / 0.03); }
-.vc-ptag-row-on { border-color: hsl(0 0% 100% / 0.1); background: hsl(0 0% 100% / 0.04); }
+.vc-ptag-row { display: flex; flex-direction: column; gap: 8px; padding: 6px 8px; border-radius: calc(10px * var(--sw-r, 1)); border: 1px solid transparent; cursor: pointer; }
+.vc-ptag-row:hover { background: var(--sw-hover, hsl(0 0% 100% / 0.03)); }
+.vc-ptag-row-on { border-color: var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-hover, hsl(0 0% 100% / 0.04)); }
 .vc-ptag-row-main { display: flex; align-items: center; gap: 8px; }
-.vc-ptag-dot { box-sizing: border-box; min-width: 0; margin: 0; appearance: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid hsl(0 0% 100% / 0.2); flex: none; cursor: pointer; padding: 0; }
-.vc-ptag-name { flex: 0 1 200px; min-width: 0; background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 3px 6px; color: var(--text-default, #dbdee1); font: 600 14px var(--font-primary); }
-.vc-ptag-name:hover, .vc-ptag-name:focus { border-color: hsl(0 0% 100% / 0.12); background: hsl(0 0% 0% / 0.2); outline: none; }
+.vc-ptag-dot { box-sizing: border-box; min-width: 0; margin: 0; appearance: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--sw-line2, hsl(0 0% 100% / 0.2)); flex: none; cursor: pointer; padding: 0; }
+.vc-ptag-name { flex: 0 1 200px; min-width: 0; background: transparent; border: 1px solid transparent; border-radius: calc(6px * var(--sw-r, 1)); padding: 3px 6px; color: var(--text-default, #dbdee1); font: 600 14px var(--font-primary); }
+.vc-ptag-name:hover, .vc-ptag-name:focus { border-color: var(--sw-line2, hsl(0 0% 100% / 0.12)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); outline: none; }
 .vc-ptag-colors { display: flex; gap: 6px; flex-wrap: wrap; }
 .vc-ptag-color { box-sizing: border-box; flex: none; width: 20px; height: 20px; min-width: 0; min-height: 0; max-width: none; margin: 0; padding: 0; border: 0; border-radius: 50%; cursor: pointer; appearance: none; overflow: hidden; }
 .vc-ptag-color-on { outline: 2px solid #fff; outline-offset: 2px; }
 .vc-ptag-new { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .vc-ptag-new-row { display: flex; gap: 8px; }
 .vc-ptag-new-row .vc-tool-input { flex: 1; }
-.vc-ptag-avatar { width: 28px; height: 28px; border-radius: 50%; flex: none; background: hsl(0 0% 100% / 0.08); }
+.vc-ptag-avatar { width: 28px; height: 28px; border-radius: 50%; flex: none; background: var(--sw-chip, hsl(0 0% 100% / 0.08)); }
 .vc-ptag-count { white-space: nowrap; }
 
 /* Gradient tags: the gradient inside, a brighter one as the border */
@@ -50,7 +50,7 @@
 .vc-ptag-custom span { color: #fff; font: 700 14px/1 var(--font-primary); text-shadow: 0 1px 2px #000a; }
 .vc-ptag-custom input { position: absolute; inset: 0; box-sizing: border-box; width: 100% !important; height: 100% !important; min-width: 0 !important; margin: 0; opacity: 0; cursor: pointer; border: 0; padding: 0; appearance: none; }
 .vc-ptag-grads { display: grid; grid-template-columns: repeat(6, 44px); gap: 8px; padding: 4px; }
-.vc-ptag-grad-pick { box-sizing: border-box; display: block; width: 44px; height: 20px; min-width: 0; max-width: none; margin: 0; padding: 0; border: 0; border-radius: 10px; cursor: pointer; appearance: none; }
+.vc-ptag-grad-pick { box-sizing: border-box; display: block; width: 44px; height: 20px; min-width: 0; max-width: none; margin: 0; padding: 0; border: 0; border-radius: calc(10px * var(--sw-r, 1)); cursor: pointer; appearance: none; }
 .vc-ptag-stops { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .vc-ptag-stop { position: relative; display: inline-flex; }
 .vc-ptag-stop .vc-ptag-color { width: 24px; height: 24px; box-shadow: inset 0 0 0 2px hsl(0 0% 100% / 0.25); }
@@ -59,6 +59,6 @@
 .vc-ptag-stop:hover .vc-ptag-stop-x { opacity: 1; }
 .vc-ptag-stop-add { padding: 3px 10px; font-size: 12.5px; }
 .vc-ptag-preview { display: flex; align-items: center; gap: 8px; }
-.vc-ptag-preview .vc-ptag, .vc-ptag-row-main .vc-ptag { height: 18px; font-size: 11.5px; padding: 0 8px; border-radius: 9px; max-width: 160px; }
+.vc-ptag-preview .vc-ptag, .vc-ptag-row-main .vc-ptag { height: 18px; font-size: 11.5px; padding: 0 8px; border-radius: calc(9px * var(--sw-r, 1)); max-width: 160px; }
 .vc-ptag-ideas .vc-tool-chip { padding: 3px 5px; }
 .vc-ptag-row-look { display: flex; flex-direction: column; gap: 8px; padding: 6px 2px 2px 24px; }

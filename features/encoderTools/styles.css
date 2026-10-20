@@ -2,5 +2,5 @@
 .vc-enc-io { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
 .vc-enc-side { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .vc-enc-area { min-height: 200px; }
-.vc-enc-out { flex: 1; min-height: 200px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--tl-accent) 28%, transparent);
-    background: radial-gradient(360px 200px at 0% 0%, color-mix(in srgb, var(--tl-accent) 16%, transparent), transparent 70%), hsl(0 0% 0% / 0.24); box-shadow: none; }
+.vc-enc-out { flex: 1; min-height: 200px; border-radius: calc(14px * var(--sw-r, 1)); border: 1px solid var(--sw-line, color-mix(in srgb, var(--tl-accent) 28%, transparent));
+    background: var(--sw-card, radial-gradient(360px 200px at 0% 0%, color-mix(in srgb, var(--tl-accent) 16%, transparent), transparent 70%), hsl(0 0% 0% / 0.24)); box-shadow: none; }

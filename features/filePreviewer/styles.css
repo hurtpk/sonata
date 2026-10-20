@@ -11,13 +11,13 @@
     border-radius: 99px;
     font-size: 12.5px;
     color: var(--text-default);
-    border: 1px solid hsl(0 0% 100% / 0.1);
-    background: hsl(0 0% 100% / 0.04);
+    border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1));
+    background: var(--sw-card, hsl(0 0% 100% / 0.04));
     transition: background 0.15s, border-color 0.15s;
 }
 
 .vc-fprev-pill b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
-.vc-fprev-pill:hover { background: hsl(0 0% 100% / 0.08); border-color: hsl(from var(--brand-500) h s l / 0.55); }
+.vc-fprev-pill:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.08)); border-color: hsl(from var(--brand-500) h s l / 0.55); }
 .vc-fprev-pill:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }
 .vc-fprev-pill-size { color: var(--text-muted); font-size: 11.5px; }
 
@@ -33,8 +33,8 @@
     font-size: 12.5px;
     font-weight: 600;
     color: var(--text-muted);
-    border: 1px solid hsl(0 0% 100% / 0.08);
-    background: hsl(0 0% 100% / 0.04);
+    border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08));
+    background: var(--sw-card, hsl(0 0% 100% / 0.04));
 }
 
 .vc-fprev-chip:hover:not(:disabled) { color: var(--text-default); }
@@ -45,9 +45,9 @@
     display: flex;
     max-height: 60vh;
     overflow: auto;
-    border-radius: 12px;
-    border: 1px solid hsl(0 0% 100% / 0.08);
-    background: hsl(0 0% 0% / 0.32);
+    border-radius: calc(12px * var(--sw-r, 1));
+    border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08));
+    background: var(--sw-inner, hsl(0 0% 0% / 0.32));
     font-family: var(--font-code, ui-monospace, monospace);
     font-size: 12.5px;
     line-height: 1.55;
@@ -62,14 +62,14 @@
     color: var(--text-muted);
     opacity: 0.6;
     user-select: none;
-    background: hsl(0 0% 0% / 0.25);
+    background: var(--sw-inner, hsl(0 0% 0% / 0.25));
 }
 
 .vc-fprev-lines { margin: 0; padding: 10px 14px; color: var(--text-default); white-space: pre; font: inherit; }
 .vc-fprev-code-wrap .vc-fprev-lines { white-space: pre-wrap; word-break: break-word; }
 .vc-fprev-code-wrap .vc-fprev-gutter { display: none; }
 
-.vc-fprev-table-wrap { max-height: 60vh; overflow: auto; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.08); }
+.vc-fprev-table-wrap { max-height: 60vh; overflow: auto; border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08)); }
 .vc-fprev-table { border-collapse: collapse; font-size: 12.5px; color: var(--text-default); min-width: 100%; }
 
 .vc-fprev-table th {
@@ -81,11 +81,11 @@
     font-weight: 700;
     white-space: nowrap;
     background: var(--background-surface-higher, #232428);
-    border-bottom: 1px solid hsl(0 0% 100% / 0.12);
+    border-bottom: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.12));
 }
 
-.vc-fprev-table td { padding: 6px 12px; border-bottom: 1px solid hsl(0 0% 100% / 0.05); white-space: pre-wrap; max-width: 360px; vertical-align: top; }
-.vc-fprev-table tbody tr:nth-child(even) { background: hsl(0 0% 100% / 0.02); }
+.vc-fprev-table td { padding: 6px 12px; border-bottom: 1px solid var(--sw-line, hsl(0 0% 100% / 0.05)); white-space: pre-wrap; max-width: 360px; vertical-align: top; }
+.vc-fprev-table tbody tr:nth-child(even) { background: var(--sw-card, hsl(0 0% 100% / 0.02)); }
 .vc-fprev-table tbody tr:hover { background: hsl(from var(--tl-accent) h s l / 0.08); }
 .vc-fprev-rownum { color: var(--text-muted); text-align: right !important; width: 1%; }
 .vc-fprev-meta { font-size: 12px; color: var(--text-muted); }
@@ -93,7 +93,7 @@
 
 .vc-fprev-error {
     padding: 12px 14px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
     font-size: 13.5px;
     border: 1px solid hsl(from var(--status-danger, #f23f43) h s l / 0.45);
     background: hsl(from var(--status-danger, #f23f43) h s l / 0.1);
@@ -102,13 +102,13 @@
 /* ─── Archives ─── */
 .vc-fprev-archive { display: flex; flex-direction: column; gap: 10px; }
 .vc-fprev-archive-body { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 12px; min-height: 360px; }
-.vc-fprev-browser, .vc-fprev-side { display: flex; flex-direction: column; min-height: 0; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.08); background: hsl(0 0% 0% / 0.22); overflow: hidden; }
-.vc-fprev-crumbs { padding: 9px 12px; font-size: 12.5px; color: var(--text-muted); border-bottom: 1px solid hsl(0 0% 100% / 0.07); overflow-x: auto; white-space: nowrap; }
+.vc-fprev-browser, .vc-fprev-side { display: flex; flex-direction: column; min-height: 0; border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08)); background: var(--sw-card, hsl(0 0% 0% / 0.22)); overflow: hidden; }
+.vc-fprev-crumbs { padding: 9px 12px; font-size: 12.5px; color: var(--text-muted); border-bottom: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); overflow-x: auto; white-space: nowrap; }
 .vc-fprev-crumb { all: unset; cursor: pointer; font-weight: 600; color: var(--text-default); }
 .vc-fprev-crumb:hover { color: var(--tl-accent); text-decoration: underline; }
 .vc-fprev-rows { display: flex; flex-direction: column; padding: 4px; max-height: 52vh; overflow-y: auto; }
-.vc-fprev-row { all: unset; cursor: pointer; box-sizing: border-box; display: flex; align-items: center; gap: 9px; padding: 6px 9px; border-radius: 8px; font-size: 13px; color: var(--text-default); }
-.vc-fprev-row:hover { background: hsl(0 0% 100% / 0.05); }
+.vc-fprev-row { all: unset; cursor: pointer; box-sizing: border-box; display: flex; align-items: center; gap: 9px; padding: 6px 9px; border-radius: calc(8px * var(--sw-r, 1)); font-size: 13px; color: var(--text-default); }
+.vc-fprev-row:hover { background: var(--sw-hover, hsl(0 0% 100% / 0.05)); }
 .vc-fprev-row:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: -2px; }
 .vc-fprev-row-on, .vc-fprev-row-on:hover { background: hsl(from var(--tl-accent) h s l / 0.18); }
 .vc-fprev-row-icon { width: 18px; text-align: center; flex-shrink: 0; }
@@ -119,7 +119,7 @@
 .vc-fprev-entry-head { display: flex; align-items: center; gap: 8px; }
 .vc-fprev-entry-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-fprev-entry-size { font-size: 12px; color: var(--text-muted); }
-.vc-fprev-img-wrap { display: grid; place-items: center; padding: 8px; border-radius: 10px; background: repeating-conic-gradient(hsl(0 0% 100% / 0.04) 0 25%, transparent 0 50%) 0 0 / 16px 16px; }
+.vc-fprev-img-wrap { display: grid; place-items: center; padding: 8px; border-radius: calc(10px * var(--sw-r, 1)); background: repeating-conic-gradient(hsl(0 0% 100% / 0.04) 0 25%, transparent 0 50%) 0 0 / 16px 16px; }
 .vc-fprev-img { max-width: 100%; max-height: 46vh; object-fit: contain; }
 
 /* ─── Fonts ─── */
@@ -128,22 +128,22 @@
 .vc-fprev-font-name { font-size: 18px; font-weight: 800; color: var(--text-default); }
 .vc-fprev-font-tag { padding: 2px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 700; color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.15); }
 .vc-fprev-font-controls { display: flex; align-items: center; gap: 10px; }
-.vc-fprev-font-input { flex: 1; min-width: 0; box-sizing: border-box; padding: 8px 12px; border-radius: 9px; border: 1px solid hsl(0 0% 100% / 0.08); background: hsl(0 0% 0% / 0.25); color: var(--text-default); font-family: inherit; font-size: 13.5px; outline: none; }
+.vc-fprev-font-input { flex: 1; min-width: 0; box-sizing: border-box; padding: 8px 12px; border-radius: calc(9px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08)); background: var(--sw-inner, hsl(0 0% 0% / 0.25)); color: var(--text-default); font-family: inherit; font-size: 13.5px; outline: none; }
 .vc-fprev-font-input:focus { border-color: var(--tl-accent); }
 .vc-fprev-font-range { width: 140px; accent-color: var(--tl-accent); }
 .vc-fprev-font-size { width: 46px; font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.vc-fprev-font-sample { padding: 18px; border-radius: 12px; background: hsl(0 0% 0% / 0.25); color: var(--text-default); line-height: 1.25; overflow-wrap: anywhere; }
-.vc-fprev-font-sheet { display: flex; flex-direction: column; gap: 6px; padding: 14px 18px; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.07); font-size: 22px; color: var(--text-default); overflow-wrap: anywhere; }
+.vc-fprev-font-sample { padding: 18px; border-radius: calc(12px * var(--sw-r, 1)); background: var(--sw-inner, hsl(0 0% 0% / 0.25)); color: var(--text-default); line-height: 1.25; overflow-wrap: anywhere; }
+.vc-fprev-font-sheet { display: flex; flex-direction: column; gap: 6px; padding: 14px 18px; border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); font-size: 22px; color: var(--text-default); overflow-wrap: anywhere; }
 .vc-fprev-font-waterfall { display: flex; flex-direction: column; gap: 4px; color: var(--text-default); }
 .vc-fprev-font-waterfall > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .vc-fprev-font-px { display: inline-block; width: 30px; margin-right: 8px; font-family: var(--font-primary); font-size: 11px; color: var(--text-muted); }
 
 /* ─── Video ─── */
-.vc-fprev-video { width: 100%; max-height: 66vh; border-radius: 12px; background: #000; }
-.vc-fprev-hint { padding: 10px 12px; border-radius: 10px; font-size: 13px; color: var(--text-default); border: 1px solid hsl(from var(--status-warning, #f0b232) h s l / 0.45); background: hsl(from var(--status-warning, #f0b232) h s l / 0.1); }
+.vc-fprev-video { width: 100%; max-height: 66vh; border-radius: calc(12px * var(--sw-r, 1)); background: #000; }
+.vc-fprev-hint { padding: 10px 12px; border-radius: calc(10px * var(--sw-r, 1)); font-size: 13px; color: var(--text-default); border: 1px solid hsl(from var(--status-warning, #f0b232) h s l / 0.45); background: hsl(from var(--status-warning, #f0b232) h s l / 0.1); }
 
 .vc-fprev-pill-off { opacity: 0.55; cursor: not-allowed; border-style: dashed; }
-.vc-fprev-pill-off:hover { background: hsl(0 0% 100% / 0.04); border-color: hsl(0 0% 100% / 0.14); }
+.vc-fprev-pill-off:hover { background: var(--sw-hover, hsl(0 0% 100% / 0.04)); border-color: var(--sw-line2, hsl(0 0% 100% / 0.14)); }
 
 /* ─── Code colours (Discord's own highlighter marks the code up; these are the colours) ─── */
 .vc-fprev-lang { font-size: 12px; font-weight: 600; color: var(--text-muted); }

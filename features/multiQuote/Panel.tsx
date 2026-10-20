@@ -8,10 +8,11 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, useEffect, useState } from "@webpack/common";
+import { openModal, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { clearQuotes, formatQuotes, getQuotes, moveQuote, QUOTE_BUDGET, removeQuote, subscribe } from "./basket";
 
 const cl = classNameFactory("vc-mquote-");
@@ -32,7 +33,7 @@ function BasketModal({ modalProps, options }: { modalProps: RenderModalProps; op
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Multi Quote"
+        <Window {...modalProps} size="lg" title="Multi Quote"
             subtitle={quotes.length ? `${quotes.length} message${quotes.length === 1 ? "" : "s"} quoted` : "Nothing quoted yet"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="❝" kicker="Multi Quote" title={quotes.length ? `${quotes.length} message${quotes.length === 1 ? "" : "s"} quoted` : "Nothing quoted yet"}
@@ -73,7 +74,7 @@ function BasketModal({ modalProps, options }: { modalProps: RenderModalProps; op
                     </>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

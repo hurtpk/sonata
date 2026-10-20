@@ -14,9 +14,10 @@ import "./updateNow.css";
 import { classes } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, useEffect, useState } from "@webpack/common";
+import { openModal, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../controller/accent";
+import { Window } from "../features/_shared/Window";
 
 const native = () => VencordNative.pluginHelpers.Sonata as any;
 
@@ -58,7 +59,7 @@ function UpdateModal({ modalProps, version }: { modalProps: RenderModalProps; ve
     const failedAt = failed && job ? Math.max(0, STEPS.findIndex(s => s[0] === job.failedStep)) : -1;
 
     return (
-        <Modal {...modalProps} size="sm" title={done ? "Sonata is updated" : failed ? "The update didn't finish" : `Updating to Sonata ${version}`}
+        <Window {...modalProps} size="sm" title={done ? "Sonata is updated" : failed ? "The update didn't finish" : `Updating to Sonata ${version}`}
             subtitle={done ? "Restart Discord to start using it" : failed ? "Nothing is broken — your current Sonata still works" : "You can keep chatting while it works"}>
             <div className="vc-tool-wrap vc-sonata-upd" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ol className="vc-sonata-upd-steps">
@@ -91,7 +92,7 @@ function UpdateModal({ modalProps, version }: { modalProps: RenderModalProps; ve
                 </div>
                 {!done && !failed && <span className="vc-tool-hint">Hiding this doesn't stop it — press Update again to see how it's going.</span>}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

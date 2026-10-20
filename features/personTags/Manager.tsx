@@ -11,10 +11,11 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { openPrivateChannel } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { IconUtils, Modal, openModal, UserStore, useState } from "@webpack/common";
+import { IconUtils, openModal, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { LookPicker, TagChip } from "./LookPicker";
 import { allTags, COLORS, createTag, deleteTag, isGradient, Look, lookStyle, moveTag, peopleWith, setTagged, STARTERS, Tag, updateTag, useTags } from "./store";
 
@@ -105,7 +106,7 @@ function ManagerModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const tag = data.tags.find(t => t.id === sel) ?? null;
     const accent = windowAccent("personTags");
     return (
-        <Modal {...modalProps} size="lg" title="Person tags" subtitle="Only you can see these — right-click anyone → Tags to tag them">
+        <Window {...modalProps} size="lg" title="Person tags" subtitle="Only you can see these — right-click anyone → Tags to tag them">
             <div className="vc-tool-wrap vc-ptag-manager" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="🏷️" kicker="Only you see these" title={`${data.tags.length} tag${data.tags.length === 1 ? "" : "s"}`}
                     sub="Right-click anyone → Tags to give them one. Tags show next to their name everywhere."
@@ -124,7 +125,7 @@ function ManagerModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </section>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 
@@ -132,9 +133,9 @@ export const openTagManager = () => openModal(props => <ErrorBoundary><ManagerMo
 
 function NewTagModal({ modalProps, onMade }: { modalProps: RenderModalProps; onMade(t: Tag): void; }) {
     return (
-        <Modal {...modalProps} size="sm" title="New tag" subtitle="Only you can see it">
+        <Window {...modalProps} size="sm" title="New tag" subtitle="Only you can see it">
             <div className="vc-tool-wrap"><NewTagForm onMade={t => { onMade(t); modalProps.onClose(); }} /></div>
-        </Modal>
+        </Window>
     );
 }
 

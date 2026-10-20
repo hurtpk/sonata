@@ -7,7 +7,9 @@
 import { classes } from "@utils/misc";
 import { Select, Tooltip, useCallback, useEffect, useMemo, useState } from "@webpack/common";
 
+import { ColorPicker } from "../features/_shared/ColorPicker";
 import { addDockMutationListener, getDockItems, PINNED_DOCK_ID, refreshDock, removeDockMutationListener } from "./dock";
+import { dockColorOf } from "./dockColor";
 import { DEFAULT_DOCK_ICON_KEY, DOCK_ICON_GROUPS, DOCK_ICON_LIBRARY, DOCK_ICON_MAP } from "./icons";
 import {
     cl,
@@ -28,6 +30,35 @@ interface DockSettings {
     customDock: string;
     /** Icons you picked for built-in buttons: dock ID → icon key. */
     dockIcons: string;
+    /** The buttons' colour: "" (Discord's), "accent", or a hex code. */
+    dockColor?: string;
+}
+
+const DOCK_SWATCHES = ["#ffffff", "#b5bac1", "#5b8cff", "#a855f7", "#ff6fae", "#ff5c6c", "#ffb020", "#3ddc84", "#22d3ee"];
+
+/** One colour for every dock button: Discord's, your accent, a swatch or any colour. */
+function DockColorRow({ settings }: { settings: DockSettings; }) {
+    const v = dockColorOf(settings);
+    const custom = v && v !== "accent" && !DOCK_SWATCHES.includes(v) ? v : null;
+    const set = (c: string) => { settings.dockColor = c; };
+    return (
+        <div className={cl("dock-color")}>
+            <div className={cl("dock-color-text")}>
+                <b>Icon colour</b>
+                <span>All the dock's buttons at once. A Theme Studio theme can set one too; this wins when it's set.</span>
+            </div>
+            <div className={cl("dock-color-pick")}>
+                <button type="button" className={classes(cl("dock-color-chip"), !v && cl("dock-color-on"))} onClick={() => set("")}>Discord's</button>
+                <button type="button" className={classes(cl("dock-color-chip"), v === "accent" && cl("dock-color-on"))} onClick={() => set("accent")}>Accent</button>
+                {DOCK_SWATCHES.map(c => (
+                    <button key={c} type="button" title={c} aria-label={`Colour ${c}`} className={classes(cl("dock-color-dot"), v === c && cl("dock-color-on"))}
+                        style={{ "--dc": c } as React.CSSProperties} onClick={() => set(c)} />
+                ))}
+                <ColorPicker className={classes(cl("dock-color-dot"), cl("dock-color-any"), custom && cl("dock-color-on"))} label="Any colour"
+                    value={custom ?? (v && v !== "accent" ? v : "#5b8cff")} onChange={set}>+</ColorPicker>
+            </div>
+        </div>
+    );
 }
 
 /** A searchable, grouped grid of every icon. */
@@ -226,6 +257,7 @@ export function DockTab({ settings }: { settings: DockSettings; }) {
 
     return (
         <div className={cl("dock-wrap")}>
+            <DockColorRow settings={settings} />
             <div className={cl("dock-hint")}>Drag icons to reorder. <b>Right-click an icon to edit it</b> — change its icon, or for plugins you added, which plugin it opens. Hover for a quick × to hide it (or remove it, for plugins you added), or use the toggle underneath.</div>
 
             {items.length === 0 ? (

@@ -10,9 +10,11 @@ import { classes } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { ColorPicker } from "../_shared/ColorPicker";
+import { Window } from "../_shared/Window";
 import { coloursFrom } from "./palette";
 import { readShared, themeCode, themeFileText } from "./share";
 import { activeId, putTheme, removeTheme, setActive, themeById, useThemes, videoSrc } from "./store";
@@ -26,7 +28,7 @@ function ColorRow({ label, hint, value, onChange, extra }: { label: string; hint
     useEffect(() => setText(value), [value]);
     return (
         <div className="vc-ts-color">
-            <input type="color" className="vc-ts-swatch" value={value} onChange={e => onChange(e.currentTarget.value)} aria-label={label} />
+            <ColorPicker className="vc-ts-swatch" value={value} onChange={onChange} label={label} />
             <div className="vc-ts-color-text">
                 <b>{label}</b>
                 {hint && <span className="vc-tool-hint">{hint}</span>}
@@ -218,7 +220,7 @@ function SeeThrough({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
 /* ── The tabs ── */
 
 type Tab = "colours" | "background" | "motion" | "chat" | "share";
-const TABS: [Tab, string][] = [["colours", "🎨 Colours"], ["background", "🖼 Background"], ["motion", "✨ Motion"], ["chat", "💬 Chat"], ["share", "🔗 Share"]];
+const TABS: [Tab, string][] = [["colours", "Colours"], ["background", "Background"], ["motion", "Motion"], ["chat", "Chat"], ["share", "Share"]];
 let lastTab: Tab = "colours";
 
 function ColoursTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
@@ -355,10 +357,21 @@ function ChatTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
                 <div className="vc-tool-chips">
                     <button type="button" className={classes("vc-tool-chip", badgeMode === "discord" && "vc-tool-chip-on")} onClick={() => set({ badge: null })}>Red</button>
                     <button type="button" className={classes("vc-tool-chip", badgeMode === "accent" && "vc-tool-chip-on")} onClick={() => set({ badge: "accent" })}>Accent</button>
-                    <label className={classes("vc-tool-chip", "vc-ts-chip-color", badgeMode === "custom" && "vc-tool-chip-on")} title="Pick a colour">
-                        <input type="color" value={badgeMode === "custom" ? t.badge! : "#f23f43"} onChange={e => set({ badge: e.currentTarget.value })} />
-                        Own
-                    </label>
+                    <ColorPicker className={classes("vc-tool-chip", "vc-ts-chip-color", badgeMode === "custom" && "vc-tool-chip-on")} label="Pick a colour"
+                        value={badgeMode === "custom" ? t.badge! : "#f23f43"} onChange={v => set({ badge: v })}>
+                        <i className="vc-ts-chip-dot" />Own
+                    </ColorPicker>
+                </div>
+            </div>
+            <div className="vc-ts-line vc-ts-line-wide">
+                <span><b>🎛 Dock buttons</b><small>The icons under your profile, all together (Sonata → Dock's colour wins if you set one there)</small></span>
+                <div className="vc-tool-chips">
+                    <button type="button" className={classes("vc-tool-chip", !t.dock && "vc-tool-chip-on")} onClick={() => set({ dock: null })}>Discord's</button>
+                    <button type="button" className={classes("vc-tool-chip", t.dock === "accent" && "vc-tool-chip-on")} onClick={() => set({ dock: "accent" })}>Accent</button>
+                    <ColorPicker className={classes("vc-tool-chip", "vc-ts-chip-color", !!t.dock && t.dock !== "accent" && "vc-tool-chip-on")} label="Pick a colour"
+                        value={t.dock && t.dock !== "accent" ? t.dock : t.text} onChange={v => set({ dock: v })}>
+                        <i className="vc-ts-chip-dot" />Own
+                    </ColorPicker>
                 </div>
             </div>
         </div>
@@ -468,10 +481,13 @@ function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const showNew = adding || !state.themes.length;
 
     return (
-        <Modal {...modalProps} size="xl" title="Theme Studio" subtitle="Make Discord your own — every change shows straight away">
+        <Window {...modalProps} size="xl" title="Theme Studio" subtitle="Make Discord your own — every change shows straight away" flush
+            tabs={t && !showNew ? TABS : undefined} tab={tab} onTab={id => setTab(id as Tab)}
+            status={[state.active ? `${themeById(state.active)?.name || "Untitled"} is on` : "Discord's own look", `${state.themes.length} theme${state.themes.length === 1 ? "" : "s"}`]}
+            statusRight="every change shows straight away">
             <div className="vc-tool-wrap vc-ts-wrap" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <div className="vc-ts-layout">
-                    <aside className="vc-ts-side">
+                <div className="vc-sw-split vc-ts-layout">
+                    <aside className="vc-sw-split-list vc-ts-side">
                         <button type="button" className={classes("vc-ts-newbtn", showNew && "vc-ts-newbtn-on")} onClick={() => setAdding(a => !a)}>＋ New theme</button>
                         <div className="vc-ts-list">
                             {state.themes.map(x => (
@@ -488,7 +504,7 @@ function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         {state.active && <button type="button" className="vc-tool-link vc-ts-off" onClick={() => setActive(null)}>Back to Discord's look</button>}
                     </aside>
 
-                    <main className="vc-ts-main">
+                    <main className="vc-sw-split-detail vc-ts-main">
                         {showNew && <NewTheme onAdd={n => { add(n); }} onClose={() => setAdding(false)} />}
                         {t && !showNew && <>
                             <div className="vc-ts-top">
@@ -500,9 +516,6 @@ function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
                                     : <button type="button" className="vc-ts-mini vc-ts-del" title="Delete this theme" aria-label="Delete" onClick={() => setSure(true)}>🗑</button>}
                             </div>
                             <Preview t={t} />
-                            <nav className="vc-ts-tabs">
-                                {TABS.map(([id, label]) => <button key={id} type="button" className={classes("vc-ts-tab", tab === id && "vc-ts-tab-on")} onClick={() => setTab(id)}>{label}</button>)}
-                            </nav>
                             <section className="vc-ts-pane" key={`${t.id}-${tab}`}>
                                 {tab === "colours" && <ColoursTab t={t} set={set} />}
                                 {tab === "background" && <BackgroundTab t={t} set={set} />}
@@ -514,7 +527,7 @@ function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </main>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

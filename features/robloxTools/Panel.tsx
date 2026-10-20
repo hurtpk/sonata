@@ -9,9 +9,10 @@ import "../_shared/tool.css";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, React, useEffect, useMemo, useReducer, useState } from "@webpack/common";
+import { openModal, React, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { currentRates, ensureRates, money, onRatesChange, settings as converterSettings } from "../currencyConverter";
 import { robuxResult } from "../currencyConverter/robux";
 import { formatNumber } from "../currencyConverter/units";
@@ -260,7 +261,8 @@ function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalPr
         return () => { Object.assign(cardActions, outside); };
     }, []);
     return (
-        <Modal {...modalProps} size="xl" title="Roblox Tools" subtitle="Profiles, games, servers, trades, groups and Robux — all in one place">
+        <Window {...modalProps} size="xl" title="Roblox Tools" subtitle="Profiles, games, servers, trades, groups and Robux — all in one place"
+            tabs={GROUPS.map(g => [g.id, g.label] as const)} tab={group.id} onTab={id => { const g = GROUPS.find(x => x.id === id)!; setTab(lastIn[g.id] ?? g.tools[0].tab); }}>
             <div className={classes("vc-tool-wrap", rb("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={rb("layout")}>
                 <SavedSidebar current={tab === "lookup" ? current : null}
@@ -268,14 +270,6 @@ function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalPr
                     onOpenMe={id => { setLookupFor(`https://www.roblox.com/users/${id}/profile`); setCurrent(savedKey("user", id)); setTab("lookup"); }}
                     onCompare={() => { setCompareAdd(undefined); setCompareNonce(n => n + 1); setTab("compare"); }} />
                 <div className={rb("main")}>
-                <nav className={rb("nav")} role="tablist" aria-label="Roblox Tools">
-                    {GROUPS.map(g => (
-                        <button key={g.id} type="button" role="tab" aria-selected={group.id === g.id} className={classes(rb("nav-btn"), group.id === g.id && rb("nav-on"))}
-                            onClick={() => setTab(lastIn[g.id] ?? g.tools[0].tab)}>
-                            <span className={rb("nav-icon")} aria-hidden>{g.icon}</span>{g.label}
-                        </button>
-                    ))}
-                </nav>
                 {group.tools.length > 1 ? (
                     <div className={rb("subnav")} style={{ "--n": group.tools.length } as React.CSSProperties}>
                         {group.tools.map(t => (
@@ -302,7 +296,7 @@ function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalPr
                 </div>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

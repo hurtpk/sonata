@@ -60,6 +60,7 @@ import callTimer from "./features/callTimer";
 import categoryChannelGreeter from "./features/categoryChannelGreeter";
 import channelNotes from "./features/channelNotes";
 import themeStudio from "./features/themeStudio";
+import botManager from "./features/botManager";
 import charactersPicker from "./features/charactersPicker";
 import chatEffects from "./features/chatEffects";
 import coloredText from "./features/coloredText";
@@ -169,6 +170,7 @@ import { sameVoicePatches, sameVoiceText, useSameVoiceLabel } from "./sonata/sam
 import { startUpdateNotice, stopUpdateNotice } from "./sonata/updateNotice";
 import { loadUsage, noteUse } from "./sonata/usage";
 import { addDockButton, dockContextMenus, dockPatch, PINNED_DOCK_ID, removeDockButton, renderDock } from "./utilities/dock";
+import { startDockColor, stopDockColor } from "./utilities/dockColor";
 import { SonataIcon } from "./utilities/icons";
 import { startUtilities, stopUtilities } from "./utilities/runtime";
 import { setFeatureDockProvider } from "./utilities/shared";
@@ -313,7 +315,7 @@ const FEATURES: Record<string, Feature> = {
     gameActivityToggle, platformSpoofer, showRolesInChat, soundStudio, miniGames,
     typingSounds, autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
     smoothChat, currencyConverter, giftWrap, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
-    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio,
+    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio, botManager,
     antimod, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
 
@@ -775,6 +777,7 @@ const qolDef: SettingsDefinition = {
     dockOrder: { type: OptionType.STRING, description: "Dock button order (JSON).", default: "[]", hidden: true },
     dockIcons: { type: OptionType.STRING, description: "Icons chosen for built-in dock buttons (JSON).", default: "{}", hidden: true },
     dockHidden: { type: OptionType.STRING, description: "Hidden dock buttons (JSON).", default: "[]", hidden: true },
+    dockColor: { type: OptionType.STRING, description: "Dock buttons' colour: empty for Discord's, \"accent\", or a hex code.", default: "", hidden: true },
     keybindMap: { type: OptionType.STRING, description: "Keybinds for on/off settings (JSON).", default: "{}", hidden: true },
     customDock: { type: OptionType.STRING, description: "Plugins added to the dock (JSON).", default: "{}", hidden: true },
     aboutAmbientColor: { type: OptionType.STRING, description: "Accent color (hex) — set in Plugin Utilities → About.", default: "", hidden: true },
@@ -786,6 +789,10 @@ const qolDef: SettingsDefinition = {
     sonataGradientB: { type: OptionType.STRING, description: "Custom gradient: second colour.", default: "#8b5cf6", hidden: true },
     sonataHolidays: { type: OptionType.BOOLEAN, description: "Seasons accent: use holiday colours on holidays.", default: true, hidden: true },
     sonataFeatureIcons: { type: OptionType.BOOLEAN, description: "Show an icon on each feature's card.", default: true, hidden: true },
+    sonataWinRound: { type: OptionType.NUMBER, description: "Window style: how round the corners of Sonata's windows are (0.4 to 1.6).", default: 1, hidden: true },
+    sonataWinDark: { type: OptionType.STRING, description: "Window style: dark, darker or black.", default: "dark", hidden: true },
+    sonataWinBorders: { type: OptionType.STRING, description: "Window style: subtle or clear borders.", default: "subtle", hidden: true },
+    sonataWinFooter: { type: OptionType.BOOLEAN, description: "Window style: show the status line along the bottom of each window.", default: true, hidden: true },
     sonataPinned: { type: OptionType.STRING, description: "Features pinned to the top of Sonata's Features tab (JSON list).", default: "[]", hidden: true },
     sonataFeatureIconMap: { type: OptionType.STRING, description: "Icons you picked for features (JSON: feature → icon).", default: "{}", hidden: true },
     sonataSouthern: { type: OptionType.BOOLEAN, description: "Seasons accent: southern hemisphere seasons.", default: false, hidden: true },
@@ -1059,6 +1066,7 @@ const plugin = definePlugin({
         startAlbumWatch();
         // Feature windows use Sonata's accent instead of Discord's blue.
         startFeatureAccent();
+        startDockColor();
         // A blue bar at the top of Discord when GitHub has a newer Sonata.
         startUpdateNotice(() => settings.store.sonataUpdateNotice !== false);
         // Performance settings (style rules that skip expensive drawing).
@@ -1102,6 +1110,7 @@ const plugin = definePlugin({
         uninstallSonataMenus();
         stopAlbumWatch();
         stopFeatureAccent();
+        stopDockColor();
         stopUpdateNotice();
         stopPerformance();
         stopCacheAuto();

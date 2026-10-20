@@ -16,9 +16,10 @@ import "./webhookPicker.css";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { Channel, Guild, RenderModalProps } from "@vencord/discord-types";
-import { GuildChannelStore, GuildStore, IconUtils, Modal, openModal, PermissionsBits, PermissionStore, RestAPI, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { GuildChannelStore, GuildStore, IconUtils, openModal, PermissionsBits, PermissionStore, RestAPI, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 
 const cl = classNameFactory("vc-tool-");
 const wp = classNameFactory("vc-whp-");
@@ -181,7 +182,7 @@ function PickerModal({ modalProps, onPick }: { modalProps: RenderModalProps; onP
     };
 
     return (
-        <Modal {...modalProps} size="lg" title="Pick or create a webhook" subtitle="Servers where you can manage webhooks">
+        <Window {...modalProps} size="lg" title="Pick or create a webhook" subtitle="Servers where you can manage webhooks">
             <div className={classes(cl("wrap"), wp("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {guilds.length === 0 ? (
                     <div className={cl("hint")}>
@@ -249,7 +250,7 @@ function PickerModal({ modalProps, onPick }: { modalProps: RenderModalProps; onP
                 )}
                 {error && <div className={cl("error")}>{error}</div>}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

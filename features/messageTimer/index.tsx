@@ -15,11 +15,12 @@ import { Logger } from "@utils/Logger";
 import { classes, sleep } from "@utils/misc";
 import { openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { FluxDispatcher, Menu, Modal, React, RestAPI, showToast, useCallback, useEffect, UserStore, useState } from "@webpack/common";
+import { FluxDispatcher, Menu, React, RestAPI, showToast, useCallback, useEffect, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 
 const cl = classNameFactory("vc-msgtimer-");
 const tl = classNameFactory("vc-tool-");
@@ -300,7 +301,7 @@ function TimerSettingsModal({ modalProps }: { modalProps: { onClose(): void; tra
     const accent = windowAccent("messageTimer");
 
     return (
-        <Modal {...modalProps} size="lg" title="Message Timer" subtitle="Your messages delete themselves after the time you choose">
+        <Window {...modalProps} size="lg" title="Message Timer" subtitle="Your messages delete themselves after the time you choose">
             <div className={classes(tl("wrap"), cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={active ? "⏳" : "⌛"} kicker={active ? "On" : "Off"}
                     title={active ? `Gone after ${formatLifespan(lifespan)}` : "Your messages stay"}
@@ -349,7 +350,7 @@ function TimerSettingsModal({ modalProps }: { modalProps: { onClose(): void; tra
                     <button type="button" className={classes(tl("btn"), tl("primary"))} onClick={modalProps.onClose}>Done</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

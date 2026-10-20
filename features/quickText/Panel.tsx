@@ -6,10 +6,11 @@
 
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { KINDS } from "../wallet/kinds";
 import { blanksOf, fill, putSnippet, removeSnippet, Snippet, TRIGGER, used, useSnippets, VARIABLES } from "./expand";
 
@@ -25,7 +26,7 @@ function FillModal({ modalProps, blanks, text, onDone }: { modalProps: RenderMod
     const ready = blanks.every(b => values[b]?.trim());
     const done = () => { onDone(values); modalProps.onClose(); };
     return (
-        <Modal {...modalProps} size="md" title="Fill in the blanks" subtitle="Then it goes in your message box, ready to send">
+        <Window {...modalProps} size="md" title="Fill in the blanks" subtitle="Then it goes in your message box, ready to send">
             <div className="vc-tool-wrap vc-qtext-wrap" style={style()}>
                 {blanks.map((b, i) => (
                     <label key={b} className="vc-tool-field">
@@ -42,7 +43,7 @@ function FillModal({ modalProps, blanks, text, onDone }: { modalProps: RenderMod
                     <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!ready} onClick={done}>Put in message box</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 
@@ -137,7 +138,7 @@ function QuickTextModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const total = list.reduce((n, s) => n + s.uses, 0);
 
     return (
-        <Modal {...modalProps} size="lg" title="Quick Text" subtitle="Type ;word in a message and it turns into your saved text when you send">
+        <Window {...modalProps} size="lg" title="Quick Text" subtitle="Type ;word in a message and it turns into your saved text when you send">
             <div className="vc-tool-wrap vc-qtext-wrap" style={style()}>
                 <ToolHero icon="⌨️" kicker="Quick Text" title={list.length ? `${list.length} snippet${list.length === 1 ? "" : "s"}` : "Save text you type a lot"}
                     sub={list.length ? "Type ;word in a message, or click one below to put it in your message box." : "Addresses, greetings, rules, links — with blanks to fill in and {date}, {time} or {me} filled in for you."}
@@ -159,7 +160,7 @@ function QuickTextModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </>
                 )}
             </div>
-        </Modal>
+        </Window>
     );
 }
 

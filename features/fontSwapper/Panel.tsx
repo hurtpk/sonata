@@ -7,9 +7,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, useEffect, UserStore } from "@webpack/common";
+import { openModal, useEffect, UserStore } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { CODE_FONTS, DEFAULT_LOOK, FontChoice, fontCss, FontLook, FONTS, PRESETS, safeFontName } from "./fonts";
 import { currentLook, setLook, settings, stackOf } from "./index";
 
@@ -89,7 +90,7 @@ function FontModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const custom = FONTS.find(f => f.id === "custom")!;
 
     return (
-        <Modal {...modalProps} size="lg" title="Font Swapper" subtitle="Changes show straight away — in this window and in Discord.">
+        <Window {...modalProps} size="lg" title="Font Swapper" subtitle="Changes show straight away — in this window and in Discord.">
             <div className={classes(cl("wrap"), fs("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <Preview look={look} />
 
@@ -148,7 +149,7 @@ function FontModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={modalProps.onClose}>Done</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

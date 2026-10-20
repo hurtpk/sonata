@@ -7,11 +7,12 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal, React, SelectedChannelStore, useState } from "@webpack/common";
+import { openModal, React, SelectedChannelStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { EFFECTS, playEffect } from "../_shared/effects";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 import { messageRect } from "./anchor";
 import { defaultConfig, getConfig, saveConfig } from "./settings";
 import { Config, effectsFor } from "./triggers";
@@ -34,7 +35,7 @@ function EffectsModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const onCount = ORDER.filter(id => config[id]?.on).length;
 
     return (
-        <Modal {...modalProps} size="lg" title="Chat Effects" subtitle={`${onCount} of ${EFFECTS.length} effects on · only you see them`}>
+        <Window {...modalProps} size="lg" title="Chat Effects" subtitle={`${onCount} of ${EFFECTS.length} effects on · only you see them`}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="🎉" kicker="Chat Effects" title={`${onCount} of ${EFFECTS.length} effects on`}
                     sub="Confetti, balloons and more when a message says the magic words — only you see them." />
@@ -76,7 +77,7 @@ function EffectsModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     <button type="button" className={cl("btn")} onClick={() => update(Object.fromEntries(ORDER.map(id => [id, { ...config[id], on: true }])))}>All on</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -25,8 +25,8 @@
     align-items: center;
     gap: 4px;
     padding: 4px;
-    border-radius: 12px;
-    background: hsl(0 0% 0% / 0.22);
+    border-radius: calc(12px * var(--sw-r, 1));
+    background: var(--sw-card, hsl(0 0% 0% / 0.22));
 }
 
 .vc-gifmaker-tb {
@@ -36,11 +36,11 @@
     place-items: center;
     min-width: 32px;
     height: 30px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sw-r, 1));
     font-size: 15px;
     color: var(--gm-text);
 }
-.vc-gifmaker-tb:hover:not(:disabled) { background: hsl(0 0% 100% / 0.08); }
+.vc-gifmaker-tb:hover:not(:disabled) { background: var(--sw-hi, hsl(0 0% 100% / 0.08)); }
 .vc-gifmaker-tb:disabled { opacity: 0.35; cursor: default; }
 .vc-gifmaker-tb:focus-visible { outline: 2px solid var(--gm-a); }
 .vc-gifmaker-tb-play { min-width: 40px; color: #fff; background: var(--gm-a); font-size: 13px; }
@@ -57,8 +57,8 @@
     display: grid;
     place-items: center;
     padding: 12px;
-    border-radius: 14px;
-    background: hsl(0 0% 0% / 0.3);
+    border-radius: calc(14px * var(--sw-r, 1));
+    background: var(--sw-inner, hsl(0 0% 0% / 0.3));
     overflow: hidden;
 }
 .vc-gifmaker-checker {
@@ -73,24 +73,24 @@
     max-width: 100%;
     max-height: calc(min(72vh, 760px) - 170px);
     object-fit: contain;
-    border-radius: 6px;
+    border-radius: calc(6px * var(--sw-r, 1));
     box-shadow: 0 6px 24px hsl(0 0% 0% / 0.45);
     touch-action: none;
 }
 
-.vc-gifmaker-prep { position: absolute; left: 0; right: 0; bottom: -6px; height: 3px; border-radius: 3px; background: hsl(0 0% 100% / 0.1); overflow: hidden; }
+.vc-gifmaker-prep { position: absolute; left: 0; right: 0; bottom: -6px; height: 3px; border-radius: calc(3px * var(--sw-r, 1)); background: var(--sw-chip, hsl(0 0% 100% / 0.1)); overflow: hidden; }
 .vc-gifmaker-prep span { display: block; height: 100%; background: var(--gm-a); transition: width 0.2s; }
 
 .vc-gifmaker-message { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-muted); }
 .vc-gifmaker-message-error { color: var(--status-danger); text-align: center; max-width: 320px; }
-.vc-gifmaker-spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid hsl(0 0% 100% / 0.15); border-top-color: var(--gm-a); animation: vc-gifmaker-spin 0.8s linear infinite; }
+.vc-gifmaker-spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--sw-line2, hsl(0 0% 100% / 0.15)); border-top-color: var(--gm-a); animation: vc-gifmaker-spin 0.8s linear infinite; }
 @keyframes vc-gifmaker-spin { to { transform: rotate(360deg); } }
 
 .vc-gifmaker-status { font-size: 12.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .vc-gifmaker-status-warn { color: #f0b232; }
 
 /* ─── Side panel ─── */
-.vc-gifmaker-side { display: flex; flex-direction: column; min-height: 0; border-radius: 14px; background: var(--gm-soft); border: 1px solid var(--tl-line); }
+.vc-gifmaker-side { display: flex; flex-direction: column; min-height: 0; border-radius: calc(14px * var(--sw-r, 1)); background: var(--gm-soft); border: 1px solid var(--tl-line); }
 .vc-gifmaker-tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 4px; border-bottom: 1px solid var(--tl-line); }
 .vc-gifmaker-tab {
     all: unset;
@@ -100,16 +100,16 @@
     align-items: center;
     gap: 1px;
     padding: 6px 2px;
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sw-r, 1));
     font-size: 11px;
     font-weight: 600;
     color: var(--text-muted);
 }
-.vc-gifmaker-tab:hover { color: var(--gm-text); background: hsl(0 0% 100% / 0.05); }
+.vc-gifmaker-tab:hover { color: var(--gm-text); background: var(--sw-hover, hsl(0 0% 100% / 0.05)); }
 .vc-gifmaker-tab:focus-visible { outline: 2px solid var(--gm-a); }
 .vc-gifmaker-tab-on, .vc-gifmaker-tab-on:hover { color: #fff; background: var(--gm-a); }
 .vc-gifmaker-tab-icon { font-size: 15px; line-height: 1.2; }
-.vc-gifmaker-panel { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 14px 14px; scrollbar-width: thin; }
+.vc-gifmaker-panel { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 14px 14px; }
 
 .vc-gifmaker-sec { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--tl-line); }
 .vc-gifmaker-sec:last-child { border-bottom: none; }
@@ -118,24 +118,24 @@
 .vc-gifmaker-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
 .vc-gifmaker-hint { font-size: 12px; line-height: 1.4; color: var(--text-muted); }
 .vc-gifmaker-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.vc-gifmaker-layer { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 12px; background: hsl(0 0% 0% / 0.18); }
+.vc-gifmaker-layer { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: calc(12px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.18)); }
 
 /* Segmented buttons */
-.vc-gifmaker-seg { display: flex; gap: 3px; padding: 3px; border-radius: 10px; background: hsl(0 0% 0% / 0.22); }
+.vc-gifmaker-seg { display: flex; gap: 3px; padding: 3px; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.22)); }
 .vc-gifmaker-seg-wrap { flex-wrap: wrap; }
 .vc-gifmaker-seg-btn {
     all: unset;
     cursor: pointer;
     flex: 1 0 auto;
     padding: 5px 9px;
-    border-radius: 7px;
+    border-radius: calc(7px * var(--sw-r, 1));
     font-size: 12.5px;
     font-weight: 600;
     text-align: center;
     color: var(--text-muted);
     white-space: nowrap;
 }
-.vc-gifmaker-seg-btn:hover { color: var(--gm-text); background: hsl(0 0% 100% / 0.05); }
+.vc-gifmaker-seg-btn:hover { color: var(--gm-text); background: var(--sw-hover, hsl(0 0% 100% / 0.05)); }
 .vc-gifmaker-seg-btn:focus-visible { outline: 2px solid var(--gm-a); }
 .vc-gifmaker-seg-on, .vc-gifmaker-seg-on:hover { color: #fff; background: var(--gm-a); }
 
@@ -148,7 +148,7 @@
     width: 100%;
     height: 5px;
     margin: 0;
-    border-radius: 5px;
+    border-radius: calc(5px * var(--sw-r, 1));
     background: linear-gradient(90deg, var(--gm-a) var(--vc-gm-fill), hsl(0 0% 100% / 0.12) var(--vc-gm-fill));
     cursor: pointer;
 }
@@ -160,7 +160,7 @@
 .vc-gifmaker-toggle > span:first-child { display: flex; flex-direction: column; gap: 2px; }
 .vc-gifmaker-toggle-label { font-size: 13.5px; color: var(--gm-text); }
 .vc-gifmaker-toggle input { position: absolute; opacity: 0; pointer-events: none; }
-.vc-gifmaker-switch { flex: none; width: 36px; height: 20px; border-radius: 20px; background: hsl(0 0% 100% / 0.16); position: relative; transition: background 0.15s; }
+.vc-gifmaker-switch { flex: none; width: 36px; height: 20px; border-radius: calc(20px * var(--sw-r, 1)); background: hsl(0 0% 100% / 0.16); position: relative; transition: background 0.15s; }
 .vc-gifmaker-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.15s; }
 .vc-gifmaker-toggle input:checked + .vc-gifmaker-switch { background: var(--gm-a); }
 .vc-gifmaker-toggle input:checked + .vc-gifmaker-switch::after { transform: translateX(16px); }
@@ -171,16 +171,16 @@
     all: unset;
     cursor: pointer;
     padding: 7px 12px;
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sw-r, 1));
     font-size: 13px;
     font-weight: 600;
     color: var(--gm-text);
-    background: hsl(0 0% 100% / 0.08);
+    background: var(--sw-chip, hsl(0 0% 100% / 0.08));
 }
-.vc-gifmaker-btn:hover:not(:disabled) { background: hsl(0 0% 100% / 0.14); }
+.vc-gifmaker-btn:hover:not(:disabled) { background: var(--sw-hi, hsl(0 0% 100% / 0.14)); }
 .vc-gifmaker-btn:disabled { opacity: 0.45; cursor: default; }
 .vc-gifmaker-btn:focus-visible { outline: 2px solid var(--gm-a); outline-offset: 1px; }
-.vc-gifmaker-btn-small { padding: 4px 9px; font-size: 12px; border-radius: 7px; }
+.vc-gifmaker-btn-small { padding: 4px 9px; font-size: 12px; border-radius: calc(7px * var(--sw-r, 1)); }
 .vc-gifmaker-btn-primary { color: #fff; background: var(--gm-a); }
 .vc-gifmaker-btn-primary:hover:not(:disabled) { background: var(--gm-a); filter: brightness(1.1); }
 .vc-gifmaker-btn-danger { color: #fff; background: hsl(359 70% 50% / 0.8); }
@@ -193,40 +193,40 @@
     flex: 1;
     min-width: 0;
     padding: 8px 10px;
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
-    background: hsl(0 0% 0% / 0.25);
+    background: var(--sw-inner, hsl(0 0% 0% / 0.25));
     color: var(--gm-text);
     font-size: 13.5px;
     font-family: inherit;
 }
 .vc-gifmaker-area { width: 100%; resize: vertical; min-height: 40px; }
 .vc-gifmaker-input:focus, .vc-gifmaker-area:focus, .vc-gifmaker-field input:focus { outline: none; border-color: var(--gm-a); }
-.vc-gifmaker-color { width: 32px; height: 28px; padding: 0; border: 1px solid var(--tl-line); border-radius: 8px; background: none; cursor: pointer; }
+.vc-gifmaker-color { width: 32px; height: 28px; padding: 0; border: 1px solid var(--tl-line); border-radius: calc(8px * var(--sw-r, 1)); background: none; cursor: pointer; }
 .vc-gifmaker-color::-webkit-color-swatch-wrapper { padding: 3px; }
-.vc-gifmaker-color::-webkit-color-swatch { border: none; border-radius: 5px; }
+.vc-gifmaker-color::-webkit-color-swatch { border: none; border-radius: calc(5px * var(--sw-r, 1)); }
 
 .vc-gifmaker-dims { display: flex; align-items: flex-end; gap: 8px; }
 .vc-gifmaker-field { flex: 1; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--text-muted); }
 .vc-gifmaker-field input:disabled { opacity: 0.6; }
-.vc-gifmaker-lock { all: unset; cursor: pointer; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: hsl(0 0% 100% / 0.06); font-size: 15px; }
+.vc-gifmaker-lock { all: unset; cursor: pointer; display: grid; place-items: center; width: 34px; height: 34px; border-radius: calc(9px * var(--sw-r, 1)); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); font-size: 15px; }
 .vc-gifmaker-lock-on { background: hsl(from var(--gm-a) h s l / 0.35); }
 
 /* Colour swatches & fonts */
 .vc-gifmaker-fill { display: flex; flex-direction: column; gap: 8px; }
 .vc-gifmaker-swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.vc-gifmaker-swatch { all: unset; cursor: pointer; width: 24px; height: 24px; border-radius: 7px; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.15); }
+.vc-gifmaker-swatch { all: unset; cursor: pointer; width: 24px; height: 24px; border-radius: calc(7px * var(--sw-r, 1)); box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.15); }
 .vc-gifmaker-swatch-on { box-shadow: 0 0 0 2px var(--background-primary, #222), 0 0 0 4px var(--gm-a); }
 .vc-gifmaker-fonts { display: flex; flex-direction: column; gap: 6px; }
 .vc-gifmaker-font-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.vc-gifmaker-font-chip { all: unset; cursor: pointer; padding: 4px 9px; border-radius: 7px; font-size: 13px; color: var(--gm-text); background: hsl(0 0% 100% / 0.06); }
-.vc-gifmaker-font-chip:hover { background: hsl(0 0% 100% / 0.12); }
+.vc-gifmaker-font-chip { all: unset; cursor: pointer; padding: 4px 9px; border-radius: calc(7px * var(--sw-r, 1)); font-size: 13px; color: var(--gm-text); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); }
+.vc-gifmaker-font-chip:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.12)); }
 .vc-gifmaker-font-chip-on { color: #fff; background: var(--gm-a); }
 
 /* Chips (text layers, stickers, presets) */
 .vc-gifmaker-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.vc-gifmaker-chip { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 10px; border-radius: 99px; font-size: 13px; color: var(--gm-text); background: hsl(0 0% 100% / 0.07); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.vc-gifmaker-chip:hover { background: hsl(0 0% 100% / 0.13); }
+.vc-gifmaker-chip { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 10px; border-radius: 99px; font-size: 13px; color: var(--gm-text); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-gifmaker-chip:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.13)); }
 .vc-gifmaker-chip-on { color: #fff; background: var(--gm-a); }
 .vc-gifmaker-chip img { width: 18px; height: 18px; object-fit: contain; }
 .vc-gifmaker-preset { display: inline-flex; align-items: center; }
@@ -235,12 +235,12 @@
 
 /* Caption style tiles, each with a tiny drawing of the style */
 .vc-gifmaker-styles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.vc-gifmaker-style { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; border-radius: 10px; font-size: 11px; font-weight: 600; text-align: center; color: var(--text-muted); border: 1px solid transparent; }
-.vc-gifmaker-style:hover { color: var(--gm-text); background: hsl(0 0% 100% / 0.05); }
+.vc-gifmaker-style { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; border-radius: calc(10px * var(--sw-r, 1)); font-size: 11px; font-weight: 600; text-align: center; color: var(--text-muted); border: 1px solid transparent; }
+.vc-gifmaker-style:hover { color: var(--gm-text); background: var(--sw-hover, hsl(0 0% 100% / 0.05)); }
 .vc-gifmaker-style-on, .vc-gifmaker-style-on:hover { color: var(--gm-text); border-color: var(--gm-a); background: hsl(from var(--gm-a) h s l / 0.15); }
-.vc-gifmaker-style-art { position: relative; width: 46px; height: 34px; border-radius: 5px; overflow: hidden; background: linear-gradient(160deg, #5b8def, #9b6bd6 60%, #e58a6b); }
+.vc-gifmaker-style-art { position: relative; width: 46px; height: 34px; border-radius: calc(5px * var(--sw-r, 1)); overflow: hidden; background: linear-gradient(160deg, #5b8def, #9b6bd6 60%, #e58a6b); }
 .vc-gifmaker-style-art::before, .vc-gifmaker-style-art::after { content: ""; position: absolute; }
-.vc-gifmaker-style-none .vc-gifmaker-style-art::before { inset: 0; background: linear-gradient(135deg, transparent 46%, hsl(0 0% 100% / 0.5) 48% 52%, transparent 54%); }
+.vc-gifmaker-style-none .vc-gifmaker-style-art::before { inset: 0; background: var(--sw-card, linear-gradient(135deg, transparent 46%, hsl(0 0% 100% / 0.5) 48% 52%, transparent 54%)); }
 .vc-gifmaker-style-caption .vc-gifmaker-style-art::before { left: 0; right: 0; top: 0; height: 11px; background: #fff; }
 .vc-gifmaker-style-caption .vc-gifmaker-style-art::after { left: 12px; right: 12px; top: 4px; height: 3px; border-radius: 2px; background: #111; }
 .vc-gifmaker-style-meme .vc-gifmaker-style-art::before, .vc-gifmaker-style-meme .vc-gifmaker-style-art::after { left: 9px; right: 9px; height: 4px; border-radius: 1px; background: #fff; box-shadow: 0 0 0 1px #000; }
@@ -259,15 +259,15 @@
 
 /* Filter tiles: a little picture with the filter on it */
 .vc-gifmaker-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.vc-gifmaker-filter { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: 10px; font-size: 11.5px; font-weight: 600; text-align: center; color: var(--text-muted); border: 1px solid transparent; }
-.vc-gifmaker-filter:hover { color: var(--gm-text); background: hsl(0 0% 100% / 0.05); }
+.vc-gifmaker-filter { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: calc(10px * var(--sw-r, 1)); font-size: 11.5px; font-weight: 600; text-align: center; color: var(--text-muted); border: 1px solid transparent; }
+.vc-gifmaker-filter:hover { color: var(--gm-text); background: var(--sw-hover, hsl(0 0% 100% / 0.05)); }
 .vc-gifmaker-filter-on, .vc-gifmaker-filter-on:hover { color: var(--gm-text); border-color: var(--gm-a); background: hsl(from var(--gm-a) h s l / 0.15); }
 .vc-gifmaker-filter-art {
     height: 38px;
-    border-radius: 6px;
+    border-radius: calc(6px * var(--sw-r, 1));
     background:
-        radial-gradient(circle at 70% 35%, #ffe08a 0 12%, transparent 13%),
-        linear-gradient(180deg, #4aa3ff 0 55%, #3fbf6a 55% 100%);
+        var(--sw-card, radial-gradient(circle at 70% 35%, #ffe08a 0 12%, transparent 13%),
+        linear-gradient(180deg, #4aa3ff 0 55%, #3fbf6a 55% 100%));
 }
 .vc-gifmaker-filter-bw .vc-gifmaker-filter-art { filter: grayscale(1); }
 .vc-gifmaker-filter-sepia .vc-gifmaker-filter-art { filter: sepia(1); }
@@ -276,37 +276,37 @@
 .vc-gifmaker-filter-invert .vc-gifmaker-filter-art { filter: invert(1); }
 .vc-gifmaker-filter-pixelate .vc-gifmaker-filter-art { background: repeating-conic-gradient(#4aa3ff 0 25%, #5ab0ff 0 50%) 0 0 / 10px 10px; box-shadow: inset 0 -16px #3fbf6a; }
 .vc-gifmaker-filter-vhs .vc-gifmaker-filter-art { box-shadow: inset 2px 0 hsl(0 100% 50% / 0.6), inset -2px 0 hsl(200 100% 50% / 0.6); background-image: repeating-linear-gradient(0deg, hsl(0 0% 0% / 0.25) 0 1px, transparent 1px 3px), radial-gradient(circle at 70% 35%, #ffe08a 0 12%, transparent 13%), linear-gradient(180deg, #4aa3ff 0 55%, #3fbf6a 55% 100%); }
-.vc-gifmaker-filter-glitch .vc-gifmaker-filter-art { background-image: linear-gradient(180deg, transparent 30%, #ff3d7f 30% 38%, transparent 38% 62%, #3dfff2 62% 68%, transparent 68%), radial-gradient(circle at 70% 35%, #ffe08a 0 12%, transparent 13%), linear-gradient(180deg, #4aa3ff 0 55%, #3fbf6a 55% 100%); }
+.vc-gifmaker-filter-glitch .vc-gifmaker-filter-art { background-image: var(--sw-card, linear-gradient(180deg, transparent 30%, #ff3d7f 30% 38%, transparent 38% 62%, #3dfff2 62% 68%, transparent 68%), radial-gradient(circle at 70% 35%, #ffe08a 0 12%, transparent 13%), linear-gradient(180deg, #4aa3ff 0 55%, #3fbf6a 55% 100%)); }
 
 /* Emoji grid */
 .vc-gifmaker-emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; }
-.vc-gifmaker-emoji-grid button { all: unset; cursor: pointer; display: grid; place-items: center; aspect-ratio: 1; border-radius: 8px; font-size: 20px; }
-.vc-gifmaker-emoji-grid button:hover { background: hsl(0 0% 100% / 0.08); }
+.vc-gifmaker-emoji-grid button { all: unset; cursor: pointer; display: grid; place-items: center; aspect-ratio: 1; border-radius: calc(8px * var(--sw-r, 1)); font-size: 20px; }
+.vc-gifmaker-emoji-grid button:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.08)); }
 .vc-gifmaker-emoji-grid img { width: 24px; height: 24px; object-fit: contain; }
 
 /* Slideshow */
 .vc-gifmaker-slides { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.vc-gifmaker-slide { position: relative; aspect-ratio: 4 / 3; border-radius: 8px; overflow: hidden; background: hsl(0 0% 0% / 0.3); }
+.vc-gifmaker-slide { position: relative; aspect-ratio: 4 / 3; border-radius: calc(8px * var(--sw-r, 1)); overflow: hidden; background: var(--sw-inner, hsl(0 0% 0% / 0.3)); }
 .vc-gifmaker-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.vc-gifmaker-slide-actions { position: absolute; inset: auto 0 0; display: flex; justify-content: space-between; padding: 3px; opacity: 0; transition: opacity 0.12s; background: linear-gradient(transparent, hsl(0 0% 0% / 0.7)); }
+.vc-gifmaker-slide-actions { position: absolute; inset: auto 0 0; display: flex; justify-content: space-between; padding: 3px; opacity: 0; transition: opacity 0.12s; background: var(--sw-card, linear-gradient(transparent, hsl(0 0% 0% / 0.7))); }
 .vc-gifmaker-slide:hover .vc-gifmaker-slide-actions, .vc-gifmaker-slide:focus-within .vc-gifmaker-slide-actions { opacity: 1; }
-.vc-gifmaker-slide-actions button { all: unset; cursor: pointer; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; color: #fff; background: hsl(0 0% 0% / 0.45); font-size: 14px; }
-.vc-gifmaker-slide-add { all: unset; cursor: pointer; aspect-ratio: 4 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 8px; border: 1px dashed hsl(0 0% 100% / 0.2); color: var(--text-muted); font-size: 18px; }
+.vc-gifmaker-slide-actions button { all: unset; cursor: pointer; width: 22px; height: 22px; display: grid; place-items: center; border-radius: calc(6px * var(--sw-r, 1)); color: #fff; background: var(--sw-inner, hsl(0 0% 0% / 0.45)); font-size: 14px; }
+.vc-gifmaker-slide-add { all: unset; cursor: pointer; aspect-ratio: 4 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: calc(8px * var(--sw-r, 1)); border: 1px dashed var(--sw-line2, hsl(0 0% 100% / 0.2)); color: var(--text-muted); font-size: 18px; }
 .vc-gifmaker-slide-add span { font-size: 11px; font-weight: 600; }
 .vc-gifmaker-slide-add:hover { color: var(--gm-text); border-color: var(--gm-a); }
 
 /* ─── Trim strip ─── */
 .vc-gifmaker-trim { display: flex; flex-direction: column; gap: 4px; user-select: none; }
-.vc-gifmaker-trim-bar { position: relative; height: 46px; border-radius: 9px; overflow: hidden; background: hsl(0 0% 0% / 0.35); touch-action: none; }
+.vc-gifmaker-trim-bar { position: relative; height: 46px; border-radius: calc(9px * var(--sw-r, 1)); overflow: hidden; background: var(--sw-inner, hsl(0 0% 0% / 0.35)); touch-action: none; }
 .vc-gifmaker-trim-thumbs { position: absolute; inset: 0; display: flex; }
 .vc-gifmaker-trim-thumbs img { flex: 1; min-width: 0; height: 100%; object-fit: cover; pointer-events: none; }
-.vc-gifmaker-trim-dim { position: absolute; top: 0; bottom: 0; background: hsl(0 0% 0% / 0.62); pointer-events: none; }
-.vc-gifmaker-trim-window { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border: 2px solid var(--gm-a); border-radius: 9px; cursor: grab; box-shadow: 0 0 0 1px hsl(0 0% 0% / 0.4); }
+.vc-gifmaker-trim-dim { position: absolute; top: 0; bottom: 0; background: var(--sw-inner, hsl(0 0% 0% / 0.62)); pointer-events: none; }
+.vc-gifmaker-trim-window { position: absolute; top: 0; bottom: 0; box-sizing: border-box; border: 2px solid var(--gm-a); border-radius: calc(9px * var(--sw-r, 1)); cursor: grab; box-shadow: 0 0 0 1px hsl(0 0% 0% / 0.4); }
 .vc-gifmaker-trim-window:active { cursor: grabbing; }
 .vc-gifmaker-trim-handle { position: absolute; top: -2px; bottom: -2px; width: 12px; background: var(--gm-a); cursor: ew-resize; }
 .vc-gifmaker-trim-handle::after { content: ""; position: absolute; left: 5px; top: 35%; bottom: 35%; width: 2px; border-radius: 2px; background: hsl(0 0% 100% / 0.85); }
-.vc-gifmaker-trim-handle-start { left: -2px; border-radius: 8px 0 0 8px; }
-.vc-gifmaker-trim-handle-end { right: -2px; border-radius: 0 8px 8px 0; }
+.vc-gifmaker-trim-handle-start { left: -2px; border-radius: calc(8px * var(--sw-r, 1)) 0 0 calc(8px * var(--sw-r, 1)); }
+.vc-gifmaker-trim-handle-end { right: -2px; border-radius: 0 calc(8px * var(--sw-r, 1)) calc(8px * var(--sw-r, 1)) 0; }
 .vc-gifmaker-trim-playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 4px hsl(0 0% 0% / 0.8); pointer-events: none; }
 .vc-gifmaker-trim-times { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .vc-gifmaker-trim-len { color: var(--gm-text); font-weight: 600; }
@@ -316,9 +316,9 @@
 .vc-gifmaker-crop-box { position: absolute; box-sizing: border-box; border: 2px solid #fff; cursor: move; box-shadow: 0 0 0 9999px hsl(0 0% 0% / 0.55); }
 .vc-gifmaker-crop-round { border-radius: 50%; }
 .vc-gifmaker-crop-grid { position: absolute; inset: 0; pointer-events: none; background:
-    linear-gradient(90deg, transparent 33%, hsl(0 0% 100% / 0.35) 33% calc(33% + 1px), transparent calc(33% + 1px) 66%, hsl(0 0% 100% / 0.35) 66% calc(66% + 1px), transparent calc(66% + 1px)),
-    linear-gradient(0deg, transparent 33%, hsl(0 0% 100% / 0.35) 33% calc(33% + 1px), transparent calc(33% + 1px) 66%, hsl(0 0% 100% / 0.35) 66% calc(66% + 1px), transparent calc(66% + 1px)); }
-.vc-gifmaker-crop-handle { position: absolute; width: 14px; height: 14px; margin: -8px 0 0 -8px; border-radius: 4px; background: #fff; box-shadow: 0 1px 4px hsl(0 0% 0% / 0.6); }
+    var(--sw-card, linear-gradient(90deg, transparent 33%, hsl(0 0% 100% / 0.35) 33% calc(33% + 1px), transparent calc(33% + 1px) 66%, hsl(0 0% 100% / 0.35) 66% calc(66% + 1px), transparent calc(66% + 1px)),
+    linear-gradient(0deg, transparent 33%, hsl(0 0% 100% / 0.35) 33% calc(33% + 1px), transparent calc(33% + 1px) 66%, hsl(0 0% 100% / 0.35) 66% calc(66% + 1px), transparent calc(66% + 1px))); }
+.vc-gifmaker-crop-handle { position: absolute; width: 14px; height: 14px; margin: -8px 0 0 -8px; border-radius: calc(4px * var(--sw-r, 1)); background: #fff; box-shadow: 0 1px 4px hsl(0 0% 0% / 0.6); }
 .vc-gifmaker-crop-nw { left: 0; top: 0; cursor: nwse-resize; }
 .vc-gifmaker-crop-ne { left: 100%; top: 0; cursor: nesw-resize; }
 .vc-gifmaker-crop-sw { left: 0; top: 100%; cursor: nesw-resize; }
@@ -331,24 +331,24 @@
 /* ─── Frame editor ─── */
 .vc-gifmaker-frames { display: flex; flex-direction: column; gap: 8px; }
 .vc-gifmaker-frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 4px; }
-.vc-gifmaker-frame { all: unset; cursor: pointer; position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 10; background: #000; box-shadow: inset 0 0 0 1px var(--tl-line); }
+.vc-gifmaker-frame { all: unset; cursor: pointer; position: relative; border-radius: calc(6px * var(--sw-r, 1)); overflow: hidden; aspect-ratio: 16 / 10; background: #000; box-shadow: inset 0 0 0 1px var(--tl-line); }
 .vc-gifmaker-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .vc-gifmaker-frame-on { box-shadow: 0 0 0 2px var(--gm-a); }
 .vc-gifmaker-frame-dropped img { opacity: 0.25; filter: grayscale(1); }
-.vc-gifmaker-frame-dropped::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 47%, #f23f43 47% 53%, transparent 53%); }
+.vc-gifmaker-frame-dropped::after { content: ""; position: absolute; inset: 0; background: var(--sw-card, linear-gradient(135deg, transparent 47%, #f23f43 47% 53%, transparent 53%)); }
 .vc-gifmaker-frame-num { position: absolute; left: 3px; bottom: 1px; font-size: 9.5px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px #000; }
-.vc-gifmaker-frame-tag { position: absolute; right: 2px; top: 2px; padding: 0 4px; border-radius: 4px; font-size: 9.5px; font-weight: 700; color: #fff; background: var(--gm-a); }
+.vc-gifmaker-frame-tag { position: absolute; right: 2px; top: 2px; padding: 0 4px; border-radius: calc(4px * var(--sw-r, 1)); font-size: 9.5px; font-weight: 700; color: #fff; background: var(--gm-a); }
 
 /* ─── Recent & start ─── */
 .vc-gifmaker-recents { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; padding-bottom: 6px; }
-.vc-gifmaker-recent { display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; border: 1px solid hsl(0 0% 100% / 0.07);
-    background: linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.2) 60%); transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s; }
+.vc-gifmaker-recent { display: flex; flex-direction: column; border-radius: calc(16px * var(--sw-r, 1)); overflow: hidden; border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07));
+    background: var(--sw-card, linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 12%, transparent), hsl(0 0% 0% / 0.2) 60%)); transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s; }
 .vc-gifmaker-recent:hover { border-color: color-mix(in srgb, var(--tl-accent) 45%, transparent); transform: translateY(-2px); box-shadow: none; }
 .vc-gifmaker-recent-art { height: 150px; display: grid; place-items: center; }
 .vc-gifmaker-recent-art img, .vc-gifmaker-recent-art video { max-width: 100%; max-height: 100%; object-fit: contain; }
 .vc-gifmaker-recent-meta { display: flex; justify-content: space-between; gap: 6px; padding: 8px 12px 0; font-size: 12px; font-weight: 600; color: #fff; }
 .vc-gifmaker-recent-actions { display: flex; gap: 5px; padding: 10px; }
-.vc-gifmaker-recent-actions button { all: unset; cursor: pointer; flex: 1; padding: 6px 0; border-radius: 99px; font-size: 12px; font-weight: 700; text-align: center; color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.07); transition: background 0.15s, box-shadow 0.15s; }
+.vc-gifmaker-recent-actions button { all: unset; cursor: pointer; flex: 1; padding: 6px 0; border-radius: 99px; font-size: 12px; font-weight: 700; text-align: center; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); transition: background 0.15s, box-shadow 0.15s; }
 .vc-gifmaker-recent-actions button:hover { background: var(--tl-accent); color: #fff; box-shadow: none; }
 .vc-gifmaker-recent-actions .vc-gifmaker-recent-x { flex: none; min-width: 28px; padding: 6px 8px; color: #f23f43; background: hsl(358 75% 50% / 0.14); }
 .vc-gifmaker-recent-actions .vc-gifmaker-recent-x:hover, .vc-gifmaker-recent-actions .vc-gifmaker-recent-sure { color: #fff; background: hsl(358 75% 50% / 0.9); box-shadow: none; }
@@ -356,15 +356,15 @@
 /* The start window */
 .vc-gifmaker-start { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .vc-gifmaker-start-card {
-    all: unset; cursor: pointer; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 8px; padding: 24px 22px; border-radius: 18px;
-    border: 1px solid hsl(0 0% 100% / 0.08);
-    background: radial-gradient(300px 180px at 0% 0%, color-mix(in srgb, var(--tl-accent) 22%, transparent), transparent 70%), hsl(0 0% 0% / 0.18);
+    all: unset; cursor: pointer; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 8px; padding: 24px 22px; border-radius: calc(18px * var(--sw-r, 1));
+    border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08));
+    background: var(--sw-card, radial-gradient(300px 180px at 0% 0%, color-mix(in srgb, var(--tl-accent) 22%, transparent), transparent 70%), hsl(0 0% 0% / 0.18));
     transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
 }
 .vc-gifmaker-start-card:hover { border-color: color-mix(in srgb, var(--tl-accent) 55%, transparent); transform: translateY(-2px); box-shadow: none; }
 .vc-gifmaker-start-card:focus-visible { outline: 2px solid var(--tl-accent); }
-.vc-gifmaker-start-icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; font-size: 26px;
-    background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000)); box-shadow: none; }
+.vc-gifmaker-start-icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: calc(16px * var(--sw-r, 1)); font-size: 26px;
+    background: var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000))); box-shadow: none; }
 .vc-gifmaker-start-title { font-size: 17px; font-weight: 800; color: #fff; }
 .vc-gifmaker-start-tip { margin: 4px 0 4px; }
 

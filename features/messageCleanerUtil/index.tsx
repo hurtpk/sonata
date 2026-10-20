@@ -15,11 +15,12 @@ import { classes, sleep } from "@utils/misc";
 import definePlugin, { OptionType } from "@utils/types";
 import type { Channel, RenderModalProps } from "@vencord/discord-types";
 import { findComponentByCodeLazy, findStoreLazy } from "@webpack";
-import { ChannelActionCreators, ChannelStore, GuildChannelStore, IconUtils, Modal, openModal, RestAPI, SelectedChannelStore, SnowflakeUtils, Timestamp, useCallback, useEffect, useRef, UserStore, useState } from "@webpack/common";
+import { ChannelActionCreators, ChannelStore, GuildChannelStore, IconUtils, openModal, RestAPI, SelectedChannelStore, SnowflakeUtils, Timestamp, useCallback, useEffect, useRef, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
+import { Window } from "../_shared/Window";
 
 const cl = classNameFactory("vc-purger-");
 
@@ -1963,7 +1964,7 @@ function PurgeModal({ modalProps, channel }: { modalProps: RenderModalProps; cha
     const left = Math.max(engine.toDelete - engine.deleted - engine.failed, 0);
 
     return (
-        <Modal {...modalProps} size="xl" title="Message Purger" subtitle={working ? `${stateLabel} — you can close this window, it keeps going` : isActive ? stateLabel : "Delete your messages in bulk — you can pause or stop any time"}>
+        <Window {...modalProps} size="xl" title="Message Purger" subtitle={working ? `${stateLabel} — you can close this window, it keeps going` : isActive ? stateLabel : "Delete your messages in bulk — you can pause or stop any time"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 {isActive ? (
                     <ToolHero icon={engine.state === "done" ? "✅" : engine.state === "stopped" ? "⏹️" : engine.paused ? "⏸️" : "🗑️"}
@@ -2025,7 +2026,7 @@ function PurgeModal({ modalProps, channel }: { modalProps: RenderModalProps; cha
                     )}
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -7,9 +7,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, DraftType, Modal, openModal, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { ChannelStore, DraftType, openModal, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import {
     ALL_FILTERS, Aspect, Background, Brush, canvasToFile, DEFAULT_ADJUSTMENTS, DEFAULT_OPTIONS, FILTER_GROUPS, filterThumbs, GRADIENTS, ImageEdits, loadImage, LOOKS, MarkTool,
     NO_EDITS, renderStyled, renderStyledLayout, Styled, StyleOptions, TEXT_FONTS, TextStyle, Tool, toOriginalPoint, WindowBar
@@ -493,7 +494,7 @@ function StylerModal({ modalProps, initial, startOptions, saveOptions }: {
     );
 
     return (
-        <Modal {...modalProps} size="xl" title="Screenshot Styler" subtitle={source && dims ? `${dims} when sent` : "Paste (Ctrl+V), drop or pick a screenshot"}>
+        <Window {...modalProps} size="xl" title="Screenshot Styler" subtitle={source && dims ? `${dims} when sent` : "Paste (Ctrl+V), drop or pick a screenshot"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("layout")}>
                     <div ref={stage} className={cl("stage")}
@@ -550,7 +551,7 @@ function StylerModal({ modalProps, initial, startOptions, saveOptions }: {
                     <button type="button" className={classes(cl("btn"), cl("btn-primary"))} disabled={!source || busy} onClick={send}>Attach to message</button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

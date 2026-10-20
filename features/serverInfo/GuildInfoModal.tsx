@@ -12,9 +12,10 @@ import { getGuildAcronym, openImageModal, openUserProfile } from "@utils/discord
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
 import { Guild, RenderModalProps, User } from "@vencord/discord-types";
-import { FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, Modal, openModal, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
+import { FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, openModal, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { settings } from ".";
 
 const cl = classNameFactory("vc-gp-");
@@ -86,7 +87,7 @@ function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: Render
     ];
 
     return (
-        <Modal {...modalProps} size="lg" title="Server Info" subtitle={guild.name}>
+        <Window {...modalProps} size="lg" title="Server Info" subtitle={guild.name}>
             <div className={classes(tl("wrap"), cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("hero")} style={bannerUrl ? { backgroundImage: `linear-gradient(180deg, transparent 20%, hsl(0 0% 0% / 0.75)), url("${bannerUrl}")` } : undefined}
                     onClick={bannerUrl ? () => openImageModal({ url: bannerUrl, width: 1024 }) : undefined} title={bannerUrl ? "Open the banner" : undefined}>
@@ -116,7 +117,7 @@ function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: Render
                     {currentTab === Tabs.IgnoredUsers && <IgnoredUserTab guild={guild} setCount={setIgnoredCount} />}
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -7,9 +7,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { GuildStore, Modal, openModal, SelectedGuildStore, showToast, useEffect, useRef, UserStore, useState } from "@webpack/common";
+import { GuildStore, openModal, SelectedGuildStore, showToast, useEffect, useRef, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { Window } from "../_shared/Window";
 import { applyProfile, Backup, backUp, fileData, lastBackup, Part, PARTS, ProfileDraft, readProfile, Target } from "./profile";
 
 const cl = classNameFactory("vc-tool-");
@@ -130,7 +131,7 @@ function StealModal({ modalProps, userId: startUser, guildId: startGuild }: { mo
     const theme = draft.themeColors ?? ["#5865f2", "#1e1f22"];
 
     return (
-        <Modal {...modalProps} size="lg" title="Steal Profile" subtitle={source ? `From ${source} — change anything before applying` : "Right-click someone and pick Steal profile, or paste their user ID"}>
+        <Window {...modalProps} size="lg" title="Steal Profile" subtitle={source ? `From ${source} — change anything before applying` : "Right-click someone and pick Steal profile, or paste their user ID"}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={cl("row")}>
                     <input className={classes(cl("input"), cl("grow"))} value={userId} placeholder="User ID" onChange={e => setUserId(e.currentTarget.value.trim())}
@@ -201,7 +202,7 @@ function StealModal({ modalProps, userId: startUser, guildId: startGuild }: { mo
                     </button>
                 </div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 

@@ -67,7 +67,7 @@
     position: absolute;
     inset: 0;
     background-color: rgb(133 232 157 / 60%);
-    border-radius: 3px;
+    border-radius: calc(3px * var(--sw-r, 1));
     pointer-events: none;
 }
 
@@ -82,7 +82,7 @@
     position: absolute;
     inset: 0;
     background-color: rgb(244 112 104 / 60%);
-    border-radius: 3px;
+    border-radius: calc(3px * var(--sw-r, 1));
     pointer-events: none;
 }
 

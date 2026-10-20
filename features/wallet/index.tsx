@@ -16,9 +16,10 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import ErrorBoundary from "@components/ErrorBoundary";
 import definePlugin, { OptionType } from "@utils/types";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { Modal, openModal } from "@webpack/common";
+import { openModal } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../featureSettings";
+import { Window } from "../_shared/Window";
 import { alerts, startAlerts, stopAlerts } from "./alerts";
 import { ADDRESS_LIKE, kindOf, KINDS, linkFor, lookalike, tidy } from "./kinds";
 import { openWallet, WalletIcon } from "./Panel";
@@ -76,7 +77,7 @@ alerts.set = (on: boolean, minutes: number) => {
 
 function SwapModal({ modalProps, found, mine, pasted }: { modalProps: RenderModalProps; found: string; mine: string; pasted: boolean; }) {
     return (
-        <Modal {...modalProps} size="sm" title="🚨 That isn't your address" subtitle={pasted ? "What you pasted isn't what you copied from your wallet" : "It looks like one of yours, but it's different"}>
+        <Window {...modalProps} size="sm" title="🚨 That isn't your address" subtitle={pasted ? "What you pasted isn't what you copied from your wallet" : "It looks like one of yours, but it's different"}>
             <div className="vc-tool-wrap vc-wallet-swap">
                 <div className="vc-wallet-swap-row"><span>{pasted ? "You pasted" : "Your message has"}</span><code className="vc-wallet-swap-bad">{found}</code></div>
                 <div className="vc-wallet-swap-row"><span>{pasted ? "You copied" : "Your saved one is"}</span><code className="vc-wallet-swap-good">{mine}</code></div>
@@ -88,7 +89,7 @@ function SwapModal({ modalProps, found, mine, pasted }: { modalProps: RenderModa
                 <p>{pasted ? "Delete what you pasted and put your address in with ;btc (or the right word), or copy it again from your wallet. If this keeps happening, scan your computer for viruses." : "Your message wasn't sent. Fix the address — or type ;btc, ;eth… to put your real one in — then send it again."}</p>
                 <div className="vc-tool-footer"><span className="vc-tool-spacer" /><button type="button" className="vc-tool-btn vc-tool-primary" onClick={modalProps.onClose}>OK</button></div>
             </div>
-        </Modal>
+        </Window>
     );
 }
 const warnSwap = (found: string, mine: string, pasted = false) => openModal(props => <ErrorBoundary><SwapModal modalProps={props} found={found} mine={mine} pasted={pasted} /></ErrorBoundary>);

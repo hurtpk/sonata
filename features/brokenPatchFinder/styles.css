@@ -8,14 +8,14 @@
 }
 
 .vc-bpf-intro { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
-.vc-bpf-ok { padding: 18px; border-radius: 12px; text-align: center; font-weight: 700; color: var(--status-positive, #23a55a); background: hsl(from var(--status-positive, #23a55a) h s l / 0.1); }
+.vc-bpf-ok { padding: 18px; border-radius: calc(12px * var(--sw-r, 1)); text-align: center; font-weight: 700; color: var(--status-positive, #23a55a); background: hsl(from var(--status-positive, #23a55a) h s l / 0.1); }
 
 .vc-bpf-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
     padding: 12px;
-    border-radius: 12px;
+    border-radius: calc(12px * var(--sw-r, 1));
     border: 1px solid var(--tl-line);
     background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
 }
@@ -37,7 +37,7 @@
 .vc-bpf-kind {
     flex-shrink: 0;
     padding: 1px 7px;
-    border-radius: 6px;
+    border-radius: calc(6px * var(--sw-r, 1));
     font-size: 11px;
     font-weight: 800;
     cursor: help;
@@ -45,7 +45,7 @@
 
 .vc-bpf-kind-noEffect, .vc-bpf-kind-groupUndone { color: #f0b232; background: hsl(40 86% 57% / 0.14); }
 .vc-bpf-kind-errored { color: var(--status-danger, #f23f43); background: hsl(from var(--status-danger, #f23f43) h s l / 0.14); }
-.vc-bpf-kind-notFound { color: var(--text-muted); background: hsl(0 0% 100% / 0.06); }
+.vc-bpf-kind-notFound { color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); }
 
 .vc-bpf-code {
     min-width: 0;
@@ -74,15 +74,15 @@
     all: unset;
     cursor: pointer;
     padding: 6px 12px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sw-r, 1));
     font-size: 12.5px;
     font-weight: 700;
     color: var(--text-default, var(--text-normal));
-    background: hsl(0 0% 100% / 0.07);
+    background: var(--sw-chip, hsl(0 0% 100% / 0.07));
     white-space: nowrap;
 }
 
-.vc-bpf-btn:hover:not(:disabled) { background: hsl(0 0% 100% / 0.13); }
+.vc-bpf-btn:hover:not(:disabled) { background: var(--sw-hi, hsl(0 0% 100% / 0.13)); }
 .vc-bpf-btn:disabled { opacity: 0.5; cursor: default; }
 .vc-bpf-btn:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
 

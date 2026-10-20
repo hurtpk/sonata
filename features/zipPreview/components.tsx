@@ -9,8 +9,9 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { ChevronSmallDownIcon, ChevronSmallUpIcon, FolderIcon } from "@components/Icons";
 import { classNameFactory } from "@utils/css";
 import { copyWithToast } from "@utils/discord";
-import { Modal,openModal, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { openModal, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
+import { Window } from "../_shared/Window";
 import {
     createImageObjectUrl,
     getAttachmentFileName,
@@ -310,7 +311,7 @@ function openTextEntryModal(entry: ZipEntry) {
     const content = readTextEntry(entry);
     openModal(modalProps => (
         <ErrorBoundary>
-            <Modal {...modalProps} size="lg" title={entry.name.split("/").pop()} subtitle={`${entry.name} · ${formatBytes(entry.size)}`}>
+            <Window {...modalProps} size="lg" title={entry.name.split("/").pop()} subtitle={`${entry.name} · ${formatBytes(entry.size)}`}>
                 <div className="vc-tool-wrap">
                     <div className={cl("code-wrap")}>
                         <CodeBlock content={content} lang={getCodeLanguage(entry)} />
@@ -322,7 +323,7 @@ function openTextEntryModal(entry: ZipEntry) {
                         <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => makeDownload(entry)}>Download</button>
                     </div>
                 </div>
-            </Modal>
+            </Window>
         </ErrorBoundary>
     ));
 }
@@ -330,7 +331,7 @@ function openTextEntryModal(entry: ZipEntry) {
 function openImageEntryModal(entry: ZipEntry) {
     openModal(modalProps => (
         <ErrorBoundary>
-            <Modal {...modalProps} size="lg" title={entry.name.split("/").pop()} subtitle={`${entry.name} · ${formatBytes(entry.size)}`}>
+            <Window {...modalProps} size="lg" title={entry.name.split("/").pop()} subtitle={`${entry.name} · ${formatBytes(entry.size)}`}>
                 <div className="vc-tool-wrap">
                     <ZipImagePreview entry={entry} />
                     <div className="vc-tool-footer">
@@ -338,7 +339,7 @@ function openImageEntryModal(entry: ZipEntry) {
                         <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => makeDownload(entry)}>Download</button>
                     </div>
                 </div>
-            </Modal>
+            </Window>
         </ErrorBoundary>
     ));
 }
