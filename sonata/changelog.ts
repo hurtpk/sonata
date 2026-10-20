@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.20e",
+        date: "October 20, 2026",
+        title: "Send the original video",
+        items: [
+            { icon: "🎬", text: "Video Editor has a Send original button at the top: it puts the video in your message just as it was, with no edits and no waiting for an export. With several clips, it sends each one." },
+        ],
+    },
+    {
         version: "2026.10.20d",
         date: "October 20, 2026",
         title: "Game Hub and Local Names",

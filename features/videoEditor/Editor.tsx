@@ -130,6 +130,18 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
 
     useEffect(() => { if (now > total) setNow(total); }, [total]);
 
+    /** The video(s) just as they came in — no edits, no converting — into your message, and the editor closes. */
+    const sendOriginal = () => {
+        const channel = ChannelStore.getChannel(SelectedChannelStore.getChannelId());
+        if (!channel) { showToast("Open a chat first", "failure"); return; }
+        const seen = new Set<Blob>();
+        const files = p.clips.filter(c => !seen.has(c.file) && seen.add(c.file))
+            .map(c => c.file instanceof File ? c.file : new File([c.file], c.name, { type: c.file.type || "video/mp4" }));
+        UploadHandler.promptToUpload(files, channel, DraftType.ChannelMessage);
+        showToast(files.length === 1 ? "Added the original video to your message" : `Added the ${files.length} original videos to your message`, "success");
+        modalProps.onClose();
+    };
+
     const addFiles = async (list: FileList | File[] | null) => {
         const files = [...(list ?? [])];
         const videos = files.filter(f => f.type.startsWith("video/") || /\.(mp4|webm|mov|m4v|mkv)$/i.test(f.name));
@@ -179,7 +191,13 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
     const props: PanelProps = { p, change, now, sel, total, pick, setPick, setTab, setNow };
 
     return (
-        <Window {...modalProps} size="xxl" title="Video Editor" subtitle="Trim, cut, caption, blur and add music — then export. It all happens on your computer.">
+        <Window {...modalProps} size="xxl" title="Video Editor" subtitle="Trim, cut, caption, blur and add music — then export. It all happens on your computer."
+            tools={p.clips.length > 0 && (
+                <button type="button" className="vc-tool-btn" onClick={sendOriginal}
+                    title={p.clips.length > 1 ? "Send the videos as they were, without any edits" : "Send the video as it was, without any edits"}>
+                    {p.clips.length > 1 ? "Send originals" : "Send original"}
+                </button>
+            )}>
             <div className={classes(cl("wrap"), ve("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}
                 onDragOver={e => { if ([...e.dataTransfer.types].includes("Files")) { e.preventDefault(); setOver(true); } }}
                 onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(false); }}
