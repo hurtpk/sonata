@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.20c",
+        date: "October 20, 2026",
+        title: "A shorter update bar",
+        items: [
+            { icon: "🔔", text: "The update bar just says \"Sonata update ready.\" now. Hover it to see the version number." },
+        ],
+    },
+    {
         version: "2026.10.20b",
         date: "October 20, 2026",
         title: "Antiquest, Custom Badges and gradients everywhere",

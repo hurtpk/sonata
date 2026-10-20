@@ -51,7 +51,7 @@ async function check(isOn: () => boolean) {
     shown.add(latest.version);
     paint();
     showNotice(
-        <span className="vc-sonata-update">Sonata {latest.version} is out.</span>,
+        <span className="vc-sonata-update" title={`Sonata ${latest.version}`}>Sonata update ready.</span>,
         "Update",
         // Updates right here — no installer window. (Older Discord sessions without the new helper fall back to the installer.)
         async () => {
