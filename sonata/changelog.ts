@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.20f",
+        date: "October 20, 2026",
+        title: "Rounder gradient colours",
+        items: [
+            { icon: "🎨", text: "In your own gradient, the From and To colours are round now, like the gradients above them." },
+        ],
+    },
+    {
         version: "2026.10.20e",
         date: "October 20, 2026",
         title: "Send the original video",

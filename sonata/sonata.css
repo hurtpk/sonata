@@ -570,7 +570,12 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 .sonata-gradient-edit { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sonata-gradient-bar { flex: 1; min-width: 120px; height: 14px; border-radius: 99px; box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.15); }
 .sonata-color { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--sn-dim); cursor: pointer; }
-.sonata-color input { width: 40px; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; }
+/* Round, like the gradient swatches above them. */
+.sonata-color input { appearance: none; width: 52px; height: 34px; padding: 0; border: 0; border-radius: 99px; overflow: hidden; background: none; cursor: pointer; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.15); transition: transform 0.15s; }
+.sonata-color input:hover { transform: scale(1.08); }
+.sonata-color input:focus-visible { outline: 2px solid var(--sn-text); outline-offset: 3px; }
+.sonata-color input::-webkit-color-swatch-wrapper { padding: 0; }
+.sonata-color input::-webkit-color-swatch { border: 0; border-radius: 99px; }
 
 .sonata-range-field { gap: 8px; }
 .sonata-range-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
