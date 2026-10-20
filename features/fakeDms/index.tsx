@@ -10,11 +10,10 @@ import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Flex } from "@components/Flex";
-import { Heading } from "@components/Heading";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
-import { ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
+import { ModalProps, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import { RelationshipType } from "@vencord/discord-types/enums";
 import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy, findCssClassesLazy, findStoreLazy } from "@webpack";
@@ -32,10 +31,9 @@ import {
     ScrollerThin,
     SearchableSelect,
     SelectedChannelStore,
-    TabBar,
+    showToast,
     TextArea,
     TextInput,
-    Toasts,
     useMemo,
     UserStore,
     useState,
@@ -44,6 +42,7 @@ import type { Message } from "discord-types/general";
 import { DBSchema, IDBPDatabase, openDB } from "idb";
 
 import { defineFeatureSettings } from "../../featureSettings";
+import { Window } from "../_shared/Window";
 
 const cl = classNameFactory("vc-fakedms-");
 
@@ -1922,20 +1921,10 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
     const channelRecord = channel ?? null;
 
     return (
-        <ModalRoot {...modalProps} size={ModalSize.LARGE}>
-            <ModalHeader separator={false} className={cl("modal-header")}>
-                <div className={cl("header-icon")}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                        <path d="M12 2C6.48 2 2 5.92 2 10.66c0 2.75 1.5 5.2 3.84 6.82-.1 1.17-.5 2.8-1.84 4.02 0 0 3.1-.35 5.28-2.08.88.17 1.79.24 2.72.24 5.52 0 10-3.92 10-8.66S17.52 2 12 2Z" />
-                    </svg>
-                </div>
-                <div className={cl("header-text")}>
-                    <Heading tag="h2" className={cl("modal-title")}>Fake Message</Heading>
-                    <Forms.FormText className={cl("modal-subtitle")}>Craft and inject messages into any DM conversation.</Forms.FormText>
-                </div>
-                <ModalCloseButton onClick={modalProps.onClose} />
-            </ModalHeader>
-            <ModalContent className={cl("modal-content")}>
+        <Window {...modalProps} size="lg" title="Fake DMs" subtitle="Craft and inject messages into any DM conversation."
+            tabs={MESSAGE_TABS} tab={messageType} onTab={id => setMessageType(id as typeof messageType)}
+            actions={messageType !== "livecall" ? [{ text: "Send", variant: "primary", onClick: () => void handleSend(), disabled: !author }] : undefined}>
+            <div className={classes("vc-tool-wrap", cl("modal-content"))}>
                 {messageType !== "livecall" && (
                 <Forms.FormSection className={cl("preview-section")}>
                     <div className={cl("preview-box")}>
@@ -1961,23 +1950,6 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                     </div>
                 </Forms.FormSection>
                 )}
-
-                <Forms.FormSection className={cl("form-section")}>
-                    <TabBar
-                        type="top"
-                        look="brand"
-                        className={cl("tab-bar")}
-                        selectedItem={messageType}
-                        onItemSelect={e => setMessageType(e as typeof messageType)}
-                    >
-                        <TabBar.Item className={cl("tab-item")} id="text">Text</TabBar.Item>
-                        <TabBar.Item className={cl("tab-item")} id="media">Media</TabBar.Item>
-                        <TabBar.Item className={cl("tab-item")} id="embed">Embed</TabBar.Item>
-                        <TabBar.Item className={cl("tab-item")} id="sticker">Sticker</TabBar.Item>
-                        <TabBar.Item className={cl("tab-item")} id="call">Call</TabBar.Item>
-                        <TabBar.Item className={cl("tab-item")} id="livecall">Live Call</TabBar.Item>
-                    </TabBar>
-                </Forms.FormSection>
 
                 {messageType !== "livecall" && (
                 <Forms.FormSection className={cl("form-section")}>
@@ -2251,20 +2223,18 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                     </Flex>
                 </Forms.FormSection>
                 )}
-            </ModalContent>
-            {messageType !== "livecall" && (
-            <ModalFooter className={cl("modal-footer")}>
-                <Button onClick={handleSend} disabled={!author}>Send</Button>
-            </ModalFooter>
-            )}
-        </ModalRoot>
+            </div>
+        </Window>
     );
 }
+
+const MESSAGE_TABS = [["text", "Text"], ["media", "Media"], ["embed", "Embed"], ["sticker", "Sticker"], ["call", "Call"], ["livecall", "Live Call"]] as const;
 
 export function openFakeMessageModal() {
     const channelId = SelectedChannelStore.getChannelId();
     if (!channelId) {
-        Toasts.show({ id: Toasts.genId(), message: "Open a DM or channel first", type: Toasts.Type.FAILURE });
+        // One object both kinds of Equicord understand: older ones read message/type, newer ones text/variant.
+        showToast({ message: "Open a DM or channel first", type: "failure", text: "Open a DM or channel first", variant: "critical" } as any);
         return;
     }
     openModal(modalProps => (
