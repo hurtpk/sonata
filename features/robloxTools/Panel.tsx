@@ -8,14 +8,14 @@ import "../_shared/tool.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { classes } from "@utils/misc";
-import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, React, useEffect, useMemo, useReducer, useState } from "@webpack/common";
+import { React, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
-import { Window } from "../_shared/Window";
 import { currentRates, ensureRates, money, onRatesChange, settings as converterSettings } from "../currencyConverter";
 import { robuxResult } from "../currencyConverter/robux";
 import { formatNumber } from "../currencyConverter/units";
+import { useHubFrame } from "../games/hub";
+import { openGames } from "../games/Panel";
 import { Assets } from "./Assets";
 import { refOf } from "./bookmarks";
 import { rb, RefCard } from "./Card";
@@ -237,11 +237,16 @@ function Robux() {
 
 /* ── The window ── */
 
-function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalProps; start: Tab; initial?: string; }) {
+// Where you were, for coming back to Roblox in Game Hub.
+let lastTab: Tab = "lookup";
+const lastIn: Record<string, Tab> = {};
+
+/** Roblox, as a section of Game Hub: its content here, its tabs on Game Hub's window. */
+export function RobloxSection({ start: startTab, initial }: { start?: string; initial?: string; }) {
+    const start = (startTab as Tab | undefined) ?? lastTab;
     const [tab, setTabState] = useState<Tab>(start);
     // Each group reopens on the tool you used last in it.
-    const [lastIn, setLastIn] = useState<Record<string, Tab>>({});
-    const setTab = (t: Tab) => { setTabState(t); setLastIn(l => ({ ...l, [groupOf(t).id]: t })); };
+    const setTab = (t: Tab) => { lastTab = t; lastIn[groupOf(t).id] = t; setTabState(t); };
     const group = groupOf(tab);
     const tool = group.tools.find(x => x.tab === tab)!;
     const [serversFor, setServersFor] = useState(start === "servers" ? initial : undefined);
@@ -260,9 +265,13 @@ function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalPr
         cardActions.assets = assetId => { setAssetsFor(assetId); setTab("assets"); };
         return () => { Object.assign(cardActions, outside); };
     }, []);
+    useHubFrame({
+        tabs: GROUPS.map(g => [g.id, g.label] as const), tab: group.id,
+        onTab: id => { const g = GROUPS.find(x => x.id === id)!; setTab(lastIn[g.id] ?? g.tools[0].tab); },
+        status: ["roblox", `${tool.label.toLowerCase()} · ${tool.blurb.toLowerCase()}`],
+        statusRight: "no sign-in needed",
+    });
     return (
-        <Window {...modalProps} size="xl" title="Roblox Tools" subtitle="Profiles, games, servers, trades, groups and Robux — all in one place"
-            tabs={GROUPS.map(g => [g.id, g.label] as const)} tab={group.id} onTab={id => { const g = GROUPS.find(x => x.id === id)!; setTab(lastIn[g.id] ?? g.tools[0].tab); }}>
             <div className={classes("vc-tool-wrap", rb("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className={rb("layout")}>
                 <SavedSidebar current={tab === "lookup" ? current : null}
@@ -296,12 +305,12 @@ function RobloxModal({ modalProps, start, initial }: { modalProps: RenderModalPr
                 </div>
                 </div>
             </div>
-        </Window>
     );
 }
 
 export function openRoblox(start: Tab = "lookup", initial?: string) {
-    openModal(props => <RobloxModal modalProps={props} start={start} initial={initial} />);
+    // Roblox lives in Game Hub now.
+    openGames({ platform: "roblox", robloxTab: start, robloxInitial: initial });
 }
 
 /** The cards under a message with Roblox links. */

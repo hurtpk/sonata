@@ -23,6 +23,8 @@ export { fetchCrypto, fetchExchangeRates, fetchStock } from "./features/currency
 export { deleteWebhookMessage, fetchImageBytes, getWebhookMessage, privateRepliesApi, sendWebhook } from "./features/embedSender/native";
 export { fetchDiscordFile } from "./features/filePreviewer/native";
 export { clearPreviewCache, extractFromArchive, openArchive, openPdfWindow } from "./features/filePreviewer/previewCache";
+export { trackForget, trackRead } from "./features/packageTracker/native";
+export { gamesDealGame, gamesDealSearch, gamesDealStores, gamesDealTop, gamesEpicFree, gamesFortniteShop, gamesGamePass, gamesMcPlayer, gamesMcServer } from "./features/games/native";
 export { recognizeText } from "./features/imageToText/native";
 export { expandLink } from "./features/linkCleaner/native";
 export { dlCancel, dlCheck, dlInfo, dlOpen, dlPickFolder, dlPlaylist, dlProgress, dlReadFile, dlReveal, dlStart } from "./features/mediaDownloader/native";

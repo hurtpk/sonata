@@ -1,0 +1,95 @@
+/* Games */
+.vc-sw-body-flush .vc-games { height: 100%; min-height: 0; gap: 0; padding: 0; }
+.vc-games-split { grid-template-columns: 230px minmax(0, 1fr); }
+.vc-games .vc-sw-pic { font-size: 17px; }
+.vc-games-head { display: flex; align-items: center; gap: 8px; }
+.vc-games-head b { font-size: 15px; color: var(--sw-text); }
+.vc-games-bar { display: flex; gap: 8px; align-items: center; }
+.vc-games-bar .vc-tool-input { flex: 1; min-width: 0; }
+.vc-games-error { padding: 9px 12px; border-radius: var(--sw-rb); font-size: 13px; color: #f0b232; background: hsl(40 90% 55% / 0.1); border: 1px solid hsl(40 90% 55% / 0.3); }
+.vc-games-noimg { display: grid; place-items: center; background: var(--sw-chip); font-size: 22px; }
+.vc-games-pad { padding: 0 14px 12px; }
+
+/* Epic */
+.vc-games-epic-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.vc-games-epic { display: flex; flex-direction: column; overflow: hidden; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-games-epic-now { border-color: color-mix(in srgb, var(--sw-accent) 45%, transparent); }
+.vc-games-epic > img, .vc-games-epic > .vc-games-noimg { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.vc-games-epic-text { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 6px; }
+.vc-games-epic-text b { font-size: 14.5px; color: var(--sw-text); }
+.vc-games-epic-text span { font-size: 12.5px; color: var(--sw-soft); }
+.vc-games-epic-text small { font-size: 11.5px; color: var(--sw-muted); }
+.vc-games-epic > .vc-tool-btn { margin: 4px 12px 12px; text-align: center; }
+
+/* Fortnite */
+.vc-games-wish { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 12px 14px 8px; }
+.vc-games-wish-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: var(--sw-rs); background: var(--sw-chip); font-size: 12.5px; color: var(--sw-text); text-transform: capitalize; }
+.vc-games-wish-here { background: color-mix(in srgb, #23a55a 22%, var(--sw-chip)); color: #fff; }
+.vc-games-wish-chip button { all: unset; cursor: pointer; padding: 0 4px; font-size: 11px; color: var(--sw-muted); }
+.vc-games-wish-chip button:hover { color: #f23f43; }
+.vc-games-wish-add { width: 200px; flex: none; padding: 6px 10px !important; font-size: 12.5px !important; }
+.vc-games-shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 8px; }
+.vc-games-item { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 0 0 10px; overflow: hidden; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); box-shadow: inset 0 -3px 0 var(--rar); }
+.vc-games-item > img, .vc-games-item > .vc-games-noimg { width: 100%; aspect-ratio: 1; object-fit: cover; background: color-mix(in srgb, var(--rar) 25%, var(--sw-inner)); margin-bottom: 6px; }
+.vc-games-item b, .vc-games-item small, .vc-games-item .vc-games-vbucks { padding: 0 9px; }
+.vc-games-item b { font-size: 13px; color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-games-item small { font-size: 11px; color: var(--sw-soft); }
+.vc-games-vbucks { font-size: 12px; font-weight: 600; color: var(--sw-text); }
+.vc-games-vbucks s { margin-left: 5px; font-weight: 400; color: var(--sw-muted); }
+.vc-games-star { all: unset; position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 15px; color: #fff; background: hsl(0 0% 0% / 0.55); }
+.vc-games-star:hover { background: hsl(0 0% 0% / 0.75); }
+.vc-games-star-on { color: #ffd84d; }
+
+/* Game Pass */
+.vc-games-posters { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 10px; }
+.vc-games-poster { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 3px; cursor: pointer; min-width: 0; }
+.vc-games-poster > img, .vc-games-poster > .vc-games-noimg { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: var(--sw-rp); border: 1px solid var(--sw-line); margin-bottom: 4px; }
+.vc-games-poster:hover > img { border-color: var(--sw-accent); }
+.vc-games-poster b { font-size: 12.5px; color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-games-poster small { font-size: 11px; color: var(--sw-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-games-poster:focus-visible { outline: 2px solid var(--sw-accent); outline-offset: 2px; border-radius: var(--sw-rp); }
+
+/* Minecraft */
+.vc-games-servers { display: flex; flex-direction: column; gap: 8px; }
+.vc-games-server { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-games-server > img, .vc-games-server > .vc-games-noimg { flex: none; width: 48px; height: 48px; border-radius: var(--sw-rp); image-rendering: pixelated; }
+.vc-games-server-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.vc-games-server-text b { font-size: 14px; color: var(--sw-text); }
+.vc-games-server-text > span { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sw-soft); }
+.vc-games-server-text small { font-size: 12px; color: var(--sw-muted); white-space: pre-line; }
+.vc-games-names { color: var(--sw-soft) !important; }
+.vc-games-server-tools { display: flex; gap: 2px; }
+.vc-games-player { display: flex; gap: 22px; align-items: center; padding: 16px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-games-player-body { width: 110px; image-rendering: pixelated; }
+.vc-games-player-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.vc-games-player-name { display: flex; align-items: center; gap: 10px; }
+.vc-games-player-name img { width: 40px; height: 40px; border-radius: var(--sw-rs); image-rendering: pixelated; }
+.vc-games-player-name b { font-size: 20px; color: var(--sw-text); }
+.vc-games-player-text small { font-family: var(--sw-mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--sw-muted); }
+.vc-games-player-text code { font-family: var(--sw-mono); font-size: 12.5px; color: var(--sw-text); cursor: pointer; overflow-wrap: anywhere; }
+
+/* All stores */
+.vc-games-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.vc-games-result { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 3px; padding: 0 0 10px; overflow: hidden; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); cursor: pointer; }
+.vc-games-result:hover { border-color: var(--sw-line2); background: var(--sw-hover); }
+.vc-games-result > img, .vc-games-result > .vc-games-noimg { width: 100%; height: 86px; object-fit: cover; margin-bottom: 6px; }
+.vc-games-result b { padding: 0 10px; font-size: 13.5px; color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-games-result span { padding: 0 10px; font-size: 12.5px; color: var(--sw-soft); }
+.vc-games-back { align-self: flex-start; }
+.vc-games-deal-head { display: flex; gap: 14px; align-items: center; }
+.vc-games-deal-head > img, .vc-games-deal-head > .vc-games-noimg { width: 150px; height: 70px; object-fit: cover; border-radius: var(--sw-rp); }
+.vc-games-deal-head b { display: block; font-size: 19px; color: var(--sw-text); }
+.vc-games-deal-head span { font-size: 12.5px; color: var(--sw-soft); }
+.vc-games-deal-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px 60px auto; gap: 12px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--sw-line); }
+.vc-games-deal-row:last-child { border-bottom: 0; }
+.vc-games-deal-row-wide { grid-template-columns: 74px minmax(0, 1fr) 110px auto auto; }
+.vc-games-deal-thumb { width: 74px; height: 34px; object-fit: cover; border-radius: 5px; }
+.vc-games-deal-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.vc-games-deal-title b { font-size: 13.5px; color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-games-deal-title small { font-size: 11.5px; color: var(--sw-soft); }
+.vc-games-store { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sw-soft); }
+.vc-games-store img { width: 16px; height: 16px; }
+.vc-games-price { font-size: 14px; font-weight: 700; color: var(--sw-text); font-variant-numeric: tabular-nums; }
+.vc-games-price s { margin-left: 6px; font-size: 11.5px; font-weight: 400; color: var(--sw-muted); }
+.vc-games-target { max-width: 100px; }
+.vc-games-name-edit { max-width: 280px; padding: 5px 9px !important; }

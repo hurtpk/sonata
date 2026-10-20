@@ -12,6 +12,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { classNameFactory } from "@utils/css";
 import { createRoot, MessageStore, NavigationRouter, React, useEffect, useRef, useState } from "@webpack/common";
 
+import { CloseIcon, NextIcon, PauseIcon, PlayIcon } from "./icons";
 import { getPeaks, Peaks } from "./peaks";
 import { AudioFile, audioFilesOf, pauseInline } from "./Player";
 
@@ -103,9 +104,11 @@ function MiniPlayer() {
     const audio = useRef<HTMLAudioElement>(null);
     const [playing, setPlaying] = useState(false);
     const [time, setTime] = useState(0);
-    const [dur, setDur] = useState(0);
+    const [rawDur, setDur] = useState(0);
     const [peaks, setPeaks] = useState<Peaks | null>(null);
     const track = current?.track ?? null;
+    // A streamed file can report an endless length; the decoded waveform knows the real one.
+    const dur = (isFinite(rawDur) && rawDur) || peaks?.duration || 0;
     useEffect(() => { miniAudio = audio.current; return () => { miniAudio = null; }; });
 
     useEffect(() => {
@@ -130,7 +133,7 @@ function MiniPlayer() {
             <audio ref={audio} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={next}
                 onTimeUpdate={e => setTime(e.currentTarget.currentTime)} onLoadedMetadata={e => setDur(e.currentTarget.duration)} />
             <button type="button" className={cl("play")} aria-label={playing ? "Pause" : "Play"} onClick={() => { const a = audio.current!; if (a.paused) { pauseInline(); void a.play(); } else a.pause(); }}>
-                {playing ? "❚❚" : "▶"}
+                {playing ? <PauseIcon size={16} /> : <span className={cl("play-nudge")}><PlayIcon size={16} /></span>}
             </button>
             <div className={cl("main")}>
                 <div className={cl("title")} title={track.filename}>{track.filename}</div>
@@ -145,8 +148,8 @@ function MiniPlayer() {
                 </div>
             </div>
             <div className={cl("side")}>
-                {queue.length > 0 && <button type="button" title="Next" onClick={next}>⏭</button>}
-                <button type="button" title="Close" onClick={close}>×</button>
+                {queue.length > 0 && <button type="button" title="Next" aria-label="Next" onClick={next}><NextIcon /></button>}
+                <button type="button" title="Close" aria-label="Close" onClick={close}><CloseIcon /></button>
             </div>
         </div>
     );

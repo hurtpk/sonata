@@ -16,6 +16,7 @@ import "./window.css";
 import { useSettings } from "@api/Settings";
 import { classes } from "@utils/misc";
 import type { ModalAction, RenderModalProps } from "@vencord/discord-types";
+import { React } from "@webpack/common";
 import type { CSSProperties, ReactNode } from "react";
 
 import { windowAccent } from "../../controller/accent";
@@ -42,6 +43,8 @@ export interface WindowProps extends RenderModalProps {
     statusRight?: ReactNode;
     /** No padding round the content, for windows that lay it out edge to edge (list + details, editors). */
     flush?: boolean;
+    /** A column on the left, beside the content (a list of places, like Game Hub's platforms). */
+    side?: ReactNode;
     /** Buttons along the bottom, like Discord's Modal. */
     actions?: ModalAction[];
     actionBarInput?: ReactNode;
@@ -95,7 +98,7 @@ export function windowStyleProps(style: WindowStyle, accent = windowAccent()) {
 
 const nameOf = (title: ReactNode) => typeof title === "string" ? title.toLowerCase() : title;
 
-export function Window({ transitionState, onClose, size = "md", title, subtitle, children, className, tools, tabs, tab, onTab, status, statusRight, flush, actions, actionBarInput, role = "dialog" }: WindowProps) {
+export function Window({ transitionState, onClose, size = "md", title, subtitle, children, className, tools, tabs, tab, onTab, status, statusRight, flush, side, actions, actionBarInput, role = "dialog" }: WindowProps) {
     const style = useWindowStyle();
     const accent = windowAccent();
     const closing = transitionState >= 2;
@@ -128,7 +131,14 @@ export function Window({ transitionState, onClose, size = "md", title, subtitle,
                         ))}
                     </nav>
                 )}
-                <div className={classes("vc-sw-body", flush && "vc-sw-body-flush")}>{children}</div>
+                {side != null
+                    ? (
+                        <div className="vc-sw-sided">
+                            <aside className="vc-sw-side">{side}</aside>
+                            <div className={classes("vc-sw-body", flush && "vc-sw-body-flush")}>{children}</div>
+                        </div>
+                    )
+                    : <div className={classes("vc-sw-body", flush && "vc-sw-body-flush")}>{children}</div>}
                 {showActions && (
                     <div className="vc-sw-actions">
                         <div className="vc-sw-actions-left">{actionBarInput}</div>

@@ -4,6 +4,7 @@
     --cal-event: #a78bfa;
     --cal-reminder: #fbbf24;
     --cal-imported: #4f8cff;
+    --cal-package: #c08a4f;
     padding-bottom: 12px;
     container-type: inline-size;
 }
@@ -188,7 +189,9 @@
 
 /* Imported calendars */
 .vc-cal-dot-imported { background: var(--cal-imported); }
+.vc-cal-dot-package { background: var(--cal-package); }
 .vc-cal-item-imported { border-left-color: var(--cal-imported); }
+.vc-cal-item-package { border-left-color: var(--cal-package); }
 .vc-cal-cals { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 .vc-cal-cals-bar { display: flex; flex-wrap: wrap; gap: 6px; }
 .vc-cal-cal { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: calc(8px * var(--sw-r, 1)); font-size: 13px; color: var(--text-default, var(--text-normal)); }
@@ -235,6 +238,7 @@
 .vc-cal-item-event { --k: var(--cal-event); }
 .vc-cal-item-reminder { --k: var(--cal-reminder); }
 .vc-cal-item-imported { --k: var(--cal-imported); }
+.vc-cal-item-package { --k: var(--cal-package); }
 .vc-cal-item-icon { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: calc(10px * var(--sw-r, 1)); font-size: 17px; background: color-mix(in srgb, var(--k) 24%, transparent); box-shadow: var(--sw-noglow, 0 0 12px -4px var(--k)); }
 .vc-cal-item-title { font-size: 14.5px; }
 .vc-cal-item-sub { margin-top: 2px; }

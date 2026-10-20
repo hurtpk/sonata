@@ -10,6 +10,7 @@ import { ChannelStore, GuildScheduledEventStore, GuildStore, UserStore } from "@
 
 import { dateInYear } from "../birthdayReminders/dates";
 import { allBirthdays } from "../birthdayReminders/store";
+import { calendarParcels } from "../packageTracker/store";
 import { getItems, repeatStep } from "../scheduledMessages/store";
 import { getImports, occurrences } from "./ics";
 import { CalendarItem, repeatsBetween } from "./month";
@@ -22,6 +23,8 @@ export interface SourceOptions {
     reminders: boolean;
     /** Calendars you imported (.ics files and links). */
     imported: boolean;
+    /** Parcels from Package Tracker you've put on the calendar. */
+    packages?: boolean;
     /** Only server events you've marked yourself interested in. */
     interestedOnly: boolean;
 }
@@ -123,5 +126,6 @@ export function itemsBetween(from: number, to: number, o: SourceOptions): Calend
         ...(o.events ? safe(() => events(from, to, o.interestedOnly)) : []),
         ...(o.reminders ? safe(() => reminders(from, to)) : []),
         ...(o.imported !== false ? safe(() => imported(from, to)) : []),
+        ...(o.packages !== false ? safe(() => calendarParcels(from, to).map(p => ({ ...p, kind: "package" as const }))) : []),
     ];
 }

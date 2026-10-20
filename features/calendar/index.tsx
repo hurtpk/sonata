@@ -40,6 +40,7 @@ export const settings = defineFeatureSettings("calendar", {
     showEvents: { type: OptionType.BOOLEAN, description: "Show server events", default: true, hidden: true },
     showReminders: { type: OptionType.BOOLEAN, description: "Show reminders", default: true, hidden: true },
     showImported: { type: OptionType.BOOLEAN, description: "Show imported calendars", default: true, hidden: true },
+    showPackages: { type: OptionType.BOOLEAN, description: "Show parcels from Package Tracker", default: true, hidden: true },
     addedToDock: {
         type: OptionType.BOOLEAN,
         description: "Internal: the dock button was added once (removing it from the dock keeps it removed).",
@@ -49,13 +50,13 @@ export const settings = defineFeatureSettings("calendar", {
 });
 
 const SETTING_FOR: Record<keyof SourceOptions, string> = {
-    birthdays: "showBirthdays", scheduled: "showScheduled", events: "showEvents", reminders: "showReminders", imported: "showImported", interestedOnly: "interestedOnly",
+    birthdays: "showBirthdays", scheduled: "showScheduled", events: "showEvents", reminders: "showReminders", imported: "showImported", packages: "showPackages", interestedOnly: "interestedOnly",
 };
 
 function open() {
     const s = settings.store as any;
     openCalendar(Number(settings.store.weekStart) === 0 ? 0 : 1, {
-        birthdays: s.showBirthdays, scheduled: s.showScheduled, events: s.showEvents, reminders: s.showReminders, imported: s.showImported !== false, interestedOnly: s.interestedOnly,
+        birthdays: s.showBirthdays, scheduled: s.showScheduled, events: s.showEvents, reminders: s.showReminders, imported: s.showImported !== false, packages: s.showPackages !== false, interestedOnly: s.interestedOnly,
     }, (k, v) => { s[SETTING_FOR[k]] = v; });
 }
 

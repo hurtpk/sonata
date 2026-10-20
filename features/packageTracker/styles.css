@@ -1,0 +1,94 @@
+/* ─── Package Tracker window ─── */
+.vc-track-add { display: flex; flex-direction: column; gap: 8px; padding: 2px 2px 12px; margin-bottom: 6px; border-bottom: 1px solid var(--sw-line); }
+.vc-track-add-row { display: flex; align-items: center; gap: 8px; }
+.vc-track-add-row .vc-track-hint { flex: 1; min-width: 0; }
+.vc-track-hint { margin: 0; font-size: 12.5px; color: var(--sw-soft); }
+.vc-track-carrier { width: auto; flex: none; padding: 6px 8px !important; font-size: 12.5px !important; }
+
+.vc-track-detail { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; min-width: 0; }
+.vc-track-name { max-width: 320px; padding: 4px 9px !important; font-size: 15px !important; }
+
+/* The four steps */
+.vc-track-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px 0 2px; }
+.vc-track-step { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.vc-track-step i { position: relative; z-index: 1; width: 14px; height: 14px; border-radius: 50%; background: var(--sw-inner); border: 2px solid var(--sw-line2); box-sizing: border-box; }
+/* The line joining each step to the one before it */
+.vc-track-step + .vc-track-step::before { content: ""; position: absolute; top: 6px; right: 50%; width: 100%; height: 2px; background: var(--sw-line2); }
+.vc-track-step-done i, .vc-track-step-now i { background: var(--sw-accent-fill, var(--sw-accent)); border-color: transparent; }
+.vc-track-step-done + .vc-track-step::before, .vc-track-step-now::before { background: var(--sw-accent-fill, var(--sw-accent)) !important; }
+.vc-track-step-now i { box-shadow: 0 0 0 4px color-mix(in srgb, var(--sw-accent) 22%, transparent); }
+.vc-track-step span { font-size: 12px; font-weight: 600; color: var(--sw-muted); }
+.vc-track-step-done span { color: var(--sw-soft); }
+.vc-track-step-now span { color: var(--sw-text); }
+.vc-track-step-warn i { background: #f23f43 !important; box-shadow: 0 0 0 4px hsl(359 87% 60% / 0.2); }
+.vc-track-step-warn span { color: #f57a7c; }
+
+/* The arrival day */
+.vc-track-day { display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-track-day-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.vc-track-cal { flex: none; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--sw-soft); }
+.vc-track-day-text span { font-family: var(--sw-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sw-muted); }
+.vc-track-day b { font-size: 20px; color: var(--sw-text); }
+.vc-track-day small { font-size: 12.5px; color: #f0b232; }
+.vc-track-day-moved { border-color: hsl(40 90% 55% / 0.35); }
+
+.vc-track-items { margin: 0; padding: 10px 14px 10px 32px; display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; color: var(--sw-text); }
+.vc-track-items li::marker { color: var(--sw-muted); }
+.vc-track-pad { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; }
+
+.vc-track-history { display: flex; flex-direction: column; padding: 4px 0; }
+.vc-track-history > div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 14px; font-size: 13px; color: var(--sw-text); }
+.vc-track-history > div + div { border-top: 1px solid var(--sw-line); }
+.vc-track-history small { flex: none; font-size: 12px; color: var(--sw-muted); font-variant-numeric: tabular-nums; }
+
+.vc-track-note { padding: 10px 12px; border-radius: var(--sw-rb); font-size: 13px; line-height: 1.45; color: var(--sw-soft); background: hsl(40 90% 55% / 0.08); border: 1px solid hsl(40 90% 55% / 0.28); }
+.vc-track-note b { color: var(--sw-text); }
+
+.vc-track-copy { all: unset; cursor: pointer; font-family: var(--sw-mono); font-size: 13px; overflow-wrap: anywhere; }
+.vc-track-copy:hover { color: var(--sw-accent); }
+
+.vc-track-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; min-height: 320px; padding: 30px 40px; text-align: center; color: var(--sw-muted); }
+.vc-track-empty b { font-size: 16px; color: var(--sw-text); }
+.vc-track-empty p { margin: 0; max-width: 430px; font-size: 13px; line-height: 1.5; color: var(--sw-soft); }
+
+/* The warning before sending */
+.vc-track-warn { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; font-size: 13.5px; line-height: 1.5; color: var(--sw-soft); }
+.vc-track-warn > b { font-size: 15px; color: var(--sw-text); }
+.vc-track-warn p { margin: 0; }
+.vc-track-warn p b { color: var(--sw-text); }
+
+/* ─── In chat ─── */
+.vc-track-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.vc-track-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 420px;
+    padding: 6px 6px 6px 10px;
+    border-radius: calc(10px * var(--sw-r, 1));
+    background: var(--background-secondary, hsl(0 0% 100% / 0.03));
+    border: 1px solid color-mix(in srgb, var(--text-muted, #949ba4) 16%, transparent);
+}
+.vc-track-chip-on { border-color: color-mix(in srgb, var(--brand-500) 40%, transparent); }
+.vc-track-chip-icon { display: grid; place-items: center; color: var(--brand-500); }
+.vc-track-chip-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.vc-track-chip-text b { font-size: 13px; color: var(--text-default, var(--text-normal)); }
+.vc-track-chip-text small { font-size: 11.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-track-chip-btn {
+    all: unset;
+    cursor: pointer;
+    flex: none;
+    padding: 5px 12px;
+    border-radius: calc(7px * var(--sw-r, 1));
+    font-size: 12.5px;
+    font-weight: 700;
+    color: oklch(from var(--brand-500) clamp(0.2, (0.78 - l) * 1000, 1) 0 0);
+    background: var(--vc-sonata-gradient, var(--brand-500));
+}
+.vc-track-chip-btn:hover { filter: brightness(1.08); }
+.vc-track-chip-btn:focus-visible { outline: 2px solid var(--text-default, #fff); outline-offset: 2px; }
+
+/* Delivery links and their previews, blurred until you hover them. */
+.vc-track-covered { filter: blur(5px); transition: filter 0.15s; }
+article.vc-track-covered { filter: blur(12px); }
+.vc-track-covered:hover, .vc-track-covered:focus-visible { filter: none; }

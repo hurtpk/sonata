@@ -16,6 +16,7 @@ import { isFeatureRunning } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { useBirthdays } from "../birthdayReminders/store";
+import { openPackage } from "../packageTracker/store";
 import { openScheduler } from "../scheduledMessages/Panel";
 import { useQueue } from "../scheduledMessages/store";
 import { addImport, ExportItem, ImportedCalendar, removeImport, updateImport, useImports, writeIcs } from "./ics";
@@ -31,9 +32,10 @@ const KINDS: { kind: Kind; label: string; icon: string; }[] = [
     { kind: "event", label: "Server events", icon: "📅" },
     { kind: "reminder", label: "Reminders", icon: "🔔" },
     { kind: "imported", label: "Imported", icon: "🗓️" },
+    { kind: "package", label: "Packages", icon: "📦" },
 ];
 
-const optionKey: Record<Kind, keyof SourceOptions> = { birthday: "birthdays", scheduled: "scheduled", event: "events", reminder: "reminders", imported: "imported" };
+const optionKey: Record<Kind, keyof SourceOptions> = { birthday: "birthdays", scheduled: "scheduled", event: "events", reminder: "reminders", imported: "imported", package: "packages" };
 
 const timeText = (at: number) => new Date(at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 
@@ -54,6 +56,7 @@ function ItemRow({ it, close }: { it: CalendarItem; close(): void; }) {
         });
     }
     if (it.kind === "reminder") actions.push({ label: "Delete", danger: true, run: () => removeReminder(it.ref.reminderId) });
+    if (it.kind === "package") actions.push({ label: "Open", run: () => { openPackage(it.ref.packageId); close(); } });
 
     return (
         <div className={classes(cl("item"), cl(`item-${it.kind}`), past && cl("item-past"))} style={it.ref?.color ? ({ "--k": it.ref.color } as React.CSSProperties) : undefined} title={it.ref?.description}>
@@ -100,7 +103,7 @@ function AddReminder({ day }: { day: Date; }) {
 /** Everything in the calendar from a month ago to a year ahead, as calendar-file entries. */
 function exportItems(): ExportItem[] {
     const now = Date.now();
-    const all = itemsBetween(now - 30 * 86_400_000, now + 366 * 86_400_000, { birthdays: true, scheduled: true, events: true, reminders: true, imported: false, interestedOnly: false });
+    const all = itemsBetween(now - 30 * 86_400_000, now + 366 * 86_400_000, { birthdays: true, scheduled: true, events: true, reminders: true, imported: false, packages: true, interestedOnly: false });
     const seenBirthday = new Set<string>();
     const out: ExportItem[] = [];
     for (const it of all) {

@@ -84,6 +84,8 @@ import filePreviewer from "./features/filePreviewer";
 import fontSwapper from "./features/fontSwapper";
 import forceOwnerCrown from "./features/forceOwnerCrown";
 import gameActivityToggle from "./features/gameActivityToggle";
+import games from "./features/games";
+import packageTracker from "./features/packageTracker";
 import gifMaker from "./features/gifMaker";
 import giftWrap from "./features/giftWrap";
 import imageFilename from "./features/imageFilename";
@@ -94,6 +96,7 @@ import inviteManager from "./features/inviteManager";
 import linkCleaner from "./features/linkCleaner";
 import linkEmbedFixer from "./features/linkEmbedFixer";
 import liveRpcEditor from "./features/liveRpcEditor";
+import localNames from "./features/localNames";
 import longMessageCollapser from "./features/longMessageCollapser";
 import mediaDownloader from "./features/mediaDownloader";
 import messageCleanerUtil from "./features/messageCleanerUtil";
@@ -317,7 +320,7 @@ const FEATURES: Record<string, Feature> = {
     gameActivityToggle, platformSpoofer, showRolesInChat, soundStudio, miniGames,
     typingSounds, autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
     smoothChat, currencyConverter, giftWrap, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
-    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges,
+    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges, localNames, games, packageTracker,
     antimod, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
 

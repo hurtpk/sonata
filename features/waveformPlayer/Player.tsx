@@ -7,6 +7,7 @@
 import { classNameFactory } from "@utils/css";
 import { React, useEffect, useRef, useState } from "@webpack/common";
 
+import { DownloadIcon, LoopIcon, PauseIcon, PlayIcon, PopOutIcon, QueueIcon, VolumeIcon } from "./icons";
 import { channelQueue, pauseMini, popOut, Track } from "./mini";
 import { getPeaks, isStereo, MAX_BYTES, Peaks } from "./peaks";
 
@@ -48,6 +49,7 @@ export function WaveformPlayer({ file, split, track }: { file: AudioFile; split:
     const [duration, setDuration] = useState(0);
     const [speed, setSpeed] = useState(1);
     const [volume, setVolume] = useState(1);
+    const lastVolume = useRef(1);
     const [loop, setLoop] = useState(false);
     const [hover, setHover] = useState<number | null>(null);
     // A part to play over and over (seconds): set with the A–B button, or Shift+drag across the waveform.
@@ -93,7 +95,8 @@ export function WaveformPlayer({ file, split, track }: { file: AudioFile; split:
     }, [isPlaying]);
     useEffect(() => () => { if (playing === audio.current) playing = null; }, []);
 
-    const dur = duration || peaks?.duration || 0;
+    // A streamed file can report an endless length; the decoded waveform knows the real one.
+    const dur = (isFinite(duration) && duration) || peaks?.duration || 0;
 
     /** Back to the start of the looped part once playback runs past its end. */
     function keepInPart(a: HTMLAudioElement) {
@@ -116,7 +119,13 @@ export function WaveformPlayer({ file, split, track }: { file: AudioFile; split:
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, width, h);
         const style = getComputedStyle(c);
-        const played = style.getPropertyValue("--wave-played").trim() || "#5865f2";
+        const first = style.getPropertyValue("--wave-played").trim() || "#5865f2";
+        // With a two-colour accent, the played part fades from one to the other.
+        const second = style.getPropertyValue("--vc-sonata-accent-2").trim();
+        let played: string | CanvasGradient = first;
+        if (second) {
+            try { const g = ctx.createLinearGradient(0, 0, width, 0); g.addColorStop(0, first); g.addColorStop(1, second); played = g; } catch { }
+        }
         const rest = style.getPropertyValue("--wave-rest").trim() || "rgba(255,255,255,0.25)";
         const ghost = style.getPropertyValue("--wave-ghost").trim() || "rgba(255,255,255,0.45)";
         const bar = 3, gap = 1.5, count = Math.floor(width / (bar + gap));
@@ -160,6 +169,13 @@ export function WaveformPlayer({ file, split, track }: { file: AudioFile; split:
             ctx.fillStyle = "rgba(255,255,255,0.12)";
             ctx.fillRect(0, h / 2 - 0.25, width, 0.5);
         }
+        // Where it's up to: a thin line once it has started.
+        if (dur && time > 0) {
+            ctx.fillStyle = style.getPropertyValue("--wave-head").trim() || "#fff";
+            ctx.beginPath();
+            ctx.roundRect(Math.min(width - 2, Math.max(0, at * width - 1)), 1, 2, h - 2, 1);
+            ctx.fill();
+        }
     }, [peaks, width, time, dur, hover, stereo, part]);
 
     const toggle = () => {
@@ -191,6 +207,14 @@ export function WaveformPlayer({ file, split, track }: { file: AudioFile; split:
         else if (e.key === "ArrowLeft") { e.preventDefault(); a.currentTime = Math.max(0, a.currentTime - 5); setTime(a.currentTime); }
     };
 
+    const setVol = (v: number) => {
+        setVolume(v);
+        if (v > 0) lastVolume.current = v;
+        if (audio.current) audio.current.volume = v;
+    };
+    const kind = /\.([a-z0-9]{2,5})$/i.exec(file.filename)?.[1]?.toUpperCase();
+    const partLabel = !part ? "A–B" : part.to == null ? "A–…" : fmt(part.from) + "–" + fmt(part.to);
+
     return (
         <div className={cl("player", isPlaying && "playing")} tabIndex={0} onKeyDown={onKey} aria-label={`Audio: ${file.filename}`}>
             <audio ref={audio} src={file.url} preload="metadata" loop={loop}
@@ -198,14 +222,16 @@ export function WaveformPlayer({ file, split, track }: { file: AudioFile; split:
                 onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setTime(0); }}
                 onTimeUpdate={e => { if (!isPlaying && !dragging.current) setTime(e.currentTarget.currentTime); }} />
             <button type="button" className={cl("play")} onClick={toggle} aria-label={isPlaying ? "Pause" : "Play"}>
-                {isPlaying
-                    ? <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2" /><rect x="14" y="5" width="4" height="14" rx="1.2" /></svg>
-                    : <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg>}
+                {isPlaying ? <PauseIcon /> : <span className={cl("play-nudge")}><PlayIcon /></span>}
             </button>
             <div className={cl("body")}>
                 <div className={cl("head")}>
                     <a className={cl("name")} href={file.url} target="_blank" rel="noreferrer" title={file.filename}>{file.filename}</a>
-                    <span className={cl("meta")}>{stereo ? "L / R · " : ""}{sizeOf(file.size)}</span>
+                    <span className={cl("meta")}>
+                        {stereo && <span className={cl("tag")}>L / R</span>}
+                        {kind && <span className={cl("tag")}>{kind}</span>}
+                        {sizeOf(file.size)}
+                    </span>
                 </div>
                 <div className={cl("wave")} ref={box}>
                     <canvas ref={canvas}
@@ -235,29 +261,33 @@ export function WaveformPlayer({ file, split, track }: { file: AudioFile; split:
                     {hover != null && dur > 0 && <span className={cl("tip")} style={{ left: `${hover * 100}%` }}>{fmt(hover * dur)}</span>}
                 </div>
                 <div className={cl("controls")}>
-                    <span className={cl("time")}>{fmt(time)} / {fmt(dur)}</span>
+                    <span className={cl("time")}><b>{fmt(time)}</b><span className={cl("total")}> / {fmt(dur)}</span></span>
                     <span className={cl("grow")} />
-                    <button type="button" className={cl("ctl")} title="Playback speed" onClick={() => { const next = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]; setSpeed(next); if (audio.current) audio.current.playbackRate = next; }}>{speed}×</button>
-                    <button type="button" className={cl("ctl", loop && "ctl-on")} title={loop ? "Looping" : "Loop"} onClick={() => setLoop(v => !v)}>⟲</button>
-                    <button type="button" className={cl("ctl", part && "ctl-on")}
-                        title={!part ? "Loop a part: press here at the start, then again at the end (or Shift+drag across the waveform)" : part.to == null ? "Now press again where the part should end" : "Looping " + fmt(part.from) + "–" + fmt(part.to) + " — press to stop"}
-                        onClick={() => {
-                            const t = audio.current?.currentTime ?? time;
-                            if (!part) setPart({ from: t });
-                            else if (part.to == null) setPart(t - part.from < 0.3 ? null : { from: part.from, to: t });
-                            else setPart(null);
-                        }}>{!part ? "A–B" : part.to == null ? "A–…" : fmt(part.from) + "–" + fmt(part.to)}</button>
-                    <label className={cl("vol")} title="Volume">
-                        <span aria-hidden>{volume === 0 ? "🔇" : volume < 0.5 ? "🔉" : "🔊"}</span>
-                        <input type="range" min={0} max={1} step={0.02} value={volume} aria-label="Volume"
+                    <div className={cl("group")}>
+                        <button type="button" className={cl("ctl", "chip", speed !== 1 && "ctl-on")} title="Playback speed" onClick={() => { const next = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]; setSpeed(next); if (audio.current) audio.current.playbackRate = next; }}>{speed}×</button>
+                        <button type="button" className={cl("ctl", "chip", part && "ctl-on")}
+                            title={!part ? "Loop a part: press here at the start, then again at the end (or Shift+drag across the waveform)" : part.to == null ? "Now press again where the part should end" : "Looping " + partLabel + " — press to stop"}
+                            onClick={() => {
+                                const t = audio.current?.currentTime ?? time;
+                                if (!part) setPart({ from: t });
+                                else if (part.to == null) setPart(t - part.from < 0.3 ? null : { from: part.from, to: t });
+                                else setPart(null);
+                            }}>{partLabel}</button>
+                        <button type="button" className={cl("ctl", loop && "ctl-on")} title={loop ? "Looping — press to stop" : "Loop"} aria-pressed={loop} onClick={() => setLoop(v => !v)}><LoopIcon /></button>
+                    </div>
+                    <div className={cl("group", "vol")}>
+                        <button type="button" className={cl("ctl")} title={volume === 0 ? "Unmute" : "Mute"} onClick={() => setVol(volume === 0 ? lastVolume.current : 0)}><VolumeIcon level={volume} /></button>
+                        <input type="range" min={0} max={1} step={0.02} value={volume} aria-label="Volume" title={`Volume ${Math.round(volume * 100)}%`}
                             style={{ "--fill": `${volume * 100}%` } as React.CSSProperties}
-                            onChange={e => { const v = Number(e.currentTarget.value); setVolume(v); if (audio.current) audio.current.volume = v; }} />
-                    </label>
-                    <button type="button" className={cl("ctl")} title="Play this and every audio file after it in this channel"
-                        onClick={() => { const q = channelQueue(track); popOut(q[0], audio.current?.currentTime ?? 0, q.slice(1)); }}>▶▶ All</button>
-                    <button type="button" className={cl("ctl")} title="Pop out — keeps playing while you move around Discord"
-                        onClick={() => popOut(track, audio.current?.currentTime ?? 0)}>⧉</button>
-                    <a className={cl("ctl")} href={file.url} download={file.filename} title="Download" target="_blank" rel="noreferrer">⤓</a>
+                            onChange={e => setVol(Number(e.currentTarget.value))} />
+                    </div>
+                    <div className={cl("group")}>
+                        <button type="button" className={cl("ctl")} title="Play this and every audio file after it in this channel"
+                            onClick={() => { const q = channelQueue(track); popOut(q[0], audio.current?.currentTime ?? 0, q.slice(1)); }}><QueueIcon /></button>
+                        <button type="button" className={cl("ctl")} title="Pop out — keeps playing while you move around Discord"
+                            onClick={() => popOut(track, audio.current?.currentTime ?? 0)}><PopOutIcon /></button>
+                        <a className={cl("ctl")} href={file.url} download={file.filename} title="Download" target="_blank" rel="noreferrer"><DownloadIcon /></a>
+                    </div>
                 </div>
             </div>
         </div>

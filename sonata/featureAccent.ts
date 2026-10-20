@@ -23,7 +23,7 @@ const PREFIXES = [
     "vc-bday-", "vc-bpf-", "vc-cachec-", "vc-autoreact-", "vc-declutter-", "vc-dmprev-", "vc-fakedms-", "vc-fprev-", "vc-fx-",
     "vc-gifmaker-", "vc-gp-", "vc-imgzoom-", "vc-invm-", "vc-liverpc-", "vc-ml-modal-", "vc-mquote-", "vc-msg-logger-enhanced-",
     "vc-msgtimer-", "vc-ocr-", "vc-otd-", "vc-permviewer-", "vc-pindms-", "vc-purger-", "vc-qolcc-", "vc-schedmsg-", "vc-shc-",
-    "vc-sq-", "vc-trans-", "vc-vmsg-", "vc-vtl-", "vc-zip-preview-", "vc-chsettings-", "vc-embedsender-", "vc-voice-", "vc-sstudio-", "vc-mg-", "vc-cg-", "vc-sset-", "vc-doc-", "vc-sonata-tray", "vc-avb-", "vc-streak-", "vc-wave-", "vc-ascii-", "vc-font-", "vc-remw-", "vc-todo-", "vc-conv-", "vc-fconv-", "vc-vedit-", "vc-cmdsc-", "vc-ptag-", "vc-tts-", "vc-wallet-", "vc-shield-", "vc-ttt-", "vc-rbx-", "vc-steam-", "vc-qtext-", "vc-cnotes-", "vc-whisper", "vc-dl-", "vc-ts-", "vc-bm-", "vc-cbadge-",
+    "vc-sq-", "vc-trans-", "vc-vmsg-", "vc-vtl-", "vc-zip-preview-", "vc-chsettings-", "vc-embedsender-", "vc-voice-", "vc-sstudio-", "vc-mg-", "vc-cg-", "vc-sset-", "vc-doc-", "vc-sonata-tray", "vc-avb-", "vc-streak-", "vc-wave-", "vc-ascii-", "vc-font-", "vc-remw-", "vc-todo-", "vc-conv-", "vc-fconv-", "vc-vedit-", "vc-cmdsc-", "vc-ptag-", "vc-tts-", "vc-wallet-", "vc-shield-", "vc-ttt-", "vc-rbx-", "vc-steam-", "vc-qtext-", "vc-cnotes-", "vc-whisper", "vc-dl-", "vc-ts-", "vc-bm-", "vc-cbadge-", "vc-localnames-", "vc-games-", "vc-track-",
 ];
 
 const STYLE_ID = "sonata-feature-accent";

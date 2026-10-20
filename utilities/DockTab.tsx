@@ -5,16 +5,18 @@
  */
 
 import { classes } from "@utils/misc";
-import { Select, Tooltip, useCallback, useEffect, useMemo, useState } from "@webpack/common";
+import { Tooltip, useCallback, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { ColorPicker } from "../features/_shared/ColorPicker";
 import { addDockMutationListener, getDockItems, PINNED_DOCK_ID, refreshDock, removeDockMutationListener } from "./dock";
 import { dockColorOf, dockLayoutOf, dockSizeOf } from "./dockColor";
 import { DEFAULT_DOCK_ICON_KEY, DOCK_ICON_GROUPS, DOCK_ICON_LIBRARY, DOCK_ICON_MAP } from "./icons";
+import { candidateIcon, PluginPicker } from "./PluginPicker";
 import {
     cl,
     customDockId,
     customDockPluginName,
+    dockCandidate,
     dockLabel,
     getDockCandidates,
     isCustomDockId,
@@ -105,9 +107,26 @@ function IconPreview({ iconKey }: { iconKey: string; }) {
 }
 
 /** Pick an icon: search and categories on the left, the icons on the right, and what's picked along the bottom. */
-export function IconPicker({ selected, onSelect }: { selected: string; onSelect(key: string): void; }) {
+export function IconPicker({ selected, onSelect, reveal }: { selected: string; onSelect(key: string): void; /** Change it to jump to the picked icon (its category, scrolled to, and lit up). */ reveal?: number; }) {
     const [query, setQuery] = useState("");
     const [group, setGroup] = useState<string>(() => DOCK_ICON_MAP[selected]?.group ?? DOCK_ICON_GROUPS[0]);
+    const [flash, setFlash] = useState(false);
+    const grid = useRef<HTMLDivElement>(null);
+    const groups = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!reveal) return;
+        setQuery("");
+        if (DOCK_ICON_MAP[selected]) setGroup(DOCK_ICON_MAP[selected].group);
+        setFlash(true);
+        const t = setTimeout(() => setFlash(false), 1400);
+        return () => clearTimeout(t);
+    }, [reveal]);
+    // Once its category is showing, bring the icon into view.
+    useEffect(() => {
+        if (!flash) return;
+        grid.current?.querySelector("[aria-pressed=\"true\"]")?.scrollIntoView({ block: "nearest" });
+        groups.current?.querySelector("[aria-selected=\"true\"]")?.scrollIntoView({ block: "nearest" });
+    }, [flash, group]);
     const q = query.trim().toLowerCase();
     const matches = (i: typeof DOCK_ICON_LIBRARY[number]) => !q || i.label.toLowerCase().includes(q) || i.key.toLowerCase().includes(q) || i.group.toLowerCase().includes(q);
     const counts = useMemo(() => Object.fromEntries(DOCK_ICON_GROUPS.map(g => [g, DOCK_ICON_LIBRARY.filter(i => i.group === g && matches(i)).length])), [q]);
@@ -118,7 +137,7 @@ export function IconPicker({ selected, onSelect }: { selected: string; onSelect(
             <div className={cl("dock-ip-side")}>
                 <input className={cl("dock-ip-search")} value={query} placeholder={`Search ${DOCK_ICON_LIBRARY.length} icons`} aria-label="Search icons"
                     onChange={e => setQuery(e.currentTarget.value)} />
-                <div className={cl("dock-ip-groups")} role="tablist">
+                <div className={cl("dock-ip-groups")} role="tablist" ref={groups}>
                     {DOCK_ICON_GROUPS.map(g => (
                         <button key={g} type="button" role="tab" aria-selected={!q && g === group} disabled={!counts[g]}
                             className={classes(cl("dock-ip-group"), !q && g === group && cl("dock-ip-group-on"))}
@@ -131,10 +150,10 @@ export function IconPicker({ selected, onSelect }: { selected: string; onSelect(
             <div className={cl("dock-ip-main")}>
                 <div className={cl("dock-ip-head")}>{q ? `${shown.length} match${shown.length === 1 ? "" : "es"} for “${query.trim()}”` : group}</div>
                 {shown.length ? (
-                    <div className={cl("dock-ip-grid")}>
+                    <div className={cl("dock-ip-grid")} ref={grid}>
                         {shown.map(({ key, label, Icon }) => (
                             <button key={key} type="button" aria-label={label} title={label} aria-pressed={key === selected}
-                                className={classes(cl("dock-ip-icon"), key === selected && cl("dock-ip-icon-on"))} onClick={() => onSelect(key)}>
+                                className={classes(cl("dock-ip-icon"), key === selected && cl("dock-ip-icon-on"), key === selected && flash && cl("dock-ip-icon-reveal"))} onClick={() => onSelect(key)}>
                                 <Icon width={20} height={20} />
                             </button>
                         ))}
@@ -161,6 +180,8 @@ export function DockTab({ settings }: { settings: DockSettings; }) {
     const [selectedPlugin, setSelectedPlugin] = useState<string | null>(null);
     const [selectedIcon, setSelectedIcon] = useState(DEFAULT_DOCK_ICON_KEY);
     const [editing, setEditing] = useState<Editing | null>(null);
+    // Bumped when a feature is picked, so the icon picker jumps to that feature's icon.
+    const [reveal, setReveal] = useState(0);
 
     useEffect(() => {
         const cb = () => forceUpdate(x => x + 1);
@@ -300,7 +321,7 @@ export function DockTab({ settings }: { settings: DockSettings; }) {
     const editingName = editing && (editing.plugin != null ? dockLabel(customDockPluginName(editing.id)) : editingEntry?.entry.props.tooltipText ?? editing.id);
     // When editing a button you added, its current plugin is a choice too.
     const editCandidates = editing?.plugin != null
-        ? [{ value: customDockPluginName(editing.id), label: dockLabel(customDockPluginName(editing.id)) }, ...candidates]
+        ? [dockCandidate(customDockPluginName(editing.id)), ...candidates]
         : [];
 
     return (
@@ -396,18 +417,11 @@ export function DockTab({ settings }: { settings: DockSettings; }) {
                     </div>
                     {editing.plugin != null && (
                         <div className={cl("dock-add-row")}>
-                            <Select
-                                options={editCandidates.map(c => ({ label: c.label, value: c.value }))}
-                                placeholder="Choose a plugin or Sonata feature…"
-                                serialize={String}
-                                select={v => setEditing(ed => ed && { ...ed, plugin: v })}
-                                isSelected={v => v === editing.plugin}
-                                closeOnSelect
-                                className={cl("dock-add-select")}
-                            />
+                            <PluginPicker options={editCandidates} value={editing.plugin} placeholder="Choose a Sonata feature or plugin…"
+                                onPick={c => { setEditing(ed => ed && { ...ed, plugin: c.value, icon: c.kind === "feature" ? candidateIcon(c) : ed.icon }); if (c.kind === "feature") setReveal(n => n + 1); }} />
                         </div>
                     )}
-                    <IconPicker selected={editing.icon} onSelect={key => setEditing(ed => ed && { ...ed, icon: key })} />
+                    <IconPicker selected={editing.icon} reveal={reveal} onSelect={key => setEditing(ed => ed && { ...ed, icon: key })} />
                     <div className={cl("dock-add-actions")}>
                         {editing.plugin == null && iconOverrides[editing.id] && (
                             <button type="button" className={cl("dock-add-cancel")} onClick={() => setEditing(ed => ed && { ...ed, icon: "" })}>
@@ -428,15 +442,8 @@ export function DockTab({ settings }: { settings: DockSettings; }) {
                 ) : (
                     <div className={cl("dock-add-form")}>
                         <div className={cl("dock-add-row")}>
-                            <Select
-                                options={candidates.map(c => ({ label: c.label, value: c.value }))}
-                                placeholder={candidates.length ? "Choose a plugin or Sonata feature…" : "Nothing left to add"}
-                                serialize={String}
-                                select={v => setSelectedPlugin(v)}
-                                isSelected={v => v === selectedPlugin}
-                                closeOnSelect
-                                className={cl("dock-add-select")}
-                            />
+                            <PluginPicker options={candidates} value={selectedPlugin} placeholder={candidates.length ? "Choose a Sonata feature or plugin…" : "Nothing left to add"}
+                                onPick={c => { setSelectedPlugin(c.value); if (c.kind === "feature") { setSelectedIcon(candidateIcon(c)); setReveal(n => n + 1); } }} />
                         </div>
                         {selectedPlugin && (
                             <div className={cl("dock-add-note")}>
@@ -451,7 +458,7 @@ export function DockTab({ settings }: { settings: DockSettings; }) {
                                 })()}
                             </div>
                         )}
-                        <IconPicker selected={selectedIcon} onSelect={setSelectedIcon} />
+                        <IconPicker selected={selectedIcon} reveal={reveal} onSelect={setSelectedIcon} />
                         <div className={cl("dock-add-actions")}>
                             <button
                                 type="button"

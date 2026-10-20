@@ -13,6 +13,8 @@ import { openModal, showToast, useEffect, useMemo, useReducer, useState } from "
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
+import { useHubFrame } from "../games/hub";
+import { openGames } from "../games/Panel";
 import { checkGames, isUpdate, onStatus, opts, runCheck, status } from "./check";
 import { openGame } from "./GamePage";
 import type { SteamFriend, SteamNews, SteamSearchHit } from "./native";
@@ -620,11 +622,15 @@ function FriendsTab({ goProfile }: { goProfile(): void; }) {
 
 type Tab = "watch" | "activity" | "friends" | "profile";
 
-function WatcherModal({ modalProps, start }: { modalProps: RenderModalProps; start: Tab; }) {
+let lastTab: Tab = "watch";
+
+/** Steam, as a section of Game Hub: its content here, its tabs and status line on Game Hub's window. */
+export function SteamSection({ start }: { start?: string; }) {
     const data = useSteam();
     const st = useStatus();
     const accent = windowAccent("steamWatcher");
-    const [tab, setTab] = useState<Tab>(start);
+    const [tab, setTabState] = useState<Tab>((start as Tab) ?? lastTab);
+    const setTab = (t: Tab) => { lastTab = t; setTabState(t); };
 
     const list = data.games;
     const onSale = list.filter(g => (g.price?.pct ?? 0) > 0);
@@ -634,12 +640,14 @@ function WatcherModal({ modalProps, start }: { modalProps: RenderModalProps; sta
     useEffect(() => { if (tab === "activity") markSeen(); }, [tab]);
     const best = [...onSale].sort((a, b) => (b.price!.pct) - (a.price!.pct))[0];
 
+    useHubFrame({
+        tabs: [["watch", `Watchlist · ${list.length}`], ["activity", unread && tab !== "activity" ? `Activity · ${unread} new` : "Activity"], ["friends", "Friends"], ["profile", "My Steam"]],
+        tab, onTab: id => setTab(id as Tab),
+        status: [st.running ? "checking Steam…" : `watching ${list.length} game${list.length === 1 ? "" : "s"}`, st.lastRun ? `checked ${ago(st.lastRun)}` : "not checked yet"],
+        statusRight: st.nextRun ? `next check ${until(st.nextRun)}` : undefined,
+    });
+
     return (
-        <Window {...modalProps} size="xl" title="Steam Watcher" subtitle="Sales, updates and releases for the games you care about"
-            tabs={[["watch", `Watchlist · ${list.length}`], ["activity", unread && tab !== "activity" ? `Activity · ${unread} new` : "Activity"], ["friends", "Friends"], ["profile", "My Steam"]]}
-            tab={tab} onTab={id => setTab(id as Tab)}
-            status={[st.running ? "checking Steam…" : `watching ${list.length} game${list.length === 1 ? "" : "s"}`, st.lastRun ? `checked ${ago(st.lastRun)}` : "not checked yet"]}
-            statusRight={st.nextRun ? `next check ${until(st.nextRun)}` : undefined}>
             <div className={classes("vc-tool-wrap", sw("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={best ? <Cover src={best.header} appid={best.appid} className={sw("hero-cover")} /> : "🎮"}
                     kicker={st.running ? "Checking Steam…" : best ? "Best deal right now" : "Steam Watcher"}
@@ -652,7 +660,6 @@ function WatcherModal({ modalProps, start }: { modalProps: RenderModalProps; sta
 
                 {tab === "watch" ? <WatchTab list={list} /> : tab === "activity" ? <ActivityTab items={data.feed} /> : tab === "friends" ? <FriendsTab goProfile={() => setTab("profile")} /> : <ProfileTab />}
             </div>
-        </Window>
     );
 }
 
@@ -663,5 +670,6 @@ export function openWatcher(start = "watch") {
         openNews(Number(appid), gid || undefined);
         return;
     }
-    openModal(props => <WatcherModal modalProps={props} start={(["watch", "activity", "friends", "profile"].includes(start) ? start : "watch") as Tab} />);
+    // Steam lives in Game Hub now.
+    openGames({ platform: "steam", steamTab: ["watch", "activity", "friends", "profile"].includes(start) ? start : "watch" });
 }

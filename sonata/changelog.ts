@@ -17,6 +17,19 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.20d",
+        date: "October 20, 2026",
+        title: "Game Hub and Local Names",
+        items: [
+            { icon: "🕹️", text: "New: Game Hub. One window for Epic's free games (this week and next) and Fortnite's item shop, Xbox Game Pass (recently added, coming soon, leaving soon), Minecraft servers (online, players, version) and players (skin and UUID), and a game's price at every store at once. Get told about new free games, Fortnite items you're waiting for, games hitting your price, Game Pass changes and Minecraft servers going down. No sign-in needed." },
+            { icon: "🎮", text: "Steam Watcher and Roblox Tools now live in Game Hub too: pick Steam or Roblox in the list down the left. Switching never redraws the window, every button and menu that opened them opens Game Hub there, and turning either off in Sonata hides it from the list." },
+            { icon: "🎵", text: "The audio file player has a fresh look: proper icons instead of symbols, the file type next to its size, a line showing where it's up to, a speaker button that mutes, and the play button always readable on your accent (gradients too). The pop-out player matches." },
+            { icon: "🧩", text: "Adding a button to the dock: the list now shows only Sonata's features (each with its icon) and your own plugins, with a search, instead of every one of Equicord's built-in pieces. Picking a feature jumps the icon picker to that feature's icon." },
+            { icon: "📦", text: "New: Package Tracker. Paste a tracking number (UPS, USPS, FedEx, DHL, Amazon, Royal Mail, Canada Post, OnTrac) or a DoorDash or Uber Eats tracking link, or press Track under a message that has one. Food shows the store, when you ordered, what you ordered and how far along it is (being made, on the way, delivered) with the arrival time; parcels show their status and arrival day, and can go on your Calendar, moving by themselves if they're delayed. It never reads the address or anyone's name, blurs delivery links in chat, and asks before you send one." },
+            { icon: "🏷️", text: "New: Local Names. Rename servers, channels and group chats just for you: right-click one and pick \"Rename just for me\". The new name shows everywhere, but nobody else sees it, and the real name comes back while you're editing it in its settings so saving there never renames it for everyone." },
+        ],
+    },
+    {
         version: "2026.10.20c",
         date: "October 20, 2026",
         title: "A shorter update bar",

@@ -9,7 +9,7 @@ import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import { classNameFactory } from "@utils/css";
 import { OptionType, Plugin } from "@utils/types";
 
-import Plugins from "~plugins";
+import Plugins, { PluginMeta } from "~plugins";
 
 import { addDockButton, refreshDock, removeDockButton } from "./dock";
 import { DEFAULT_DOCK_ICON_KEY, DOCK_ICON_MAP } from "./icons";
@@ -246,18 +246,38 @@ export function dockLabel(name: string): string {
     return isFeatureEntry(name) ? featureInfo(name)?.name ?? name.slice(FEATURE_PREFIX.length) : name;
 }
 
-export interface DockCandidate { value: string; label: string; opens: Opens; }
+export interface DockCandidate {
+    value: string;
+    label: string;
+    opens: Opens;
+    /** A Sonata feature (with its key, for its icon) or one of your own plugins. */
+    kind: "feature" | "plugin";
+    featureKey?: string;
+}
 
-/** Everything that can be added to the dock: enabled plugins, then Sonata's running features. */
+const isUserPlugin = (p: Plugin) => !!(PluginMeta as Record<string, { userPlugin?: boolean; }>)[p.name]?.userPlugin;
+
+/** A dock entry as a choice (also for one that's already in the dock). */
+export function dockCandidate(name: string): DockCandidate {
+    if (isFeatureEntry(name)) {
+        const f = featureInfo(name);
+        return { value: name, label: f?.name ?? name.slice(FEATURE_PREFIX.length), opens: (f?.opens ?? "page") as Opens, kind: "feature", featureKey: name.slice(FEATURE_PREFIX.length) };
+    }
+    const p = findPlugin(name);
+    return { value: name, label: name, opens: (p && getCustomInterface(p) ? "window" : "settings") as Opens, kind: "plugin" };
+}
+
+/** Everything that can be added to the dock: Sonata's running features, then your own plugins (not Equicord's built-in ones, or Sonata itself). */
 export function getDockCandidates(added: Set<string>): DockCandidate[] {
-    const plugins = getEnabledPlugins()
-        .filter(p => !added.has(p.name))
-        .map(p => ({ value: p.name, label: p.name, opens: (getCustomInterface(p) ? "window" : "settings") as Opens }));
     const features = (featureProvider?.list() ?? [])
         .filter(f => f.running && !added.has(FEATURE_PREFIX + f.key))
         .sort((a, b) => a.name.localeCompare(b.name))
-        .map(f => ({ value: FEATURE_PREFIX + f.key, label: `${f.name} · Sonata`, opens: f.opens as Opens }));
-    return [...plugins, ...features];
+        .map(f => dockCandidate(FEATURE_PREFIX + f.key));
+    const plugins = getEnabledPlugins()
+        .filter(p => isUserPlugin(p) && p.name !== "Sonata" && !added.has(p.name))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(p => dockCandidate(p.name));
+    return [...features, ...plugins];
 }
 
 export function registerCustomDockButton(pluginName: string, iconKey: string): void {
