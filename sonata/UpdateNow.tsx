@@ -14,7 +14,7 @@ import "./updateNow.css";
 import { classes } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, useEffect, useState } from "@webpack/common";
+import { openModal, showToast, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../controller/accent";
 import { Window } from "../features/_shared/Window";
@@ -64,7 +64,9 @@ function UpdateModal({ modalProps, version }: { modalProps: RenderModalProps; ve
             <div className="vc-tool-wrap vc-sonata-upd" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ol className="vc-sonata-upd-steps">
                     {STEPS.map(([id, label, hint], i) => {
-                        const state = done || (!failed && i < at) ? "done" : !failed && i === at ? "now" : failed && i === (failedAt >= 0 ? failedAt : at) ? "bad" : "todo";
+                        const stopped = failedAt >= 0 ? failedAt : at;
+                        // Steps before the one that failed did finish, so they keep their ticks.
+                        const state = done || (!failed && i < at) || (failed && job && i < stopped) ? "done" : !failed && i === at ? "now" : failed && i === stopped ? "bad" : "todo";
                         return (
                             <li key={id} className={classes("vc-sonata-upd-step", `vc-sonata-upd-${state}`)}>
                                 <span className="vc-sonata-upd-dot">{state === "done" ? "✓" : state === "bad" ? "!" : state === "now" ? "" : i + 1}</span>
@@ -77,7 +79,10 @@ function UpdateModal({ modalProps, version }: { modalProps: RenderModalProps; ve
                 {failed && <div className="vc-sonata-upd-error">{startError ?? job?.error}</div>}
                 {failed && job?.log && (
                     <>
-                        <button type="button" className="vc-tool-link" onClick={() => setShowLog(v => !v)}>{showLog ? "Hide details" : "Show details"}</button>
+                        <div className="vc-tool-row">
+                            <button type="button" className="vc-tool-link" onClick={() => setShowLog(v => !v)}>{showLog ? "Hide details" : "Show details"}</button>
+                            <button type="button" className="vc-tool-link" onClick={() => { void navigator.clipboard.writeText(`Sonata update to ${version} failed at ${job.failedStep ?? job.step}: ${job.error ?? ""}\n\n${job.log}`); showToast("Copied — paste it to whoever helps you", "success"); }}>Copy details</button>
+                        </div>
                         {showLog && <pre className="vc-sonata-upd-log">{job.log}</pre>}
                     </>
                 )}

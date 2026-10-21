@@ -17,6 +17,15 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.20g",
+        date: "October 20, 2026",
+        title: "Clearer update problems",
+        items: [
+            { icon: "🔧", text: "If an update stops partway, the steps that did finish keep their ticks, and Copy details copies what went wrong so you can send it to whoever helps you." },
+            { icon: "⬇️", text: "Install Sonata.bat now offers to install yt-dlp (for Media Downloader) whenever it's missing: when updating, repairing or switching to the GitHub version too, not only on the first install." },
+        ],
+    },
+    {
         version: "2026.10.20f",
         date: "October 20, 2026",
         title: "Rounder gradient colours",

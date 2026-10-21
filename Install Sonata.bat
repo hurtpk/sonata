@@ -147,18 +147,7 @@ if "%CONNECTED%"=="0" goto :notconnected
 echo   Connected to: %DISCORDS%
 
 rem ---- Optional: yt-dlp for Media Downloader ----
-call :step "Optional extra"
-echo   Sonata's Media Downloader saves videos and music from YouTube,
-echo   SoundCloud, TikTok and more. It needs a free program called yt-dlp.
-echo.
-where yt-dlp >nul 2>nul
-if not errorlevel 1 (
-    echo   yt-dlp is already installed.
-    goto :installed
-)
-choice /c YN /n /m "  Install yt-dlp now? [Y/N] "
-if errorlevel 2 goto :installed
-winget install --id yt-dlp.yt-dlp -e --source winget --accept-package-agreements --accept-source-agreements
+call :offerytdlp
 
 :installed
 echo.
@@ -231,6 +220,7 @@ call :rebuild
 if errorlevel 1 goto :failed
 call :ensureconnected
 if errorlevel 1 goto :notconnected
+call :offerytdlp
 echo.
 echo  ==============================================================
 echo                        SONATA IS UPDATED
@@ -297,6 +287,7 @@ call :rebuild
 if errorlevel 1 goto :failed
 call :ensureconnected
 if errorlevel 1 goto :notconnected
+call :offerytdlp
 echo.
 echo   Done.
 call :restartdiscord
@@ -323,6 +314,7 @@ call :rebuild
 if errorlevel 1 goto :failed
 call :ensureconnected
 if errorlevel 1 goto :notconnected
+call :offerytdlp
 echo.
 echo   Done.
 call :restartdiscord
@@ -345,6 +337,7 @@ echo.
 echo   Repaired - connected to: %DISCORDS%
 echo.
 call :showdiscords
+call :offerytdlp
 call :restartdiscord
 pause
 exit /b 0
@@ -572,6 +565,22 @@ if errorlevel 1 exit /b 1
 call :step "Building"
 call pnpm build
 exit /b %errorlevel%
+
+rem  yt-dlp (for Media Downloader): asks to install it if it isn't there, and
+rem  says nothing if it is. winget puts it in WinGet\Links, which a window
+rem  that was already open may not see yet, so that folder is checked too.
+:offerytdlp
+where yt-dlp >nul 2>nul
+if not errorlevel 1 exit /b 0
+if exist "%LOCALAPPDATA%\Microsoft\WinGet\Links\yt-dlp.exe" exit /b 0
+call :step "Optional extra"
+echo   Sonata's Media Downloader saves videos and music from YouTube,
+echo   SoundCloud, TikTok and more. It needs a free program called yt-dlp.
+echo.
+choice /c YN /n /m "  Install yt-dlp now? [Y/N] "
+if errorlevel 2 exit /b 0
+winget install --id yt-dlp.yt-dlp -e --source winget --accept-package-agreements --accept-source-agreements
+exit /b 0
 
 rem  Sonata's own extra parts (listed in its package.json) go in its own folder,
 rem  so Equicord's files stay untouched.
