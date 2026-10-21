@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.20h",
+        date: "October 20, 2026",
+        title: "The installer works without winget",
+        items: [
+            { icon: "🛠️", text: "Install Sonata.bat no longer stops with \"This needs winget\". It only looks for winget when something is missing, sets it up if Windows hasn't yet, and otherwise downloads Git and Node.js from their official sites. It also finds them straight after installing, so you don't have to open it again." },
+        ],
+    },
+    {
         version: "2026.10.20g",
         date: "October 20, 2026",
         title: "Clearer update problems",

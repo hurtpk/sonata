@@ -65,16 +65,17 @@ echo.
 choice /c YN /n /m "  Continue? [Y/N] "
 if errorlevel 2 goto :cancelled
 
-rem ---- winget, to install anything missing ----
-where winget >nul 2>nul
-if errorlevel 1 goto :nowinget
+rem  Git and Node.js may already be installed but not on this window's PATH
+rem  (installed a moment ago, or by another app): their usual folders count too.
+call :knownpaths
 
 rem ---- Git ----
 call :step "Checking for Git"
 where git >nul 2>nul
 if not errorlevel 1 goto :hasgit
 echo   Git isn't installed - installing it now...
-winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements
+call :installgit
+call :knownpaths
 where git >nul 2>nul
 if errorlevel 1 goto :restartneeded
 :hasgit
@@ -85,7 +86,8 @@ call :step "Checking for Node.js"
 where node >nul 2>nul
 if not errorlevel 1 goto :hasnode
 echo   Node.js isn't installed - installing it now...
-winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-package-agreements --accept-source-agreements
+call :installnode
+call :knownpaths
 where node >nul 2>nul
 if errorlevel 1 goto :restartneeded
 :hasnode
@@ -100,6 +102,7 @@ where pnpm >nul 2>nul
 if not errorlevel 1 goto :haspnpm
 echo   pnpm isn't installed - installing it now...
 call npm install -g pnpm
+call :knownpaths
 where pnpm >nul 2>nul
 if errorlevel 1 goto :restartneeded
 :haspnpm
@@ -566,6 +569,55 @@ call :step "Building"
 call pnpm build
 exit /b %errorlevel%
 
+rem  The folders Git, Node.js, pnpm and winget install to, added to this window's
+rem  PATH if they exist, so a fresh install works without opening a new window.
+:knownpaths
+if exist "%ProgramFiles%\Git\cmd\git.exe" set "PATH=%PATH%;%ProgramFiles%\Git\cmd"
+if exist "%LOCALAPPDATA%\Programs\Git\cmd\git.exe" set "PATH=%PATH%;%LOCALAPPDATA%\Programs\Git\cmd"
+if exist "%ProgramFiles%\nodejs\node.exe" set "PATH=%PATH%;%ProgramFiles%\nodejs"
+if exist "%APPDATA%\npm\pnpm.cmd" set "PATH=%PATH%;%APPDATA%\npm"
+if exist "%LOCALAPPDATA%\Microsoft\WindowsApps\winget.exe" set "PATH=%PATH%;%LOCALAPPDATA%\Microsoft\WindowsApps"
+exit /b 0
+
+rem  winget (Windows' app installer). It comes with Windows 10 and 11 but sometimes
+rem  isn't set up for this account yet, so it asks Windows to set it up first.
+:findwinget
+where winget >nul 2>nul
+if not errorlevel 1 exit /b 0
+call :knownpaths
+where winget >nul 2>nul
+if not errorlevel 1 exit /b 0
+echo   Setting up winget, Windows' app installer...
+powershell -NoProfile -Command "try { Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop } catch { }" >nul 2>nul
+call :knownpaths
+where winget >nul 2>nul
+exit /b %errorlevel%
+
+rem  Git: through winget, or (without it) Git for Windows' own installer from its
+rem  official GitHub page. Windows asks for permission while it installs.
+:installgit
+call :findwinget
+if errorlevel 1 goto :installgitdirect
+winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements
+exit /b 0
+:installgitdirect
+echo   Downloading Git from its official page ^(github.com/git-for-windows^)...
+echo   Windows will ask for permission to install it - press Yes.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {'arm64'} else {'64-bit'}; $r = Invoke-RestMethod 'https://api.github.com/repos/git-for-windows/git/releases/latest' -Headers @{ 'User-Agent'='Sonata-installer' }; $a = $r.assets | Where-Object { $_.name -match ('^Git-[\d.]+-' + $arch + '\.exe$') } | Select-Object -First 1; $f = Join-Path $env:TEMP $a.name; Invoke-WebRequest $a.browser_download_url -OutFile $f -UseBasicParsing; Start-Process $f -ArgumentList '/VERYSILENT','/NORESTART','/SP-' -Wait; Remove-Item $f -ErrorAction SilentlyContinue"
+exit /b 0
+
+rem  Node.js: through winget, or (without it) the LTS installer from nodejs.org.
+:installnode
+call :findwinget
+if errorlevel 1 goto :installnodedirect
+winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-package-agreements --accept-source-agreements
+exit /b 0
+:installnodedirect
+echo   Downloading Node.js from its official site ^(nodejs.org^)...
+echo   Windows will ask for permission to install it - press Yes.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {'arm64'} else {'x64'}; $v = ((Invoke-RestMethod 'https://nodejs.org/dist/index.json') | Where-Object { $_.lts } | Select-Object -First 1).version; $f = Join-Path $env:TEMP ('node-' + $v + '-' + $arch + '.msi'); Invoke-WebRequest ('https://nodejs.org/dist/' + $v + '/node-' + $v + '-' + $arch + '.msi') -OutFile $f -UseBasicParsing; Start-Process msiexec -ArgumentList ('/i ' + [char]34 + $f + [char]34 + ' /passive /norestart') -Wait -Verb RunAs; Remove-Item $f -ErrorAction SilentlyContinue"
+exit /b 0
+
 rem  yt-dlp (for Media Downloader): asks to install it if it isn't there, and
 rem  says nothing if it is. winget puts it in WinGet\Links, which a window
 rem  that was already open may not see yet, so that folder is checked too.
@@ -577,6 +629,11 @@ call :step "Optional extra"
 echo   Sonata's Media Downloader saves videos and music from YouTube,
 echo   SoundCloud, TikTok and more. It needs a free program called yt-dlp.
 echo.
+call :findwinget
+if errorlevel 1 (
+    echo   It can be installed later with:  winget install yt-dlp
+    exit /b 0
+)
 choice /c YN /n /m "  Install yt-dlp now? [Y/N] "
 if errorlevel 2 exit /b 0
 winget install --id yt-dlp.yt-dlp -e --source winget --accept-package-agreements --accept-source-agreements
@@ -737,14 +794,6 @@ echo.
 echo   Nothing was changed.
 pause
 exit /b 0
-
-:nowinget
-echo.
-echo   This needs "winget" ^(App Installer^), which comes with Windows 10 and 11.
-echo   Get "App Installer" from the Microsoft Store, then run this again.
-echo   Or follow INSTALL.txt to install everything by hand.
-pause
-exit /b 1
 
 :nogit
 echo   Git isn't installed, so this can't check for updates.
