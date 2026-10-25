@@ -87,7 +87,7 @@ function pyReply(s: CmdSpec) {
 export function jsCode(s: CmdSpec) {
     const opts = ordered(s);
     const def = [
-        `    new SlashCommandBuilder()`,
+        "    new SlashCommandBuilder()",
         `        .setName(${jsStr(s.name)})`,
         `        .setDescription(${jsStr(s.description.trim())})`,
         ...opts.map(o => {
@@ -96,13 +96,13 @@ export function jsCode(s: CmdSpec) {
             if (canChoose(o.type) && o.choices.length) chain += `.addChoices(${o.choices.map(c => `{ name: ${jsStr(c.name)}, value: ${choiceValue(o, c.value)} }`).join(", ")})`;
             return `        .${JS_ADD[o.type]}(${chain})`;
         }),
-        ...(s.adminOnly ? [`        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)`] : []),
+        ...(s.adminOnly ? ["        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)"] : []),
     ].join("\n") + ",";
     const handler = [
         `    if (interaction.commandName === ${jsStr(s.name)}) {`,
         ...opts.map(o => `        const ${jsVar(o.name)} = interaction.options.${JS_GET[o.type]}(${jsStr(o.name)});`),
         `        await interaction.reply(${s.private ? `{ content: ${jsReply(s)}, flags: MessageFlags.Ephemeral }` : jsReply(s)});`,
-        `    }`,
+        "    }",
     ].join("\n");
     return { def, handler };
 }
@@ -113,7 +113,7 @@ export function pyCode(s: CmdSpec) {
     if (/^\d/.test(fn)) fn = `cmd_${fn}`;
     if (PY_KEYWORDS.has(fn)) fn += "_cmd";
     const lines = [`@bot.tree.command(name=${jsStr(s.name)}, description=${jsStr(s.description.trim())})`];
-    if (s.adminOnly) lines.push(`@app_commands.default_permissions(manage_guild=True)`);
+    if (s.adminOnly) lines.push("@app_commands.default_permissions(manage_guild=True)");
     if (opts.length) lines.push(`@app_commands.describe(${opts.map(o => `${o.name}=${jsStr(o.description.trim())}`).join(", ")})`);
     const withChoices = opts.filter(o => canChoose(o.type) && o.choices.length);
     if (withChoices.length) lines.push(`@app_commands.choices(${withChoices.map(o => `${o.name}=[${o.choices.map(c => `app_commands.Choice(name=${jsStr(c.name)}, value=${choiceValue(o, c.value)})`).join(", ")}]`).join(", ")})`);

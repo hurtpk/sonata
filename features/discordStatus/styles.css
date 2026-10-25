@@ -1,0 +1,21 @@
+/* Discord Status */
+.vc-dstatus-hero { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--sw-rc); background: color-mix(in srgb, var(--k) 10%, var(--sw-card)); border: 1px solid color-mix(in srgb, var(--k) 35%, transparent); }
+.vc-dstatus-hero > i { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--k); box-shadow: 0 0 0 5px color-mix(in srgb, var(--k) 22%, transparent); }
+.vc-dstatus-hero div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.vc-dstatus-hero b { font-size: 16px; color: var(--sw-text); }
+.vc-dstatus-hero span { font-size: 13px; color: var(--sw-soft); }
+
+.vc-dstatus-incident { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-left: 3px solid var(--k); }
+.vc-dstatus-incident + .vc-dstatus-incident { border-top: 1px solid var(--sw-line); }
+.vc-dstatus-incident-head { display: flex; align-items: center; gap: 8px; }
+.vc-dstatus-incident-head b { flex: 1; min-width: 0; font-size: 14px; color: var(--sw-text); }
+.vc-dstatus-incident p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--sw-soft); white-space: pre-line; }
+.vc-dstatus-incident small { font-size: 12px; color: var(--sw-muted); }
+.vc-dstatus-incident a { color: var(--sw-accent); }
+.vc-dstatus-tag { flex: none; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; text-transform: capitalize; color: var(--k); background: color-mix(in srgb, var(--k) 15%, transparent); }
+
+.vc-dstatus-parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 2px 14px; padding: 8px 14px; }
+.vc-dstatus-part { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; color: var(--sw-text); min-width: 0; }
+.vc-dstatus-part i { flex: none; width: 8px; height: 8px; border-radius: 50%; }
+.vc-dstatus-part span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-dstatus-part small { flex: none; font-size: 11.5px; color: var(--sw-muted); }

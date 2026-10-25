@@ -8,9 +8,12 @@
 // Discord's own notices, when GitHub has a newer Sonata than this one. It
 // looks a minute after Discord starts and then every 15 minutes, shows each
 // new version once, and its Update button updates Sonata right inside Discord
-// (UpdateNow.tsx) — or opens the installer if it can't. Switch it off in Updates.
+// (UpdateNow.tsx) — or opens the installer if it can't. With "Install it by
+// itself" on (the default), it updates in the background first and the bar only
+// asks to restart. Switch either off in Updates.
 
 import { showNotice } from "@api/Notices";
+import { relaunch } from "@utils/native";
 import { showToast } from "@webpack/common";
 
 import { LATEST } from "./changelog";
@@ -44,11 +47,36 @@ function paint() {
     }, 3000);
 }
 
-async function check(isOn: () => boolean) {
+/**
+ * Updates in the background (the same steps as the Update button), then a bar asks to restart.
+ * False if it couldn't — then the normal "update ready" bar shows, and its Update button explains why.
+ */
+async function updateQuietly(version: string): Promise<boolean> {
+    if (!native().sonataUpdateStart) return false;
+    const r = await native().sonataUpdateStart().catch(() => null);
+    if (!r?.ok) return false;
+    for (let i = 0; i < 400; i++) {
+        await new Promise(res => setTimeout(res, 3000));
+        const j = await native().sonataUpdateStatus().catch(() => null);
+        if (!j || j.step === "error") return false;
+        if (j.step === "done") break;
+        if (i === 399) return false;
+    }
+    paint();
+    showNotice(
+        <span className="vc-sonata-update" title={`Sonata ${version}`}>Sonata {version} is installed. Restart Discord to start using it.</span>,
+        "Restart",
+        () => relaunch(),
+    );
+    return true;
+}
+
+async function check(isOn: () => boolean, isAuto: () => boolean = () => false) {
     if (!isOn()) return;
     const latest: { version: string; title: string; } | null = await native().sonataLatest?.().catch(() => null);
     if (!latest || latest.version <= LATEST || shown.has(latest.version)) return;
     shown.add(latest.version);
+    if (isAuto() && await updateQuietly(latest.version)) return;
     paint();
     showNotice(
         <span className="vc-sonata-update" title={`Sonata ${latest.version}`}>Sonata update ready.</span>,
@@ -62,10 +90,10 @@ async function check(isOn: () => boolean) {
     );
 }
 
-export function startUpdateNotice(isOn: () => boolean) {
+export function startUpdateNotice(isOn: () => boolean, isAuto: () => boolean = () => false) {
     stopUpdateNotice();
-    timers.push(setTimeout(() => void check(isOn), 60_000));
-    timers.push(setInterval(() => void check(isOn), EVERY) as any);
+    timers.push(setTimeout(() => void check(isOn, isAuto), 60_000));
+    timers.push(setInterval(() => void check(isOn, isAuto), EVERY) as any);
 }
 
 export function stopUpdateNotice() {

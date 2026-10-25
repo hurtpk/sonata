@@ -21,6 +21,7 @@ import { useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { CATEGORIES, categoryOf } from "../controller/categories";
 import type { FeatureStatus, QolApi } from "../controller/ControlCenter";
+import { labelOf } from "../features/_shared/SettingsForm";
 import { QOL_NAME } from "../featureSettings";
 import { DockTab, IconPicker } from "../utilities/DockTab";
 import { DOCK_ICON_MAP, SonataIcon } from "../utilities/icons";
@@ -169,8 +170,11 @@ function FeatureOptions({ api, featureKey, pluginSettings }: { api: QolApi; feat
                     {keys.map(k => {
                         const def = api.settings.def[k] as PluginSettingDef;
                         const Component = OptionComponentMap[def.type];
+                        // A short name from its description (not the stored key, like "Colored Text_chat Bar Button").
+                        const [title, help] = labelOf(k, def);
+                        const shown = Object.assign(Object.create(def), { displayName: title, description: help ?? "" });
                         return (
-                            <Component key={k} id={k} setting={def as any} pluginSettings={pluginSettings} definedSettings={api.settings}
+                            <Component key={k} id={k} setting={shown} pluginSettings={pluginSettings} definedSettings={api.settings}
                                 closePluginSettings={() => { }}
                                 onChange={(v: any) => {
                                     pluginSettings[k] = v;

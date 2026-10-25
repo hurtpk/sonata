@@ -1,0 +1,62 @@
+.vc-ansi-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.vc-ansi-bar .vc-tool-label { width: 40px; }
+
+.vc-ansi-swatch {
+    all: unset;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    border-radius: calc(6px * var(--sw-r, 1));
+    box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.2);
+}
+
+.vc-ansi-swatch:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.5); }
+.vc-ansi-swatch:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
+
+/* "None": a diagonal line through an empty square. */
+.vc-ansi-none { background: var(--sw-card, linear-gradient(135deg, transparent 45%, #f23f43 45%, #f23f43 55%, transparent 55%)); }
+
+/* Looks like Discord's code block, with its colours. */
+.vc-ansi-preview {
+    min-height: 44px;
+    max-height: 26vh;
+    overflow-y: auto;
+    padding: 10px 12px;
+    border-radius: calc(8px * var(--sw-r, 1));
+    border: 1px solid var(--tl-line);
+    background: #2b2d31;
+    color: #b9bbbe;
+    font-family: var(--font-code, ui-monospace, Consolas, monospace);
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.vc-ansi-inline { display: inline; min-height: 0; padding: 1px 6px; border-radius: calc(4px * var(--sw-r, 1)); }
+
+/* 2026-10 refresh: roomier, with colour fades and glows. */
+.vc-ansi-bar { gap: 8px; padding: 10px 12px; border-radius: calc(14px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); background: var(--sw-card, linear-gradient(150deg, color-mix(in srgb, var(--tl-accent) 7%, transparent), hsl(0 0% 0% / 0.16) 65%)); }
+.vc-ansi-bar .vc-tool-label { width: 44px; }
+.vc-ansi-swatch { width: 28px; height: 28px; border-radius: calc(9px * var(--sw-r, 1)); transition: transform 0.12s, box-shadow 0.15s; }
+.vc-ansi-swatch:hover { transform: translateY(-2px) scale(1.06); box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.5), 0 6px 14px -6px hsl(0 0% 0% / 0.8); }
+.vc-ansi-preview:not(.vc-ansi-inline) { min-height: 70px; padding: 14px 16px; border-radius: calc(14px * var(--sw-r, 1)); border-color: var(--sw-line, color-mix(in srgb, var(--tl-accent) 25%, transparent)); box-shadow: none; }
+
+/* 2026-10-25: 16 colours, any colour, and effects. */
+.vc-ansi-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.vc-ansi-swatches .vc-ansi-swatch { width: 26px; height: 26px; }
+.vc-ansi-own { display: inline-flex; align-items: center; gap: 6px; width: auto; padding: 0 10px 0 6px; font-size: 12px; font-weight: 700; color: var(--text-default, var(--text-normal)); background: hsl(0 0% 100% / 0.04); }
+.vc-ansi-own-dot { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.3); }
+.vc-ansi-effects { align-items: center; gap: 8px; }
+.vc-ansi-effects .vc-tool-label { width: 52px; }
+.vc-ansi-fade { display: inline-flex; align-items: center; gap: 6px; }
+.vc-ansi-fade .vc-ansi-swatch { border-radius: 50%; }
+.vc-ansi-fade-line { width: 54px; height: 6px; border-radius: 99px; }
+.vc-ansi-rainbow { background-image: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bff95, #6bc5ff, #c56bff); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 800; }
+.vc-ansi-fade .vc-ansi-swatch { background: var(--cp-color); }
+.vc-ansi-bar .vc-ansi-none { background: linear-gradient(135deg, transparent 44%, #f23f43 44%, #f23f43 56%, transparent 56%), hsl(0 0% 100% / 0.04); }
+/* Fits one line next to a group window's list. */
+.vc-ansi-bar { gap: 6px; }
+.vc-ansi-swatches { gap: 5px; }
+.vc-ansi-swatches .vc-ansi-swatch, .vc-ansi-bar .vc-ansi-none { width: 22px; height: 22px; border-radius: calc(7px * var(--sw-r, 1)); }
+.vc-ansi-bar .vc-ansi-own { height: 22px; border-radius: calc(7px * var(--sw-r, 1)); }

@@ -61,6 +61,9 @@ export interface QolApi {
     apply(): void;
     autoApply(): boolean;
     setAutoApply(on: boolean): void;
+    /** A merged feature's parts (sonata/groups.ts), each with its own switch and options. */
+    parts?(key: string): string[] | undefined;
+    partName?(key: string): string;
 }
 
 type StatusFilter = "all" | "on" | "off" | "pending";
@@ -136,10 +139,54 @@ function OptionsModal({ api, featureKey, modalProps }: { api: QolApi; featureKey
     const name = api.name(featureKey);
     const on = api.isOn(featureKey);
 
-    const optionKeys = api.optionKeys(featureKey).filter(k => {
+    const visible = (keys: string[]) => keys.filter(k => {
         const def = api.settings.def[k] as PluginSettingDef;
         return def.type !== OptionType.CUSTOM && !isSettingHidden(api.settings, def);
     });
+    const optionKeys = visible(api.optionKeys(featureKey));
+    const parts = api.parts?.(featureKey);
+    const row = (k: string, owner: string) => {
+        const def = api.settings.def[k] as PluginSettingDef;
+        return (
+            <OptionRow
+                key={k}
+                id={k}
+                def={def}
+                store={pluginSettings as any}
+                settings={api.settings}
+                onClose={modalProps.onClose}
+                onChange={(v: any) => {
+                    (pluginSettings as any)[k] = v;
+                    if ((def as any).restartNeeded) api.markOptionPending(owner);
+                }}
+            />
+        );
+    };
+
+    // A merged feature: a section per part, each with its own switch.
+    if (parts) return (
+        <Window {...modalProps} size="md" title={name} subtitle={`${categoryOf(featureKey).label} · ${statusText(api, featureKey, api.status(featureKey))}`}>
+            <div className={cl("modal-body")}>
+                <p className={cl("modal-desc")}>{api.description(featureKey)}</p>
+                {parts.map(p => {
+                    const partOn = api.isOn(p);
+                    const keys = visible(api.optionKeys(p));
+                    return (
+                        <FormGroup key={p} title={
+                            <span className={cl("part-head")}>
+                                <span>{api.partName?.(p) ?? p}</span>
+                                <span className={cl("part-status")}>{statusText(api, p, api.status(p))}</span>
+                                <Toggle small on={partOn} pending={isPending(api.status(p))} onChange={v => api.setOn(p, v)} label={`Turn ${api.partName?.(p) ?? p} ${partOn ? "off" : "on"}`} />
+                            </span>
+                        }>
+                            {!partOn ? <div className={cl("modal-empty")}>Off — the rest of {name} keeps working.</div>
+                                : keys.length ? keys.map(k => row(k, p)) : <div className={cl("modal-empty")}>Nothing to set — it just works.</div>}
+                        </FormGroup>
+                    );
+                })}
+            </div>
+        </Window>
+    );
 
     return (
         <Window

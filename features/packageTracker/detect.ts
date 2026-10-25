@@ -8,7 +8,7 @@
 // tracked. Kept free of Discord so it can be tested on its own.
 
 export type Carrier = "ups" | "usps" | "fedex" | "dhl" | "amazon" | "royalmail" | "canadapost" | "ontrac";
-export type Service = "doordash" | "ubereats";
+export type Service = "doordash" | "ubereats" | "postmates";
 
 export const CARRIERS: Record<Carrier, { name: string; url(n: string): string; hosts: string[]; }> = {
     ups: { name: "UPS", url: n => `https://www.ups.com/track?tracknum=${n}`, hosts: ["ups.com"] },
@@ -24,6 +24,8 @@ export const CARRIERS: Record<Carrier, { name: string; url(n: string): string; h
 export const SERVICES: Record<Service, { name: string; hosts: string[]; }> = {
     doordash: { name: "DoorDash", hosts: ["doordash.com", "drd.sh"] },
     ubereats: { name: "Uber Eats", hosts: ["ubereats.com", "uber.com"] },
+    // Postmates is Uber's: its order pages are Uber Eats' (and may send you on to ubereats.com).
+    postmates: { name: "Postmates", hosts: ["postmates.com"] },
 };
 
 /** Every site the hidden page may load (and be sent on to). */
@@ -75,6 +77,7 @@ export function serviceOf(link: string): Service | null {
     if (host === "drd.sh") return u.pathname.length > 1 ? "doordash" : null;
     if (host === "doordash.com" || host.endsWith(".doordash.com")) return /\/orders?\//i.test(u.pathname) ? "doordash" : null;
     if (host === "ubereats.com" || host.endsWith(".ubereats.com") || host === "eats.uber.com") return /\/orders?\/|\/track/i.test(u.pathname) ? "ubereats" : null;
+    if (host === "postmates.com" || host.endsWith(".postmates.com")) return /\/orders?\/|\/track/i.test(u.pathname) ? "postmates" : null;
     return null;
 }
 

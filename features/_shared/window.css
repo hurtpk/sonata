@@ -109,6 +109,8 @@
 .vc-sw-xxl { max-width: 1280px; height: min(860px, 100%); }
 
 .vc-sw-layer-closing .vc-sw { animation: vc-sw-out 0.14s ease-in forwards; pointer-events: none; }
+/* Switching parts in a group window: the window stays put, no opening animation. */
+.vc-sw-still:not(.vc-sw-layer-closing) .vc-sw { animation: none; }
 
 @keyframes vc-sw-in { from { opacity: 0; transform: scale(0.98) translateY(4px); } }
 @keyframes vc-sw-out { to { opacity: 0; transform: scale(0.98); } }
@@ -558,4 +560,6 @@
 .vc-sw-tabs + .vc-sw-sided { border-top: 0; }
 .vc-sw-sided > .vc-sw-body { border-top: 0; min-width: 0; }
 .vc-sw-side { display: flex; flex-direction: column; gap: 3px; min-height: 0; overflow-y: auto; padding: 14px 10px 14px 14px; border-right: 1px solid var(--sw-line); }
-.vc-sw-side .vc-sw-row-sub { display: block; }
+/* The list down the left: a part's name and line wrap instead of being cut off. */
+.vc-sw-side .vc-sw-row-title, .vc-sw-side .vc-sw-row-sub { display: block; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; }
+.vc-sw-side .vc-sw-row-sub { line-height: 1.3; }

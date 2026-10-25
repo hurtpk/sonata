@@ -16,7 +16,7 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { openModal, showToast, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 
 import { Window } from "../_shared/Window";
-import { makeQr, qrPng } from "../qrCodes/qr";
+import { makeQr, qrPng } from "../safety/qrCodes/qr";
 import { alerts, checkNow, lastSeen, onStatus, status } from "./alerts";
 import { openGuide } from "./Guide";
 import { chatLine, Check, check, Entry, KindId, kindOf, KINDS, linkFor, networkName, qrFor, robloxItemKind, tidy } from "./kinds";

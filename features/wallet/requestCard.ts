@@ -7,7 +7,7 @@
 // The picture sent with a money request: "Pay Sam $10", what it's for, a QR
 // code for the main way to pay, and every other way listed underneath.
 
-import { makeQr } from "../qrCodes/qr";
+import { makeQr } from "../safety/qrCodes/qr";
 import { Entry, kindOf, qrFor, tidy } from "./kinds";
 import { money, payLink } from "./payRequests";
 

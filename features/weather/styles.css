@@ -1,0 +1,46 @@
+/* Weather */
+.vc-weather { display: flex; flex-direction: column; gap: 12px; }
+.vc-weather-now { display: flex; align-items: center; gap: 18px; padding: 18px 20px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-weather-now-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.vc-weather-place-name { font-size: 12.5px; font-weight: 600; color: var(--sw-soft); }
+.vc-weather-now-main b { font-size: 44px; line-height: 1; font-weight: 700; color: var(--sw-text); font-variant-numeric: tabular-nums; }
+.vc-weather-now-main b small { margin-left: 2px; font-size: 16px; font-weight: 600; color: var(--sw-muted); vertical-align: top; }
+.vc-weather-now-main > span:last-child { font-size: 13.5px; color: var(--sw-soft); }
+.vc-weather-facts { margin-left: auto; display: grid; grid-template-columns: repeat(2, auto); gap: 8px 22px; }
+.vc-weather-facts span { display: flex; flex-direction: column; font-size: 14px; font-weight: 600; color: var(--sw-text); font-variant-numeric: tabular-nums; }
+.vc-weather-facts small { font-family: var(--sw-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sw-muted); }
+
+.vc-weather-hours { display: flex; gap: 2px; overflow-x: auto; padding: 10px 6px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-weather-hour { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 52px; padding: 4px 0; }
+.vc-weather-hour small { font-size: 11.5px; color: var(--sw-muted); white-space: nowrap; }
+.vc-weather-hour b { font-size: 13.5px; color: var(--sw-text); font-variant-numeric: tabular-nums; }
+.vc-weather-hour span { font-size: 11px; color: #62a8ff; font-variant-numeric: tabular-nums; }
+.vc-weather-dim { opacity: 0.35; }
+
+.vc-weather-days { display: flex; flex-direction: column; padding: 4px 14px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-weather-day { display: grid; grid-template-columns: 58px 28px 40px 36px minmax(60px, 1fr) 36px; align-items: center; gap: 10px; padding: 7px 0; font-size: 13.5px; color: var(--sw-text); font-variant-numeric: tabular-nums; }
+.vc-weather-day + .vc-weather-day { border-top: 1px solid var(--sw-line); }
+.vc-weather-day-name { font-weight: 600; }
+.vc-weather-day-rain { font-size: 11.5px; color: #62a8ff; }
+.vc-weather-day-lo { color: var(--sw-muted); text-align: right; }
+.vc-weather-day-hi { font-weight: 600; }
+.vc-weather-range { position: relative; height: 5px; border-radius: 99px; background: var(--sw-chip); }
+.vc-weather-range i { position: absolute; top: 0; bottom: 0; border-radius: 99px; background: linear-gradient(90deg, #62a8ff, #ffc94d); }
+
+.vc-weather-change { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
+.vc-weather-change > b { font-size: 14px; color: var(--sw-text); }
+.vc-weather-search { display: flex; flex-direction: column; gap: 8px; }
+.vc-weather-search-row { display: flex; gap: 8px; }
+.vc-weather-search-row .vc-tool-input { flex: 1; min-width: 0; }
+.vc-weather-places { display: flex; flex-direction: column; gap: 2px; }
+.vc-weather-place { all: unset; box-sizing: border-box; display: flex; align-items: baseline; gap: 8px; padding: 7px 10px; border-radius: var(--sw-rb); cursor: pointer; }
+.vc-weather-place:hover, .vc-weather-place:focus-visible { background: var(--sw-hover); }
+.vc-weather-place b { font-size: 13.5px; color: var(--sw-text); }
+.vc-weather-place span { font-size: 12px; color: var(--sw-muted); }
+
+/* The card in chat */
+.vc-weather-card { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 12px; max-width: 420px; margin-top: 4px; padding: 8px 14px 8px 10px; border-radius: calc(12px * var(--sw-r, 1)); cursor: pointer; background: var(--background-secondary, hsl(0 0% 100% / 0.03)); border: 1px solid color-mix(in srgb, var(--text-muted, #949ba4) 16%, transparent); }
+.vc-weather-card:hover { border-color: color-mix(in srgb, var(--brand-500) 40%, transparent); }
+.vc-weather-card-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.vc-weather-card-text b { font-size: 14px; color: var(--text-default, var(--text-normal)); }
+.vc-weather-card-text small { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

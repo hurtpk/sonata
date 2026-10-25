@@ -7,7 +7,7 @@
 // A QR code dressed up for sharing: the coin's (or app's) colour and logo on
 // top, "Pay <your name>", the code, and the address written underneath.
 
-import { makeQr } from "../qrCodes/qr";
+import { makeQr } from "../safety/qrCodes/qr";
 import { Entry, kindOf, networkName, qrFor, tidy } from "./kinds";
 
 const W = 640, H = 840, R = 36;

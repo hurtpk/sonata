@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Settings } from "@api/Settings";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { openModal, React, showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { Window } from "../_shared/Window";
 import { FormGroup, FormRow, Toggle } from "../_shared/WindowParts";
-import { RobloxSection } from "../robloxTools/Panel";
-import { SteamSection } from "../steamWatcher/Panel";
 import { hubContext, HubFrame } from "./hub";
 import type { DealGame, DealStore, EpicGame, McServer, PassGame, ShopItem, StoreDeal } from "./native";
+import { RobloxSection } from "./roblox/Panel";
+import { historyLine, recordShop, returnsEvery, searchHistory, useHistory } from "./shopHistory";
+import { SteamSection } from "./steam/Panel";
 import { addServer, cache, checkServer, country, dealStores, isWatchingPrice, isWished, native, removeServer, renameServer, settings, setWished, unwatchPrice, useGames, watchPrice } from "./store";
 
 const open = (url: string) => VencordNative.native.openExternal(url);
@@ -22,11 +22,11 @@ const money = (n: number) => `$${n.toFixed(2)}`;
 const day = (t: number) => new Date(t).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 
 type Platform = "steam" | "roblox" | "epic" | "pass" | "mc" | "deals";
-const PLATFORMS: { id: Platform; name: string; sub: string; icon: string; tabs: [string, string][]; feature?: string; }[] = [
-    // These two bring their own tabs; they show while their feature is on.
-    { id: "steam", name: "Steam", sub: "Sales, updates and friends", icon: "🚂", tabs: [], feature: "steamWatcher" },
-    { id: "roblox", name: "Roblox", sub: "Profiles, games and trades", icon: "🟥", tabs: [], feature: "robloxTools" },
-    { id: "epic", name: "Epic & Fortnite", sub: "Free games and the item shop", icon: "🎁", tabs: [["free", "Free on Epic"], ["shop", "Fortnite shop"]] },
+const PLATFORMS: { id: Platform; name: string; sub: string; icon: string; tabs: [string, string][]; }[] = [
+    // These two bring their own tabs (./steam, ./roblox).
+    { id: "steam", name: "Steam", sub: "Sales, updates and friends", icon: "🚂", tabs: [] },
+    { id: "roblox", name: "Roblox", sub: "Profiles, games and trades", icon: "🟥", tabs: [] },
+    { id: "epic", name: "Epic & Fortnite", sub: "Free games and the item shop", icon: "🎁", tabs: [["free", "Free on Epic"], ["shop", "Fortnite shop"], ["history", "Shop history"]] },
     { id: "pass", name: "Xbox Game Pass", sub: "Added, coming and leaving", icon: "🎮", tabs: [["added", "Recently added"], ["coming", "Coming soon"], ["leaving", "Leaving soon"]] },
     { id: "mc", name: "Minecraft", sub: "Servers and players", icon: "⛏️", tabs: [["servers", "Servers"], ["players", "Players"]] },
     { id: "deals", name: "All stores", sub: "Prices everywhere at once", icon: "🏷️", tabs: [["search", "Find a game"], ["top", "Best deals"], ["watching", "Watching"]] },
@@ -97,6 +97,8 @@ function FortniteShop() {
     const [section, setSection] = useState<string | null>(null);
     const [wishName, setWishName] = useState("");
     const sections = useMemo(() => [...new Set((shop?.items ?? []).map(i => i.section))], [shop]);
+    useHistory();
+    useEffect(() => { if (shop) void recordShop(shop.date, shop.items); }, [shop]);
     if (error) return <Problem text={error} retry={reload} />;
     if (!shop) return <Empty icon="🛒">{busy ? "Loading today's item shop…" : "Nothing yet."}</Empty>;
     const query = q.trim().toLowerCase();
@@ -134,10 +136,45 @@ function FortniteShop() {
                         <b>{i.name}</b>
                         <small>{i.type}</small>
                         <span className="vc-games-vbucks">{i.price.toLocaleString()} V-Bucks{i.regular > i.price ? <s>{i.regular.toLocaleString()}</s> : null}</span>
+                        {historyLine(i.name, shop.date) && <small className="vc-games-seen">{historyLine(i.name, shop.date)}</small>}
                     </div>
                 ))}
             </div>
             {!items.length && <Empty icon="🔍">Nothing matches that.</Empty>}
+        </>
+    );
+}
+
+/* ── Fortnite shop history ── */
+
+function ShopHistory() {
+    const h = useHistory();
+    const [q, setQ] = useState("");
+    const results = searchHistory(q);
+    const today = new Date().toISOString().slice(0, 10);
+    const ago = (d: string) => { const n = Math.round((Date.parse(today) - Date.parse(d)) / 86_400_000); return n <= 0 ? "today" : n === 1 ? "yesterday" : `${n} days ago`; };
+    const count = Object.keys(h.items).length;
+    return (
+        <>
+            <div className="vc-games-bar">
+                <input className="vc-tool-input" value={q} autoFocus placeholder="When was it last in the shop? Type an item's name" aria-label="Search the shop history" onChange={e => setQ(e.currentTarget.value)} />
+            </div>
+            <span className="vc-tool-hint">{h.since ? `Game Hub has noted the shop every day it's been open since ${new Date(h.since).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })} — ${count.toLocaleString()} items so far. Older visits aren't listed anywhere public, so they aren't here.` : "Game Hub notes the shop each day it looks at it. Open the Fortnite shop tab once to start."}</span>
+            {q.trim().length >= 2 && !results.length && <Empty icon="🔍">Not seen in the shop yet{h.since ? " since Game Hub started watching" : ""}.</Empty>}
+            {results.length > 0 && (
+                <FormGroup>
+                    {results.map(i => {
+                        const every = returnsEvery(i);
+                        return (
+                            <div key={i.name} className="vc-games-hist" style={{ "--rar": RARITY[i.rarity ?? ""] ?? "#555" } as React.CSSProperties}>
+                                {i.image ? <img src={i.image} alt="" loading="lazy" /> : <div className="vc-games-noimg">🛒</div>}
+                                <span className="vc-games-hist-text"><b>{i.name}</b><small>{i.type}</small></span>
+                                <span className="vc-games-hist-when"><b>Last: {ago(i.days.at(-1)!)}</b><small>{i.days.length} time{i.days.length === 1 ? "" : "s"}{every ? ` · back about every ${every} days` : ""}</small></span>
+                            </div>
+                        );
+                    })}
+                </FormGroup>
+            )}
         </>
     );
 }
@@ -413,15 +450,13 @@ function DealWatching() {
 /** Where Game Hub opens: a platform, and for Steam and Roblox the tab (and, for Roblox, what to look up). */
 export interface GamesStart { platform?: Platform; steamTab?: string; robloxTab?: string; robloxInitial?: string; }
 
-const isOn = (feature: string) => (Settings.plugins as any)?.Sonata?.[`on_${feature}`] !== false;
-
 let lastPlatform: Platform = "epic";
 const lastTab: Partial<Record<Platform, string>> = {};
 
 function Rail({ platform, setPlatform }: { platform: Platform; setPlatform(p: Platform): void; }) {
     return (
         <>
-            {PLATFORMS.filter(x => !x.feature || isOn(x.feature)).map(x => (
+            {PLATFORMS.map(x => (
                 <button key={x.id} type="button" className={classes("vc-sw-row", x.id === platform && "vc-sw-row-on")} aria-pressed={x.id === platform} onClick={() => setPlatform(x.id)}>
                     <span className="vc-sw-pic" aria-hidden>{x.icon}</span>
                     <span className="vc-sw-row-text"><span className="vc-sw-row-title">{x.name}</span><span className="vc-sw-row-sub">{x.sub}</span></span>
@@ -435,7 +470,7 @@ function Rail({ platform, setPlatform }: { platform: Platform; setPlatform(p: Pl
 function GameHubWindow({ modalProps, start }: { modalProps: RenderModalProps; start: GamesStart; }) {
     const g = useGames();
     const first = start.platform ?? lastPlatform;
-    const [platform, setPlatformState] = useState<Platform>(PLATFORMS.find(x => x.id === first && (!x.feature || isOn(x.feature))) ? first : "epic");
+    const [platform, setPlatformState] = useState<Platform>(PLATFORMS.some(x => x.id === first) ? first : "epic");
     const p = PLATFORMS.find(x => x.id === platform)!;
     const [tab, setTabState] = useState(lastTab[platform] ?? p.tabs[0]?.[0] ?? "");
     // What it was opened for (a Steam tab, a Roblox lookup) only counts until you switch platforms.
@@ -472,7 +507,7 @@ function GameHubWindow({ modalProps, start }: { modalProps: RenderModalProps; st
             </HubProvider>
             {!sectioned && (
                 <div className="vc-tool-wrap vc-games" key={`${platform}:${tab}`}>
-                    {platform === "epic" && (tab === "shop" ? <FortniteShop /> : <EpicFree />)}
+                    {platform === "epic" && (tab === "shop" ? <FortniteShop /> : tab === "history" ? <ShopHistory /> : <EpicFree />)}
                     {platform === "pass" && <GamePass list={tab as "added" | "coming" | "leaving"} />}
                     {platform === "mc" && (tab === "players" ? <McPlayers /> : <McServers />)}
                     {platform === "deals" && (tab === "top" ? <DealTop /> : tab === "watching" ? <DealWatching /> : <DealSearch />)}

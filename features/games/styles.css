@@ -93,3 +93,15 @@
 .vc-games-price s { margin-left: 6px; font-size: 11.5px; font-weight: 400; color: var(--sw-muted); }
 .vc-games-target { max-width: 100px; }
 .vc-games-name-edit { max-width: 280px; padding: 5px 9px !important; }
+
+/* Fortnite shop history */
+.vc-games-seen { color: var(--sw-accent) !important; font-weight: 600; }
+.vc-games-hist { display: flex; align-items: center; gap: 12px; padding: 8px 14px; }
+.vc-games-hist + .vc-games-hist { border-top: 1px solid var(--sw-line); }
+.vc-games-hist > img, .vc-games-hist > .vc-games-noimg { flex: none; width: 44px; height: 44px; border-radius: var(--sw-rs); object-fit: cover; background: color-mix(in srgb, var(--rar) 25%, var(--sw-inner)); box-shadow: inset 0 -3px 0 var(--rar); }
+.vc-games-hist-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.vc-games-hist-text b { font-size: 13.5px; color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-games-hist-text small { font-size: 11.5px; color: var(--sw-muted); }
+.vc-games-hist-when { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.vc-games-hist-when b { font-size: 13px; color: var(--sw-text); }
+.vc-games-hist-when small { font-size: 11.5px; color: var(--sw-muted); }

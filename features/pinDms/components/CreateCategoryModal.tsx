@@ -14,7 +14,7 @@ import { openModalLazy, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
 import { Window } from "../../_shared/Window";
-import { pickCharacters } from "../../charactersPicker";
+import { pickCharacters } from "../../textStyles/charactersPicker";
 import { DEFAULT_COLOR, SWATCHES } from "../constants";
 import { categoryLen, createCategory, getCategory } from "../data";
 import { CategoryStyle, colorsOf, EffectId, EFFECTS, FillMode, GRADIENT_CHOICES, hexOf, normalizeStyle, numOf, StyledName } from "../style";

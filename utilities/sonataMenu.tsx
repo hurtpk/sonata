@@ -139,14 +139,26 @@ const groupingPatch: GlobalContextMenuPatchCallback = (navId, children, ...args)
     flush();
     if (openSonata) groups.push(<Menu.MenuGroup key="open"><Menu.MenuItem id="sonata-open" label="Open Sonata" action={openSonata} /></Menu.MenuGroup>);
 
-    children.push(
+    const menu = (
         <Menu.MenuGroup>
             <Menu.MenuItem id="sonata-menu" label="Sonata" icon={MenuIcon}>
                 {groups}
             </Menu.MenuItem>
         </Menu.MenuGroup>
     );
+    // On a message it goes right above Reply and Forward; everywhere else, at the end.
+    const at = navId === "message" ? children.findIndex(c => hasItem(c, ["reply", "forward"])) : -1;
+    if (at >= 0) children.splice(at, 0, menu);
+    else children.push(menu);
 };
+
+/** Whether one of these items is somewhere in this part of the menu. */
+function hasItem(el: any, ids: string[], depth = 0): boolean {
+    if (!el || typeof el !== "object" || depth > 4) return false;
+    if (ids.includes(el.props?.id)) return true;
+    const c = el.props?.children;
+    return Array.isArray(c) ? c.some(x => hasItem(x, ids, depth + 1)) : hasItem(c, ids, depth + 1);
+}
 
 export function installSonataMenus(open: () => void) {
     openSonata = open;

@@ -26,7 +26,7 @@ About 10 minutes, once. After that it's just: make a button, type the reply, sen
 
 1. Sign in to [Cloudflare](https://dash.cloudflare.com/sign-up/workers-and-pages). A free account is fine.
 2. Go to **Workers & Pages** and press **Create**. Choose **Hello World**, then **Deploy**, then **Edit code**.
-3. Delete everything there and paste in Sonata's Worker code. You get it from **Embed Sender → 🔒 Private reply buttons → Copy the Worker code**. The same file is at `sonata/features/embedSender/worker/sonata-private-replies.js`.
+3. Delete everything there and paste in Sonata's Worker code. You get it from **Embed Sender → 🔒 Private reply buttons → Copy the Worker code**. The same file is at `sonata/features/embeds/embedSender/worker/sonata-private-replies.js`.
 4. Press **Deploy**.
 
 ## 3. Give it somewhere to keep replies

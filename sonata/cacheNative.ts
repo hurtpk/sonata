@@ -16,7 +16,7 @@ import { readdir, readFile, rm, stat, unlink } from "fs/promises";
 import { tmpdir } from "os";
 import { basename, dirname, join } from "path";
 
-import { clearPreviewCache } from "../features/filePreviewer/previewCache";
+import { clearPreviewCache } from "../features/filePreviews/filePreviewer/previewCache";
 
 export type CacheKind = "http" | "code" | "gpu" | "leftovers" | "logs" | "versions";
 /** The parts of "Leftovers". Clips are your own videos, so they're only ever removed when picked. */

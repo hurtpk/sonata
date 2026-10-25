@@ -110,7 +110,7 @@ export default definePlugin({
         {
             find: "#{intl::ATTACHMENT_UTILITIES_SPOILER}",
             replacement: {
-                match: /(?<=children:\[)(?=.{10,80}tooltip:.{0,100}#{intl::ATTACHMENT_UTILITIES_SPOILER})/,
+                match: /(?<=children:\[)(?=.{10,220}?tooltip:.{0,100}#{intl::ATTACHMENT_UTILITIES_SPOILER})/,
                 replace: "arguments[0].canEdit!==false?$self.AnonymiseUploadButton(arguments[0]):null,"
             },
         },

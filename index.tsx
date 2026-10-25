@@ -8,7 +8,8 @@
  * QOL — a single plugin that bundles many quality-of-life plugins.
  *
  * Each bundled feature is the original plugin, unchanged in behavior, living
- * in ./features/<key>. QOL hosts them:
+ * in ./features/<key> (or ./features/<group>/<key> for merged features,
+ * see sonata/groups.ts). QOL hosts them:
  *
  * - Patches: every feature's patches are registered under QOL, each gated by
  *   a predicate so a switched-off feature's patches are never applied.
@@ -30,7 +31,7 @@
 // The shared window kit first, so every feature's own styles can build on it.
 import "./features/_shared/tool.css";
 
-import type { ChatBarButtonData } from "@api/ChatButtons";
+import { ChatBarButton, ChatBarButtonData } from "@api/ChatButtons";
 import { showNotice } from "@api/Notices";
 import { isPluginEnabled, startPlugin, stopPlugin } from "@api/PluginManager";
 import { definePluginSettings, PlainSettings, Settings } from "@api/Settings";
@@ -45,129 +46,134 @@ import { FluxDispatcher, Menu, showToast } from "@webpack/common";
 import type { ReactNode } from "react";
 
 import { FeatureStatus, openOptions, QolApi } from "./controller/ControlCenter";
+import { openGroup } from "./features/_shared/Hub";
 import anonymiseFileNames from "./features/anonymiseFileNames";
-import antimod from "./features/antimod";
 import antiquest from "./features/antiquest";
-import asciiArt from "./features/asciiArt";
 import autoCorrect from "./features/autoCorrect";
 import autoReact from "./features/autoReact";
 import autoVolume from "./features/autoVolume";
-import betterInvites from "./features/betterInvites";
 import birthdayReminders from "./features/birthdayReminders";
-import brokenPatchFinder from "./features/brokenPatchFinder";
+import botManager from "./features/botManager";
 import calculator from "./features/calculator";
 import calendar from "./features/calendar";
 import callTimer from "./features/callTimer";
 import categoryChannelGreeter from "./features/categoryChannelGreeter";
 import channelNotes from "./features/channelNotes";
-import themeStudio from "./features/themeStudio";
-import botManager from "./features/botManager";
-import charactersPicker from "./features/charactersPicker";
 import chatEffects from "./features/chatEffects";
-import coloredText from "./features/coloredText";
 import commandShortcuts from "./features/commandShortcuts";
-import crashHandler from "./features/crashHandler";
 import currencyConverter from "./features/currencyConverter";
-import customBadges from "./features/customBadges";
 import declutter from "./features/declutter";
 import disableCallIdle from "./features/disableCallIdle";
-import embedCopier from "./features/embedCopier";
-import embedSender from "./features/embedSender";
+import discordStatus from "./features/discordStatus";
+import embedCopier from "./features/embeds/embedCopier";
+import embedSender from "./features/embeds/embedSender";
 import encoderTools from "./features/encoderTools";
 import exploiterReport from "./features/exploiterReport";
 import expressionStealer from "./features/expressionStealer";
 import fakedeafen from "./features/fakedeafen";
 import fakeDms from "./features/fakeDms";
-import fancyText from "./features/fancyText";
-import fileConverter from "./features/fileConverter";
-import filePreviewer from "./features/filePreviewer";
+import filePreviewer from "./features/filePreviews/filePreviewer";
+import modelPreview from "./features/filePreviews/modelPreview";
+import zipPreview from "./features/filePreviews/zipPreview";
 import fontSwapper from "./features/fontSwapper";
 import forceOwnerCrown from "./features/forceOwnerCrown";
 import gameActivityToggle from "./features/gameActivityToggle";
 import games from "./features/games";
-import packageTracker from "./features/packageTracker";
-import gifMaker from "./features/gifMaker";
 import giftWrap from "./features/giftWrap";
-import imageFilename from "./features/imageFilename";
-import imageLink from "./features/imageLink";
-import imageToText from "./features/imageToText";
-import imageZoom from "./features/imageZoom";
-import inviteManager from "./features/inviteManager";
+import imageFilename from "./features/images/imageFilename";
+import imageLink from "./features/images/imageLink";
+import imageToText from "./features/images/imageToText";
+import imageZoom from "./features/images/imageZoom";
+import reverseImageSearch from "./features/images/reverseImageSearch";
+import viewIcons from "./features/images/viewIcons";
+import betterInvites from "./features/invites/betterInvites";
+import inviteManager from "./features/invites/inviteManager";
 import linkCleaner from "./features/linkCleaner";
 import linkEmbedFixer from "./features/linkEmbedFixer";
 import liveRpcEditor from "./features/liveRpcEditor";
 import localNames from "./features/localNames";
 import longMessageCollapser from "./features/longMessageCollapser";
 import mediaDownloader from "./features/mediaDownloader";
+import fileConverter from "./features/mediaTools/fileConverter";
+import gifMaker from "./features/mediaTools/gifMaker";
+import screenshotStyler from "./features/mediaTools/screenshotStyler";
+import videoEditor from "./features/mediaTools/videoEditor";
 import messageCleanerUtil from "./features/messageCleanerUtil";
-import messageLogger from "./features/messageLogger";
-import messageLoggerEnhanced from "./features/messageLoggerEnhanced";
+import messageLogger from "./features/messageLogger/messageLogger";
+import messageLoggerEnhanced from "./features/messageLogger/messageLoggerEnhanced";
 import messagePreview from "./features/messagePreview";
 import messageTimer from "./features/messageTimer";
 import miniGames from "./features/miniGames";
-import modelPreview from "./features/modelPreview";
 import multiQuote from "./features/multiQuote";
+import radio from "./features/musicAudio/radio";
+import soundStudio from "./features/musicAudio/soundStudio";
+import spotifyControls from "./features/musicAudio/spotifyControls";
+import waveformPlayer from "./features/musicAudio/waveformPlayer";
 import mutualGroupDMs from "./features/mutualGroupDMs";
 import noUnblockToJump from "./features/noUnblockToJump";
 import onePingPerDM from "./features/onePingPerDM";
 import onThisDay from "./features/onThisDay";
-import permissionsViewer from "./features/permissionsViewer";
+import packageTracker from "./features/packageTracker";
 import personTags from "./features/personTags";
 import pinDms from "./features/pinDms";
 import platformIndicators from "./features/platformIndicators";
 import platformSpoofer from "./features/platformSpoofer";
-import qrCodes from "./features/qrCodes";
+import customBadges from "./features/profileTools/customBadges";
+import statusAvatar from "./features/profileTools/statusAvatar";
+import stealProfile from "./features/profileTools/stealProfile";
 import quickText from "./features/quickText";
 import readAllNotificationsButton from "./features/readAllNotificationsButton";
 import readAloud from "./features/readAloud";
 import relationshipTracker from "./features/relationshipTracker";
 import reminders from "./features/reminders";
-import reverseImageSearch from "./features/reverseImageSearch";
-import robloxTools from "./features/robloxTools";
 import roleColorEverywhere from "./features/roleColorEverywhere";
-import scamShield from "./features/scamShield";
+import antimod from "./features/safety/antimod";
+import qrCodes from "./features/safety/qrCodes";
+import scamShield from "./features/safety/scamShield";
 import scheduledMessages from "./features/scheduledMessages";
-import screenshotStyler from "./features/screenshotStyler";
-import serverInfo from "./features/serverInfo";
+import permissionsViewer from "./features/serverInsights/permissionsViewer";
+import serverInfo from "./features/serverInsights/serverInfo";
+import showHiddenChannels from "./features/serverInsights/showHiddenChannels";
+import showTimeoutDuration from "./features/serverInsights/showTimeoutDuration";
 import shareSetup from "./features/shareSetup";
-import showHiddenChannels from "./features/showHiddenChannels";
 import showRolesInChat from "./features/showRolesInChat";
-import showTimeoutDuration from "./features/showTimeoutDuration";
+import showTracker from "./features/showTracker";
 import silentTyping from "./features/silentTyping";
 import smoothChat from "./features/smoothChat";
 import sonataBadge from "./features/sonataBadge";
-import soundStudio from "./features/soundStudio";
+import brokenPatchFinder from "./features/sonataInsights/brokenPatchFinder";
+import crashHandler from "./features/sonataInsights/crashHandler";
 import splitLargeMessages from "./features/splitLargeMessages";
 import splitView from "./features/splitView";
-import spotifyControls from "./features/spotifyControls";
 import spotifyCrack from "./features/spotifyCrack";
-import statusAvatar from "./features/statusAvatar";
-import stealProfile from "./features/stealProfile";
 import stealth from "./features/stealth";
-import steamWatcher from "./features/steamWatcher";
 import stickyMessage from "./features/stickyMessage";
 import streaks from "./features/streaks";
 import streamQuality from "./features/streamQuality";
+import asciiArt from "./features/textStyles/asciiArt";
+import charactersPicker from "./features/textStyles/charactersPicker";
+import coloredText from "./features/textStyles/coloredText";
+import fancyText from "./features/textStyles/fancyText";
+import themeStudio from "./features/themeStudio";
 import tiktokTracker from "./features/tiktokTracker";
 import todoLists from "./features/todoLists";
 import translate from "./features/translate";
 import typingSounds from "./features/typingSounds";
-import videoEditor from "./features/videoEditor";
 import videoSpeed from "./features/videoSpeed";
-import viewIcons from "./features/viewIcons";
-import voiceDownload from "./features/voiceDownload";
-import voiceMessages from "./features/voiceMessages";
+import voiceDownload from "./features/voiceMessages/voiceDownload";
+import voiceMessages from "./features/voiceMessages/voiceMessages";
 import voiceTimeline from "./features/voiceTimeline";
 import wallet from "./features/wallet";
-import waveformPlayer from "./features/waveformPlayer";
+import weather from "./features/weather";
 import whisper from "./features/whisper";
-import zipPreview from "./features/zipPreview";
 import { featureSettings, prefixKey, QOL_NAME, runningFeatures } from "./featureSettings";
 import { startAlbumWatch, stopAlbumWatch } from "./sonata/accent";
 import { startCacheAuto, stopCacheAuto } from "./sonata/cache";
 import { addTrayButton, removeTrayButton, startChatTray, stopChatTray } from "./sonata/chatTray";
 import { setDoctorProvider, startErrors, startTimes } from "./sonata/doctorBridge";
 import { startFeatureAccent, stopFeatureAccent } from "./sonata/featureAccent";
+import { featureIconKey } from "./sonata/featureIcons";
+import { GROUP_OF, GROUPS } from "./sonata/groups";
 import { startMemoryWatch, stopMemoryWatch } from "./sonata/memoryWatch";
 import { openSonata } from "./sonata/open";
 import { cancelStartLater, canStartLater, startLater, startLaterOn, startPerformance, stopPerformance } from "./sonata/performance";
@@ -176,7 +182,7 @@ import { startUpdateNotice, stopUpdateNotice } from "./sonata/updateNotice";
 import { loadUsage, noteUse } from "./sonata/usage";
 import { addDockButton, dockContextMenus, dockPatch, PINNED_DOCK_ID, removeDockButton, renderDock } from "./utilities/dock";
 import { startDockColor, stopDockColor } from "./utilities/dockColor";
-import { SonataIcon } from "./utilities/icons";
+import { DOCK_ICON_MAP, SonataIcon } from "./utilities/icons";
 import { startUtilities, stopUtilities } from "./utilities/runtime";
 import { setFeatureDockProvider } from "./utilities/shared";
 import { addOwnedMenuPatch, captureMenuPatches, installSonataMenus, releaseMenuPatches, uninstallSonataMenus } from "./utilities/sonataMenu";
@@ -320,7 +326,7 @@ const FEATURES: Record<string, Feature> = {
     gameActivityToggle, platformSpoofer, showRolesInChat, soundStudio, miniGames,
     typingSounds, autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
     smoothChat, currencyConverter, giftWrap, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
-    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, robloxTools, steamWatcher, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges, localNames, games, packageTracker,
+    reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges, localNames, games, packageTracker, weather, showTracker, radio, discordStatus,
     antimod, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
 
@@ -467,6 +473,40 @@ for (const key of ORDER) {
     }
 }
 
+// Parts of a merged feature with one window (Text Styles, Media Tools…) share
+// one button, named and drawn like its card, that opens that window.
+const groupWithWindow = (key: string) => { const g = GROUP_OF[key]; return g && GROUPS[g].window ? g : undefined; };
+const groupButtons = new Map<string, ChatBarButtonData>();
+function groupButton(group: string): ChatBarButtonData {
+    let b = groupButtons.get(group);
+    if (b) return b;
+    const Icon = ({ width = 20, height = 20 }: { width?: number; height?: number; }) => {
+        const { Icon: Drawn } = DOCK_ICON_MAP[featureIconKey(settings.store, group)] ?? DOCK_ICON_MAP.puzzle;
+        return <Drawn width={width} height={height} />;
+    };
+    b = {
+        icon: Icon as any,
+        render: ({ isMainChat }) => isMainChat
+            ? <ChatBarButton tooltip={GROUPS[group].name} onClick={() => openGroupWindow(group)}><Icon /></ChatBarButton>
+            : null,
+    };
+    groupButtons.set(group, b);
+    return b;
+}
+/** Shows a part's chat bar button — or its merged feature's, while any part that has one is running. */
+function syncTrayButton(key: string) {
+    if (!chatButtonOf[key]) return;
+    const g = groupWithWindow(key);
+    if (!g) {
+        if (running.has(key)) addTrayButton(key, displayName(key), chatButtonOf[key]);
+        else removeTrayButton(key);
+        return;
+    }
+    removeTrayButton(key);
+    if (membersOf(g).some(m => running.has(m) && chatButtonOf[m])) addTrayButton(g, GROUPS[g].name, groupButton(g));
+    else removeTrayButton(g);
+}
+
 // ─── State ───
 
 function isOn(key: string): boolean {
@@ -591,7 +631,7 @@ function startFeature(key: string) {
     }
     fluxSubscriptions.set(key, subs);
     running.add(key);
-    if (chatButtonOf[key]) addTrayButton(key, displayName(key), chatButtonOf[key]);
+    syncTrayButton(key);
 }
 
 function stopFeature(key: string) {
@@ -609,6 +649,7 @@ function stopFeature(key: string) {
     }
     fluxSubscriptions.delete(key);
     running.delete(key);
+    syncTrayButton(key);
 }
 
 /** Can this feature run right now, given what was patched at load? */
@@ -809,6 +850,7 @@ const qolDef: SettingsDefinition = {
     sonataWelcomed: { type: OptionType.BOOLEAN, description: "The welcome tour has been shown.", default: false, hidden: true },
     sonataSeenVersion: { type: OptionType.STRING, description: "The newest What's new entry you've seen.", default: "", hidden: true },
     sonataUpdateNotice: { type: OptionType.BOOLEAN, description: "Show a bar at the top of Discord when there's a newer Sonata on GitHub.", default: true, hidden: true },
+    sonataAutoUpdate: { type: OptionType.BOOLEAN, description: "Install new Sonata versions in the background, then ask to restart.", default: true, hidden: true },
     sonataProfiles: { type: OptionType.STRING, description: "Your saved feature profiles (School, Gaming…).", default: "", hidden: true },
     sonataInvertHues: { type: OptionType.BOOLEAN, description: "Inverted background: flip the colours too (a true negative).", default: false, hidden: true },
     perfLazyChat: { type: OptionType.BOOLEAN, description: "Performance: only draw messages near the screen.", default: false, hidden: true },
@@ -880,6 +922,25 @@ for (const key of ORDER) {
     }
 }
 
+// Parts built into another feature: Game Hub's Steam and Roblox were features
+// of their own, and their settings keep those names, so nothing set was lost.
+// They show (and switch off) with the feature they're part of.
+const BUILT_IN: Record<string, string[]> = { games: ["steamWatcher", "robloxTools"] };
+for (const [owner, parts] of Object.entries(BUILT_IN)) {
+    if (!optionKeysByFeature[owner]) continue;
+    for (const part of parts) {
+        const own = featureSettings.get(part);
+        if (!own) continue;
+        for (const [opt, def] of Object.entries(own.def)) {
+            qolDef[prefixKey(part, opt)] = scopeOptionDef(owner, def as PluginSettingDef, own);
+            optionKeysByFeature[owner].push(prefixKey(part, opt));
+        }
+    }
+}
+
+/** A built-in part -> the feature it is part of (old dock buttons for Steam Watcher open Game Hub). */
+const BUILT_IN_OF: Record<string, string> = Object.fromEntries(Object.entries(BUILT_IN).flatMap(([owner, parts]) => parts.map(p => [p, owner])));
+
 const settings = definePluginSettings(qolDef);
 
 // ─── Sonata's screen ───
@@ -925,27 +986,54 @@ function statusOf(key: string): FeatureStatus {
     return "off";
 }
 
+// ─── Merged features (sonata/groups.ts) ───
+// Each group is one card: its switch, options and window cover all its parts.
+// The parts keep running (and keeping their settings) on their own underneath.
+
+const isGroup = (key: string) => Object.prototype.hasOwnProperty.call(GROUPS, key);
+const membersOf = (key: string) => isGroup(key) ? GROUPS[key].members.filter(m => FEATURES[m]) : [key];
+const cardName = (key: string) => isGroup(key) ? GROUPS[key].name : displayName(key);
+/** What the Features page lists: each group once, instead of its parts. */
+const CARDS = [...ORDER.filter(k => !GROUP_OF[k]), ...Object.keys(GROUPS)].sort((a, b) => cardName(a).localeCompare(cardName(b)));
+
+function groupStatus(key: string): FeatureStatus {
+    const all = membersOf(key).map(statusOf);
+    for (const s of ["apply-on", "apply-off", "needs", "paused"] as const) if (all.includes(s)) return s;
+    return all.includes("active") ? "active" : "off";
+}
+const anyRunning = (key: string) => membersOf(key).some(m => running.has(m));
+const groupHasWindow = (key: string) => isGroup(key) && membersOf(key).some(m => running.has(m) && typeof (FEATURES[m] as any).openSettingsModal === "function");
+function openGroupWindow(key: string) {
+    if (openGroup(key)) return;
+    // No part registered a window: the first one that has its own.
+    const m = membersOf(key).find(x => running.has(x) && typeof (FEATURES[x] as any).openSettingsModal === "function");
+    if (m) (FEATURES[m] as any).openSettingsModal();
+}
+
 const api: QolApi = {
-    keys: ORDER,
-    pausedBy: key => blockingPlugin(key),
-    name: displayName,
-    description: key => FEATURES[key].description,
-    originalName: key => FEATURES[key].name,
-    status: statusOf,
-    isOn,
-    setOn: setFeatureOn,
-    setManyOn: setManyFeaturesOn,
+    keys: CARDS,
+    pausedBy: key => membersOf(key).map(blockingPlugin).find(Boolean),
+    name: cardName,
+    description: key => isGroup(key) ? GROUPS[key].description : FEATURES[key].description,
+    originalName: key => isGroup(key) ? GROUPS[key].name : FEATURES[key].name,
+    status: key => isGroup(key) ? groupStatus(key) : statusOf(key),
+    isOn: key => membersOf(key).some(isOn),
+    setOn: (key, on) => isGroup(key) ? setManyFeaturesOn(membersOf(key), on) : setFeatureOn(key, on),
+    setManyOn: (keys, on) => setManyFeaturesOn(keys.flatMap(membersOf), on),
     missingRequirement: key => {
+        if (isGroup(key)) return undefined;
         const r = missingRequirement(key);
         return r && displayName(r);
     },
-    optionKeys: key => optionKeysByFeature[key] ?? [],
+    optionKeys: key => membersOf(key).flatMap(m => optionKeysByFeature[m] ?? []),
+    parts: key => isGroup(key) ? membersOf(key) : undefined,
+    partName: displayName,
     // Features with their own window (e.g. Relationship Tracker's log). Only
     // while running, since the window shows data the feature collects.
-    hasWindow: key => typeof (FEATURES[key] as any).openSettingsModal === "function" && running.has(key),
-    openWindow: key => (FEATURES[key] as any).openSettingsModal?.(),
+    hasWindow: key => isGroup(key) ? groupHasWindow(key) : typeof (FEATURES[key] as any).openSettingsModal === "function" && running.has(key),
+    openWindow: key => isGroup(key) ? openGroupWindow(key) : (FEATURES[key] as any).openSettingsModal?.(),
     settings,
-    isInstant: key => !hasPatches(key),
+    isInstant: key => membersOf(key).every(m => !hasPatches(m)),
     markOptionPending: key => {
         pendingOptions.add(key);
         if (settings.store.autoApply) scheduleAutoApply();
@@ -984,13 +1072,26 @@ setDoctorProvider({
 });
 
 setFeatureDockProvider({
-    list: () => ORDER.map(key => ({
+    // Groups show once (their parts aren't listed separately); dock buttons made for a part before keep working.
+    list: () => CARDS.map(key => isGroup(key) ? {
+        key,
+        name: cardName(key),
+        running: anyRunning(key),
+        opens: groupHasWindow(key) ? "window" : membersOf(key).some(hasOptions) ? "options" : "page",
+    } : {
         key,
         name: displayName(key),
         running: running.has(key),
         opens: hasWindow(key) ? "window" : hasOptions(key) ? "options" : "page",
-    })),
+    }),
     open(key, e) {
+        key = BUILT_IN_OF[key] ?? key;
+        if (isGroup(key)) {
+            if (!anyRunning(key)) { showToast(`${cardName(key)} isn't running — switch it on in Sonata`, "message"); openPage(); return; }
+            if (groupHasWindow(key)) openGroupWindow(key);
+            else openOptions(api, key);
+            return;
+        }
         if (!running.has(key)) {
             showToast(`${displayName(key)} isn't running — switch it on in Sonata`, "message");
             openPage();
@@ -1001,7 +1102,8 @@ setFeatureDockProvider({
         else openPage();
     },
     openOptions(key) {
-        if (hasOptions(key)) openOptions(api, key);
+        key = BUILT_IN_OF[key] ?? key;
+        if (isGroup(key) ? membersOf(key).some(hasOptions) : hasOptions(key)) openOptions(api, key);
         else openPage();
     },
 });
@@ -1075,7 +1177,7 @@ const plugin = definePlugin({
         startFeatureAccent();
         startDockColor();
         // A blue bar at the top of Discord when GitHub has a newer Sonata.
-        startUpdateNotice(() => settings.store.sonataUpdateNotice !== false);
+        startUpdateNotice(() => settings.store.sonataUpdateNotice !== false, () => (settings.store as any).sonataAutoUpdate !== false);
         // Performance settings (style rules that skip expensive drawing).
         startPerformance();
         // Disk space: automatic cleaning, decided a minute after start.

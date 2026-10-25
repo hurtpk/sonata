@@ -20,6 +20,7 @@ import { React } from "@webpack/common";
 import type { CSSProperties, ReactNode } from "react";
 
 import { windowAccent } from "../../controller/accent";
+import { hubContext } from "./Hub";
 
 export type WindowSize = "sm" | "md" | "lg" | "xl" | "xxl" | (string & {});
 
@@ -98,7 +99,13 @@ export function windowStyleProps(style: WindowStyle, accent = windowAccent()) {
 
 const nameOf = (title: ReactNode) => typeof title === "string" ? title.toLowerCase() : title;
 
-export function Window({ transitionState, onClose, size = "md", title, subtitle, children, className, tools, tabs, tab, onTab, status, statusRight, flush, side, actions, actionBarInput, role = "dialog" }: WindowProps) {
+export function Window(props: WindowProps) {
+    // Inside a group's window (Media Tools, Music & Audio…): the group's name, size and list of parts.
+    const hub = React.useContext(hubContext());
+    return hub ? <Frame {...props} title={hub.title} size={hub.size} side={hub.rail ?? props.side} still={hub.still} /> : <Frame {...props} />;
+}
+
+function Frame({ transitionState, onClose, size = "md", title, subtitle, children, className, tools, tabs, tab, onTab, status, statusRight, flush, side, actions, actionBarInput, role = "dialog", still }: WindowProps & { still?: boolean; }) {
     const style = useWindowStyle();
     const accent = windowAccent();
     const closing = transitionState >= 2;
@@ -107,7 +114,7 @@ export function Window({ transitionState, onClose, size = "md", title, subtitle,
     const showActions = !!actions?.length || actionBarInput != null;
 
     return (
-        <div className={classes("vc-sw-layer", closing && "vc-sw-layer-closing")}>
+        <div className={classes("vc-sw-layer", closing && "vc-sw-layer-closing", still && "vc-sw-still")}>
             <div
                 {...windowStyleProps(style, accent)}
                 role={role}

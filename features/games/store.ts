@@ -16,6 +16,7 @@ import { useEffect, useState } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../featureSettings";
 import type { DealStore, EpicGame, McServer, PassGame, ShopItem } from "./native";
+import { recordShop } from "./shopHistory";
 
 export const native = () => VencordNative.pluginHelpers.Sonata as any;
 
@@ -131,10 +132,12 @@ async function checkEpic() {
 }
 
 async function checkShop() {
-    if (!settings.store.shopAlerts || !state.wishlist.length) return;
     const r = await native().gamesFortniteShop().catch(() => null);
     if (!r?.ok) return;
     cache.shop = { date: r.date, items: r.items };
+    // Every look at the shop goes into its history, alerts or not.
+    void recordShop(r.date, r.items);
+    if (!settings.store.shopAlerts || !state.wishlist.length) return;
     const hits = (r.items as ShopItem[]).filter(i => state.wishlist.includes(norm(i.name)) && !state.seenShop.includes(`${r.date}:${norm(i.name)}`));
     if (hits.length)
         showNotification({ title: hits.length === 1 ? `${hits[0].name} is in the Fortnite shop` : `${hits.length} items you want are in the Fortnite shop`, body: hits.map(i => `${i.name} — ${i.price} V-Bucks`).join(", "), image: hits[0].image });

@@ -367,7 +367,7 @@ export function effectsCss(t: Theme) {
     if (f.servers === "bounce") css += `${SERVER}:hover { animation: vc-ts-bounce ${Math.round(ms * 2.8)}ms ease; }\n@keyframes vc-ts-bounce { 0%, 100% { translate: 0 0; } 40% { translate: 0 -5px; } 70% { translate: 0 1px; } }\n`;
     if (f.servers === "wiggle") css += `${SERVER}:hover { animation: vc-ts-wiggle ${Math.round(ms * 2.6)}ms ease; }\n@keyframes vc-ts-wiggle { 0%, 100% { rotate: 0deg; } 25% { rotate: -9deg; } 60% { rotate: 7deg; } }\n`;
     // The separate "scale" property, so Discord's own transforms on buttons are left alone.
-    if (f.buttons) css += `button:active:not(:disabled) { scale: 0.96; }\n`;
+    if (f.buttons) css += "button:active:not(:disabled) { scale: 0.96; }\n";
     if (t.msgIn !== "none") {
         const from = t.msgIn === "fade" ? "opacity: 0;" : t.msgIn === "slide" ? "opacity: 0; translate: 0 10px;" : "opacity: 0; scale: 0.96;";
         css += `${MESSAGE} { animation: vc-ts-msg-in ${Math.round(ms * 1.4)}ms ease-out; }\n@keyframes vc-ts-msg-in { from { ${from} } }\n`;

@@ -456,7 +456,8 @@ export default definePlugin({
         {
             find: ",{avatarCutoutX",
             replacement: {
-                match: /isTyping:(\i)=!1(,typingIndicatorRef:\i,isSpeaking:)/,
+                // Both avatar kinds in the member list (still and animated).
+                match: /isTyping:(\i)=!1(,typingIndicatorRef:\i,)/g,
                 replace: "silentTypingIsTyping:$1=$self.shouldHideMembersListTypingIndicators()?false:(arguments[0].isTyping??false)$2"
             }
         },

@@ -49,12 +49,12 @@ function onPath(exe: string) {
 
 const firstThatExists = (paths: (string | null)[]) => paths.find(p => p && existsSync(p)) ?? null;
 
-function findYtDlp() {
+export function findYtDlp() {
     if (process.platform !== "win32") return firstThatExists(["/usr/local/bin/yt-dlp", "/opt/homebrew/bin/yt-dlp", "/usr/bin/yt-dlp"]);
     return firstThatExists([onPath("yt-dlp.exe"), ...wingetPlaces("yt-dlp.exe", /^yt-dlp\.yt-dlp_/i)]);
 }
 
-function findFfmpeg() {
+export function findFfmpeg() {
     if (process.platform !== "win32") return firstThatExists(["/usr/local/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg", "/usr/bin/ffmpeg"]);
     return firstThatExists([onPath("ffmpeg.exe"), ...wingetPlaces("ffmpeg.exe", /ffmpeg/i)]);
 }
@@ -71,7 +71,7 @@ function run(cmd: string, args: string[], timeoutMs: number): Promise<{ code: nu
     });
 }
 
-function kill(child: ChildProcess) {
+export function kill(child: ChildProcess) {
     if (!child.pid || child.exitCode != null) return;
     // On Windows, also stop the FFmpeg it may have started.
     if (process.platform === "win32") spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], { windowsHide: true });

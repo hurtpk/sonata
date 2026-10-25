@@ -83,7 +83,7 @@ function update() {
         if (cache.size > 300) cache.delete(cache.keys().next().value!);
     }
     show(hit.row, "🌐 Translating…", hit.text.length > 160 ? `${hit.text.slice(0, 160)}…` : hit.text, true);
-    const id = hit.id;
+    const { id } = hit;
     void job.then(t => {
         if (shownFor !== id || !alt) return;
         if (!t) { show(hit.row, "🌐 Couldn't translate this one", "Check Translate's settings, or try again later."); return; }

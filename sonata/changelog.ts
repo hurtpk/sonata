@@ -17,6 +17,33 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.25",
+        date: "October 25, 2026",
+        title: "Weather, Radio, and fewer, bigger features",
+        items: [
+            { icon: "🌤️", text: "New: Weather. Your city's forecast — now, the next 24 hours and the week — and a weather card under messages like \"weather in Tokyo\". °C or °F, no account needed." },
+            { icon: "📺", text: "New: Show Tracker. Follow anime and TV shows, see when each next episode is out (Coming up), and get a pop-up when it is." },
+            { icon: "📻", text: "New: Radio. Thousands of internet radio stations (search, or pick a genre like lofi or jazz), your public SoundCloud likes (with yt-dlp; some songs are copy-protected and only play on SoundCloud), and music files from your computer. A small player in the corner keeps the controls when the window is closed." },
+            { icon: "📶", text: "New: Discord Status. A bar at the top of Discord when Discord itself is having problems, so you know it's not your internet — with what's affected, Discord's latest update, voice regions and planned maintenance." },
+            { icon: "🧩", text: "Features that belong together are one feature now, each with one card, one switch and one window: Music & Audio (Radio, Spotify Controls, the audio file player, Sound Studio), Message Logger (both loggers), Media Tools (Video Editor, GIF Maker, File Converter, Screenshot Styler), File Previews (files, ZIPs and 3D models), Text Styles (Fancy Text, Colored Text, ASCII Art, Characters), Safety (Scam Shield, AntiMod, QR Codes) and Profile Tools (Custom Badges, Steal Profile, Status Avatar). Their options page has a section and a switch for each part, and everything you'd set is kept." },
+            { icon: "🧩", text: "Six more merged features: Images (Image Zoom, View Icons, Image Filename, Image Link, Reverse Image Search, Image to Text), Voice Messages (sending and downloading them), Invites (Better Invites, Invite Manager), Server Insights (hidden channels, permissions, server info, timeout lengths), Sonata Insights (Broken Patch Finder, Crash Handler) and Embeds (Embed Sender, Embed Copier). Each merged feature's parts now also live in one folder inside Sonata, so there are fewer folders with all the same features." },
+            { icon: "🌈", text: "Embed Sender's formatting bar has a coloured text button: make coloured text in Colored Text and it goes straight into the description (or the message). Colours show in embed descriptions, not titles." },
+            { icon: "💬", text: "The chat bar's Sonata buttons follow the merges: one Text Styles button instead of ASCII Art, Characters, Colored Text and Fancy Text, and one Media Tools button instead of GIF Maker, File Converter and Screenshot Styler. Each opens its window where you were last." },
+            { icon: "✒️", text: "The Pen icon (Text Styles) is a proper fountain-pen nib now, and options on the Sonata screen have readable names (\"Show a button for it in the chat bar\", not \"Colored Text_chat Bar Button\")." },
+            { icon: "🖱️", text: "Right-clicking a message: the Sonata submenu now sits right above Reply and Forward, and Message Logger's items (open logs, watch someone, block or allow lists) are inside it instead of in a menu of their own." },
+            { icon: "📝", text: "In merged features' windows, the list down the left no longer cuts names and descriptions off; they wrap onto a second line." },
+            { icon: "🪄", text: "A picture or video you add to a message has an Edit in Media Tools button: style it, make it a GIF, edit the video or convert it, and the edited copy replaces the one in your message." },
+            { icon: "🔤", text: "File Previews: fonts sent in chat show their name and a line written in them, without opening anything." },
+            { icon: "🌈", text: "Colored Text uses everything Discord's coloured code blocks can show now: 16 colours instead of 8, any colour you like for text or background, italic, strikethrough and overline, plus a rainbow or a fade between two colours. The preview uses Discord's own colours, and long colourful messages switch to close shades so they fit." },
+            { icon: "🎮", text: "Steam and Roblox are part of Game Hub now, not features of their own. Their options are in Game Hub's options, the chat bar has one Game Hub button instead of two, and your watched games, groups, people and settings are all kept." },
+            { icon: "🛵", text: "Package Tracker tracks Postmates orders too, just like DoorDash and Uber Eats: the store, your food, how far along it is and when it arrives, never the address or anyone's name. Postmates links are blurred in chat and you're asked before sending one." },
+            { icon: "🔧", text: "Fixed after Discord's update: Declutter hides nameplates on your account panel again, and Silent Typing hides typing in the member list again (on both kinds of avatar)." },
+            { icon: "🏷️", text: "Local Names: give a server a different icon, and rename a server's roles, just for you. Right-click a server for both. They show their real versions while you're in that server's settings." },
+            { icon: "🛍️", text: "Game Hub: Fortnite shop history. Each item in the shop shows when it was last there and how many times, and the new Shop history tab looks any item up. It's kept by Game Hub from today on, since nothing public lists older shops." },
+            { icon: "⚡", text: "Sonata updates by itself: when a new version is out, it installs in the background and the bar just asks you to restart. Switch it off in What's new → \"Install it by itself\"." },
+        ],
+    },
+    {
         version: "2026.10.20h",
         date: "October 20, 2026",
         title: "The installer works without winget",

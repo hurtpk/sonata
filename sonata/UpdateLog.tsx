@@ -29,6 +29,7 @@ function Highlight({ text, q }: { text: string; q: string; }) {
 export function UpdateLog({ seen, onClose, store }: { seen: string | undefined; onClose(): void; store?: any; }) {
     const [q, setQ] = useState("");
     const [notice, setNotice] = useState<boolean>(() => store?.sonataUpdateNotice !== false);
+    const [auto, setAuto] = useState<boolean>(() => store?.sonataAutoUpdate !== false);
     const [checking, setChecking] = useState<string | null>(null);
     const checkGitHub = async () => {
         setChecking("Checking…");
@@ -70,6 +71,7 @@ export function UpdateLog({ seen, onClose, store }: { seen: string | undefined; 
                 </div>
                 <div className="sonata-log-notice">
                     <label className="sonata-check"><input type="checkbox" checked={notice} onChange={e => { const v = e.currentTarget.checked; setNotice(v); if (store) store.sonataUpdateNotice = v; }} /> Tell me at the top of Discord when there's a new version</label>
+                    <label className="sonata-check" title="Downloads and builds it while you chat, then asks you to restart Discord"><input type="checkbox" checked={auto} disabled={!notice} onChange={e => { const v = e.currentTarget.checked; setAuto(v); if (store) store.sonataAutoUpdate = v; }} /> Install it by itself</label>
                     <span className="sonata-spacer" />
                     {checking && <span className="sonata-field-hint">{checking}</span>}
                     <button type="button" className="sonata-btn" disabled={checking === "Checking…"} onClick={() => void checkGitHub()}>Check now</button>

@@ -5,11 +5,11 @@
  */
 
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildStore, openModal, useState } from "@webpack/common";
+import { ChannelStore, GuildRoleStore, GuildStore, openModal, useRef, useState } from "@webpack/common";
 
 import { Window } from "../_shared/Window";
 import { FormGroup, FormRow } from "../_shared/WindowParts";
-import { Kind, setLocalName, useNames } from "./store";
+import { iconFrom, Kind, setLocalIcon, setLocalName, setLocalRole, useNames } from "./store";
 
 /** The real name, even while the local one is showing. */
 export type RealName = (kind: Kind, id: string) => string;
@@ -44,10 +44,98 @@ function RenameWindow({ modalProps, kind, id, real }: { modalProps: RenderModalP
 
 export const openRename = (kind: Kind, id: string, real: RealName) => openModal(props => <RenameWindow modalProps={props} kind={kind} id={id} real={real} />);
 
-function AllNamesWindow({ modalProps, real }: { modalProps: RenderModalProps; real: RealName; }) {
+/* ── A server's icon, just for you ── */
+
+function IconWindow({ modalProps, guildId }: { modalProps: RenderModalProps; guildId: string; }) {
+    const names = useNames();
+    const guild: any = GuildStore.getGuild(guildId);
+    const mine = names.icon[guildId];
+    const [picked, setPicked] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const input = useRef<HTMLInputElement>(null);
+    const shown = picked ?? mine;
+    const pick = async (f?: File | null) => {
+        if (!f) return;
+        setError(null);
+        try { setPicked(await iconFrom(f)); } catch { setError("That picture couldn't be opened. Try a PNG, JPG, GIF or WebP."); }
+    };
+    return (
+        <Window {...modalProps} size="sm" title="Local Names" subtitle="Only you see the new icon"
+            actions={[
+                ...(mine ? [{ text: "Use the real icon", variant: "secondary", onClick: () => { setLocalIcon(guildId, null); modalProps.onClose(); } }] : []),
+                { text: "Save", variant: "primary", disabled: !picked, onClick: () => { if (picked) setLocalIcon(guildId, picked); modalProps.onClose(); } },
+            ]}
+            status={["only you see the new icon"]}>
+            <FormGroup>
+                <div className="vc-localnames-icon"
+                    onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); void pick(e.dataTransfer.files[0]); }}>
+                    <div className="vc-localnames-icon-pic">
+                        {shown ? <img src={shown} alt="" /> : <span>{(guild?.name ?? "?").split(/\s+/).map((w: string) => w[0]).join("").slice(0, 3)}</span>}
+                    </div>
+                    <div className="vc-localnames-icon-text">
+                        <b>{guild?.name ?? "This server"}</b>
+                        <span>Pick a picture, or drop one here. It's cropped to a square and kept small.</span>
+                        <button type="button" className="vc-tool-btn" onClick={() => input.current?.click()}>{shown ? "Pick a different picture" : "Pick a picture"}</button>
+                        {error && <span className="vc-localnames-error">{error}</span>}
+                    </div>
+                    <input ref={input} type="file" accept="image/*" hidden onChange={e => { void pick(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
+                </div>
+            </FormGroup>
+        </Window>
+    );
+}
+
+export const openIcon = (guildId: string) => openModal(props => <IconWindow modalProps={props} guildId={guildId} />);
+
+/* ── A server's roles, renamed just for you ── */
+
+const roleColour = (r: any) => r?.colorString ?? (r?.color ? `#${r.color.toString(16).padStart(6, "0")}` : "var(--sw-muted)");
+
+function RolesWindow({ modalProps, guildId, realRole }: { modalProps: RenderModalProps; guildId: string; realRole(role: any): string; }) {
+    const names = useNames();
+    const guild: any = GuildStore.getGuild(guildId);
+    const [query, setQuery] = useState("");
+    const roles: any[] = (GuildRoleStore.getSortedRoles(guildId) ?? []).filter((r: any) => r.id !== guildId);
+    const q = query.trim().toLowerCase();
+    const shown = roles.filter(r => !q || realRole(r).toLowerCase().includes(q) || names.role[r.id]?.toLowerCase().includes(q));
+    const count = roles.filter(r => names.role[r.id]).length;
+    return (
+        <Window {...modalProps} size="md" title="Local Names" subtitle={`Rename ${guild?.name ?? "this server"}'s roles just for you`}
+            status={[`${count} renamed`, "only you see them"]}
+            tools={<input className="vc-tool-input" value={query} placeholder={`Search ${roles.length} roles`} aria-label="Search roles" onChange={e => setQuery(e.currentTarget.value)} />}>
+            <div className="vc-tool-wrap">
+                {!roles.length ? <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🎭</span>This server's roles haven't loaded yet. Open the server once, then try again.</div> : (
+                    <FormGroup>
+                        {shown.map(r => (
+                            <FormRow key={r.id} label={<span className="vc-localnames-role"><i style={{ background: roleColour(r) }} />{realRole(r)}</span>}>
+                                <RoleInput guildId={guildId} roleId={r.id} value={names.role[r.id]} placeholder={realRole(r)} />
+                            </FormRow>
+                        ))}
+                        {!shown.length && <div className="vc-tool-empty">No roles match “{query.trim()}”.</div>}
+                    </FormGroup>
+                )}
+            </div>
+        </Window>
+    );
+}
+
+/** One role's name box: saved when you leave it or press Enter. */
+function RoleInput({ guildId, roleId, value, placeholder }: { guildId: string; roleId: string; value?: string; placeholder: string; }) {
+    const [text, setText] = useState(value ?? "");
+    const save = () => { if ((value ?? "") !== text.trim()) setLocalRole(guildId, roleId, text); };
+    return <input className="vc-tool-input vc-localnames-role-input" value={text} maxLength={100} placeholder={placeholder} aria-label={`Your name for ${placeholder}`}
+        onChange={e => setText(e.currentTarget.value)} onBlur={save} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }} />;
+}
+
+export const openRoles = (guildId: string, realRole: (role: any) => string) => openModal(props => <RolesWindow modalProps={props} guildId={guildId} realRole={realRole} />);
+
+function AllNamesWindow({ modalProps, real, realRole }: { modalProps: RenderModalProps; real: RealName; realRole(role: any): string; }) {
     const names = useNames();
     const rows = (kind: Kind) => Object.entries(names[kind]);
-    const count = rows("guild").length + rows("channel").length;
+    const icons = Object.keys(names.icon);
+    // Renamed roles, grouped by their server.
+    const roleServers = [...new Set(Object.values(names.roleGuild))];
+    const count = rows("guild").length + rows("channel").length + Object.keys(names.role).length + icons.length;
     const where = (kind: Kind, id: string) => {
         if (kind === "guild") return "Server";
         const c: any = ChannelStore.getChannel(id);
@@ -62,21 +150,44 @@ function AllNamesWindow({ modalProps, real }: { modalProps: RenderModalProps; re
         </FormRow>
     ));
     return (
-        <Window {...modalProps} size="md" title="Local Names" subtitle="Servers, channels and group chats you renamed just for you"
-            status={[`${count} renamed`, "only you see them"]}>
+        <Window {...modalProps} size="md" title="Local Names" subtitle="Servers, channels, group chats and roles you renamed, and server icons you changed, just for you"
+            status={[`${count} changed`, "only you see them"]}>
             <div className="vc-tool-wrap">
                 {count === 0 ? (
                     <div className="vc-tool-empty">
                         <span className="vc-tool-empty-icon">🏷️</span>
-                        Nothing renamed yet. Right-click a server, channel or group chat and pick "Rename just for me".
+                        Nothing changed yet. Right-click a server, channel or group chat and pick "Rename just for me", "Change icon just for me" or "Rename roles just for me".
                     </div>
                 ) : <>
                     {rows("guild").length > 0 && <FormGroup title="Servers">{list("guild")}</FormGroup>}
                     {rows("channel").length > 0 && <FormGroup title="Channels and group chats">{list("channel")}</FormGroup>}
+                    {icons.length > 0 && (
+                        <FormGroup title="Server icons">
+                            {icons.map(id => (
+                                <FormRow key={id} label={<span className="vc-localnames-role"><img className="vc-localnames-mini" src={names.icon[id]} alt="" />{real("guild", id) || "Server (not loaded)"}</span>}>
+                                    <button type="button" className="vc-tool-btn" onClick={() => openIcon(id)}>Change</button>
+                                    <button type="button" className="vc-tool-btn" onClick={() => setLocalIcon(id, null)}>Use the real icon</button>
+                                </FormRow>
+                            ))}
+                        </FormGroup>
+                    )}
+                    {roleServers.map(g => (
+                        <FormGroup key={g} title={`Roles in ${real("guild", g) || "a server"}`}>
+                            {Object.keys(names.role).filter(id => names.roleGuild[id] === g).map(id => {
+                                const role: any = GuildRoleStore.getRole(g, id);
+                                return (
+                                    <FormRow key={id} label={<span className="vc-localnames-role"><i style={{ background: roleColour(role) }} />{names.role[id]}</span>} help={`real name: ${role ? realRole(role) : "unknown (not loaded)"}`}>
+                                        <button type="button" className="vc-tool-btn" onClick={() => openRoles(g, realRole)}>Rename</button>
+                                        <button type="button" className="vc-tool-btn" onClick={() => setLocalRole(g, id, null)}>Use the real name</button>
+                                    </FormRow>
+                                );
+                            })}
+                        </FormGroup>
+                    ))}
                 </>}
             </div>
         </Window>
     );
 }
 
-export const openAllNames = (real: RealName) => openModal(props => <AllNamesWindow modalProps={props} real={real} />);
+export const openAllNames = (real: RealName, realRole: (role: any) => string) => openModal(props => <AllNamesWindow modalProps={props} real={real} realRole={realRole} />);

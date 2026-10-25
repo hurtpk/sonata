@@ -781,3 +781,8 @@
 /* Feature icons */
 .vc-qolcc-card-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; margin-right: 12px; border-radius: calc(10px * var(--sw-r, 1)); color: var(--vc-qolcc-accent, var(--brand-500)); background: color-mix(in srgb, var(--vc-qolcc-accent, #5865f2) 14%, transparent); }
 .vc-qolcc-card-disabled .vc-qolcc-card-icon { color: var(--text-muted); background: var(--sw-card, hsl(0 0% 100% / 0.05)); }
+
+/* A merged feature's options: a heading with its own switch for each part */
+.vc-qolcc-part-head { display: flex; align-items: center; gap: 10px; width: 100%; }
+.vc-qolcc-part-head > span:first-child { flex: 1; min-width: 0; }
+.vc-qolcc-part-status { font-family: var(--sw-mono, monospace); font-size: 10px; letter-spacing: 0.06em; text-transform: none; color: var(--sw-muted, var(--text-muted)); }

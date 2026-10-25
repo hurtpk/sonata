@@ -176,7 +176,7 @@ function AddBar({ onAdded }: { onAdded(id: string): void; }) {
     const guess = !service && t && !/^https?:/i.test(t) ? carrierOf(t) : null;
     const carrier = pick ?? guess;
     const hint = !t ? null
-        : /^https?:/i.test(t) ? (service ? `${SERVICES[service].name} order` : "Only DoorDash and Uber Eats tracking links for now")
+        : /^https?:/i.test(t) ? (service ? `${SERVICES[service].name} order` : "Only DoorDash, Uber Eats and Postmates tracking links for now")
             : carrier ? `${CARRIERS[carrier].name} parcel` : clean(t).length >= 8 ? "Pick the carrier" : "Keep typing…";
     const add = () => {
         if (service) { onAdded(addPackage({ kind: "food", service, url: t }).id); setText(""); setPick(null); return; }
@@ -226,7 +226,7 @@ function PackagesWindow({ modalProps, start }: { modalProps: RenderModalProps; s
                     <div className="vc-track-empty">
                         <Box size={34} />
                         <b>Nothing tracked yet</b>
-                        <p>Paste a tracking number (UPS, USPS, FedEx, DHL, Amazon, Royal Mail, Canada Post, OnTrac) or a DoorDash or Uber Eats tracking link on the left. You can also press <b>Track</b> under a message that has one.</p>
+                        <p>Paste a tracking number (UPS, USPS, FedEx, DHL, Amazon, Royal Mail, Canada Post, OnTrac) or a DoorDash, Uber Eats or Postmates tracking link on the left. You can also press <b>Track</b> under a message that has one.</p>
                         <p>Sonata reads only the progress, the arrival time, the store and the food. Never the address, and never your name or the driver's.</p>
                     </div>
                 )}

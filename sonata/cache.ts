@@ -15,7 +15,7 @@ import { PluginNative } from "@utils/types";
 import { findStoreLazy } from "@webpack";
 import { showToast } from "@webpack/common";
 
-import { clearMessagesIDB, countMessagesIDB } from "../features/messageLoggerEnhanced/db";
+import { clearMessagesIDB, countMessagesIDB } from "../features/messageLogger/messageLoggerEnhanced/db";
 import { QOL_NAME } from "../featureSettings";
 import type { CacheKind, CacheKinds, CacheSizes, DeepProcess, LeftoverPart, MemoryInfo, OldVersion } from "./cacheNative";
 

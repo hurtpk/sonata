@@ -306,7 +306,7 @@ function BackgroundTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) 
 }
 
 function MotionTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
-    const fx = t.fx;
+    const { fx } = t;
     const setFx = (p: Partial<Effects>) => set({ fx: { ...fx, ...p } });
     const off = JSON.stringify({ ...fx, speed: "normal" }) === JSON.stringify(NO_FX) && t.msgIn === "none";
     return (
