@@ -110,6 +110,7 @@ export const FEATURE_ICONS: Record<string, string> = {
     serverInsights: "key",
     sonataInsights: "chart",
     embeds: "embed",
+    appearance: "palette",
     weather: "cloudSun",
     showTracker: "tv",
     radio: "radio",

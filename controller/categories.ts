@@ -137,6 +137,7 @@ const FEATURE_CATEGORY: Record<string, string> = {
     serverInsights: "servers",
     sonataInsights: "system",
     embeds: "chat",
+    appearance: "system",
     weather: "other",
     showTracker: "media",
     radio: "media",

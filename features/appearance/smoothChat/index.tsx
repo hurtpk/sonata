@@ -13,7 +13,8 @@ import "./styles.css";
 import definePlugin, { OptionType } from "@utils/types";
 import { SelectedChannelStore, UserStore } from "@webpack/common";
 
-import { defineFeatureSettings } from "../../featureSettings";
+import { defineFeatureSettings } from "../../../featureSettings";
+import { openAppearance } from "../themeStudio/Panel";
 
 export const settings = defineFeatureSettings("smoothChat", {
     style: {
@@ -66,6 +67,8 @@ export default definePlugin({
     description: "New messages ease into the chat — slide up, fade, pop or glide — instead of appearing all at once. Only new messages animate; scrolling history stays instant.",
     authors: [{ name: "aiqen", id: 779172192461783110n }],
     settings,
+
+    openSettingsModal: () => openAppearance("messages"),
 
     flux: {
         MESSAGE_CREATE({ channelId, message, optimistic }: any) {

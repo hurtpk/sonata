@@ -13,9 +13,9 @@ import "./styles.css";
 import { SettingsStore } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 
-import { defineFeatureSettings, QOL_NAME } from "../../featureSettings";
+import { defineFeatureSettings, QOL_NAME } from "../../../featureSettings";
+import { openAppearance } from "../themeStudio/Panel";
 import { CODE_FONTS, codeFontById, DEFAULT_LOOK, fontById, fontCss, FontLook, FONTS, safeFontName } from "./fonts";
-import { openFontSwapper } from "./Panel";
 
 export const settings = defineFeatureSettings("fontSwapper", {
     font: {
@@ -115,7 +115,7 @@ export default definePlugin({
     authors: [{ name: "aiqen", id: 779172192461783110n }],
     settings,
 
-    openSettingsModal: () => openFontSwapper(),
+    openSettingsModal: () => openAppearance("text"),
 
     start() {
         apply();

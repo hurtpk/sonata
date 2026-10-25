@@ -90,6 +90,11 @@ export const GROUPS: Record<string, Group> = {
         description: "Make and send embeds through your webhooks, and copy any embed in chat to edit and send again.",
         members: ["embedSender", "embedCopier"],
     },
+    appearance: {
+        name: "Appearance",
+        description: "Make Discord look your way in one window: your own theme (colours, background, motion, message bubbles), the font and text size, and how new messages come in.",
+        members: ["themeStudio", "fontSwapper", "smoothChat"],
+    },
 };
 
 export const GROUP_OF: Record<string, string> = Object.fromEntries(Object.entries(GROUPS).flatMap(([g, d]) => d.members.map(m => [m, g])));

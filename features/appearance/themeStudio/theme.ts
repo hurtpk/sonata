@@ -9,7 +9,7 @@
 // roundness, a font, how see-through the backgrounds are, a picture or moving
 // colours behind Discord, and hover animations.
 
-import { dockColorCss } from "../../utilities/dockColorCss";
+import { dockColorCss } from "../../../utilities/dockColorCss";
 
 export type ListFx = "none" | "slide" | "bar" | "tint" | "grow";
 

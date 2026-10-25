@@ -10,7 +10,7 @@
 // with a live preview. Themes can be made from a picture and shared with a
 // short code. Turning the feature off puts Discord's own look back.
 
-import "../_shared/tool.css";
+import "../../_shared/tool.css";
 import "./styles.css";
 
 import definePlugin from "@utils/types";

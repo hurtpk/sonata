@@ -12,9 +12,12 @@ import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
 
-import { windowAccent } from "../../controller/accent";
-import { ColorPicker } from "../_shared/ColorPicker";
-import { Window } from "../_shared/Window";
+import { windowAccent } from "../../../controller/accent";
+import { isFeatureRunning } from "../../../featureSettings";
+import { ColorPicker } from "../../_shared/ColorPicker";
+import { Window } from "../../_shared/Window";
+import { FontBody } from "../fontSwapper/Panel";
+import { SmoothBody } from "../smoothChat/Panel";
 import { coloursFrom } from "./palette";
 import { readShared, themeCode, themeFileText } from "./share";
 import { activeId, putTheme, removeTheme, setActive, themeById, useThemes, videoSrc } from "./store";
@@ -219,7 +222,7 @@ function SeeThrough({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
 
 /* ── The tabs ── */
 
-type Tab = "colours" | "background" | "motion" | "chat" | "share";
+type Tab = "colours" | "background" | "motion" | "chat" | "share" | "text" | "messages";
 const TABS: [Tab, string][] = [["colours", "Colours"], ["background", "Background"], ["motion", "Motion"], ["chat", "Chat"], ["share", "Share"]];
 let lastTab: Tab = "colours";
 
@@ -464,8 +467,18 @@ function NewTheme({ onAdd, onClose }: { onAdd(t: Theme): void; onClose(): void; 
 
 /* ── The window ── */
 
+/**
+ * Appearance: your themes, and — as more tabs in the same window — Font
+ * Swapper's text settings and Smooth Chat's new-message animation. A tab only
+ * shows while its part is switched on in Sonata.
+ */
 function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const state = useThemes();
+    const themesOn = isFeatureRunning("themeStudio");
+    const extras: [Tab, string][] = [
+        ...(isFeatureRunning("fontSwapper") ? [["text", "Text"] as [Tab, string]] : []),
+        ...(isFeatureRunning("smoothChat") ? [["messages", "New messages"] as [Tab, string]] : []),
+    ];
     const accent = windowAccent("themeStudio");
     const [pick, setPick] = useState<string | null>(state.active ?? state.themes[0]?.id ?? null);
     const [tab, setTabState] = useState<Tab>(lastTab);
@@ -479,12 +492,25 @@ function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const add = (n: Theme) => { putTheme(n); setActive(n.id); setPick(n.id); };
     const isOn = !!t && state.active === t.id;
     const showNew = adding || !state.themes.length;
+    // What's showing: a theme tab, or Text / New messages.
+    const extra = extras.some(([id]) => id === tab) ? tab : !themesOn ? extras[0]?.[0] : undefined;
+    const view: Tab = extra ?? (tab === "text" || tab === "messages" ? "colours" : tab);
+    const themeTabs: [Tab, string][] = !themesOn ? [] : t && !showNew ? TABS : [["colours", "Themes"]];
+    const allTabs = [...themeTabs, ...extras];
 
     return (
-        <Window {...modalProps} size="xl" title="Theme Studio" subtitle="Make Discord your own — every change shows straight away" flush
-            tabs={t && !showNew ? TABS : undefined} tab={tab} onTab={id => setTab(id as Tab)}
-            status={[state.active ? `${themeById(state.active)?.name || "Untitled"} is on` : "Discord's own look", `${state.themes.length} theme${state.themes.length === 1 ? "" : "s"}`]}
+        <Window {...modalProps} size="xl" title="Appearance" subtitle="Make Discord your own — every change shows straight away" flush
+            tabs={allTabs.length > 1 ? allTabs : undefined} tab={view} onTab={id => setTab(id as Tab)}
+            status={extra === "text" ? ["Your font, text size and spacing"] : extra === "messages" ? ["How new messages come into the chat"]
+                : [state.active ? `${themeById(state.active)?.name || "Untitled"} is on` : "Discord's own look", `${state.themes.length} theme${state.themes.length === 1 ? "" : "s"}`]}
             statusRight="every change shows straight away">
+            {extra ? (
+                <div className="vc-ap-extra" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
+                    {extra === "text" ? <FontBody /> : <SmoothBody />}
+                </div>
+            ) : !themesOn ? (
+                <div className="vc-tool-empty vc-ap-extra">Switch on a part of Appearance in Sonata to change it here.</div>
+            ) : (
             <div className="vc-tool-wrap vc-ts-wrap" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className="vc-sw-split vc-ts-layout">
                     <aside className="vc-sw-split-list vc-ts-side">
@@ -516,21 +542,27 @@ function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
                                     : <button type="button" className="vc-ts-mini vc-ts-del" title="Delete this theme" aria-label="Delete" onClick={() => setSure(true)}>🗑</button>}
                             </div>
                             <Preview t={t} />
-                            <section className="vc-ts-pane" key={`${t.id}-${tab}`}>
-                                {tab === "colours" && <ColoursTab t={t} set={set} />}
-                                {tab === "background" && <BackgroundTab t={t} set={set} />}
-                                {tab === "motion" && <MotionTab t={t} set={set} />}
-                                {tab === "chat" && <ChatTab t={t} set={set} />}
-                                {tab === "share" && <ShareTab t={t} />}
+                            <section className="vc-ts-pane" key={`${t.id}-${view}`}>
+                                {view === "colours" && <ColoursTab t={t} set={set} />}
+                                {view === "background" && <BackgroundTab t={t} set={set} />}
+                                {view === "motion" && <MotionTab t={t} set={set} />}
+                                {view === "chat" && <ChatTab t={t} set={set} />}
+                                {view === "share" && <ShareTab t={t} />}
                             </section>
                         </>}
                     </main>
                 </div>
             </div>
+            )}
         </Window>
     );
 }
 
-export function openThemeStudio() {
+/** Opens Appearance, on a tab if given (Text for Font Swapper, New messages for Smooth Chat). */
+export function openAppearance(tab?: Tab) {
+    if (tab) lastTab = tab;
     openModal(props => <ThemeModal modalProps={props} />);
 }
+
+/** Theme Studio's own window: Appearance on its themes. */
+export const openThemeStudio = () => openAppearance(lastTab === "text" || lastTab === "messages" ? "colours" : undefined);

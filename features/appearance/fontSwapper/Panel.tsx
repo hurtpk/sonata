@@ -6,11 +6,9 @@
 
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
-import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, useEffect, UserStore } from "@webpack/common";
+import { useEffect, UserStore } from "@webpack/common";
 
-import { windowAccent } from "../../controller/accent";
-import { Window } from "../_shared/Window";
+import { windowAccent } from "../../../controller/accent";
 import { CODE_FONTS, DEFAULT_LOOK, FontChoice, fontCss, FontLook, FONTS, PRESETS, safeFontName } from "./fonts";
 import { currentLook, setLook, settings, stackOf } from "./index";
 
@@ -80,7 +78,8 @@ function Preview({ look }: { look: FontLook; }) {
     );
 }
 
-function FontModal({ modalProps }: { modalProps: RenderModalProps; }) {
+/** Appearance's Text tab: the font, its size and spacing, and the code font. */
+export function FontBody() {
     settings.use();
     usePreviewFonts();
     const accent = windowAccent("fontSwapper");
@@ -90,8 +89,7 @@ function FontModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const custom = FONTS.find(f => f.id === "custom")!;
 
     return (
-        <Window {...modalProps} size="lg" title="Font Swapper" subtitle="Changes show straight away — in this window and in Discord.">
-            <div className={classes(cl("wrap"), fs("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
+        <div className={classes(cl("wrap"), fs("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <Preview look={look} />
 
                 <span className={cl("label")}>Presets</span>
@@ -145,14 +143,8 @@ function FontModal({ modalProps }: { modalProps: RenderModalProps; }) {
 
                 <div className={cl("footer")}>
                     <span className={cl("spacer")} />
-                    <button type="button" className={cl("btn")} onClick={() => setLook(DEFAULT_LOOK)}>Back to Discord's look</button>
-                    <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={modalProps.onClose}>Done</button>
+                    <button type="button" className={cl("btn")} onClick={() => setLook(DEFAULT_LOOK)}>Back to Discord's font</button>
                 </div>
-            </div>
-        </Window>
+        </div>
     );
-}
-
-export function openFontSwapper() {
-    openModal(props => <FontModal modalProps={props} />);
 }

@@ -17,6 +17,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.25b",
+        date: "October 25, 2026",
+        title: "Appearance: themes, fonts and new messages in one window",
+        items: [
+            { icon: "🎨", text: "Theme Studio, Font Swapper and Smooth Chat are one feature now, Appearance, with one window: your themes (Colours, Background, Motion, Chat, Share), then Text for the font, text size, spacing and code font, and New messages for how messages come into the chat, with a little preview that plays it. Everything you'd set is kept, and their parts live in one folder." },
+        ],
+    },
+    {
         version: "2026.10.25",
         date: "October 25, 2026",
         title: "Weather, Radio, and fewer, bigger features",

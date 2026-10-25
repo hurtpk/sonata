@@ -1,0 +1,47 @@
+/* New messages easing in (only messages that just arrived get these classes). */
+.vc-smooth-in { animation-duration: var(--smooth-speed, 0.3s); animation-timing-function: cubic-bezier(0.2, 0.8, 0.25, 1); animation-fill-mode: both; }
+
+.vc-smooth-slide { animation-name: vc-smooth-slide; }
+.vc-smooth-fade { animation-name: vc-smooth-fade; }
+.vc-smooth-pop { animation-name: vc-smooth-pop; }
+.vc-smooth-side { animation-name: vc-smooth-side; }
+
+@keyframes vc-smooth-slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes vc-smooth-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes vc-smooth-pop { from { opacity: 0; transform: scale(0.96); transform-origin: left center; } 70% { opacity: 1; transform: scale(1.01); } to { opacity: 1; transform: none; } }
+@keyframes vc-smooth-side { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+
+/* Optional soft glow behind a new message, fading out. */
+.vc-smooth-glow { position: relative; }
+.vc-smooth-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--sw-card, linear-gradient(90deg, hsl(from var(--brand-500) h s l / 0.16), transparent 70%));
+    animation: vc-smooth-glow calc(var(--smooth-speed, 0.3s) * 5) ease-out both;
+}
+
+@keyframes vc-smooth-glow { from { opacity: 1; } to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-smooth-in, .vc-smooth-glow::before { animation: none !important; }
+}
+
+/* Appearance → New messages: a little chat that shows the animation. */
+/* Appearance's Text and New messages tabs scroll on their own (the window is flush for themes). */
+.vc-ap-extra { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px; box-sizing: border-box; }
+.vc-smooth-demo { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 34px; border-radius: calc(12px * var(--sw-r, 1)); background: hsl(0 0% 0% / 0.22); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); overflow: hidden; }
+.vc-smooth-demo-msg { display: flex; align-items: center; gap: 10px; }
+.vc-smooth-demo-pic { flex: none; width: 32px; height: 32px; border-radius: 50%; background: color-mix(in srgb, var(--tl-accent, #5865f2) 55%, #2b2d31); }
+.vc-smooth-demo-lines { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.vc-smooth-demo-lines i { display: block; height: 8px; border-radius: 99px; background: hsl(0 0% 100% / 0.14); }
+.vc-smooth-demo-lines i:first-child { width: 22%; background: hsl(0 0% 100% / 0.28); }
+.vc-smooth-demo-lines i:last-child { width: 68%; }
+.vc-smooth-replay { position: absolute; right: 12px; bottom: 8px; font-size: 12px; }
+.vc-smooth-styles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.vc-smooth-style { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: calc(10px * var(--sw-r, 1)); border: 1px solid var(--tl-line, hsl(0 0% 100% / 0.08)); }
+.vc-smooth-style b { font-size: 13.5px; color: var(--text-default, var(--text-normal)); }
+.vc-smooth-style span { font-size: 12px; color: var(--text-muted); }
+.vc-smooth-style:hover { border-color: hsl(from var(--tl-accent, #5865f2) h s l / 0.6); }
+.vc-smooth-style-on, .vc-smooth-style-on:hover { border-color: var(--tl-accent, #5865f2); background: hsl(from var(--tl-accent, #5865f2) h s l / 0.16); }
