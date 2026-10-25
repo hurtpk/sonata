@@ -17,6 +17,26 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.25c",
+        date: "October 25, 2026",
+        title: "Server Insights in one window, Twitch Drops, and more free games",
+        items: [
+            { icon: "📺", text: "Game Hub: Twitch Drops. Every game with drops on Twitch right now — the rewards, how long you need to watch, and when they end, soonest first — with a search and a Watch on Twitch button that opens the game's Twitch page. Press Tell me on a game to get a notification when it starts new drops (switch notifications off in Game Hub's options). The list comes from twitchdrops.app." },
+            { icon: "🔎", text: "A server's right-click menu has one Server Insights item instead of Server Info, View Permissions and Look Up a Member. It opens one window with three tabs: Overview (the server's details), Roles & permissions (every role, what it can do, and now who has it — with a search), and Members (look anyone up). Clicking someone in a role looks them up in the same window." },
+            { icon: "👑", text: "Force Owner Crown is part of Server Insights now." },
+            { icon: "🏷️", text: "Local Names: a server's right-click menu has one \"Just for me…\" item instead of three. It opens one window with Name, Icon and Roles tabs, and the menu shows what you've changed (renamed · new icon · 2 roles). The Sonata submenu also lost a doubled divider line above Message Logger, and on a channel it now sits right under Mark As Read." },
+            { icon: "🔊", text: "Sound Studio's list of sounds no longer squashes its rows together (names and \"Discord's sound\" were cut off) — each row keeps its size and the list scrolls." },
+            { icon: "📐", text: "The Read All button above your servers is centred again and no longer cut off at the edge of the server list." },
+            { icon: "🔨", text: "Exploit Reporter can use your game bot's slash commands (/ban username reason clip) instead of text commands. Run the bot's command once in Discord, then pick it for an action in Channels & prefix and choose what fills each option — the username box, the reason, the days, a fixed value, or the uploaded video for a file option like clip. Pressing Ban runs it through Discord's own command sender, the same as filling it in yourself, and still posts the log." },
+            { icon: "🎵", text: "Radio shows covers: SoundCloud songs' artwork, the picture inside your own music files (MP3, FLAC and M4A), and station logos, in the lists and on what's playing. Songs now have a time bar — in the window and in the small player in the corner — so you can see how far along you are and drag to any part of the song (stations are live, so they don't)." },
+            { icon: "📶", text: "Discord Status is part of Sonata Insights: its Overview starts with whether Discord itself is working, so you can tell straight away if a problem is Discord's or Sonata's." },
+            { icon: "🗓️", text: "Calendar shows the weather (each day's forecast for the next week, from Weather) and new episodes of the shows you follow in Show Tracker on the day they come out. Both can be hidden from the list under the month." },
+            { icon: "⬇️", text: "Media Downloader is part of Media Tools: download a video from a link, then press Edit to trim it, add captions or make a GIF without leaving the window." },
+            { icon: "🎁", text: "Game Hub: a new \"Free on GOG & more\" tab next to Epic's free games, with GOG giveaways and free games on Steam, itch.io and other stores, and a notification when GOG gives a game away." },
+            { icon: "🛵", text: "Package Tracker tracks Grubhub (and Seamless) and Instacart orders too, the same way as DoorDash, Uber Eats and Postmates." },
+        ],
+    },
+    {
         version: "2026.10.25b",
         date: "October 25, 2026",
         title: "Appearance: themes, fonts and new messages in one window",

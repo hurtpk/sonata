@@ -33,8 +33,8 @@ export const GROUPS: Record<string, Group> = {
     },
     mediaTools: {
         name: "Media Tools",
-        description: "Edit videos, make GIFs, convert files and style screenshots in one window — or straight from a picture or video you add to a message.",
-        members: ["videoEditor", "gifMaker", "fileConverter", "screenshotStyler"],
+        description: "Download videos and music from links, edit videos, make GIFs, convert files and style screenshots in one window — or straight from a picture or video you add to a message.",
+        members: ["videoEditor", "gifMaker", "fileConverter", "screenshotStyler", "mediaDownloader"],
         window: true,
     },
     filePreviews: {
@@ -77,13 +77,13 @@ export const GROUPS: Record<string, Group> = {
     },
     serverInsights: {
         name: "Server Insights",
-        description: "Channels you can't open, what permissions people and channels have, a server's details, and how long a timeout lasts.",
-        members: ["showHiddenChannels", "permissionsViewer", "serverInfo", "showTimeoutDuration"],
+        description: "One Server Insights window for any server (its details, every role with what it can do and who has it, and a member look-up), plus channels you can't open, how long a timeout lasts, and the owner's crown in big servers.",
+        members: ["serverInfo", "permissionsViewer", "showHiddenChannels", "showTimeoutDuration", "forceOwnerCrown"],
     },
     sonataInsights: {
         name: "Sonata Insights",
-        description: "Finds what's broken or slow after a Discord update, and gets Discord back on its feet after a crash without restarting.",
-        members: ["brokenPatchFinder", "crashHandler"],
+        description: "Is it Discord or is it Sonata? Discord's own outages next to what's broken or slow in Sonata after a Discord update, and Discord back on its feet after a crash without restarting.",
+        members: ["brokenPatchFinder", "crashHandler", "discordStatus"],
     },
     embeds: {
         name: "Embeds",

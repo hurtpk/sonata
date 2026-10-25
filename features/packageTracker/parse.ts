@@ -116,8 +116,8 @@ const FOOD_STAGES: [FoodStage, RegExp][] = [
     ["cancelled", /\b(order (was |has been )?cancel+ed|cancel+ed your order|refunded)\b/i],
     ["delivered", /\b(delivered|enjoy your (order|meal|food)|dropped off|has arrived|order (is )?complete)\b/i],
     ["onTheWay", /\b(on (the|their|its|his|her) way|heading (to you|your way|over)|en route|out for delivery|picked up (your|the) order|arriving (soon|now|shortly|in)|almost (there|here)|nearby|approaching|on the move)\b/i],
-    ["pickup", /\b(heading to (the )?(store|restaurant|merchant)|at the (store|restaurant)|waiting (for|on) (your |the )?order|picking up|arrived at the (store|restaurant)|assigned|found a (dasher|courier|driver))\b/i],
-    ["preparing", /\b(preparing|being (made|prepared|cooked)|in the kitchen|making your|cooking|getting (your|the) order ready|order (is )?(being )?prepared|started (on )?your order)\b/i],
+    ["pickup", /\b(heading to (the )?(store|restaurant|merchant)|at the (store|restaurant)|waiting (for|on) (your |the )?order|picking up|arrived at the (store|restaurant)|assigned|found a (dasher|courier|driver|shopper)|shopper (is )?assigned)\b/i],
+    ["preparing", /\b(preparing|being (made|prepared|cooked)|in the kitchen|making your|cooking|getting (your|the) order ready|order (is )?(being )?prepared|started (on )?your order|shopping (for )?your (order|items)|(is|are) shopping|being shopped|checking out)\b/i],
     ["placed", /\b(order (received|placed|confirmed|submitted)|confirming (your )?order|sent (your order )?to the (store|restaurant)|(we|we've|they've) (got|received) your order|waiting for the (store|restaurant) to (accept|confirm))\b/i],
 ];
 

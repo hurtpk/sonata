@@ -17,13 +17,13 @@ import { CspPolicies } from "@main/csp";
 import { ChildProcess, spawn } from "child_process";
 import { randomBytes } from "crypto";
 import { dialog, IpcMainInvokeEvent } from "electron";
-import { createReadStream, existsSync, statSync } from "fs";
+import { closeSync, createReadStream, existsSync, openSync, readSync, statSync } from "fs";
 import { createServer, IncomingMessage, Server, ServerResponse } from "http";
 import { AddressInfo } from "net";
 import { basename, extname } from "path";
 import { Readable } from "stream";
 
-import { findFfmpeg, findYtDlp, kill } from "../../mediaDownloader/native";
+import { findFfmpeg, findYtDlp, kill } from "../../mediaTools/mediaDownloader/native";
 
 // Discord's page may play sound (and show station logos) from the player server.
 CspPolicies["http://127.0.0.1:*"] = [...new Set([...(CspPolicies["http://127.0.0.1:*"] ?? []), "img-src", "media-src"])];
@@ -172,13 +172,15 @@ async function relay(url: string, req: IncomingMessage, res: ServerResponse, onl
     }
 }
 
-function soundcloud(id: string, req: IncomingMessage, res: ServerResponse) {
+/** `from`: seconds into the song to start at (moving along the bar starts it again from there). */
+function soundcloud(id: string, req: IncomingMessage, res: ServerResponse, from = 0) {
     const ready = scReady.get(id);
     const ff = findFfmpeg();
     if (!ready) return send(res, 404, "not ready");
     if (!ff) return send(res, 503, "SoundCloud needs FFmpeg");
     // SoundCloud sends its audio in small pieces; FFmpeg joins them into one MP3 the page can play.
-    const child = spawn(ff, ["-hide_banner", "-loglevel", "error", "-i", ready.stream, "-vn", "-c:a", "libmp3lame", "-b:a", "192k", "-f", "mp3", "pipe:1"], { windowsHide: true });
+    const start = from > 0 && from < 24 * 3600 ? ["-ss", from.toFixed(2)] : [];
+    const child = spawn(ff, ["-hide_banner", "-loglevel", "error", ...start, "-i", ready.stream, "-vn", "-c:a", "libmp3lame", "-b:a", "192k", "-f", "mp3", "pipe:1"], { windowsHide: true });
     children.add(child);
     res.writeHead(200, { "content-type": "audio/mpeg", "cache-control": "no-store", "access-control-allow-origin": "*" });
     child.stdout.pipe(res);
@@ -216,7 +218,7 @@ function ensureServer(): Promise<string> {
             if (k !== key) return send(res, 403, "no");
             if (what === "radio") return void relay(u.searchParams.get("u") ?? "", req, res);
             if (what === "img") return void relay(u.searchParams.get("u") ?? "", req, res, true);
-            if (what === "sc" && id) return soundcloud(id, req, res);
+            if (what === "sc" && id) return soundcloud(id, req, res, Number(u.searchParams.get("t")) || 0);
             if (what === "file" && id) return file(id, req, res);
             send(res, 404, "?");
         });
@@ -252,6 +254,117 @@ export async function scPrepare(_: IpcMainInvokeEvent, url: string): Promise<{ o
     scReady.set(id, { stream, at: Date.now() });
     for (const [k, v] of scReady) if (Date.now() - v.at > 6 * 3_600_000) scReady.delete(k);
     return { ok: true, id, duration: Number(duration) || undefined };
+}
+
+/* ── Covers ── */
+
+/** SoundCloud covers, from its public embed info (oEmbed — no key, no sign-in). Remembered while Discord's open. */
+const scArt = new Map<string, string | null>();
+
+async function scCoverOf(url: string): Promise<string | null> {
+    if (scArt.has(url)) return scArt.get(url)!;
+    try {
+        const r = await fetch(`https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(url)}`, { headers: { "user-agent": UA, accept: "application/json" } });
+        if (r.status === 429) return null; // asked to slow down: try again later, don't remember
+        const j: any = r.ok ? await r.json() : null;
+        const art = typeof j?.thumbnail_url === "string" && /^https:\/\/[\w.-]*sndcdn\.com\//.test(j.thumbnail_url) ? j.thumbnail_url : null;
+        scArt.set(url, art);
+        return art;
+    } catch {
+        return null;
+    }
+}
+
+/** Covers for SoundCloud tracks (a few at a time, so SoundCloud isn't asked too much at once). */
+export async function scCovers(_: IpcMainInvokeEvent, urls: string[]): Promise<Record<string, string | null>> {
+    const list = (Array.isArray(urls) ? urls : []).filter(u => typeof u === "string" && /^https:\/\/(www\.|m\.)?soundcloud\.com\/[\w-]+\/[\w-]+/i.test(u)).slice(0, 24);
+    const out: Record<string, string | null> = {};
+    for (let i = 0; i < list.length; i += 4)
+        await Promise.all(list.slice(i, i + 4).map(async u => { out[u] = await scCoverOf(u); }));
+    return out;
+}
+
+/** The picture inside a music file (MP3's ID3 tag, FLAC's picture block, or M4A's cover), as a data: link. */
+function coverIn(path: string): string | null {
+    const fd = openSync(path, "r");
+    try {
+        const head = Buffer.alloc(16 * 1048576);
+        const n = readSync(fd, head, 0, head.length, 0);
+        const b = head.subarray(0, n);
+        const asData = (mime: string, img: Buffer) => img.length > 64 && img.length < 6 * 1048576 ? `data:${/^image\//.test(mime) ? mime : "image/jpeg"};base64,${img.toString("base64")}` : null;
+        const sniff = (img: Buffer) => img[0] === 0x89 && img[1] === 0x50 ? "image/png" : "image/jpeg";
+
+        // MP3: ID3v2 tag at the start.
+        if (b.toString("latin1", 0, 3) === "ID3") {
+            const v = b[3];
+            const syncsafe = (o: number) => (b[o] & 0x7f) << 21 | (b[o + 1] & 0x7f) << 14 | (b[o + 2] & 0x7f) << 7 | (b[o + 3] & 0x7f);
+            const end = Math.min(b.length, 10 + syncsafe(6));
+            let o = 10;
+            if (b[5] & 0x40) o += v === 4 ? syncsafe(10) : b.readUInt32BE(10) + 4;
+            while (o + (v === 2 ? 6 : 10) < end) {
+                const id = b.toString("latin1", o, o + (v === 2 ? 3 : 4));
+                if (!/^[A-Z0-9]{3,4}$/.test(id)) break;
+                const size = v === 2 ? b.readUIntBE(o + 3, 3) : v === 4 ? syncsafe(o + 4) : b.readUInt32BE(o + 4);
+                const body = o + (v === 2 ? 6 : 10);
+                if (size <= 0 || body + size > b.length) break;
+                if (id === "APIC" || id === "PIC") {
+                    const enc = b[body];
+                    let p = body + 1, mime = "image/jpeg";
+                    if (id === "PIC") { mime = b.toString("latin1", p, p + 3).toLowerCase() === "png" ? "image/png" : "image/jpeg"; p += 3; }
+                    else { const z = b.indexOf(0, p); mime = b.toString("latin1", p, z); p = z + 1; }
+                    p += 1; // picture type
+                    // The description ends in one zero byte, or two (aligned) for UTF-16.
+                    if (enc === 1 || enc === 2) { while (p + 1 < body + size && !(b[p] === 0 && b[p + 1] === 0)) p += 2; p += 2; }
+                    else { const z = b.indexOf(0, p); p = z + 1; }
+                    const img = b.subarray(p, body + size);
+                    return asData(mime.includes("/") ? mime : `image/${mime || "jpeg"}`, img);
+                }
+                o = body + size;
+            }
+            return null;
+        }
+        // FLAC: metadata blocks after "fLaC"; type 6 is the picture.
+        if (b.toString("latin1", 0, 4) === "fLaC") {
+            let o = 4;
+            while (o + 4 < b.length) {
+                const last = b[o] & 0x80, type = b[o] & 0x7f, len = b.readUIntBE(o + 1, 3);
+                if (type === 6 && o + 4 + len <= b.length) {
+                    let p = o + 8;
+                    const mimeLen = b.readUInt32BE(p); const mime = b.toString("latin1", p + 4, p + 4 + mimeLen); p += 4 + mimeLen;
+                    const descLen = b.readUInt32BE(p); p += 4 + descLen + 16;
+                    const dataLen = b.readUInt32BE(p);
+                    return asData(mime, b.subarray(p + 4, p + 4 + dataLen));
+                }
+                if (last) break;
+                o += 4 + len;
+            }
+            return null;
+        }
+        // M4A: the "covr" box holds a "data" box with the picture (found when the file keeps its details at the start).
+        const covr = b.indexOf("covr", 0, "latin1");
+        if (covr > 4) {
+            const data = b.indexOf("data", covr, "latin1");
+            if (data > covr && data - covr < 16) {
+                const size = b.readUInt32BE(data - 4);
+                const img = b.subarray(data + 12, Math.min(b.length, data - 4 + size));
+                return asData(sniff(img), img);
+            }
+        }
+        return null;
+    } catch {
+        return null;
+    } finally {
+        closeSync(fd);
+    }
+}
+
+const fileCovers = new Map<string, string | null>();
+/** The cover picture inside one of your files (by its id), or null if it hasn't one. */
+export function musicCover(_: IpcMainInvokeEvent, id: string): string | null {
+    const path = files.get(String(id));
+    if (!path || !existsSync(path)) return null;
+    if (!fileCovers.has(path)) fileCovers.set(path, coverIn(path));
+    return fileCovers.get(path)!;
 }
 
 /* ── Your files ── */

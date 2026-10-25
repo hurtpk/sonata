@@ -43,6 +43,54 @@ export async function serverBase() {
 /** A station logo (or any picture), through the player server so Discord's page may show it. */
 export const viaServer = (url?: string) => url && base ? `${base}/img?u=${encodeURIComponent(url)}` : undefined;
 
+/* ── Covers ── */
+
+/** Each song's cover once known (null: it has none). SoundCloud's come from its embed info, files' from inside the file. */
+const covers = new Map<string, string | null>();
+const asked = new Set<string>();
+const waiting: Item[] = [];
+let batch: ReturnType<typeof setTimeout> | undefined;
+const coverListeners = new Set<() => void>();
+
+export function coverOf(item: Item) {
+    if (item.kind === "radio") return viaServer(item.station.logo);
+    const c = covers.get(item.key);
+    // SoundCloud's pictures come through the player server (Discord's page may not load them directly); files' are data: links.
+    return !c ? undefined : item.kind === "sc" ? viaServer(c) : c;
+}
+
+/** Asks for a song's cover (when it comes into view); several at once go together. */
+export function wantCover(item: Item) {
+    if (item.kind === "radio" || asked.has(item.key)) return;
+    asked.add(item.key);
+    if (item.kind === "file") {
+        void Promise.resolve(native().musicCover?.(item.file.id)).then((c: string | null) => { covers.set(item.key, c ?? null); coverListeners.forEach(l => l()); }).catch(() => { });
+        return;
+    }
+    waiting.push(item);
+    clearTimeout(batch);
+    batch = setTimeout(askWaiting, 150);
+}
+
+async function askWaiting() {
+    const list = waiting.splice(0, 24) as Extract<Item, { kind: "sc"; }>[];
+    if (!list.length) return;
+    // More than one batch's worth: the rest go next.
+    if (waiting.length) batch = setTimeout(askWaiting, 400);
+    const r: Record<string, string | null> = await native().scCovers?.(list.map(i => i.track.url)).catch(() => ({})) ?? {};
+    for (const i of list) {
+        const art = r[i.track.url];
+        if (art === undefined) asked.delete(i.key); // not answered (busy): ask again next time it's seen
+        else covers.set(i.key, art ?? null);
+    }
+    coverListeners.forEach(l => l());
+}
+
+export function useCovers() {
+    const [, bump] = useState(0);
+    useEffect(() => { const l = () => bump(n => n + 1); coverListeners.add(l); return () => void coverListeners.delete(l); }, []);
+}
+
 let audio: HTMLAudioElement | null = null;
 /** Songs that couldn't play (copy-protected, gone…), so lists can mark them. */
 export const failed = new Map<string, string>();
@@ -68,6 +116,9 @@ function el() {
     return audio;
 }
 
+/** SoundCloud plays as one long stream, so moving along the bar starts it again from there. */
+let sc: { id: string; duration: number; from: number; } | null = null;
+
 async function srcFor(item: Item): Promise<string | { error: string; }> {
     const b = await serverBase();
     if (!b) return { error: "The player couldn't start. Restart Discord fully and try again." };
@@ -77,7 +128,9 @@ async function srcFor(item: Item): Promise<string | { error: string; }> {
     }
     if (item.kind === "file") return `${b}/file/${item.file.id}`;
     const r = await native().scPrepare(item.track.url).catch(() => null);
-    return r?.ok ? `${b}/sc/${r.id}` : { error: r?.error ?? "Couldn't get this song." };
+    if (!r?.ok) return { error: r?.error ?? "Couldn't get this song." };
+    sc = { id: r.id, duration: Number(r.duration) || 0, from: 0 };
+    return `${b}/sc/${r.id}`;
 }
 
 /** Plays something now. With a list, the rest of the list plays after it. */
@@ -86,7 +139,9 @@ export async function play(item: Item, queue: Item[] = [item]) {
     const a = el();
     try { pauseInline(); } catch { }
     a.pause();
+    sc = null;
     set({ item, queue, at: Math.max(0, queue.findIndex(q => q.key === item.key)), loading: true, playing: false, error: null });
+    wantCover(item);
     const src = await srcFor(item);
     if (mine !== token) return;
     if (typeof src !== "string") {
@@ -123,8 +178,7 @@ export async function next() {
 }
 
 export async function previous() {
-    const a = el();
-    if (a.currentTime > 4 || state.queue.length < 2) { a.currentTime = 0; return; }
+    if (position().time > 4 || state.queue.length < 2) { seek(0); return; }
     const i = (state.at - 1 + state.queue.length) % state.queue.length;
     await play(state.queue[i], state.queue);
 }
@@ -141,8 +195,31 @@ export function setVolume(v: number) {
     listeners.forEach(l => l());
 }
 
-export const position = () => ({ time: audio?.currentTime ?? 0, duration: audio && Number.isFinite(audio.duration) ? audio.duration : 0 });
-export const seek = (t: number) => { if (audio && Number.isFinite(audio.duration)) audio.currentTime = t; };
+/** Where the song is, in seconds, and how long it is (0 for a station, which is live). */
+export function position() {
+    if (!audio || !state.item || state.item.kind === "radio") return { time: 0, duration: 0 };
+    if (state.item.kind === "sc" && sc) return { time: sc.from + audio.currentTime, duration: sc.duration };
+    return { time: audio.currentTime, duration: Number.isFinite(audio.duration) ? audio.duration : 0 };
+}
+
+/** Jumps to a time in the song. */
+export async function seek(t: number) {
+    const a = el();
+    const { duration } = position();
+    if (!state.item || state.item.kind === "radio" || !duration) return;
+    const to = Math.max(0, Math.min(duration - 0.5, t));
+    if (state.item.kind === "file") { a.currentTime = to; return; }
+    if (!sc) return;
+    const b = await serverBase();
+    if (!b) return;
+    const wasPlaying = !a.paused;
+    sc = { ...sc, from: to };
+    a.src = `${b}/sc/${sc.id}?t=${Math.floor(to)}`;
+    set({ loading: true });
+    if (wasPlaying || state.playing) await a.play().catch(() => set({ loading: false }));
+    else set({ loading: false });
+    listeners.forEach(l => l());
+}
 
 export function shuffled<T>(list: T[]) {
     const out = [...list];

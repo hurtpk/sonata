@@ -35,7 +35,9 @@ import { settings } from "..";
 import { cl, getGuildPermissionSpecMap, loadGetGuildPermissionSpecMap } from "../utils";
 import { CompareView, RolePicker } from "./Compare";
 import { PermissionAllowedIcon, PermissionDeniedIcon } from "./icons";
-import { roleFill,RoleInfo } from "./RoleInfo";
+import { openMemberLookup } from "./MemberLookup";
+import { roleFill, RoleInfo } from "./RoleInfo";
+import { RoleMembers } from "./RoleMembers";
 import { openWhoHas } from "./WhoHas";
 
 const tl = classNameFactory("vc-tool-");
@@ -205,6 +207,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                         {selectedRole && (
                             <RoleInfo role={selectedRole} guild={guild} iconSrc={getRoleIconSrc(selectedRole, 64)} />
                         )}
+                        {selectedRole && <RoleMembers key={selectedRole.id} guild={guild} role={selectedRole} onPick={id => openMemberLookup(guild.id, id)} />}
                         <div className={tl("head")}>
                             <span className={tl("label")}>What this can do</span>
                             <span className={classes(tl("badge"), tl("badge-good"))}>✓ {counts.allowed} allowed</span>
@@ -333,7 +336,7 @@ function UserContextMenu({ userId }: { userId: string; }) {
     );
 }
 
-const RolesAndUsersPermissions = ErrorBoundary.wrap(RolesAndUsersPermissionsComponent);
+export const RolesAndUsersPermissions = ErrorBoundary.wrap(RolesAndUsersPermissionsComponent);
 
 export default function openRolesAndUsersPermissionsModal(permissions: Array<RoleOrUserPermission>, guild: Guild, header: string, selectId?: string) {
     return openModalLazy(async () => {

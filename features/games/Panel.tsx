@@ -11,22 +11,23 @@ import { openModal, React, showToast, useEffect, useMemo, useState } from "@webp
 import { Window } from "../_shared/Window";
 import { FormGroup, FormRow, Toggle } from "../_shared/WindowParts";
 import { hubContext, HubFrame } from "./hub";
-import type { DealGame, DealStore, EpicGame, McServer, PassGame, ShopItem, StoreDeal } from "./native";
+import type { DealGame, DealStore, EpicGame, FreeGame, McServer, PassGame, ShopItem, StoreDeal, TwitchDrop } from "./native";
 import { RobloxSection } from "./roblox/Panel";
 import { historyLine, recordShop, returnsEvery, searchHistory, useHistory } from "./shopHistory";
 import { SteamSection } from "./steam/Panel";
-import { addServer, cache, checkServer, country, dealStores, isWatchingPrice, isWished, native, removeServer, renameServer, settings, setWished, unwatchPrice, useGames, watchPrice } from "./store";
+import { addServer, cache, checkServer, country, dealStores, isWatchingPrice, isWished, native, removeServer, renameServer, settings, setWatchingDrops, setWished, unwatchPrice, useGames, watchPrice } from "./store";
 
 const open = (url: string) => VencordNative.native.openExternal(url);
 const money = (n: number) => `$${n.toFixed(2)}`;
 const day = (t: number) => new Date(t).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 
-type Platform = "steam" | "roblox" | "epic" | "pass" | "mc" | "deals";
+type Platform = "steam" | "roblox" | "epic" | "twitch" | "pass" | "mc" | "deals";
 const PLATFORMS: { id: Platform; name: string; sub: string; icon: string; tabs: [string, string][]; }[] = [
     // These two bring their own tabs (./steam, ./roblox).
     { id: "steam", name: "Steam", sub: "Sales, updates and friends", icon: "🚂", tabs: [] },
     { id: "roblox", name: "Roblox", sub: "Profiles, games and trades", icon: "🟥", tabs: [] },
-    { id: "epic", name: "Epic & Fortnite", sub: "Free games and the item shop", icon: "🎁", tabs: [["free", "Free on Epic"], ["shop", "Fortnite shop"], ["history", "Shop history"]] },
+    { id: "epic", name: "Free games & Fortnite", sub: "Epic, GOG and more, and the item shop", icon: "🎁", tabs: [["free", "Free on Epic"], ["more", "Free on GOG & more"], ["shop", "Fortnite shop"], ["history", "Shop history"]] },
+    { id: "twitch", name: "Twitch Drops", sub: "Rewards for watching streams", icon: "📺", tabs: [["drops", "Active drops"], ["picked", "Your games"]] },
     { id: "pass", name: "Xbox Game Pass", sub: "Added, coming and leaving", icon: "🎮", tabs: [["added", "Recently added"], ["coming", "Coming soon"], ["leaving", "Leaving soon"]] },
     { id: "mc", name: "Minecraft", sub: "Servers and players", icon: "⛏️", tabs: [["servers", "Servers"], ["players", "Players"]] },
     { id: "deals", name: "All stores", sub: "Prices everywhere at once", icon: "🏷️", tabs: [["search", "Find a game"], ["top", "Best deals"], ["watching", "Watching"]] },
@@ -81,6 +82,116 @@ function EpicFree() {
                 <div className="vc-games-epic-list">{next.map(card)}</div>
             </>}
             <span className="vc-tool-hint">You claim them on Epic's site or launcher. {settings.store.epicAlerts ? "You'll get a notification when new ones go free." : "Turn on alerts in Game Hub's options to hear about new ones."}</span>
+        </>
+    );
+}
+
+/* ── Free on GOG and other stores ── */
+
+function MoreFree() {
+    const { data, error, busy, reload } = useLoad("more", () => native().gamesMoreFree(), () => cache.more && { games: cache.more }, v => { cache.more = (v as any).games; });
+    const games = (data as any)?.games as FreeGame[] | undefined;
+    if (error) return <Problem text={error} retry={reload} />;
+    if (!games) return <Empty icon="🎁">{busy ? "Looking for free games…" : "Nothing yet."}</Empty>;
+    const gog = games.filter(g => g.store === "gog"), rest = games.filter(g => g.store !== "gog");
+    const card = (g: FreeGame) => (
+        <div key={g.id} className={classes("vc-games-epic", "vc-games-epic-now")}>
+            {g.image ? <img src={g.image} alt="" loading="lazy" /> : <div className="vc-games-noimg">🎁</div>}
+            <div className="vc-games-epic-text">
+                <b>{g.title}</b>
+                <span>{g.end ? `Free until ${day(g.end)}` : "Free for now"}{g.worth ? ` · usually ${g.worth}` : ""}</span>
+                <small>{g.storeName}</small>
+            </div>
+            <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => open(g.url)}>Get it ↗</button>
+        </div>
+    );
+    return (
+        <>
+            <div className="vc-games-head"><b>Free on GOG</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-link" disabled={busy} onClick={reload}>{busy ? "Loading…" : "Refresh"}</button></div>
+            {gog.length ? <div className="vc-games-epic-list">{gog.map(card)}</div> : <Empty icon="🎁">No GOG giveaway right now — they happen a few times a year.</Empty>}
+            {rest.length > 0 && <>
+                <div className="vc-games-head"><b>Free elsewhere</b><span className="vc-tool-hint">Steam, itch.io and other stores</span></div>
+                <div className="vc-games-epic-list">{rest.map(card)}</div>
+            </>}
+            <span className="vc-tool-hint">From GamerPower's public list. You claim each one on its store's site. {settings.store.gogAlerts ? "You'll get a notification when GOG gives one away." : "Turn on GOG alerts in Game Hub's options to hear about new ones."}</span>
+        </>
+    );
+}
+
+/* ── Twitch Drops ── */
+
+const twitchPage = (slug: string) => `https://www.twitch.tv/directory/category/${slug}`;
+const left = (end?: number) => {
+    if (!end) return "No end date";
+    const ms = end - Date.now(), h = Math.floor(ms / 3_600_000);
+    return ms < 3_600_000 ? `Ends in ${Math.max(1, Math.round(ms / 60_000))}m` : h < 24 ? `Ends in ${h}h` : `Ends ${day(end)}`;
+};
+
+function TwitchDrops({ picked }: { picked: boolean; }) {
+    const g = useGames();
+    const { data, error, busy, reload } = useLoad("drops", () => native().gamesTwitchDrops(), () => cache.drops && { games: cache.drops }, v => { cache.drops = (v as any).games; });
+    const [q, setQ] = useState("");
+    const games = (data as any)?.games as TwitchDrop[] | undefined;
+    if (error) return <Problem text={error} retry={reload} />;
+    if (!games) return <Empty icon="📺">{busy ? "Loading Twitch Drops…" : "Nothing yet."}</Empty>;
+    const watching = g.dropsWatch ?? [];
+    const query = q.trim().toLowerCase();
+    let list = picked ? games.filter(x => watching.includes(x.slug)) : games;
+    if (query) list = list.filter(x => x.name.toLowerCase().includes(query) || (x.publisher ?? "").toLowerCase().includes(query) || x.rewards.some(r => r.name.toLowerCase().includes(query)));
+    const soon = (x: TwitchDrop) => !!x.end && x.end - Date.now() < 24 * 3_600_000;
+
+    const card = (x: TwitchDrop) => {
+        const on = watching.includes(x.slug);
+        return (
+            <div key={x.slug} className={classes("vc-games-drop", soon(x) && "vc-games-drop-soon")}>
+                <div className="vc-games-drop-head">
+                    {x.image ? <img src={x.image} alt="" loading="lazy" /> : <div className="vc-games-noimg">📺</div>}
+                    <div className="vc-games-drop-text">
+                        <b>{x.name}</b>
+                        <span>{left(x.end)} · {x.drops} drop{x.drops === 1 ? "" : "s"}</span>
+                        {(x.publisher || x.meta) && <small>{[x.publisher, x.meta].filter(Boolean).join(" · ")}</small>}
+                    </div>
+                </div>
+                {x.rewards.length > 0 && (
+                    <div className="vc-games-drop-rewards">
+                        {x.rewards.slice(0, 6).map(r => (
+                            <span key={r.name} className="vc-games-drop-reward" title={r.name}>
+                                {r.image ? <img src={r.image} alt="" loading="lazy" /> : <i />}<span>{r.name}</span>
+                            </span>
+                        ))}
+                        {x.rewards.length > 6 && <span className="vc-tool-hint">+{x.rewards.length - 6} more</span>}
+                    </div>
+                )}
+                <div className="vc-games-drop-actions">
+                    <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => open(twitchPage(x.slug))}>Watch on Twitch ↗</button>
+                    <button type="button" className={classes("vc-tool-btn", on && "vc-games-drop-on")} aria-pressed={on}
+                        title={on ? "Stop telling me about this game" : "Tell me when this game has new drops"}
+                        onClick={() => { setWatchingDrops(x, !on); showToast(on ? `Stopped watching ${x.name}` : `You'll hear about new ${x.name} drops`, "message"); }}>
+                        {on ? "🔔 Picked" : "🔔 Tell me"}
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <>
+            <div className="vc-games-head">
+                <input className="vc-tool-input vc-tool-grow" value={q} placeholder={`Find among ${games.length} games, publishers or rewards`} onChange={e => setQ(e.currentTarget.value)} />
+                <button type="button" className="vc-tool-link" disabled={busy} onClick={reload}>{busy ? "Loading…" : "Refresh"}</button>
+            </div>
+            {picked && !watching.length
+                ? <Empty icon="🔔">Press <b>🔔 Tell me</b> on a game in Active drops, and you'll get a notification when it starts new drops.</Empty>
+                : list.length
+                    ? <div className="vc-games-drop-list">{list.map(card)}</div>
+                    : <Empty icon="📺">{picked ? "None of your games have drops right now — you'll be told when they do." : "No games match that."}</Empty>}
+            {picked && watching.length > 0 && watching.some(s => !games.some(x => x.slug === s)) && (
+                <span className="vc-tool-hint">Waiting for drops: {watching.filter(s => !games.some(x => x.slug === s)).map(s => s.replace(/-/g, " ")).join(", ")}</span>
+            )}
+            <span className="vc-tool-hint">
+                From <button type="button" className="vc-tool-link" onClick={() => open("https://twitchdrops.app/")}>twitchdrops.app</button>. Link your game account on Twitch first, then watch a stream with drops on.
+                {" "}{settings.store.dropsAlerts ? "Games you pick notify you when they get new drops." : "Notifications are off in Game Hub's options."}
+            </span>
         </>
     );
 }
@@ -507,7 +618,8 @@ function GameHubWindow({ modalProps, start }: { modalProps: RenderModalProps; st
             </HubProvider>
             {!sectioned && (
                 <div className="vc-tool-wrap vc-games" key={`${platform}:${tab}`}>
-                    {platform === "epic" && (tab === "shop" ? <FortniteShop /> : tab === "history" ? <ShopHistory /> : <EpicFree />)}
+                    {platform === "epic" && (tab === "shop" ? <FortniteShop /> : tab === "history" ? <ShopHistory /> : tab === "more" ? <MoreFree /> : <EpicFree />)}
+                    {platform === "twitch" && <TwitchDrops picked={tab === "picked"} />}
                     {platform === "pass" && <GamePass list={tab as "added" | "coming" | "leaving"} />}
                     {platform === "mc" && (tab === "players" ? <McPlayers /> : <McServers />)}
                     {platform === "deals" && (tab === "top" ? <DealTop /> : tab === "watching" ? <DealWatching /> : <DealSearch />)}

@@ -10,7 +10,7 @@
 // with a link → "Download video or audio", or open it from the chat bar.
 // Spotify isn't possible: its songs are copy-protected.
 
-import "../_shared/tool.css";
+import "../../_shared/tool.css";
 import "./styles.css";
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";

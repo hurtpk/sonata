@@ -1,8 +1,13 @@
 /* Read All — a small framed button in the server list column. */
 
+/* Laid out like a server icon's row: the server list's own width, centred in it, so it lines up with the icons. */
 .vc-ranb-wrap {
     display: flex;
     justify-content: center;
+    align-self: flex-start;
+    box-sizing: border-box;
+    width: var(--custom-guild-list-width, 72px);
+    margin: 0;
     padding: 2px 0 8px;
 }
 
@@ -10,16 +15,19 @@
     all: unset;
     box-sizing: border-box;
     position: relative;
-    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
+    /* Most of the server list's width (4px either side), so the words have room even in a narrow list. */
+    width: calc(100% - 8px);
+    max-width: 58px;
+    flex: none;
     height: 26px;
+    padding: 0;
     border-radius: calc(8px * var(--sw-r, 1));
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     white-space: nowrap;
     color: var(--interactive-icon-default, var(--interactive-normal, #b5bac1));
     background: var(--background-surface-high, hsl(0 0% 100% / 0.04));
@@ -65,6 +73,8 @@
     content: "";
     position: absolute;
     inset: 0;
+    /* The click ripple stays inside the button (the button itself no longer cuts anything off). */
+    clip-path: inset(0 round calc(8px * var(--sw-r, 1)));
     border-radius: inherit;
     background: var(--sw-card, radial-gradient(circle, hsl(0 0% 100% / 0.45) 0%, transparent 65%));
     opacity: 0;

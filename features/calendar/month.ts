@@ -6,7 +6,7 @@
 
 // Month grid and date helpers, kept free of Discord so they can be tested on their own.
 
-export type Kind = "birthday" | "scheduled" | "event" | "reminder" | "imported" | "package";
+export type Kind = "birthday" | "scheduled" | "event" | "reminder" | "imported" | "package" | "episode";
 
 export interface CalendarItem {
     id: string;

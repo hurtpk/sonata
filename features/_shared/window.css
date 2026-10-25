@@ -563,3 +563,6 @@
 /* The list down the left: a part's name and line wrap instead of being cut off. */
 .vc-sw-side .vc-sw-row-title, .vc-sw-side .vc-sw-row-sub { display: block; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; }
 .vc-sw-side .vc-sw-row-sub { line-height: 1.3; }
+
+/* A window drawn as another window's tab (Server Insights): its insides sit straight in the outer body. */
+.vc-sw-embedded { display: contents; }

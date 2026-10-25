@@ -20,7 +20,7 @@ import definePlugin from "@utils/types";
 import type { Channel, Guild } from "@vencord/discord-types";
 import { ChannelStore, GuildRoleStore, GuildStore, IconUtils, Menu } from "@webpack/common";
 
-import { openAllNames, openIcon, openRename, openRoles, RealName } from "./Panel";
+import { openAllNames, openRename, openServer, RealName } from "./Panel";
 import { allNames, Kind, loadNames, localIcon, localName, localRole, onNamesChange, renamedRolesIn } from "./store";
 
 const REAL = Symbol("sonataLocalNames.real");
@@ -143,14 +143,14 @@ const item = (kind: Kind, id: string) => (
     />
 );
 
+/** A server's one item: its name, icon and role names, just for you, in one window. */
 const guildMenu: NavContextMenuPatchCallback = (children, { guild }: { guild?: Guild; }) => {
     if (!guild) return;
+    const roles = renamedRolesIn(guild.id).length;
+    const changed = [localName("guild", guild.id) && "renamed", localIcon(guild.id) && "new icon", roles && `${roles} role${roles === 1 ? "" : "s"}`].filter(Boolean);
     children.push(
-        <Menu.MenuGroup>
-            {item("guild", guild.id)}
-            <Menu.MenuItem id="vc-localnames-icon" label={localIcon(guild.id) ? "Change icon just for me… (changed)" : "Change icon just for me…"} action={() => openIcon(guild.id)} />
-            <Menu.MenuItem id="vc-localnames-roles" label={renamedRolesIn(guild.id).length ? `Rename roles just for me… (${renamedRolesIn(guild.id).length})` : "Rename roles just for me…"} action={() => openRoles(guild.id, realRoleName)} />
-        </Menu.MenuGroup>
+        <Menu.MenuItem id="vc-localnames-server" label="Just for me…" subtext={changed.length ? changed.join(" · ") : "Name, icon and role names only you see"}
+            action={() => openServer(guild.id, realName, realRoleName)} />
     );
 };
 

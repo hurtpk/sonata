@@ -99,9 +99,16 @@ export function windowStyleProps(style: WindowStyle, accent = windowAccent()) {
 
 const nameOf = (title: ReactNode) => typeof title === "string" ? title.toLowerCase() : title;
 
+// Drawn as a tab of another window (Server Insights): only the insides — the outer window has the frame.
+// Made the first time it's needed: React isn't there yet when Equicord first loads this file.
+let embedCtx: React.Context<boolean> | null = null;
+export const embeddedContext = () => embedCtx ??= React.createContext(false);
+
 export function Window(props: WindowProps) {
+    const embedded = React.useContext(embeddedContext());
     // Inside a group's window (Media Tools, Music & Audio…): the group's name, size and list of parts.
     const hub = React.useContext(hubContext());
+    if (embedded) return <div className={classes("vc-sw-embedded", props.className)}>{props.children}</div>;
     return hub ? <Frame {...props} title={hub.title} size={hub.size} side={hub.rail ?? props.side} still={hub.still} /> : <Frame {...props} />;
 }
 

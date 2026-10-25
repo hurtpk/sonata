@@ -32,6 +32,7 @@ import { findCssClassesLazy } from "@webpack";
 import { Button, ChannelStore, Dialog, GuildMemberStore, GuildRoleStore, GuildStore, match, Menu, PermissionsBits, Popout, SelectedGuildStore, useEffect, useRef, UserStore } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../../featureSettings";
+import { addInsightsItem, openInsights } from "../Insights";
 import { openMemberLookup } from "./components/MemberLookup";
 import openRolesAndUsersPermissionsModal from "./components/RolesAndUsersPermissions";
 import UserPermissions from "./components/UserPermissions";
@@ -153,9 +154,7 @@ function MenuItem(guildId: string, { id, type, withIcon }: { id?: string, type?:
 /** Every role in a server, opened on one of them. */
 export function openRole(guildId: string, roleId: string) {
     const guild = GuildStore.getGuild(guildId);
-    if (!guild) return;
-    const permissions = GuildRoleStore.getSortedRoles(guild.id).map(role => ({ type: PermissionOverwriteType.ROLE, ...role })) as RoleOrUserPermission[];
-    openRolesAndUsersPermissionsModal(permissions, guild, guild.name, roleId);
+    if (guild) openInsights(guild, "roles", { roleId });
 }
 
 /** Right-clicking a role anywhere (Discord's "Copy Role ID" menu). */
@@ -178,17 +177,21 @@ function makeContextMenuPatch(childId: string | string[], type?: MenuItemParentT
 
         const group = findGroupChildrenByChildId(childId, children);
 
+        // A server's menu: the one "Server Insights" item (Server Info, roles and member lookup together).
+        if (type === MenuItemParentType.Guild) {
+            const group = findGroupChildrenByChildId(childId, children);
+            if (group) addInsightsItem(group, props.guild, withIcon ? SafetyIcon : undefined);
+            return;
+        }
+
         const item = match(type)
             .with(MenuItemParentType.User, () => MenuItem(props.guildId, { id: props.user.id, type, withIcon }))
             .with(MenuItemParentType.Channel, () => MenuItem(props.guild.id, { id: props.channel.id, type, withIcon }))
-            .with(MenuItemParentType.Guild, () => MenuItem(props.guild.id, { withIcon }))
             .otherwise(() => null);
 
         if (item == null) return;
 
-        const lookup = type === MenuItemParentType.Guild
-            ? <Menu.MenuItem id="perm-viewer-lookup" label="Look Up a Member" leadingAccessory={withIcon ? { type: "icon", icon: SafetyIcon } : undefined} action={() => openMemberLookup(props.guild.id)} />
-            : type === MenuItemParentType.User && props.guildId
+        const lookup = type === MenuItemParentType.User && props.guildId
                 ? <Menu.MenuItem id="perm-viewer-lookup" label="Member Lookup" action={() => openMemberLookup(props.guildId, props.user.id)} />
                 : null;
         if (group) {

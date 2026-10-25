@@ -12,7 +12,7 @@ import * as DataStore from "@api/DataStore";
 import { OptionType } from "@utils/types";
 import { showToast, useEffect, useState } from "@webpack/common";
 
-import { defineFeatureSettings } from "../../featureSettings";
+import { defineFeatureSettings } from "../../../featureSettings";
 
 export const settings = defineFeatureSettings("mediaDownloader", {
     folder: { type: OptionType.STRING, description: "Where downloads go (empty: Downloads\\Sonata)", default: "", hidden: true },

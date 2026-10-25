@@ -9,7 +9,7 @@
 // window shows what's affected, Discord's latest update, voice regions and
 // planned maintenance.
 
-import "../_shared/tool.css";
+import "../../_shared/tool.css";
 import "./styles.css";
 
 import { showNotice } from "@api/Notices";
@@ -20,9 +20,9 @@ import definePlugin, { OptionType } from "@utils/types";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { useEffect, useState } from "@webpack/common";
 
-import { defineFeatureSettings } from "../../featureSettings";
-import { Window } from "../_shared/Window";
-import { FormGroup } from "../_shared/WindowParts";
+import { defineFeatureSettings } from "../../../featureSettings";
+import { Window } from "../../_shared/Window";
+import { FormGroup } from "../../_shared/WindowParts";
 import type { Health, StatusIncident, StatusSummary } from "./native";
 
 const settings = defineFeatureSettings("discordStatus", {
@@ -190,6 +190,25 @@ function Part({ name, h }: { name: string; h: Health; }) {
 }
 
 const openStatus = () => openModal(props => <StatusWindow modalProps={props} />);
+
+/** Sonata Insights' Overview: whether Discord itself is working, so you can tell whose problem it is. */
+export function DiscordStatusLine() {
+    const { latest: s, error: err } = useStatus();
+    useEffect(() => { if (!s || Date.now() - s.checked > 5 * 60_000) void check(); }, []);
+    const open = s?.incidents.filter(i => !/resolved|postmortem/.test(i.status)) ?? [];
+    const ok = !!s && s.indicator === "none" && !open.length;
+    const colour = !s ? "#80848e" : ok ? "#23a55a" : IMPACT[s.indicator] ?? "#f0b232";
+    return (
+        <button type="button" className="vc-dstatus-line" style={{ "--k": colour } as React.CSSProperties} onClick={() => openStatus()} title="Open Discord Status">
+            <i />
+            <span className="vc-dstatus-line-text">
+                <b>{!s ? (err ? "Couldn't check Discord's status" : "Checking Discord's status…") : ok ? "Discord itself is working" : `Discord is having problems: ${open[0]?.name ?? s.description}`}</b>
+                <span>{s ? `${ok ? "So anything wrong is on this side — see below." : "Some trouble may be Discord's, not Sonata's."} Checked ${ago(s.checked)}.` : "From discordstatus.com"}</span>
+            </span>
+            <span className="vc-dstatus-line-go">Details ›</span>
+        </button>
+    );
+}
 
 let timer: ReturnType<typeof setInterval> | undefined;
 let first: ReturnType<typeof setTimeout> | undefined;

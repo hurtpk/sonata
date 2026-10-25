@@ -9,7 +9,7 @@ import { openPrivateChannel } from "@utils/discord";
 import { classes } from "@utils/misc";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, NavigationRouter, openModal, showToast, useMemo, useState } from "@webpack/common";
+import { ChannelStore, NavigationRouter, openModal, showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { isFeatureRunning } from "../../featureSettings";
@@ -19,6 +19,11 @@ import { useBirthdays } from "../birthdayReminders/store";
 import { openPackage } from "../packageTracker/store";
 import { openScheduler } from "../scheduledMessages/Panel";
 import { useQueue } from "../scheduledMessages/store";
+import { openShows } from "../showTracker/Panel";
+import { loadShows, useShows } from "../showTracker/store";
+import type { Forecast } from "../weather/native";
+import { WeatherIcon } from "../weather/Panel";
+import { conditionOf, forecastFor, myPlace, unitsOf } from "../weather/store";
 import { addImport, ExportItem, ImportedCalendar, removeImport, updateImport, useImports, writeIcs } from "./ics";
 import { byDay, CalendarItem, dayKey, Kind, monthGrid, sameDay, weekdayNames } from "./month";
 import { addReminder, removeReminder, useReminders } from "./reminders";
@@ -33,9 +38,10 @@ const KINDS: { kind: Kind; label: string; icon: string; }[] = [
     { kind: "reminder", label: "Reminders", icon: "🔔" },
     { kind: "imported", label: "Imported", icon: "🗓️" },
     { kind: "package", label: "Packages", icon: "📦" },
+    { kind: "episode", label: "New episodes", icon: "📺" },
 ];
 
-const optionKey: Record<Kind, keyof SourceOptions> = { birthday: "birthdays", scheduled: "scheduled", event: "events", reminder: "reminders", imported: "imported", package: "packages" };
+const optionKey: Record<Kind, keyof SourceOptions> = { birthday: "birthdays", scheduled: "scheduled", event: "events", reminder: "reminders", imported: "imported", package: "packages", episode: "episodes" };
 
 const timeText = (at: number) => new Date(at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 
@@ -57,6 +63,7 @@ function ItemRow({ it, close }: { it: CalendarItem; close(): void; }) {
     }
     if (it.kind === "reminder") actions.push({ label: "Delete", danger: true, run: () => removeReminder(it.ref.reminderId) });
     if (it.kind === "package") actions.push({ label: "Open", run: () => { openPackage(it.ref.packageId); close(); } });
+    if (it.kind === "episode") actions.push({ label: "Open", run: () => { openShows(); close(); } });
 
     return (
         <div className={classes(cl("item"), cl(`item-${it.kind}`), past && cl("item-past"))} style={it.ref?.color ? ({ "--k": it.ref.color } as React.CSSProperties) : undefined} title={it.ref?.description}>
@@ -103,7 +110,7 @@ function AddReminder({ day }: { day: Date; }) {
 /** Everything in the calendar from a month ago to a year ahead, as calendar-file entries. */
 function exportItems(): ExportItem[] {
     const now = Date.now();
-    const all = itemsBetween(now - 30 * 86_400_000, now + 366 * 86_400_000, { birthdays: true, scheduled: true, events: true, reminders: true, imported: false, packages: true, interestedOnly: false });
+    const all = itemsBetween(now - 30 * 86_400_000, now + 366 * 86_400_000, { birthdays: true, scheduled: true, events: true, reminders: true, imported: false, packages: true, episodes: true, interestedOnly: false });
     const seenBirthday = new Set<string>();
     const out: ExportItem[] = [];
     for (const it of all) {
@@ -199,11 +206,40 @@ function Calendars() {
     );
 }
 
+/* ── Weather on each day ── */
+
+type DayWeather = Forecast["days"][number];
+
+/** "Light rain · 18° / 11° · 60% chance of rain" */
+const weatherText = (d: DayWeather) => `${conditionOf(d.code).label} · ${Math.round(d.hi)}° / ${Math.round(d.lo)}°${unitsOf() === "f" ? "F" : "C"}${d.rain ? ` · ${d.rain}% chance of rain` : ""}`;
+
+/** Weather's forecast for your place, by day ("2026-10-25" → that day), while Weather is on and has a place. */
+function useDayWeather(on: boolean) {
+    const [f, setF] = useState<Forecast | null>(null);
+    const place = on && isFeatureRunning("weather") ? myPlace() : null;
+    useEffect(() => {
+        if (!place) return;
+        let alive = true;
+        void forecastFor(place).then(r => { if (alive && typeof r !== "string") setF(r); });
+        return () => { alive = false; };
+    }, [place?.lat, place?.lon]);
+    return useMemo(() => {
+        const out = new Map<string, DayWeather>();
+        if (!place || !f) return out;
+        for (const d of f.days) {
+            // The day in the place's own clock, written like dayKey does.
+            const t = new Date(d.t + f.offset * 3_600_000);
+            out.set(`${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, "0")}-${String(t.getUTCDate()).padStart(2, "0")}`, d);
+        }
+        return out;
+    }, [f, !!place]);
+}
+
 function CalendarModal({ modalProps, weekStart, sources, setSource }: {
     modalProps: RenderModalProps; weekStart: 0 | 1; sources: SourceOptions; setSource(k: keyof SourceOptions, v: boolean): void;
 }) {
     // Re-render when birthdays, scheduled messages or reminders change.
-    useBirthdays(); useQueue(); useReminders(); useImports();
+    useBirthdays(); useQueue(); useReminders(); useImports(); useShows();
     const accent = windowAccent("calendar");
     const today = new Date();
     const [view, setView] = useState({ y: today.getFullYear(), m: today.getMonth() });
@@ -211,6 +247,8 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
     const [shown, setShown] = useState<SourceOptions>(sources);
 
     const grid = useMemo(() => monthGrid(view.y, view.m, weekStart), [view.y, view.m, weekStart]);
+    const weather = useDayWeather(shown.weather !== false);
+    useEffect(() => void loadShows(), []);
     const days = byDay(itemsBetween(grid[0].getTime(), grid[41].getTime() + 86_400_000, shown));
     const selectedItems = days.get(dayKey(selected)) ?? [];
 
@@ -256,6 +294,7 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
                                         onClick={() => { setSelected(d); if (d.getMonth() !== view.m) setView({ y: d.getFullYear(), m: d.getMonth() }); }}
                                         aria-label={`${d.toDateString()}${items.length ? `, ${items.length} item${items.length === 1 ? "" : "s"}` : ""}`}>
                                         <span className={cl("num")}>{d.getDate()}</span>
+                                        {weather.get(dayKey(d)) && <span className={cl("wx")} title={weatherText(weather.get(dayKey(d))!)}><WeatherIcon code={weather.get(dayKey(d))!.code} size={14} />{Math.round(weather.get(dayKey(d))!.hi)}°</span>}
                                         <span className={cl("dots")}>{kinds.map(k => <span key={k.kind} className={classes(cl("dot"), cl(`dot-${k.kind}`))} />)}</span>
                                     </button>
                                 );
@@ -268,6 +307,12 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
                                     <span className={classes(cl("dot"), cl(`dot-${k.kind}`))} />{k.label}
                                 </button>
                             ))}
+                            {isFeatureRunning("weather") && (
+                                <button type="button" className={classes(cl("chip"), shown.weather === false && cl("chip-off"))} onClick={() => toggle("weather")}
+                                    title={shown.weather === false ? "Show the forecast on each day" : "Hide the forecast"}>
+                                    <WeatherIcon code={1} size={12} />Weather
+                                </button>
+                            )}
                         </div>
                         <Calendars />
                         {(!isFeatureRunning("birthdayReminders") || !isFeatureRunning("scheduledMessages")) && (
@@ -279,6 +324,12 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
 
                     <section className={cl("side")}>
                         <div className={cl("side-title")}>{selected.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</div>
+                        {weather.get(dayKey(selected)) && (
+                            <div className={cl("side-wx")}>
+                                <WeatherIcon code={weather.get(dayKey(selected))!.code} size={28} />
+                                <span>{weatherText(weather.get(dayKey(selected))!)}</span>
+                            </div>
+                        )}
                         <div className={cl("items")}>
                             {selectedItems.length === 0
                                 ? <div className={cl("empty")}><span className={cl("empty-icon")}>🌤️</span>Nothing on this day.</div>

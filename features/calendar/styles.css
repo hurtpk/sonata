@@ -244,3 +244,9 @@
 .vc-cal-item-sub { margin-top: 2px; }
 .vc-cal-mini { padding: 5px 11px; border-radius: 99px; transition: background 0.15s; }
 .vc-cal-mini:hover { background: color-mix(in srgb, var(--tl-accent) 25%, transparent); }
+
+/* New episodes, and the forecast on each day */
+.vc-cal-dot-episode { background: #a78bfa; }
+.vc-cal-item-episode { --k: #a78bfa; }
+.vc-cal-wx { display: inline-flex; align-items: center; gap: 2px; font-size: 10.5px; line-height: 1; color: var(--text-muted); }
+.vc-cal-side-wx { display: flex; align-items: center; gap: 10px; margin: 4px 0 10px; padding: 8px 10px; border-radius: 10px; background: hsl(0 0% 100% / 0.04); font-size: 13px; color: var(--text-default, var(--text-normal)); }

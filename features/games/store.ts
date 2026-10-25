@@ -15,13 +15,15 @@ import { OptionType } from "@utils/types";
 import { useEffect, useState } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../featureSettings";
-import type { DealStore, EpicGame, McServer, PassGame, ShopItem } from "./native";
+import type { DealStore, EpicGame, FreeGame, McServer, PassGame, ShopItem, TwitchDrop } from "./native";
 import { recordShop } from "./shopHistory";
 
 export const native = () => VencordNative.pluginHelpers.Sonata as any;
 
 export const settings = defineFeatureSettings("games", {
     epicAlerts: { type: OptionType.BOOLEAN, description: "Tell me when Epic gives away new free games", default: true },
+    gogAlerts: { type: OptionType.BOOLEAN, description: "Tell me when GOG gives away a game", default: true },
+    dropsAlerts: { type: OptionType.BOOLEAN, description: "Tell me when a game I picked in Twitch Drops starts new drops", default: true },
     shopAlerts: { type: OptionType.BOOLEAN, description: "Tell me when a Fortnite item I'm waiting for is in the shop", default: true },
     priceAlerts: { type: OptionType.BOOLEAN, description: "Tell me when a game I'm watching drops to my price", default: true },
     serverAlerts: { type: OptionType.BOOLEAN, description: "Tell me when a Minecraft server I saved goes offline or comes back", default: false },
@@ -39,6 +41,10 @@ interface Saved {
     prices: PriceWatch[];
     /** Already told about: Epic giveaways, shop items today, Game Pass games. */
     seenEpic: string[];
+    seenGog?: string[];
+    /** Twitch Drops: games to tell you about (their slugs), and campaigns already told about. */
+    dropsWatch?: string[];
+    seenDrops?: string[];
     seenShop: string[];
     seenPass: string[];
 }
@@ -104,7 +110,7 @@ export const isWatchingPrice = (id: string) => state.prices.some(p => p.id === i
 
 /* ── Shared caches for the window (so switching tabs doesn't refetch) ── */
 
-export const cache: { epic?: EpicGame[]; shop?: { date: string; items: ShopItem[]; }; pass: Partial<Record<"added" | "coming" | "leaving", PassGame[]>>; stores?: Record<string, DealStore>; } = { pass: {} };
+export const cache: { epic?: EpicGame[]; more?: FreeGame[]; drops?: TwitchDrop[]; shop?: { date: string; items: ShopItem[]; }; pass: Partial<Record<"added" | "coming" | "leaving", PassGame[]>>; stores?: Record<string, DealStore>; } = { pass: {} };
 
 export async function dealStores() {
     if (cache.stores) return cache.stores;
@@ -117,6 +123,42 @@ export async function dealStores() {
 
 const HOUR = 3_600_000;
 let timers: ReturnType<typeof setTimeout>[] = [];
+
+/* ── Twitch Drops you're watching ── */
+
+export const isWatchingDrops = (slug: string) => (state.dropsWatch ?? []).includes(slug);
+export function setWatchingDrops(g: TwitchDrop, on: boolean) {
+    const list = (state.dropsWatch ?? []).filter(s => s !== g.slug);
+    // Picking a game while it has drops: those count as told about, so only new ones notify.
+    const seen = on ? [...new Set([...(state.seenDrops ?? []), `${g.slug}:${g.end ?? 0}`])].slice(-200) : state.seenDrops;
+    put({ dropsWatch: on ? [...list, g.slug] : list, seenDrops: seen });
+}
+
+async function checkDrops() {
+    if (!settings.store.dropsAlerts || !(state.dropsWatch ?? []).length) return;
+    const r = await native().gamesTwitchDrops().catch(() => null);
+    if (!r?.ok) return;
+    cache.drops = r.games;
+    const seen = state.seenDrops ?? [];
+    const fresh = (r.games as TwitchDrop[]).filter(g => state.dropsWatch!.includes(g.slug) && !seen.includes(`${g.slug}:${g.end ?? 0}`));
+    for (const g of fresh.slice(0, 3))
+        showNotification({ title: `Twitch Drops: ${g.name}`, body: `${g.drops} drop${g.drops === 1 ? "" : "s"}${g.rewards[0] ? ` — ${g.rewards.slice(0, 3).map(x => x.name).join(", ")}` : ""}${g.end ? ` · until ${new Date(g.end).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}` : ""}`, image: g.image, onClick: () => VencordNative.native.openExternal(`https://www.twitch.tv/directory/category/${g.slug}`) });
+    if (fresh.length) put({ seenDrops: [...new Set([...seen, ...fresh.map(g => `${g.slug}:${g.end ?? 0}`)])].slice(-200) });
+}
+
+async function checkGog() {
+    if (!settings.store.gogAlerts) return;
+    const r = await native().gamesMoreFree().catch(() => null);
+    if (!r?.ok) return;
+    cache.more = r.games;
+    const gog = (r.games as FreeGame[]).filter(g => g.store === "gog");
+    const seen = state.seenGog ?? [];
+    const fresh = gog.filter(g => !seen.includes(g.id));
+    // The first check only remembers what's there, so you aren't told about old ones.
+    if (state.seenGog && fresh.length)
+        showNotification({ title: fresh.length === 1 ? `Free on GOG: ${fresh[0].title}` : `${fresh.length} free games on GOG`, body: fresh.map(g => g.title).join(", ") + (fresh[0].end ? ` — free until ${new Date(fresh[0].end).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}` : ""), image: fresh[0].image });
+    put({ seenGog: [...new Set([...seen, ...gog.map(g => g.id)])].slice(-60) });
+}
 
 async function checkEpic() {
     if (!settings.store.epicAlerts) return;
@@ -186,6 +228,8 @@ function every(ms: number, fn: () => Promise<void>, first = 90_000) {
 export function startChecks() {
     void loadGames();
     every(4 * HOUR, checkEpic);
+    every(4 * HOUR, checkGog);
+    every(3 * HOUR, checkDrops);
     every(2 * HOUR, checkShop, 120_000);
     every(6 * HOUR, checkPrices, 150_000);
     every(12 * HOUR, checkPass, 180_000);

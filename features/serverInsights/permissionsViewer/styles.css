@@ -182,3 +182,16 @@
 .vc-permviewer-rp-icon { flex: none; width: 20px; height: 20px; object-fit: contain; }
 .vc-permviewer-rp-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-permviewer-rp-none { padding: 10px; font-size: 13px; color: var(--text-muted); }
+
+/* Members with a role (Roles tab) */
+.vc-permviewer-rm { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; padding: 10px 12px; border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--tl-line, hsl(0 0% 100% / 0.08)); }
+.vc-permviewer-rm-head { all: unset; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.vc-permviewer-rm-title { flex: 1; font-weight: 700; font-size: 13.5px; color: var(--text-default, var(--text-normal)); }
+.vc-permviewer-rm-chev { color: var(--text-muted); width: 14px; text-align: center; }
+.vc-permviewer-rm-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px; max-height: 300px; overflow-y: auto; }
+.vc-permviewer-rm-row { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 5px 8px; border-radius: 8px; }
+.vc-permviewer-rm-row:hover { background: var(--tl-hover, hsl(0 0% 100% / 0.05)); }
+.vc-permviewer-rm-text { display: flex; flex-direction: column; min-width: 0; }
+.vc-permviewer-rm-text b, .vc-permviewer-rm-text span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-permviewer-rm-text b { font-size: 13px; color: var(--text-default, var(--text-normal)); }
+.vc-permviewer-rm-text span { font-size: 11.5px; color: var(--text-muted); }

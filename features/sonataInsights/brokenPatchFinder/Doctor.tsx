@@ -14,8 +14,10 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { openModal, showToast, useEffect, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { isFeatureRunning } from "../../../featureSettings";
 import { doctor, DoctorFeature } from "../../../sonata/doctorBridge";
 import { Window } from "../../_shared/Window";
+import { DiscordStatusLine } from "../discordStatus";
 import { featureIssue, fullReport, Hint, measureFps, memoryMb, performanceHints, problemFeatures, resetSetting, settingProblems, summary } from "./checks";
 import { culpritActive, startCulpritHunt, stopCulpritHunt } from "./culprit";
 import { checkLayout, onLayoutChecked, runLayoutCheck } from "./layout";
@@ -309,6 +311,7 @@ function DoctorModal({ modalProps, start }: { modalProps: RenderModalProps; star
             tabs={TABS.map(t => [t.id, <>{t.label}{badge[t.id] ? <span className="vc-sw-count">{badge[t.id]}</span> : null}</>] as const)} tab={tab} onTab={id => setTab(id as Tab)}
             status={[problems ? `${problems} thing${problems === 1 ? "" : "s"} to look at` : "everything looks fine"]}>
             <div className={dr("wrap")} style={accent ? ({ "--doc-accent": accent, "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
+                {tab === "overview" && isFeatureRunning("discordStatus") && <DiscordStatusLine />}
                 {tab === "overview" && <Overview go={setTab} />}
                 {tab === "features" && <Features />}
                 {tab === "patches" && <><LayoutSection /><PatchesSection /></>}

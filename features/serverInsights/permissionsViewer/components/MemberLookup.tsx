@@ -16,11 +16,12 @@ import { classes } from "@utils/misc";
 import type { Channel, Guild, GuildMember, Role, User } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, closeAllModals, FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, openModal, PermissionsBits, PresenceStore, RelationshipStore, SelectedChannelStore, SortedGuildStore, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
+import { ChannelStore, closeAllModals, FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, PermissionsBits, PresenceStore, RelationshipStore, SelectedChannelStore, SortedGuildStore, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../../controller/accent";
 import { ToolHero } from "../../../_shared/ToolHero";
 import { Window } from "../../../_shared/Window";
+import { openInsights } from "../../Insights";
 import { settings } from "..";
 import { getGuildPermissionSpecMap, getSortedRolesForMember, loadGetGuildPermissionSpecMap } from "../utils";
 import openRolesAndUsersPermissionsModal from "./RolesAndUsersPermissions";
@@ -177,7 +178,7 @@ function remember(id: string, name: string) {
     settings.store.recentLookups = JSON.stringify([{ id, name }, ...recent().filter(r => r.id !== id)].slice(0, 8));
 }
 
-function MemberLookupModal({ modalProps, initialGuildId, initialQuery }: { modalProps: any; initialGuildId: string; initialQuery?: string; }) {
+export function MemberLookupModal({ modalProps, initialGuildId, initialQuery }: { modalProps: any; initialGuildId: string; initialQuery?: string; }) {
     const [guildId, setGuildId] = useState(initialGuildId);
     const guild = GuildStore.getGuild(guildId);
     const [query, setQuery] = useState(initialQuery ?? "");
@@ -518,8 +519,9 @@ function Result({ guild, found, onClose }: { guild: Guild; found: Found; onClose
     );
 }
 
+/** Server Insights on its Members tab (switching an open one in place), looking someone up if given. */
 export function openMemberLookup(guildId?: string, query?: string) {
     const id = guildId ?? (SelectedChannelStore.getChannelId() && ChannelStore.getChannel(SelectedChannelStore.getChannelId())?.guild_id) ?? Object.keys(GuildStore.getGuilds())[0];
-    if (!id) return;
-    openModal(props => <MemberLookupModal modalProps={props} initialGuildId={id} initialQuery={query} />);
+    const guild = id && GuildStore.getGuild(id);
+    if (guild) openInsights(guild, "members", { query });
 }

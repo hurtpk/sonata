@@ -7,14 +7,16 @@
 // Game Hub's network side: only public endpoints that need no account or key.
 // Epic's free-games list, fortnite-api.com's item shop, Xbox Game Pass's own
 // lists and Microsoft's store catalogue, mcsrvstat.us and Mojang for Minecraft,
-// and CheapShark for prices across stores. Done here because Discord's page
+// GamerPower for free games on GOG and other stores, twitchdrops.app's list
+// page for Twitch Drops, and CheapShark for
+// prices across stores. Done here because Discord's page
 // isn't allowed to contact other sites.
 
 import { CspPolicies, ImageSrc } from "@main/csp";
 import { IpcMainInvokeEvent } from "electron";
 
 // Covers, item pictures, skins and store icons show in Discord's window.
-for (const host of ["cdn1.epicgames.com", "cdn2.unrealengine.com", "fortnite-api.com", "*.fortnite-api.com", "store-images.s-microsoft.com", "mc-heads.net", "www.cheapshark.com", "images.gog-statics.com", "*.gog-statics.com"])
+for (const host of ["cdn1.epicgames.com", "cdn2.unrealengine.com", "fortnite-api.com", "*.fortnite-api.com", "store-images.s-microsoft.com", "mc-heads.net", "www.cheapshark.com", "images.gog-statics.com", "*.gog-statics.com", "www.gamerpower.com", "static-cdn.jtvnw.net"])
     CspPolicies[host] = ImageSrc;
 
 // CheapShark asks apps to say who they are.
@@ -63,6 +65,110 @@ export async function gamesEpicFree(_: IpcMainInvokeEvent, country: string): Pro
             now: !!now,
         });
     }
+    return { ok: true, games };
+}
+
+/* ── Free on GOG and other stores (GamerPower's public list) ── */
+
+export type FreeStore = "gog" | "steam" | "itch" | "ubisoft" | "other";
+export interface FreeGame { id: string; title: string; store: FreeStore; storeName: string; url: string; image?: string; worth?: string; end?: number; }
+
+const STORE_NAMES: Record<FreeStore, string> = { gog: "GOG", steam: "Steam", itch: "itch.io", ubisoft: "Ubisoft", other: "" };
+
+export async function gamesMoreFree(_: IpcMainInvokeEvent): Promise<{ ok: true; games: FreeGame[]; } | Fail> {
+    const r = await get("https://www.gamerpower.com/api/filter?platform=gog.steam.itchio.ubisoft.drm-free&type=game", "GamerPower");
+    if (!r.ok) return r.error === "not-found" ? { ok: true, games: [] } : r;
+    // "No giveaways right now" comes back as an object, not a list.
+    if (!Array.isArray(r.body)) return { ok: true, games: [] };
+    const games: FreeGame[] = [];
+    for (const g of r.body) {
+        if (g?.status && g.status !== "Active") continue;
+        const end = typeof g.end_date === "string" && g.end_date !== "N/A" ? Date.parse(g.end_date.replace(" ", "T")) : NaN;
+        if (end && end < Date.now()) continue;
+        const where = `${g.title ?? ""} ${g.platforms ?? ""}`;
+        const store: FreeStore = /\bGOG\b/i.test(where) ? "gog" : /steam/i.test(where) ? "steam" : /itch\.io/i.test(where) ? "itch" : /ubisoft/i.test(where) ? "ubisoft" : "other";
+        // "Last Room (IndieGala) Giveaway" → "Last Room", and the shop in brackets names "other" stores.
+        const shop = /\(([^)]+)\)/.exec(str(g.title, 200))?.[1];
+        const url = str(g.open_giveaway_url, 400);
+        games.push({
+            id: String(g.id),
+            title: str(g.title, 200).replace(/\s*\([^)]*\)\s*/g, " ").replace(/\s*(Key\s+)?Giveaway\s*$/i, "").trim(),
+            store,
+            storeName: STORE_NAMES[store] || shop || "Other store",
+            url: url.startsWith("https://") ? url : "https://www.gamerpower.com/giveaways/pc",
+            image: typeof g.thumbnail === "string" && g.thumbnail.startsWith("https://") ? g.thumbnail : undefined,
+            worth: str(g.worth, 20) && g.worth !== "N/A" ? str(g.worth, 20) : undefined,
+            end: end || undefined,
+        });
+    }
+    // GOG first, then Steam, then the rest.
+    const order: FreeStore[] = ["gog", "steam", "ubisoft", "itch", "other"];
+    games.sort((a, b) => order.indexOf(a.store) - order.indexOf(b.store));
+    return { ok: true, games };
+}
+
+/* ── Twitch Drops (twitchdrops.app's public list page — never its API, which it asks not to be used) ── */
+
+export interface DropReward { name: string; image?: string; }
+export interface TwitchDrop {
+    slug: string; name: string; image?: string; publisher?: string;
+    start?: number; end?: number; drops: number;
+    /** "30m watch · 1 channel · 4.5K watching" (what the site says about it). */
+    meta?: string;
+    rewards: DropReward[];
+}
+
+const unescape = (s: string) => s.replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#0?39;|&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)));
+const textOf = (html: string) => unescape(html.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
+const twitchImg = (u?: string) => u && /^https:\/\/static-cdn\.jtvnw\.net\//.test(u) ? u : undefined;
+
+let dropsCache: { at: number; games: TwitchDrop[]; } | null = null;
+
+export async function gamesTwitchDrops(_: IpcMainInvokeEvent): Promise<{ ok: true; games: TwitchDrop[]; } | Fail> {
+    // The list changes slowly; asking at most every 20 minutes keeps it light on a small site.
+    if (dropsCache && Date.now() - dropsCache.at < 20 * 60_000) return { ok: true, games: dropsCache.games };
+    let html: string;
+    try {
+        const res = await fetch("https://twitchdrops.app/", { headers: { "user-agent": UA, "accept": "text/html" } });
+        if (!res.ok) return { ok: false, error: `twitchdrops.app answered ${res.status}` };
+        html = await res.text();
+    } catch {
+        return { ok: false, error: "Couldn't reach twitchdrops.app" };
+    }
+    const bySlug = new Map<string, TwitchDrop>();
+    for (const m of html.matchAll(/<a\s+href="\/game\/[^"]+"\s+class="game-card[^"]*"([^>]*)>([\s\S]*?)<\/a>/g)) {
+        const attrs = m[1], body = m[2];
+        const attr = (n: string) => new RegExp(`\\bdata-${n}="([^"]*)"`).exec(attrs)?.[1];
+        const slug = attr("slug");
+        if (!slug || !/^[a-z0-9-]{1,80}$/.test(slug)) continue;
+        const name = textOf(/class="card-title">([\s\S]*?)<\/div>/.exec(body)?.[1] ?? "").slice(0, 120);
+        if (!name) continue;
+        const end = Number(attr("end-ts")) || Date.parse(attr("end") ?? "") || undefined;
+        const start = Date.parse(attr("start") ?? "") || undefined;
+        const rewards: DropReward[] = [];
+        for (const r of body.matchAll(/<div class="reward-row">([\s\S]*?)<\/div>/g)) {
+            const rname = textOf(/class="reward-name">([\s\S]*?)<\/span>/.exec(r[1])?.[1] ?? "").slice(0, 100);
+            if (rname) rewards.push({ name: rname, image: twitchImg(/<img src="([^"]+)"/.exec(r[1])?.[1]) });
+        }
+        const drop: TwitchDrop = {
+            slug, name,
+            image: twitchImg(/<img src="([^"]+)" class="card-thumb"/.exec(body)?.[1]),
+            publisher: textOf(/class="card-publisher">([\s\S]*?)<\/div>/.exec(body)?.[1] ?? "").slice(0, 80) || undefined,
+            start, end,
+            drops: Number(attr("drops")) || rewards.length,
+            meta: textOf(/class="card-meta">([\s\S]*?)<\/div>/.exec(body)?.[1] ?? "").replace(/\s*·\s*ends [^·]*/, "").replace(/\s*·\s*\d+ drops?/, "").slice(0, 120) || undefined,
+            rewards,
+        };
+        // The page can list a game twice (in "Ending today" and "All games"): keep one, with every reward.
+        const had = bySlug.get(slug);
+        if (!had) { bySlug.set(slug, drop); continue; }
+        for (const r of rewards) if (!had.rewards.some(x => x.name === r.name)) had.rewards.push(r);
+        had.drops = Math.max(had.drops, drop.drops);
+        if (drop.end && (!had.end || drop.end < had.end)) had.end = drop.end;
+    }
+    const games = [...bySlug.values()].filter(g => !g.end || g.end > Date.now()).sort((a, b) => (a.end ?? Infinity) - (b.end ?? Infinity));
+    if (!games.length) return { ok: false, error: "twitchdrops.app's page looked different than expected — try again later" };
+    dropsCache = { at: Date.now(), games };
     return { ok: true, games };
 }
 

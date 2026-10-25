@@ -12,17 +12,18 @@ import { getGuildAcronym, openImageModal, openUserProfile } from "@utils/discord
 import { classes } from "@utils/misc";
 import { useAwaiter } from "@utils/react";
 import { Guild, RenderModalProps, User } from "@vencord/discord-types";
-import { FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, openModal, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
+import { FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
 import { Window } from "../../_shared/Window";
+import { openInsights } from "../Insights";
 import { settings } from ".";
 
 const cl = classNameFactory("vc-gp-");
 const tl = classNameFactory("vc-tool-");
 
 export function openGuildInfoModal(guild: Guild) {
-    openModal(props => <GuildInfoModal guild={guild} modalProps={props} />);
+    openInsights(guild, "overview");
 }
 
 const enum Tabs {
@@ -53,7 +54,7 @@ function renderTimestamp(timestamp: number) {
     );
 }
 
-function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: RenderModalProps; }) {
+export function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps: RenderModalProps; }) {
     const [friendCount, setFriendCount] = useState<number>();
     const [blockedCount, setBlockedCount] = useState<number>();
     const [ignoredCount, setIgnoredCount] = useState<number>();

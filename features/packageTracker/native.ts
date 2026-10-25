@@ -8,7 +8,7 @@
 // browser would), waits for it to fill in, and reads a few fixed facts off it.
 // The page's text never leaves this file — only those facts do, so addresses
 // and names on the page are never shown, sent or saved. Only the carriers' and
-// DoorDash's / Uber Eats' / Postmates' own sites can be opened, and nothing is got around:
+// DoorDash's / Uber Eats' / Postmates' / Grubhub's / Instacart's own sites can be opened, and nothing is got around:
 // a bot check just means "couldn't read it".
 
 import { BrowserWindow, IpcMainInvokeEvent, session } from "electron";

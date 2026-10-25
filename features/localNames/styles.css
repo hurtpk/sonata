@@ -11,3 +11,8 @@
 .vc-localnames-role i { flex: none; width: 10px; height: 10px; border-radius: 50%; }
 .vc-localnames-role-input { width: 220px; }
 .vc-localnames-mini { flex: none; width: 22px; height: 22px; border-radius: 30%; object-fit: cover; }
+
+/* One window for a server (Name, Icon, Roles) */
+.vc-localnames-buttons { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px; }
+.vc-localnames-roles-head { display: flex; align-items: center; gap: 10px; }
+.vc-localnames-roles-head .vc-tool-input { flex: 1; }

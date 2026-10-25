@@ -13,7 +13,7 @@ import "./styles.css";
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import definePlugin, { IconProps, OptionType } from "@utils/types";
-import { ChannelStore, ContextMenuApi, GuildStore, Menu, SelectedChannelStore, showToast } from "@webpack/common";
+import { ChannelStore, ContextMenuApi, DraftType, FluxDispatcher, GuildStore, Menu, SelectedChannelStore, showToast } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../featureSettings";
 import { openShortcuts } from "./Manager";
@@ -21,6 +21,7 @@ import { openShortcuts } from "./Manager";
 export const settings = defineFeatureSettings("commandShortcuts", {
     shortcutsJson: { type: OptionType.STRING, description: "Internal: your saved shortcuts.", default: "[]", hidden: true },
     recentJson: { type: OptionType.STRING, description: "Internal: commands you ran lately.", default: "[]", hidden: true },
+    knownJson: { type: OptionType.STRING, description: "Internal: bot commands you have run (just the commands).", default: "[]", hidden: true },
 });
 
 /** A command as Discord's command sender needs it (only the plain data — no functions). */
@@ -81,6 +82,38 @@ export async function runCommand(s: Used, channelId = SelectedChannelStore.getCh
         showToast(`Couldn't run it: ${e instanceof Error ? e.message : e}`, "failure");
         return false;
     }
+}
+
+/** Whether a bot command can be run from Sonata yet (Discord hands over its command sender the first time you run one). */
+export const canRunCommands = () => !!runner;
+
+/**
+ * Runs a bot's slash command in a channel — exactly as if you'd filled it in
+ * and pressed Enter there. `text` fills its options; `files` fills its file
+ * options (by option name), the way dropping a file on that option does.
+ */
+export async function runSlashCommand(command: SavedCommand, channelId: string, text: Record<string, string>, files: Record<string, File> = {}) {
+    const channel: any = ChannelStore.getChannel(channelId);
+    if (!channel) throw new Error("That channel can't be found.");
+    if (!runner) throw new Error("Run any bot command once first — Discord loads its command sender then.");
+    const values: OptionValues = {};
+    for (const [name, v] of Object.entries(text)) if (v.trim()) values[name] = [{ type: "text", text: v.trim() }];
+    // File options are read from Discord's upload list for slash commands (draft type 5), under the option's name.
+    for (const [name, file] of Object.entries(files)) {
+        FluxDispatcher.dispatch({ type: "UPLOAD_ATTACHMENT_SET_FILE", channelId, id: name, draftType: DraftType.SlashCommand, allowOptimization: false, file: { id: name, file, platform: 1 } });
+        values[name] = [];
+    }
+    try {
+        await runner({ command, optionValues: values, context: { channel, guild: channel.guild_id ? GuildStore.getGuild(channel.guild_id) : null } });
+    } finally {
+        if (Object.keys(files).length) FluxDispatcher.dispatch({ type: "UPLOAD_ATTACHMENT_CLEAR_ALL_FILES", channelId, draftType: DraftType.SlashCommand });
+    }
+}
+
+/** Bot commands you've run lately, once each (newest first) — what can be picked for other features. */
+export function knownCommands(): SavedCommand[] {
+    const seen = new Set<string>();
+    return [...read<SavedCommand>(settings.store.knownJson), ...[...loadRecent(), ...loadShortcuts()].map(u => u.command)].filter(c => c?.id && !seen.has(c.id) && seen.add(c.id));
 }
 
 /** The chat bar's ⚡ menu: your shortcuts (this server's first), then a link to manage them. */
@@ -146,6 +179,9 @@ export default definePlugin({
         try {
             const c = e?.command;
             if (!c || e?.context?.autocomplete || typeof c.execute === "function" || !c.applicationId) return;
+            // The command itself (any options, files too), for features that run it with their own values (Exploit Reporter).
+            const cmd = snapshot(c);
+            settings.store.knownJson = JSON.stringify([cmd, ...read<SavedCommand>(settings.store.knownJson).filter(k => k.id !== cmd.id)].slice(0, 30));
             if (Object.values(e.optionValues ?? {}).some((v: any) => !Array.isArray(v))) return;
             const entry: Used = { command: snapshot(c), values: JSON.parse(JSON.stringify(e.optionValues ?? {})), guildId: e.context?.channel?.guild_id ?? null, at: Date.now() };
             const key = (u: Used) => `${u.command.id}|${JSON.stringify(u.values)}`;

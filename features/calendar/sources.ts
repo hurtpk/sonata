@@ -12,6 +12,7 @@ import { dateInYear } from "../birthdayReminders/dates";
 import { allBirthdays } from "../birthdayReminders/store";
 import { calendarParcels } from "../packageTracker/store";
 import { getItems, repeatStep } from "../scheduledMessages/store";
+import { episodeLabel, followed } from "../showTracker/store";
 import { getImports, occurrences } from "./ics";
 import { CalendarItem, repeatsBetween } from "./month";
 import { getReminders } from "./reminders";
@@ -25,6 +26,10 @@ export interface SourceOptions {
     imported: boolean;
     /** Parcels from Package Tracker you've put on the calendar. */
     packages?: boolean;
+    /** The next episode of each show you follow in Show Tracker. */
+    episodes?: boolean;
+    /** Weather's forecast on each day (not an item: drawn on the day itself). */
+    weather?: boolean;
     /** Only server events you've marked yourself interested in. */
     interestedOnly: boolean;
 }
@@ -118,6 +123,20 @@ function imported(from: number, to: number): CalendarItem[] {
     return out;
 }
 
+/** Show Tracker: when the next episode of each show you follow comes out. */
+function episodes(from: number, to: number): CalendarItem[] {
+    return followed().flatMap(s => {
+        const at = s.next?.at;
+        if (!at || at < from || at >= to) return [];
+        return [{
+            id: `ep-${s.key}-${at}`, kind: "episode" as const, at,
+            title: `${s.title} · ${episodeLabel(s, s.next)}`,
+            detail: [s.next!.name, s.where].filter(Boolean).join(" · ") || undefined,
+            ref: { showKey: s.key, url: s.url },
+        }];
+    });
+}
+
 export function itemsBetween(from: number, to: number, o: SourceOptions): CalendarItem[] {
     const safe = (fn: () => CalendarItem[]) => { try { return fn(); } catch { return []; } };
     return [
@@ -127,5 +146,6 @@ export function itemsBetween(from: number, to: number, o: SourceOptions): Calend
         ...(o.reminders ? safe(() => reminders(from, to)) : []),
         ...(o.imported !== false ? safe(() => imported(from, to)) : []),
         ...(o.packages !== false ? safe(() => calendarParcels(from, to).map(p => ({ ...p, kind: "package" as const }))) : []),
+        ...(o.episodes !== false ? safe(() => episodes(from, to)) : []),
     ];
 }

@@ -8,7 +8,7 @@
 // tracked. Kept free of Discord so it can be tested on its own.
 
 export type Carrier = "ups" | "usps" | "fedex" | "dhl" | "amazon" | "royalmail" | "canadapost" | "ontrac";
-export type Service = "doordash" | "ubereats" | "postmates";
+export type Service = "doordash" | "ubereats" | "postmates" | "grubhub" | "instacart";
 
 export const CARRIERS: Record<Carrier, { name: string; url(n: string): string; hosts: string[]; }> = {
     ups: { name: "UPS", url: n => `https://www.ups.com/track?tracknum=${n}`, hosts: ["ups.com"] },
@@ -26,6 +26,9 @@ export const SERVICES: Record<Service, { name: string; hosts: string[]; }> = {
     ubereats: { name: "Uber Eats", hosts: ["ubereats.com", "uber.com"] },
     // Postmates is Uber's: its order pages are Uber Eats' (and may send you on to ubereats.com).
     postmates: { name: "Postmates", hosts: ["postmates.com"] },
+    // Seamless is Grubhub's too, with the same order pages.
+    grubhub: { name: "Grubhub", hosts: ["grubhub.com", "seamless.com"] },
+    instacart: { name: "Instacart", hosts: ["instacart.com", "inst.cr"] },
 };
 
 /** Every site the hidden page may load (and be sent on to). */
@@ -78,6 +81,10 @@ export function serviceOf(link: string): Service | null {
     if (host === "doordash.com" || host.endsWith(".doordash.com")) return /\/orders?\//i.test(u.pathname) ? "doordash" : null;
     if (host === "ubereats.com" || host.endsWith(".ubereats.com") || host === "eats.uber.com") return /\/orders?\/|\/track/i.test(u.pathname) ? "ubereats" : null;
     if (host === "postmates.com" || host.endsWith(".postmates.com")) return /\/orders?\/|\/track/i.test(u.pathname) ? "postmates" : null;
+    if (["grubhub.com", "seamless.com"].some(h => host === h || host.endsWith("." + h))) return /\/orders?\b|\/track/i.test(u.pathname) ? "grubhub" : null;
+    // inst.cr is Instacart's short link for a shared order.
+    if (host === "inst.cr") return u.pathname.length > 1 ? "instacart" : null;
+    if (host === "instacart.com" || host.endsWith(".instacart.com")) return /\/orders?\/|\/track|\/share/i.test(u.pathname) ? "instacart" : null;
     return null;
 }
 

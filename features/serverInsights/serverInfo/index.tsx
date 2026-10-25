@@ -9,22 +9,14 @@ import { InfoIcon } from "@components/Icons";
 import { Devs, EquicordDevs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { Guild } from "@vencord/discord-types";
-import { Menu } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../../featureSettings";
-import { openGuildInfoModal } from "./GuildInfoModal";
+import { addInsightsItem } from "../Insights";
 
 const makePatch: (showIcon: boolean) => NavContextMenuPatchCallback = showIcon => (children, { guild }: { guild: Guild; }) => {
     const group = findGroupChildrenByChildId("privacy", children);
-
-    group?.push(
-        <Menu.MenuItem
-            id="vc-server-info"
-            label="Server Info"
-            leadingAccessory={showIcon ? { type: "icon", icon: InfoIcon } : undefined}
-            action={() => openGuildInfoModal(guild)}
-        />
-    );
+    // One "Server Insights" item for Server Info, permissions and member lookup.
+    if (group) addInsightsItem(group, guild, showIcon ? InfoIcon : undefined);
 };
 
 export const settings = defineFeatureSettings("serverInfo", {

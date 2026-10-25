@@ -11,11 +11,12 @@
 
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, DraftType, openModal, SelectedChannelStore, showToast, UploadHandler, useEffect, useState } from "@webpack/common";
+import { ChannelStore, DraftType, SelectedChannelStore, showToast, UploadHandler, useEffect, useState } from "@webpack/common";
 
-import { windowAccent } from "../../controller/accent";
-import { ToolHero } from "../_shared/ToolHero";
-import { Window } from "../_shared/Window";
+import { windowAccent } from "../../../controller/accent";
+import { openSection, registerSection } from "../../_shared/Hub";
+import { ToolHero } from "../../_shared/ToolHero";
+import { Window } from "../../_shared/Window";
 import { isSpotify, looksLikePlaylist, singleIn, siteOf } from "./links";
 import { cancelDownload, cancelWaiting, clearFinished, Info, isActive, Item, native, Playlist, queueMany, removeItem, settings, startDownload, useItems } from "./store";
 
@@ -172,15 +173,28 @@ function PlaylistPicker({ list, setup, onDone }: { list: Playlist; setup: Setup;
 
 /* ── Your downloads ── */
 
+/** The downloaded file, read back in (null if it's too big or gone). */
+async function fileOf(i: Item): Promise<File | null> {
+    const bytes: Uint8Array | null = await native().dlReadFile(i.job.file);
+    if (!bytes) { showToast("That file is too big (over 500 MB), or it's been moved", "failure"); return null; }
+    const name = fileName(i.job.file);
+    const type = /\.mp3$/i.test(name) ? "audio/mpeg" : /\.(m4a|aac)$/i.test(name) ? "audio/mp4" : /\.(opus|ogg)$/i.test(name) ? "audio/ogg" : /\.webm$/i.test(name) ? "video/webm" : "video/mp4";
+    return new File([bytes as BlobPart], name, { type });
+}
+
 async function sendInChat(i: Item) {
     const channel = ChannelStore.getChannel(SelectedChannelStore.getChannelId());
     if (!channel) return showToast("Open a chat first", "failure");
-    const bytes: Uint8Array | null = await native().dlReadFile(i.job.file);
-    if (!bytes) return showToast("That file is too big to attach (over 500 MB), or it's been moved", "failure");
-    const name = fileName(i.job.file);
-    const type = /\.mp3$/i.test(name) ? "audio/mpeg" : /\.(m4a|aac)$/i.test(name) ? "audio/mp4" : /\.(opus|ogg)$/i.test(name) ? "audio/ogg" : /\.webm$/i.test(name) ? "video/webm" : "video/mp4";
-    UploadHandler.promptToUpload([new File([bytes as BlobPart], name, { type })], channel, DraftType.ChannelMessage);
+    const file = await fileOf(i);
+    if (!file) return;
+    UploadHandler.promptToUpload([file], channel, DraftType.ChannelMessage);
     showToast("Added to your message — Discord tells you if it's too big for your upload limit", "success");
+}
+
+/** Straight into Video Editor, in this same window. */
+async function editIt(i: Item) {
+    const file = await fileOf(i);
+    if (file) openSection("mediaTools", "videoEditor", undefined, { file });
 }
 
 function Row({ i, close }: { i: Item; close(): void; }) {
@@ -211,6 +225,7 @@ function Row({ i, close }: { i: Item; close(): void; }) {
                     : <>
                         {j.status === "done" && <button type="button" className="vc-tool-btn" title="Open it" onClick={() => void native().dlOpen(j.file)}>▶</button>}
                         {j.status === "done" && <button type="button" className="vc-tool-btn" title="Show it in its folder" onClick={() => void native().dlReveal(j.file)}>📂</button>}
+                        {j.status === "done" && i.mode !== "audio" && <button type="button" className="vc-tool-btn" title="Trim it, add captions or music, or make a GIF — in Media Tools" onClick={() => void editIt(i)}>✂ Edit</button>}
                         {j.status === "done" && <button type="button" className="vc-tool-btn" title="Attach it to a message in the chat you have open" onClick={() => { void sendInChat(i); close(); }}>💬 Send</button>}
                         <button type="button" className="vc-dl-x" title="Remove from this list (the file stays)" aria-label="Remove from list" onClick={() => removeItem(i.id)}>✕</button>
                     </>}
@@ -318,4 +333,5 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
     );
 }
 
-export const openDownloader = (start?: string) => openModal(props => <DownloaderModal modalProps={props} start={start} />);
+registerSection("mediaTools", { id: "mediaDownloader", feature: "mediaDownloader", name: "Media Downloader", sub: "Videos and music from a link", render: p => <DownloaderModal modalProps={p} /> });
+export const openDownloader = (start?: string) => openSection("mediaTools", "mediaDownloader", start ? props => <DownloaderModal modalProps={props} start={start} /> : undefined);

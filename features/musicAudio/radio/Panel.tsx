@@ -6,14 +6,14 @@
 
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { useEffect, useState } from "@webpack/common";
+import { useEffect, useRef, useState } from "@webpack/common";
 
 import { openSection, registerSection } from "../../_shared/Hub";
 import { Window } from "../../_shared/Window";
 import { FormGroup, FormRow, Toggle } from "../../_shared/WindowParts";
 import { CloseIcon, NextIcon, PauseIcon, PlayIcon, VolumeIcon } from "../waveformPlayer/icons";
 import type { Station } from "./native";
-import { failed, Item, next, play, playerState, previous, serverBase, setVolume, shuffled, stop, toggle, usePlayer, viaServer, windowOpened } from "./player";
+import { coverOf, failed, Item, next, play, playerState, position, previous, seek, serverBase, setVolume, shuffled, stop, toggle, useCovers, usePlayer, wantCover, windowOpened } from "./player";
 import { addFiles, forgetSoundCloud, isFavorite, loadLikes, MusicFile, playedStation, radioTools, removeFile, settings, stations, toggleFavorite, useRadio } from "./store";
 
 type Tab = "radio" | "soundcloud" | "files";
@@ -27,12 +27,30 @@ const fileItem = (f: MusicFile): Item => ({ kind: "file", key: `f:${f.id}`, titl
 
 /* ── Small parts ── */
 
-function Art({ src, size = 40 }: { src?: string; size?: number; }) {
-    const [bad, setBad] = useState(false);
-    const url = viaServer(src);
-    return url && !bad
-        ? <img className="vc-radio-art" src={url} alt="" width={size} height={size} onError={() => setBad(true)} />
-        : <span className="vc-radio-art vc-radio-art-none" style={{ width: size, height: size }} aria-hidden>
+/** A song's cover (or a station's logo). It's only asked for once it's on screen. */
+function Cover({ item, size = 40 }: { item: Item; size?: number; }) {
+    useCovers();
+    const ref = useRef<HTMLSpanElement>(null);
+    const [bad, setBad] = useState<string | null>(null);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { wantCover(item); io.disconnect(); } }, { rootMargin: "300px" });
+        io.observe(el);
+        return () => io.disconnect();
+    }, [item.key]);
+    const url = coverOf(item);
+    return (
+        <span ref={ref} className="vc-radio-cover" style={{ width: size, height: size }}>
+            {url && bad !== url
+                ? <img className="vc-radio-art" src={url} alt="" width={size} height={size} onError={() => setBad(url)} />
+                : <Blank size={size} />}
+        </span>
+    );
+}
+
+function Blank({ size }: { size: number; }) {
+    return <span className="vc-radio-art vc-radio-art-none" style={{ width: size, height: size }} aria-hidden>
             <svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></svg>
         </span>;
 }
@@ -49,6 +67,30 @@ function PlayButton({ item, queue }: { item: Item; queue?: Item[]; }) {
     );
 }
 
+const clock = (s: number) => { const t = Math.max(0, Math.floor(s)); const h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, x = t % 60; return `${h ? `${h}:${String(m).padStart(2, "0")}` : m}:${String(x).padStart(2, "0")}`; };
+
+/** Where the song is, and moving along it. A station is live, so it has none. */
+function Scrubber() {
+    const p = usePlayer();
+    const [, tick] = useState(0);
+    const [drag, setDrag] = useState<number | null>(null);
+    useEffect(() => { const t = setInterval(() => tick(n => n + 1), 400); return () => clearInterval(t); }, []);
+    if (!p.item || p.item.kind === "radio") return null;
+    const { time, duration } = position();
+    const v = drag ?? time;
+    const fill = duration ? `${Math.min(100, (v / duration) * 100)}%` : "0%";
+    const commit = () => { if (drag != null) { void seek(drag); setDrag(null); } };
+    return (
+        <div className="vc-radio-scrub">
+            <span>{clock(v)}</span>
+            <input type="range" min={0} max={duration || 1} step={1} value={duration ? v : 0} disabled={!duration} aria-label="Where in the song"
+                aria-valuetext={`${clock(v)} of ${clock(duration)}`} style={{ "--fill": fill } as React.CSSProperties}
+                onChange={e => setDrag(Number(e.currentTarget.value))} onPointerUp={commit} onKeyUp={commit} onBlur={commit} />
+            <span>{duration ? clock(duration) : "–:––"}</span>
+        </div>
+    );
+}
+
 export function NowPlaying({ compact, onClose }: { compact?: boolean; onClose?(): void; }) {
     const p = usePlayer();
     const vol = settings.store.volume ?? 70;
@@ -56,7 +98,8 @@ export function NowPlaying({ compact, onClose }: { compact?: boolean; onClose?()
     const many = p.queue.length > 1 && p.item.kind !== "radio";
     return (
         <div className={classes("vc-radio-now", compact && "vc-radio-now-compact")}>
-            <Art src={p.item.art} size={compact ? 38 : 44} />
+        <div className="vc-radio-now-row">
+            <Cover item={p.item} size={compact ? 42 : 56} />
             <div className="vc-radio-now-text">
                 <b title={p.item.title}>{p.item.title}</b>
                 <span>{p.error ?? (p.loading ? "Loading…" : p.item.kind === "radio" ? `Live${p.item.sub ? ` · ${p.item.sub}` : ""}` : p.item.sub ?? "")}{many ? ` · ${p.at + 1} of ${p.queue.length}` : ""}</span>
@@ -74,6 +117,8 @@ export function NowPlaying({ compact, onClose }: { compact?: boolean; onClose?()
                 <button type="button" className="vc-radio-ctl" aria-label="Stop" title="Stop" onClick={() => { stop(); onClose?.(); }}><CloseIcon /></button>
             </div>
         </div>
+            <Scrubber />
+        </div>
     );
 }
 
@@ -86,7 +131,7 @@ function StationRow({ s, list }: { s: Station; list: Station[]; }) {
     return (
         <div className={classes("vc-radio-row", playerState().item?.key === item.key && "vc-radio-row-on")}>
             <PlayButton item={item} queue={list.map(stationItem)} />
-            <Art src={s.logo} size={36} />
+            <Cover item={item} size={36} />
             <span className="vc-radio-row-text">
                 <b title={s.name}>{s.name}</b>
                 <span>{[s.country, s.tags.slice(0, 3).join(", "), s.bitrate ? `${s.bitrate} kbps` : null].filter(Boolean).join(" · ")}</span>
@@ -177,6 +222,7 @@ function SoundCloudTab() {
                         {shown.map(i => (
                             <div key={i.key} className={classes("vc-radio-row", playerState().item?.key === i.key && "vc-radio-row-on")}>
                                 <PlayButton item={i} queue={items} />
+                                <Cover item={i} size={40} />
                                 <span className="vc-radio-row-text"><b title={i.title}>{i.title}</b><span>{i.sub}</span></span>
                                 {failed.get(i.key) && <span className="vc-radio-bad" title={failed.get(i.key)}>{/DRM|copy/i.test(failed.get(i.key)!) ? "copy-protected" : "can't play"}</span>}
                                 <a className="vc-tool-btn vc-radio-small" href={i.kind === "sc" ? i.track.url : undefined} target="_blank" rel="noreferrer">SoundCloud</a>
@@ -217,6 +263,7 @@ function FilesTab() {
                         return (
                             <div key={f.id} className={classes("vc-radio-row", playerState().item?.key === item.key && "vc-radio-row-on", f.missing && "vc-radio-row-missing")}>
                                 {f.missing ? <span className="vc-radio-play" aria-hidden /> : <PlayButton item={item} queue={items} />}
+                                {!f.missing && <Cover item={item} size={40} />}
                                 <span className="vc-radio-row-text"><b title={f.path}>{f.name}</b><span>{f.missing ? "Moved or deleted — add it again from its new place" : `${sizeOf(f.size)} · ${f.path}`}</span></span>
                                 <button type="button" className="vc-tool-btn vc-radio-small" onClick={() => { if (playerState().item?.key === item.key) stop(); removeFile(f.id); }}>Remove</button>
                             </div>

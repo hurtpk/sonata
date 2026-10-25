@@ -22,8 +22,8 @@ export const settings = defineFeatureSettings("packageTracker", {
     foodAlerts: { type: OptionType.BOOLEAN, description: "Tell me when a food order moves along (being made, on the way, delivered)", default: true },
     parcelAlerts: { type: OptionType.BOOLEAN, description: "Tell me when a parcel is out for delivery, delivered, or its day changes", default: true },
     calendarByDefault: { type: OptionType.BOOLEAN, description: "Put new parcels' arrival days on the Calendar straight away", default: false },
-    warnBeforeSending: { type: OptionType.BOOLEAN, description: "Warn me before I send a DoorDash, Uber Eats or Postmates tracking link (it shows your address and name)", default: true },
-    hideLinks: { type: OptionType.BOOLEAN, description: "Blur DoorDash, Uber Eats and Postmates tracking links and their previews in chat until you hover them", default: true },
+    warnBeforeSending: { type: OptionType.BOOLEAN, description: "Warn me before I send a food or grocery delivery tracking link (it shows your address and name)", default: true },
+    hideLinks: { type: OptionType.BOOLEAN, description: "Blur food and grocery delivery tracking links and their previews in chat until you hover them", default: true },
     showInChat: { type: OptionType.BOOLEAN, description: "Show a Track button under messages with a tracking number or delivery link", default: true },
 });
 

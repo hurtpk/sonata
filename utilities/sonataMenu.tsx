@@ -134,6 +134,8 @@ const groupingPatch: GlobalContextMenuPatchCallback = (navId, children, ...args)
         loose = [];
     };
     for (const el of added) {
+        // Dividers a feature added on its own (Message Logger's) would double up with the ones between groups.
+        if ((el as any)?.type === Menu.MenuSeparator) continue;
         if (isGroup(el)) { flush(); groups.push(el); } else loose.push(el);
     }
     flush();
@@ -146,9 +148,11 @@ const groupingPatch: GlobalContextMenuPatchCallback = (navId, children, ...args)
             </Menu.MenuItem>
         </Menu.MenuGroup>
     );
-    // On a message it goes right above Reply and Forward; everywhere else, at the end.
-    const at = navId === "message" ? children.findIndex(c => hasItem(c, ["reply", "forward"])) : -1;
-    if (at >= 0) children.splice(at, 0, menu);
+    // On a message it goes right above Reply and Forward; on a channel, right under Mark As Read; everywhere else, at the end.
+    const aboveAt = navId === "message" ? children.findIndex(c => hasItem(c, ["reply", "forward"])) : -1;
+    const belowAt = aboveAt < 0 && /^(channel|thread)-context$/.test(navId) ? children.findIndex(c => hasItem(c, ["mark-channel-read"])) : -1;
+    if (aboveAt >= 0) children.splice(aboveAt, 0, menu);
+    else if (belowAt >= 0) children.splice(belowAt + 1, 0, menu);
     else children.push(menu);
 };
 
