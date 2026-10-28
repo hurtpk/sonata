@@ -16,3 +16,8 @@ service/cloudflare/.wrangler/
 service/cloudflare/.check/
 service/cloudflare/.dev.vars*
 service/cloudflare/.env*
+bot/.env*
+!bot/.env.example
+bot/.dev.vars*
+bot/.wrangler/
+bot/.check/

@@ -1,0 +1,57 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+import { slashCommands } from "./commands.mjs";
+import { discordApi, inviteUrl, isId } from "./discord.mjs";
+
+const origin = "https://sonata-bot.pkispure.workers.dev";
+const mode = process.argv[2] ?? "--check";
+
+async function main() {
+    const applicationId = process.env.DISCORD_APPLICATION_ID, token = process.env.DISCORD_BOT_TOKEN, secret = process.env.BOT_CONTROL_SECRET;
+    if (!isId(applicationId) || !token || !secret || secret.length < 32) throw new Error("Fill DISCORD_APPLICATION_ID and DISCORD_BOT_TOKEN in bot/.env. Keep the generated BOT_CONTROL_SECRET.");
+    if (process.env.PUBLIC_URL !== origin) throw new Error("PUBLIC_URL must match this deployment's Sonata Bot workers.dev address.");
+    if (["--check", "--register"].includes(mode)) {
+        const api = discordApi(token), app = await api("/applications/@me");
+        if (app.id !== applicationId) throw new Error("The bot token belongs to a different Discord application.");
+        const user = await api("/users/@me");
+        process.stdout.write(`Verified Sonata Bot application ${app.id}, bot user ${user.id}.\n`);
+        const flags = BigInt(app.flags_new ?? app.flags ?? 0);
+        process.stdout.write(`Server Members Intent: ${flags & ((1n << 14n) | (1n << 15n)) ? "enabled" : "needs enabling"}. Message Content Intent: ${flags & ((1n << 18n) | (1n << 19n)) ? "enabled" : "needs enabling"}.\n`);
+        if (mode === "--register") {
+            const guild = process.env.TEST_GUILD_ID;
+            if (guild && !isId(guild)) throw new Error("TEST_GUILD_ID must be a Discord server ID, or empty for global commands.");
+            await api(`/applications/${app.id}${guild ? `/guilds/${guild}` : ""}/commands`, { method: "PUT", body: slashCommands() });
+            process.stdout.write(`Registered ${slashCommands().length} ${guild ? "test-server" : "global"} slash commands.\n`);
+        }
+        process.stdout.write(`Invite: ${inviteUrl(app.id)}\n`);
+        return;
+    }
+    if (mode === "--upload") {
+        const secrets = { DISCORD_APPLICATION_ID: applicationId, DISCORD_BOT_TOKEN: token, BOT_CONTROL_SECRET: secret };
+        await new Promise((resolve, reject) => {
+            const child = spawn(process.execPath, [fileURLToPath(new URL("./node_modules/wrangler/bin/wrangler.js", import.meta.url)), "secret", "bulk"], { cwd: fileURLToPath(new URL("./", import.meta.url)), windowsHide: true, stdio: ["pipe", "inherit", "inherit"] });
+            child.stdin.on("error", () => reject(new Error("Cloudflare's tool did not accept the private configuration.")));
+            child.once("error", () => reject(new Error("Could not start Wrangler. Run npm install in the bot folder.")));
+            child.once("exit", code => code === 0 ? resolve() : reject(new Error("Cloudflare did not finish saving the bot secrets.")));
+            child.stdin.end(JSON.stringify(secrets));
+        });
+        return;
+    }
+    if (["--start", "--stop", "--status"].includes(mode)) {
+        const response = await fetch(`${origin}/control/${mode.slice(2)}`, { method: mode === "--status" ? "GET" : "POST", redirect: "manual", headers: { Authorization: `Bearer ${secret}` }, signal: AbortSignal.timeout(25_000) });
+        if (!response.ok) throw new Error(`The bot control endpoint returned ${response.status}.`);
+        const status = await response.json();
+        process.stdout.write(JSON.stringify(status, null, 2) + "\n");
+        return;
+    }
+    throw new Error("Use --check, --register, --upload, --start, --stop or --status.");
+}
+
+main().catch(error => { process.stderr.write(error.message + "\n"); process.exitCode = 1; });

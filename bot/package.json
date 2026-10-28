@@ -1,0 +1,15 @@
+{
+    "name": "sonata-moderation-bot",
+    "private": true,
+    "type": "module",
+    "engines": { "node": ">=24" },
+    "scripts": {
+        "dev": "wrangler dev",
+        "check": "wrangler deploy --dry-run --outdir .check",
+        "deploy": "wrangler deploy",
+        "pretest": "npm run check",
+        "test": "node --test test/*.test.mjs",
+        "setup": "node --env-file=.env setup.mjs"
+    },
+    "devDependencies": { "wrangler": "4.154.0" }
+}
