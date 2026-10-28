@@ -108,7 +108,7 @@ cd /d "%EQ%"
 call :preparetools
 if errorlevel 1 goto :failed
 call :step "Installing Equicord's parts (this is the slow bit)"
-call pnpm install --no-frozen-lockfile
+call pnpm install --no-frozen-lockfile --fix-lockfile
 if errorlevel 1 goto :failed
 call :sonataparts
 if errorlevel 1 goto :failed
@@ -537,7 +537,7 @@ cd /d "%EQ%"
 call :preparetools
 if errorlevel 1 exit /b 1
 call :step "Refreshing Equicord's parts"
-call pnpm install --no-frozen-lockfile
+call pnpm install --no-frozen-lockfile --fix-lockfile
 if errorlevel 1 exit /b 1
 call :sonataparts
 if errorlevel 1 exit /b 1
@@ -667,7 +667,7 @@ rem  so Equicord's files stay untouched.
 :sonataparts
 if not exist "%TARGET%\package.json" exit /b 0
 call :step "Installing Sonata's parts"
-call pnpm install --dir "%TARGET%" --ignore-workspace --lockfile=false --prod --no-optional
+call pnpm install --dir "%TARGET%" --ignore-workspace --lockfile=false --prod --no-optional --fix-lockfile
 exit /b %errorlevel%
 
 rem  Sonata is made for one Equicord version (equicord-version.txt), plus a few

@@ -70,6 +70,7 @@ for (const mode of ["install", "repair"]) windowsTest(`${mode} prepares missing 
     const f = runInstaller(t, mode);
     assert.equal(f.result.status, 0, f.output);
     assert.deepEqual(f.calls.map(call => [call.tool, ...call.args.slice(0, 2)]), [["npm", "install", "--global"], ["pnpm", "install", "--no-frozen-lockfile"], ["pnpm", "install", "--dir"], ["pnpm", "build"]]);
+    for (const call of f.calls.filter(call => call.tool === "pnpm" && call.args[0] === "install")) assert(call.args.includes("--fix-lockfile"));
 });
 
 windowsTest("A Node upgrade that fails stops before pnpm setup", t => {

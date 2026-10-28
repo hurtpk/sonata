@@ -18,6 +18,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.28b",
+        date: "October 28, 2026",
+        title: "Repair missing install dependencies",
+        items: [
+            { icon: "🔧", text: "The installer and in-app updater now repair broken dependency lockfiles before building. This fixes installs stopping at Sonata's parts with a missing canvas dependency entry, without needing to delete your settings or reinstall everything." },
+        ],
+    },
+    {
         version: "2026.10.28",
         date: "October 28, 2026",
         title: "Cleaner Sonata header and smoother updates",

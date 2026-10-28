@@ -138,10 +138,10 @@ async function doUpdate(eq: string) {
 
     // 3. Equicord's parts and Sonata's own.
     j.step = "parts";
-    const inst = await run("pnpm", ["install", "--no-frozen-lockfile"], eq);
+    const inst = await run("pnpm", ["install", "--no-frozen-lockfile", "--fix-lockfile"], eq);
     if (inst.code !== 0) return fail("Couldn't refresh Equicord's dependencies before rebuilding.", inst.out);
     if (existsSync(join(sonata, "package.json"))) {
-        const parts = await run("pnpm", ["install", "--dir", sonata, "--ignore-workspace", "--lockfile=false", "--prod", "--no-optional"], eq);
+        const parts = await run("pnpm", ["install", "--dir", sonata, "--ignore-workspace", "--lockfile=false", "--prod", "--no-optional", "--fix-lockfile"], eq);
         if (parts.code !== 0) return fail("Couldn't install Sonata's parts.", parts.out);
     }
 

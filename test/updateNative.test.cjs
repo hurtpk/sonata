@@ -54,12 +54,12 @@ async function update({ installFails = false, buildFails = false, dependenciesEx
 test("An unchanged Equicord checkout refreshes dependencies before building", async () => {
     const { job, calls, root } = await update();
     assert.equal(job.step, "done"); assert.equal(job.equicordChanged, false);
-    const install = calls.findIndex(call => call.line === "pnpm install --no-frozen-lockfile");
+    const install = calls.findIndex(call => call.line === "pnpm install --no-frozen-lockfile --fix-lockfile");
     const build = calls.findIndex(call => call.line === "pnpm build");
     assert(install >= 0 && build > install);
     assert.equal(calls[install].options.cwd, root); assert.equal(calls[install].options.env.CI, "1");
     assert(calls[install].options.env.PATH.startsWith(path.join(path.resolve("/sonata-test-local"), "Sonata", "tools") + path.delimiter));
-    assert(calls.some(call => call.args.includes("--dir")));
+    assert(calls.some(call => call.args.includes("--dir") && call.args.includes("--fix-lockfile")));
 });
 
 test("A failed dependency refresh stops before building and keeps the install error", async () => {
@@ -77,6 +77,6 @@ test("A real build failure is reported after the dependency refresh", async () =
 test("Missing dependencies are installed, and Windows keeps its hidden shell launch", async () => {
     const { job, calls } = await update({ dependenciesExist: false, windows: true });
     assert.equal(job.step, "done");
-    const install = calls.find(call => call.line === "pnpm install --no-frozen-lockfile");
+    const install = calls.find(call => call.line === "pnpm install --no-frozen-lockfile --fix-lockfile");
     assert(install); assert.equal(install.options.shell, true); assert.equal(install.options.windowsHide, true);
 });
