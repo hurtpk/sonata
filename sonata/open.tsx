@@ -13,6 +13,8 @@ import { classes } from "@utils/misc";
 import { closeModal, openModal, useEffect, useRef, useState } from "@webpack/common";
 
 import type { QolApi } from "../controller/ControlCenter";
+import { openAccessPanel } from "./access/Panel";
+import { canUseSonata } from "./access/session";
 import { SonataScreen } from "./Screen";
 
 let openKey: string | null = null;
@@ -108,6 +110,7 @@ const Window = ErrorBoundary.wrap(({ api, onClose, transitionState }: { api: Qol
 });
 
 export function openSonata(api: QolApi) {
+    if (!canUseSonata()) { openAccessPanel(); return; }
     if (openKey) return;
     openKey = openModal(props => <Window api={api} onClose={props.onClose} transitionState={props.transitionState} />, {
         onCloseCallback: () => { openKey = null; },

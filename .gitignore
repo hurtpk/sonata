@@ -7,3 +7,12 @@ node_modules/
 *.log
 Thumbs.db
 desktop.ini
+
+service/.env*
+!service/.env.example
+service/data/
+service/*.sqlite*
+service/cloudflare/.wrangler/
+service/cloudflare/.check/
+service/cloudflare/.dev.vars*
+service/cloudflare/.env*

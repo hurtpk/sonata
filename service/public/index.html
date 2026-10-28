@@ -1,0 +1,36 @@
+<!--
+ Vencord, a Discord client mod
+ Copyright (c) 2026 Vendicated and contributors
+ SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Private administration for Sonata activations and account access.">
+    <title>Sonata · Control Room</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+    <header class="top"><a href="/admin" class="brand"><span class="note">♫</span><strong>sonata</strong><span class="divider"></span><span>control room</span></a><div class="account"><span id="owner"></span><button id="logout" class="quiet" hidden>Sign out</button></div></header>
+    <div id="demo" class="demo" hidden>LOCAL DEMO · These are sample accounts. Changes affect only this preview.</div>
+    <main id="dashboard" hidden>
+        <section class="hero"><div><span class="eyebrow">YOUR WORKSPACE</span><h1>A little more control.</h1><p>See who has activated Sonata. Manage who gets to stay.</p></div><button id="block-new" class="primary">＋ Block a user ID</button></section>
+        <section class="stats" aria-label="Activation statistics"><article><span>Known accounts</span><b id="total">—</b><small>Activations and access restrictions</small></article><article><span>Seen recently <i class="dot"></i></span><b id="recent">—</b><small>Checked in during the last 10 minutes</small></article><article><span>Access allowed</span><b id="allowed">—</b><small>Can activate and use Sonata</small></article><article><span>Access blocked</span><b id="blocked">—</b><small>Including IDs blocked ahead of time</small></article></section>
+        <section class="panel"><div class="panel-title"><div><h2>Your people <span id="result-count"></span></h2><p>Activation records, not a list of Discord activity.</p></div><button id="refresh" class="quiet">↻ Refresh</button></div>
+            <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search a name or Discord user ID" aria-label="Search registered accounts"></label><select id="filter" aria-label="Filter by access"><option value="all">All accounts</option><option value="recent">Seen recently</option><option value="allowed">Allowed</option><option value="blocked">Blocked</option></select></div>
+            <div id="error" class="error" role="alert" hidden></div>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Member</th><th scope="col">Access</th><th scope="col">Version</th><th scope="col">First activation</th><th scope="col">Last check-in</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody id="users"></tbody></table></div>
+            <div id="empty" class="empty" hidden><span>♧</span><h3>No accounts here yet.</h3><p>Accounts appear after users finish Discord activation in Sonata.</p></div>
+            <footer class="table-foot"><span id="updated">Loading activation records…</span><div><button id="previous" class="quiet">← Previous</button><span id="page"></span><button id="next" class="quiet">Next →</button></div></footer>
+        </section>
+        <details id="activity" class="activity"><summary>Recent access changes <span>View audit trail ↗</span></summary><div id="audit"></div></details>
+        <p class="footnote">Only Discord identity, Sonata version and activation/check-in times are registered. No messages, friend lists or server lists are collected. Inactive allowed records are removed after 90 days.</p>
+    </main>
+    <main id="signin" class="signin" hidden><div class="signin-card"><span class="note large">♫</span><span class="eyebrow" id="signin-eyebrow">OWNER WORKSPACE</span><h1 id="signin-title">Welcome to the control room.</h1><p id="signin-description">Sign in with the Discord account configured as Sonata's administrator.</p><div id="disclosure" class="disclosure" hidden><b>What activation shares with Sonata's owner</b><ul><li>Your Discord user ID and profile name.</li><li>Your Sonata version and first activation time.</li><li>Your last check-in, updated about every five minutes while Sonata runs.</li></ul><p>The owner can deny access to individual accounts. No Discord messages, friends or servers are sent. Allowed records expire after 90 days without a check-in; blocked IDs are retained until the owner removes the restriction.</p></div><a id="login" class="primary link-button" href="/auth/start">Continue with Discord ↗</a><p id="signin-note" class="small">Administrator access is checked on the server.</p></div></main>
+    <dialog id="block-dialog"><form id="block-form"><button type="button" class="dialog-close quiet" id="cancel" aria-label="Close">×</button><span class="eyebrow">ACCOUNT ACCESS</span><h2>Keep Sonata in good company.</h2><p>Block an existing account, or add a Discord user ID before it activates.</p><label>Discord user ID<input id="block-id" required pattern="[0-9]{17,20}" inputmode="numeric" placeholder="123456789012345678" autocomplete="off"></label><label>Private note <span class="optional">optional</span><textarea id="block-reason" maxlength="300" rows="3" placeholder="Why is this account restricted?"></textarea></label><p class="small">Notes stay in this administrator panel. Connected clients stop at their next access check. Modified copies can bypass the plugin's local gate.</p><div id="block-error" class="error" role="alert" hidden></div><button id="confirm-block" class="danger" type="submit">Block access</button></form></dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

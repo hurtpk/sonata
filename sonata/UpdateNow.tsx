@@ -27,7 +27,7 @@ interface Job { step: Step; startedAt: number; error?: string; failedStep?: Step
 const STEPS: [Step, string, string][] = [
     ["download", "Downloading the new Sonata", "From GitHub"],
     ["equicord", "Matching Equicord", "Keeps it on the version Sonata is made for"],
-    ["parts", "Adding new parts", "Only if this version needs any"],
+    ["parts", "Checking dependencies", "Refreshes installed parts before building"],
     ["build", "Rebuilding", "About a minute"],
 ];
 

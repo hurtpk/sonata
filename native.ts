@@ -39,5 +39,6 @@ export { robloxUser, tiktokProfile, tiktokRecent, tiktokVideo } from "./features
 export { timezoneSearch } from "./features/timezones/native";
 export { walletBalance, walletPrices } from "./features/wallet/native";
 export { weatherFind, weatherForecast } from "./features/weather/native";
+export { accessBegin, accessCheck, accessDashboard, accessDisconnect, accessFinish } from "./sonata/access/native";
 export { clearCaches, deepMemory, getCacheSizes, getLeftovers, getMemory, getOldVersions, openFolder } from "./sonata/cacheNative";
 export { sonataLatest, sonataRunUpdater, sonataUpdateStart, sonataUpdateStatus } from "./sonata/updateNative";

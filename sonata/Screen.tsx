@@ -37,7 +37,6 @@ import { FeatureIcon, featureIconKey, featureIconsOn, hasPickedIcon, setFeatureI
 import { GROUP_OF, GROUPS } from "./groups";
 import { Note3D } from "./Note3D";
 import { DEFAULT_HOTKEY, DISCORD_OPTIONS, discordState, hasBackup, Impact, isOn, keyName, OPTIONS, prettyKey, putBack, setDiscord, setGaming, speedUp } from "./performance";
-import { ProfilesButton } from "./Profiles";
 import { layersOn, presetOf, readLayers } from "./scenes/presets";
 import { unseenCount, UpdateLog } from "./UpdateLog";
 import { Welcome, WhatsNew } from "./Welcome";
@@ -909,7 +908,6 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                     </nav>
                     <div className="sonata-corner">
                         {pending > 0 && <button type="button" className="sonata-btn sonata-btn-light" onClick={api.apply}>Apply {pending} · reload</button>}
-                        <ProfilesButton api={api} raw={s.sonataProfiles} write={json => { store.sonataProfiles = json; }} />
                         <button type="button" className="sonata-updates" title="Every Sonata update, newest first" onClick={openLog}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M12 8v4l2.5 2.5M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3.5 4.5v4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             Updates

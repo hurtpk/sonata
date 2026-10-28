@@ -18,6 +18,16 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.28",
+        date: "October 28, 2026",
+        title: "Cleaner Sonata header and smoother updates",
+        items: [
+            { icon: "🧹", text: "Removed the Profiles button from Sonata's top bar for a cleaner header." },
+            { icon: "🔧", text: "The in-app updater now refreshes Equicord's dependencies before rebuilding, even when its version hasn't changed. This fixes updates stopping because pnpm's installed parts no longer match its settings and it can't ask for confirmation inside Discord." },
+            { icon: "📦", text: "Install Sonata.bat now prepares the pnpm version required by Equicord automatically, installs or updates Node.js if it's too old, and refreshes dependencies during installs, updates and repairs. The in-app updater uses the prepared tools too." },
+        ],
+    },
+    {
         version: "2026.10.27c",
         date: "October 27, 2026",
         title: "People, Planner, Server Tools and Exploit Reporter improvements",

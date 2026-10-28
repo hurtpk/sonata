@@ -1,0 +1,16 @@
+{
+    "name": "sonata-control-room-cloudflare",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "login": "wrangler login",
+        "dev": "wrangler dev",
+        "deploy": "wrangler deploy",
+        "migrate": "wrangler d1 migrations apply DB --remote",
+        "migrate:local": "wrangler d1 migrations apply DB --local",
+        "check": "wrangler deploy --dry-run --outdir .check",
+        "pretest": "npm run check",
+        "test": "node --test test/*.test.mjs"
+    },
+    "devDependencies": { "wrangler": "4.154.0" }
+}

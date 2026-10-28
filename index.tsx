@@ -173,6 +173,9 @@ import weather from "./features/weather";
 import whisper from "./features/whisper";
 import { featureSettings, prefixKey, QOL_NAME, runningFeatures } from "./featureSettings";
 import { startAlbumWatch, stopAlbumWatch } from "./sonata/accent";
+import { ACCESS_ENABLED } from "./sonata/access/config";
+import { openAccessPanel } from "./sonata/access/Panel";
+import { accessAtBoot, canUseSonata, rememberAccess, startAccess, stopAccess } from "./sonata/access/session";
 import { startCacheAuto, stopCacheAuto } from "./sonata/cache";
 import { addTrayButton, removeTrayButton, startChatTray, stopChatTray } from "./sonata/chatTray";
 import { setDoctorProvider, startErrors, startTimes } from "./sonata/doctorBridge";
@@ -306,9 +309,11 @@ function renameDoctor() {
     target.renamedDoctor = true;
 }
 
-moveFromOpticord();
-importLegacySettings();
-renameDoctor();
+if (accessAtBoot()) {
+    moveFromOpticord();
+    importLegacySettings();
+    renameDoctor();
+}
 
 type Feature = Record<string, any> & { name: string; description: string; patches?: any[]; };
 
@@ -555,7 +560,7 @@ function missingRequirement(key: string): string | undefined {
 // (Ctrl+R / "Apply" — a window reload, not a full client restart).
 const bootActive = new Map<string, boolean>();
 function activeAtBoot(key: string): boolean {
-    if (!bootActive.has(key)) bootActive.set(key, wantsToRun(key));
+    if (!bootActive.has(key)) bootActive.set(key, accessAtBoot() && wantsToRun(key));
     return bootActive.get(key)!;
 }
 
@@ -601,6 +606,7 @@ const fluxSubscriptions = new Map<string, [string, (e: any) => any][]>();
 let qolRunning = false;
 
 function startFeature(key: string) {
+    if (!canUseSonata()) return;
     if (running.has(key)) return;
     const f = FEATURES[key];
     // Timed, and any failure kept, for Sonata Insights.
@@ -660,7 +666,7 @@ function stopFeature(key: string) {
 
 /** Can this feature run right now, given what was patched at load? */
 function canRunNow(key: string) {
-    return hasPatches(key) ? activeAtBoot(key) : wantsToRun(key);
+    return canUseSonata() && (hasPatches(key) ? activeAtBoot(key) : wantsToRun(key));
 }
 
 function setFeatureOn(key: string, on: boolean) {
@@ -821,6 +827,9 @@ function scopeOptionDef(key: string, def: PluginSettingDef, ownSettings: any): P
 }
 
 const qolDef: SettingsDefinition = {
+    sonataAccessOrigin: { type: OptionType.STRING, description: "Activation service for this build.", default: "", hidden: true },
+    sonataAccessUser: { type: OptionType.STRING, description: "Last verified activation account.", default: "", hidden: true },
+    sonataAccessUntil: { type: OptionType.NUMBER, description: "Last verified activation expiry.", default: 0, hidden: true },
     overview: {
         type: OptionType.COMPONENT,
         component: () => <Overview />,
@@ -1159,6 +1168,7 @@ const plugin = definePlugin({
     // collects the running features' actions and shows them under its name.
     toolboxActions() {
         const items: ReactNode[] = [];
+        if (ACCESS_ENABLED) items.push(<Menu.MenuItem id="sonata-account" key="sonata-account" label="Sonata account" action={openAccessPanel} />);
         for (const key of ORDER) {
             const actions = running.has(key) ? FEATURES[key].toolboxActions : null;
             if (!actions) continue;
@@ -1175,11 +1185,31 @@ const plugin = definePlugin({
         return items;
     },
 
+    flux: {
+        CONNECTION_OPEN(): void {
+            if (!ACCESS_ENABLED) return;
+            if (qolRunning) plugin.stopContents();
+            stopAccess();
+            plugin.start();
+        },
+    },
+
     start() {
+        if (!ACCESS_ENABLED) { this.startContents(); return; }
+        startAccess(result => {
+            const reload = rememberAccess(result);
+            if (result.status !== "allowed" && qolRunning) this.stopContents();
+            if (reload) { location.reload(); return; }
+            if (result.status === "allowed") { if (!qolRunning) this.startContents(); }
+            else openAccessPanel();
+        });
+    },
+
+    startContents() {
         // Rainbow was replaced by Seasons & holidays.
         if ((settings.store.sonataAccentMode as string) === "rainbow") settings.store.sonataAccentMode = "seasonal";
         // Sonata's own dock button: always there, always first.
-        addDockButton(PINNED_DOCK_ID, { icon: SonataIcon, tooltipText: "Sonata", onClick: () => openSonata(api), priority: -1000 });
+        addDockButton(PINNED_DOCK_ID, { icon: SonataIcon, tooltipText: "Sonata", onClick: () => openPage(), priority: -1000 });
         // Every right-click menu gets one "Sonata" submenu holding everything Sonata adds to it.
         installSonataMenus(() => openPage());
         startAlbumWatch();
@@ -1223,6 +1253,11 @@ const plugin = definePlugin({
     },
 
     stop() {
+        stopAccess();
+        if (qolRunning) this.stopContents();
+    },
+
+    stopContents() {
         removeDockButton(PINNED_DOCK_ID);
         stopUtilities();
         for (const key of [...running]) stopFeature(key);

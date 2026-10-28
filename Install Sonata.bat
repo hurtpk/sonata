@@ -4,7 +4,7 @@ title Sonata installer
 cd /d "%~dp0"
 
 rem  Sonata installer and updater.
-rem  Not installed yet: installs Git, Node.js and pnpm if they're missing,
+rem  Not installed yet: prepares Git, a supported Node.js and the required pnpm,
 rem  downloads Equicord and Sonata, builds them and installs them into Discord.
 rem  Already installed: checks GitHub for a newer Sonata, shows what changed,
 rem  and updates it if you say yes - or repairs it (rebuild and reconnect),
@@ -52,7 +52,7 @@ echo                          SONATA INSTALLER
 echo  ==============================================================
 echo.
 echo   This will:
-echo     1. Install Git, Node.js and pnpm, only if you don't have them
+echo     1. Prepare Git, a supported Node.js and Equicord's required pnpm
 echo     2. Download Equicord into your Documents folder
 echo     3. Download Sonata, build it, and install it into Discord
 echo.
@@ -81,33 +81,6 @@ if errorlevel 1 goto :restartneeded
 :hasgit
 echo   Git: OK
 
-rem ---- Node.js 22 or newer ----
-call :step "Checking for Node.js"
-where node >nul 2>nul
-if not errorlevel 1 goto :hasnode
-echo   Node.js isn't installed - installing it now...
-call :installnode
-call :knownpaths
-where node >nul 2>nul
-if errorlevel 1 goto :restartneeded
-:hasnode
-for /f "tokens=1 delims=." %%v in ('node -v') do set "NODEV=%%v"
-set "NODEV=%NODEV:v=%"
-if %NODEV% LSS 22 goto :oldnode
-echo   Node.js: OK
-
-rem ---- pnpm ----
-call :step "Checking for pnpm"
-where pnpm >nul 2>nul
-if not errorlevel 1 goto :haspnpm
-echo   pnpm isn't installed - installing it now...
-call npm install -g pnpm
-call :knownpaths
-where pnpm >nul 2>nul
-if errorlevel 1 goto :restartneeded
-:haspnpm
-echo   pnpm: OK
-
 call :step "Getting Equicord"
 if exist "%EQ%\package.json" (
     echo   Found Equicord already in "%EQ%" - using that.
@@ -132,8 +105,10 @@ if errorlevel 1 goto :failed
 :build
 call :matchequicord
 cd /d "%EQ%"
+call :preparetools
+if errorlevel 1 goto :failed
 call :step "Installing Equicord's parts (this is the slow bit)"
-call pnpm install
+call pnpm install --no-frozen-lockfile
 if errorlevel 1 goto :failed
 call :sonataparts
 if errorlevel 1 goto :failed
@@ -181,9 +156,12 @@ echo   Sonata is already installed in:
 echo     %TARGET%
 echo.
 where git >nul 2>nul
+if not errorlevel 1 goto :updategitready
+call :installgit
+call :knownpaths
+where git >nul 2>nul
 if errorlevel 1 goto :nogit
-where pnpm >nul 2>nul
-if errorlevel 1 goto :nopnpm
+:updategitready
 call :versionof "%TARGET%" CUR
 
 rem  This installer sits in a different "sonata" folder: offer that copy.
@@ -551,30 +529,74 @@ if errorlevel 8 exit /b 1
 echo   Copied Sonata from this folder into "%TARGET%".
 exit /b 0
 
-rem  Rebuilds Equicord with Sonata (installing Equicord's parts first if they're
-rem  missing or Equicord just changed version).
+rem  Rebuilds Equicord with Sonata after preparing tools and refreshing its parts.
 :rebuild
 set "EQCHANGED=0"
 call :matchequicord
 cd /d "%EQ%"
-if not exist "%EQ%\node_modules" set "EQCHANGED=1"
-if "%EQCHANGED%"=="1" (
-    call :step "Installing Equicord's parts"
-    call pnpm install
-    if errorlevel 1 exit /b 1
-)
+call :preparetools
+if errorlevel 1 exit /b 1
+call :step "Refreshing Equicord's parts"
+call pnpm install --no-frozen-lockfile
+if errorlevel 1 exit /b 1
 call :sonataparts
 if errorlevel 1 exit /b 1
 call :step "Building"
 call pnpm build
 exit /b %errorlevel%
 
+:preparetools
+call :knownpaths
+call :step "Checking for Node.js"
+set "NODEV=0"
+for /f "tokens=1 delims=." %%v in ('node -v 2^>nul') do set "NODEV=%%v"
+set "NODEV=%NODEV:v=%"
+if %NODEV% GEQ 22 goto :toolnodeok
+echo   Installing or updating Node.js to a supported LTS version...
+call :installnode
+call :knownpaths
+set "NODEV=0"
+for /f "tokens=1 delims=." %%v in ('node -v 2^>nul') do set "NODEV=%%v"
+set "NODEV=%NODEV:v=%"
+if %NODEV% GEQ 22 goto :toolnodeok
+echo   Node.js 22 or newer is still unavailable. Restart this installer after Node.js finishes installing.
+exit /b 1
+:toolnodeok
+where npm >nul 2>nul
+if errorlevel 1 (
+    echo   npm is unavailable. Repair the Node.js installation and run this installer again.
+    exit /b 1
+)
+set "PNPM_REQUIRED="
+for /f "delims=" %%v in ('node -p "(require(process.env.EQ+'/package.json').packageManager||'').match(/^pnpm@([0-9]+\.[0-9]+\.[0-9]+)(?:\+[^ ]+)?$/)?.[1]||''"') do set "PNPM_REQUIRED=%%v"
+if not defined PNPM_REQUIRED (
+    echo   Couldn't read Equicord's required pnpm version from package.json.
+    exit /b 1
+)
+set "SONATA_TOOLS=%LOCALAPPDATA%\Sonata\tools"
+set "PNPM_FOUND="
+if exist "%SONATA_TOOLS%\pnpm.cmd" for /f %%v in ('call "%SONATA_TOOLS%\pnpm.cmd" --version 2^>nul') do set "PNPM_FOUND=%%v"
+if "%PNPM_FOUND%"=="%PNPM_REQUIRED%" goto :toolpnpmok
+call :step "Preparing pnpm %PNPM_REQUIRED%"
+call npm install --global --prefix "%SONATA_TOOLS%" "pnpm@%PNPM_REQUIRED%" --no-audit --no-fund
+if errorlevel 1 exit /b 1
+set "PNPM_FOUND="
+if exist "%SONATA_TOOLS%\pnpm.cmd" for /f %%v in ('call "%SONATA_TOOLS%\pnpm.cmd" --version 2^>nul') do set "PNPM_FOUND=%%v"
+if not "%PNPM_FOUND%"=="%PNPM_REQUIRED%" (
+    echo   Couldn't prepare pnpm %PNPM_REQUIRED%. Check the installation output above.
+    exit /b 1
+)
+:toolpnpmok
+set "PATH=%SONATA_TOOLS%;%PATH%"
+echo   Node.js: %NODEV% or newer. pnpm: %PNPM_FOUND%.
+exit /b 0
+
 rem  The folders Git, Node.js, pnpm and winget install to, added to this window's
 rem  PATH if they exist, so a fresh install works without opening a new window.
 :knownpaths
 if exist "%ProgramFiles%\Git\cmd\git.exe" set "PATH=%PATH%;%ProgramFiles%\Git\cmd"
 if exist "%LOCALAPPDATA%\Programs\Git\cmd\git.exe" set "PATH=%PATH%;%LOCALAPPDATA%\Programs\Git\cmd"
-if exist "%ProgramFiles%\nodejs\node.exe" set "PATH=%PATH%;%ProgramFiles%\nodejs"
+if exist "%ProgramFiles%\nodejs\node.exe" set "PATH=%ProgramFiles%\nodejs;%PATH%"
 if exist "%APPDATA%\npm\pnpm.cmd" set "PATH=%PATH%;%APPDATA%\npm"
 if exist "%LOCALAPPDATA%\Microsoft\WindowsApps\winget.exe" set "PATH=%PATH%;%LOCALAPPDATA%\Microsoft\WindowsApps"
 exit /b 0
@@ -611,6 +633,7 @@ rem  Node.js: through winget, or (without it) the LTS installer from nodejs.org.
 call :findwinget
 if errorlevel 1 goto :installnodedirect
 winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-package-agreements --accept-source-agreements
+if errorlevel 1 goto :installnodedirect
 exit /b 0
 :installnodedirect
 echo   Downloading Node.js from its official site ^(nodejs.org^)...
@@ -798,20 +821,6 @@ exit /b 0
 :nogit
 echo   Git isn't installed, so this can't check for updates.
 echo   Install it with:  winget install Git.Git   - then run this again.
-pause
-exit /b 1
-
-:nopnpm
-echo   pnpm isn't installed, so Sonata can't be rebuilt.
-echo   Install it with:  npm install -g pnpm   - then run this again.
-pause
-exit /b 1
-
-:oldnode
-echo.
-echo   Your Node.js is version %NODEV%, but Equicord needs 22 or newer.
-echo   Update it with:  winget upgrade OpenJS.NodeJS.LTS
-echo   Then run this again.
 pause
 exit /b 1
 

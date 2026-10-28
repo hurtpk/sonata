@@ -69,8 +69,8 @@ function equicordRoot() {
 /** Runs a command with no window. The arguments are always fixed here, never typed by anyone. */
 function run(cmd: string, args: string[], cwd: string, ms = 600_000): Promise<{ code: number; out: string; }> {
     return new Promise(resolve => {
-        const extra = [process.env.ProgramFiles && join(process.env.ProgramFiles, "Git", "cmd"), process.env.ProgramFiles && join(process.env.ProgramFiles, "nodejs"), process.env.APPDATA && join(process.env.APPDATA, "npm")].filter(Boolean);
-        const env = { ...process.env, PATH: [process.env.PATH, ...extra].join(delimiter), CI: "1", FORCE_COLOR: "0" };
+        const extra = [process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, "Sonata", "tools"), process.env.ProgramFiles && join(process.env.ProgramFiles, "Git", "cmd"), process.env.ProgramFiles && join(process.env.ProgramFiles, "nodejs"), process.env.APPDATA && join(process.env.APPDATA, "npm")].filter(Boolean);
+        const env = { ...process.env, PATH: [...extra, process.env.PATH].join(delimiter), CI: "1", FORCE_COLOR: "0" };
         // pnpm is a .cmd file on Windows, which needs a shell to start: one command line, with
         // paths quoted (a Windows user name can have spaces in it).
         const viaShell = process.platform === "win32" && cmd === "pnpm";
@@ -136,12 +136,10 @@ async function doUpdate(eq: string) {
         }
     }
 
-    // 3. New parts: Equicord's (only if it changed version, or they're missing) and Sonata's own.
+    // 3. Equicord's parts and Sonata's own.
     j.step = "parts";
-    if (j.equicordChanged || !existsSync(join(eq, "node_modules"))) {
-        const inst = await run("pnpm", ["install"], eq);
-        if (inst.code !== 0) return fail("Couldn't install Equicord's parts.", inst.out);
-    }
+    const inst = await run("pnpm", ["install", "--no-frozen-lockfile"], eq);
+    if (inst.code !== 0) return fail("Couldn't refresh Equicord's dependencies before rebuilding.", inst.out);
     if (existsSync(join(sonata, "package.json"))) {
         const parts = await run("pnpm", ["install", "--dir", sonata, "--ignore-workspace", "--lockfile=false", "--prod", "--no-optional"], eq);
         if (parts.code !== 0) return fail("Couldn't install Sonata's parts.", parts.out);
