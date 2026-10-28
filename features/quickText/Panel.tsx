@@ -9,6 +9,7 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { KINDS } from "../wallet/kinds";
@@ -164,4 +165,6 @@ function QuickTextModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 }
 
-export const openQuickText = () => openModal(props => <QuickTextModal modalProps={props} />);
+export const openQuickText = () => openSection("writingAssistant", "quickText", props => renderQuickText(props));
+
+export function renderQuickText(props: RenderModalProps) { return (<QuickTextModal modalProps={props} />); }

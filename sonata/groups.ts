@@ -17,6 +17,7 @@ export interface Group {
     members: string[];
     /** Its parts share one window (features/_shared/Hub.tsx). */
     window?: boolean;
+    aliasOf?: string;
 }
 
 export const GROUPS: Record<string, Group> = {
@@ -71,11 +72,13 @@ export const GROUPS: Record<string, Group> = {
         members: ["voiceMessages", "voiceDownload"],
     },
     invites: {
+        aliasOf: "serverTools",
         name: "Invites",
         description: "See when an invite runs out and who made it, preview a server before joining, and every invite you've made in one list.",
         members: ["betterInvites", "inviteManager"],
     },
     serverInsights: {
+        aliasOf: "serverTools",
         name: "Server Insights",
         description: "One Server Insights window for any server (its details, every role with what it can do and who has it, and a member look-up), plus channels you can't open, how long a timeout lasts, and the owner's crown in big servers.",
         members: ["serverInfo", "permissionsViewer", "showHiddenChannels", "showTimeoutDuration", "forceOwnerCrown"],
@@ -94,6 +97,36 @@ export const GROUPS: Record<string, Group> = {
         name: "Appearance",
         description: "Make Discord look your way in one window: your own theme (colours, background, motion, message bubbles), the font and text size, and how new messages come in.",
         members: ["themeStudio", "fontSwapper", "smoothChat"],
+    },
+    people: {
+        name: "People",
+        description: "Your private person tags, birthdays, conversation streaks and assigned timezones in one place.",
+        members: ["personTags", "birthdayReminders", "streaks", "timezones"],
+        window: true,
+    },
+    planner: {
+        name: "Planner",
+        description: "Your calendar, reminders, channel checklists and scheduled messages in one window.",
+        members: ["calendar", "reminders", "todoLists", "scheduledMessages"],
+        window: true,
+    },
+    voiceCalls: {
+        name: "Voice & Calls",
+        description: "Call timers, automatic volume balance, call history and idle-call settings together.",
+        members: ["callTimer", "autoVolume", "voiceTimeline", "disableCallIdle"],
+        window: true,
+    },
+    writingAssistant: {
+        name: "Writing Assistant",
+        description: "Quick Text snippets, typo correction, translation and reading messages aloud in one place.",
+        members: ["quickText", "autoCorrect", "translate", "readAloud"],
+        window: true,
+    },
+    serverTools: {
+        name: "Server Tools",
+        description: "Server insights, permissions, invites, local names, AutoMod regex, private member evidence logs and active timeouts in one window.",
+        members: ["serverInfo", "permissionsViewer", "showHiddenChannels", "showTimeoutDuration", "forceOwnerCrown", "betterInvites", "inviteManager", "localNames", "autoModRegex", "memberLogs", "activeTimeouts"],
+        window: true,
     },
 };
 

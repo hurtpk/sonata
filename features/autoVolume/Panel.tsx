@@ -11,9 +11,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, openModal, useEffect, useReducer, UserStore, useState } from "@webpack/common";
+import { ChannelStore, useEffect, useReducer, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { activity, allowAlways, inCall, LogEntry, onBalancerChange, peopleNow, PersonState, release, resetEveryone, unmuteNow } from "./balancer";
@@ -216,6 +217,8 @@ function AutoVolumeModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 }
 
-export function openAutoVolume() {
-    openModal(props => <AutoVolumeModal modalProps={props} />);
+export function openAutoVolume() { openSection("voiceCalls", "autoVolume", props => renderAutoVolume(props)); }
+
+export function renderAutoVolume(props: RenderModalProps) {
+    return (<AutoVolumeModal modalProps={props} />);
 }

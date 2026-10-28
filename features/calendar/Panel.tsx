@@ -9,10 +9,11 @@ import { openPrivateChannel } from "@utils/discord";
 import { classes } from "@utils/misc";
 import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, NavigationRouter, openModal, showToast, useEffect, useMemo, useState } from "@webpack/common";
+import { ChannelStore, NavigationRouter, showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { isFeatureRunning } from "../../featureSettings";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { useBirthdays } from "../birthdayReminders/store";
@@ -343,6 +344,8 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
     );
 }
 
-export function openCalendar(weekStart: 0 | 1, sources: SourceOptions, setSource: (k: keyof SourceOptions, v: boolean) => void) {
-    openModal(props => <CalendarModal modalProps={props} weekStart={weekStart} sources={sources} setSource={setSource} />);
+export function openCalendar(weekStart: 0 | 1, sources: SourceOptions, setSource: (k: keyof SourceOptions, v: boolean) => void) { openSection("planner", "calendar", props => renderCalendar(props, weekStart, sources, setSource)); }
+
+export function renderCalendar(props: RenderModalProps, ...[weekStart, sources, setSource]: Parameters<typeof openCalendar>) {
+    return (<CalendarModal modalProps={props} weekStart={weekStart} sources={sources} setSource={setSource} />);
 }

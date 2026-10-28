@@ -7,6 +7,7 @@
 import type { RenderModalProps } from "@vencord/discord-types";
 import { ChannelStore, GuildRoleStore, GuildStore, openModal, useRef, useState } from "@webpack/common";
 
+import { openSection } from "../_shared/Hub";
 import { Window } from "../_shared/Window";
 import { FormGroup, FormRow } from "../_shared/WindowParts";
 import { iconFrom, Kind, setLocalIcon, setLocalName, setLocalRole, useNames } from "./store";
@@ -227,4 +228,6 @@ function AllNamesWindow({ modalProps, real, realRole }: { modalProps: RenderModa
     );
 }
 
-export const openAllNames = (real: RealName, realRole: (role: any) => string) => openModal(props => <AllNamesWindow modalProps={props} real={real} realRole={realRole} />);
+export const openAllNames = (real: RealName, realRole: (role: any) => string) => openSection("serverTools", "localNames", props => renderAllNames(props, real, realRole));
+
+export function renderAllNames(props: RenderModalProps, ...[real, realRole]: Parameters<typeof openAllNames>) { return (<AllNamesWindow modalProps={props} real={real} realRole={realRole} />); }

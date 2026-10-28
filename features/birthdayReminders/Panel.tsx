@@ -9,10 +9,11 @@ import { classNameFactory } from "@utils/css";
 import { openPrivateChannel } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, IconUtils, openModal, RelationshipStore, showToast, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
+import { ChannelStore, IconUtils, RelationshipStore, showToast, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
 
 import { isFeatureRunning } from "../../featureSettings";
 import { playEffect } from "../_shared/effects";
+import { openSection } from "../_shared/Hub";
 import { Window } from "../_shared/Window";
 import { openScheduler } from "../scheduledMessages/Panel";
 import { Birthday, colorOf, daysInMonth, daysUntil, formatDate, MONTH_COLORS, MONTHS, nextOccurrence, sortByUpcoming, turning } from "./dates";
@@ -405,6 +406,8 @@ function BirthdayModal({ modalProps, focusUserId, hour, confetti }: { modalProps
     );
 }
 
-export function openBirthdays(focusUserId: string | undefined, hour: number, confetti = true) {
-    openModal(props => <BirthdayModal modalProps={props} focusUserId={focusUserId} hour={hour} confetti={confetti} />);
+export function openBirthdays(focusUserId: string | undefined, hour: number, confetti = true) { openSection("people", "birthdayReminders", props => renderBirthdays(props, focusUserId, hour, confetti)); }
+
+export function renderBirthdays(props: RenderModalProps, ...[focusUserId, hour, confetti = true]: Parameters<typeof openBirthdays>) {
+    return (<BirthdayModal modalProps={props} focusUserId={focusUserId} hour={hour} confetti={confetti} />);
 }

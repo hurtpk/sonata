@@ -7,8 +7,9 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildMemberStore, GuildStore, openModal, useEffect, UserStore, useState } from "@webpack/common";
+import { ChannelStore, GuildMemberStore, GuildStore, useEffect, UserStore, useState } from "@webpack/common";
 
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { windowAccent } from "./accent";
@@ -223,6 +224,8 @@ function TimelineModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 }
 
-export function openTimeline() {
-    openModal(props => <TimelineModal modalProps={props} />);
+export function openTimeline() { openSection("voiceCalls", "voiceTimeline", props => renderTimeline(props)); }
+
+export function renderTimeline(props: RenderModalProps) {
+    return (<TimelineModal modalProps={props} />);
 }

@@ -7,9 +7,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, showToast, useEffect, useReducer, useState } from "@webpack/common";
+import { showToast, useEffect, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { playSound } from "./Banner";
@@ -147,6 +148,8 @@ function RemindersModal({ modalProps, draft, defaultColor }: { modalProps: Rende
     );
 }
 
-export function openReminders(defaultColor: ColorId, draft: Draft | null = null) {
-    openModal(props => <RemindersModal modalProps={props} draft={draft} defaultColor={defaultColor} />);
+export function openReminders(defaultColor: ColorId, draft: Draft | null = null) { openSection("planner", "reminders", props => renderReminders(props, defaultColor, draft)); }
+
+export function renderReminders(props: RenderModalProps, ...[defaultColor, draft = null]: Parameters<typeof openReminders>) {
+    return (<RemindersModal modalProps={props} draft={draft} defaultColor={defaultColor} />);
 }

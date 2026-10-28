@@ -7,9 +7,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, NavigationRouter, openModal, UserStore, useState } from "@webpack/common";
+import { ChannelStore, NavigationRouter, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { atRiskNow, settings, todayNote, useStreaks } from "./index";
@@ -93,6 +94,8 @@ function StreaksModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 }
 
-export function openStreaks() {
-    openModal(props => <StreaksModal modalProps={props} />);
+export function openStreaks() { openSection("people", "streaks", props => renderStreaks(props)); }
+
+export function renderStreaks(props: RenderModalProps) {
+    return (<StreaksModal modalProps={props} />);
 }

@@ -7,9 +7,10 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, SelectedChannelStore, useEffect, useState } from "@webpack/common";
+import { SelectedChannelStore, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { sendOne } from "./scheduler";
@@ -333,7 +334,9 @@ function SchedulerModal({ modalProps, initialChannelId, prefill }: { modalProps:
     );
 }
 
-export function openScheduler(channelId?: string, prefill?: Prefill) {
+export function openScheduler(channelId?: string, prefill?: Prefill) { openSection("planner", "scheduledMessages", props => renderScheduler(props, channelId, prefill)); }
+
+export function renderScheduler(props: RenderModalProps, ...[channelId, prefill]: Parameters<typeof openScheduler>) {
     const id = channelId ?? SelectedChannelStore.getChannelId() ?? undefined;
-    openModal(props => <SchedulerModal modalProps={props} initialChannelId={id} prefill={prefill} />);
+    return (<SchedulerModal modalProps={props} initialChannelId={id} prefill={prefill} />);
 }

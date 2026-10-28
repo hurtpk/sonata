@@ -14,9 +14,10 @@
 import ErrorBoundary from "@components/ErrorBoundary";
 import type { Guild, RenderModalProps, RoleOrUserPermission } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
-import { GuildRoleStore, Menu, openModal, React, useEffect, useState } from "@webpack/common";
+import { GuildRoleStore, Menu, React, useEffect, useState } from "@webpack/common";
 
 import { isFeatureRunning } from "../../featureSettings";
+import { openSection } from "../_shared/Hub";
 import { embeddedContext, Window } from "../_shared/Window";
 import { MemberLookupModal } from "./permissionsViewer/components/MemberLookup";
 import { RolesAndUsersPermissions } from "./permissionsViewer/components/RolesAndUsersPermissions";
@@ -34,7 +35,7 @@ const tabsNow = (): [InsightsTab, string][] => [
 /** The open window: opening Insights again switches it rather than stacking another. */
 let live: { guildId: string; go(tab: InsightsTab, opts: InsightsOpts): void; } | null = null;
 
-function InsightsWindow({ modalProps, guild, start, startOpts }: { modalProps: RenderModalProps; guild: Guild; start?: InsightsTab; startOpts: InsightsOpts; }) {
+export function InsightsWindow({ modalProps, guild, start, startOpts, tools }: { modalProps: RenderModalProps; guild: Guild; start?: InsightsTab; startOpts: InsightsOpts; tools?: React.ReactNode; }) {
     const tabs = tabsNow();
     const [tab, setTab] = useState<InsightsTab>(() => tabs.find(([id]) => id === start)?.[0] ?? tabs[0]?.[0] ?? "overview");
     const [opts, setOpts] = useState<InsightsOpts>(startOpts);
@@ -52,7 +53,7 @@ function InsightsWindow({ modalProps, guild, start, startOpts }: { modalProps: R
     const roles = (): RoleOrUserPermission[] => GuildRoleStore.getSortedRoles(guild.id).map(role => ({ type: PermissionOverwriteType.ROLE, ...role })) as any;
 
     return (
-        <Window {...modalProps} size="xl" title="Server Insights" subtitle={guild.name}
+        <Window {...modalProps} size="xl" title="Server Insights" subtitle={guild.name} tools={tools}
             tabs={tabs.length > 1 ? tabs : undefined} tab={tab} onTab={id => { setTab(id as InsightsTab); setOpts({}); }}
             status={[guild.name, tab === "overview" ? "About this server" : tab === "roles" ? "Pick a role to see what it can do and who has it" : "Look someone up by ID, @mention or username"]}>
             <Embedded value>
@@ -71,7 +72,7 @@ function InsightsWindow({ modalProps, guild, start, startOpts }: { modalProps: R
 
 export function openInsights(guild: Guild, tab?: InsightsTab, opts: InsightsOpts = {}) {
     if (live?.guildId === guild.id) { live.go(tab ?? tabsNow()[0]?.[0] ?? "overview", opts); return; }
-    openModal(props => <InsightsWindow modalProps={props} guild={guild} start={tab} startOpts={opts} />);
+    openSection("serverTools", "serverInfo", props => <InsightsWindow modalProps={props} guild={guild} start={tab} startOpts={opts} />);
 }
 
 /** The one item on a server's right-click menu (added once, whichever part is switched on). */

@@ -8,9 +8,10 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildStore, NavigationRouter, openModal, showToast, useEffect, useReducer, UserStore, useState } from "@webpack/common";
+import { ChannelStore, GuildStore, NavigationRouter, showToast, useEffect, useReducer, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { newReminder, remindersRunning } from "../reminders";
@@ -172,6 +173,8 @@ function TodoModal({ modalProps, channelId }: { modalProps: RenderModalProps; ch
     );
 }
 
-export function openTodo(channelId: string | null) {
-    openModal(props => <TodoModal modalProps={props} channelId={channelId} />);
+export function openTodo(channelId: string | null) { openSection("planner", "todoLists", props => renderTodo(props, channelId)); }
+
+export function renderTodo(props: RenderModalProps, ...[channelId]: Parameters<typeof openTodo>) {
+    return (<TodoModal modalProps={props} channelId={channelId} />);
 }

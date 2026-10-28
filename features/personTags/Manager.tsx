@@ -14,6 +14,7 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { IconUtils, openModal, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { LookPicker, TagChip } from "./LookPicker";
@@ -129,7 +130,7 @@ function ManagerModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 }
 
-export const openTagManager = () => openModal(props => <ErrorBoundary><ManagerModal modalProps={props} /></ErrorBoundary>);
+export const openTagManager = () => openSection("people", "personTags", props => renderTagManager(props));
 
 function NewTagModal({ modalProps, onMade }: { modalProps: RenderModalProps; onMade(t: Tag): void; }) {
     return (
@@ -140,3 +141,5 @@ function NewTagModal({ modalProps, onMade }: { modalProps: RenderModalProps; onM
 }
 
 export const openNewTag = (onMade: (t: Tag) => void) => openModal(props => <ErrorBoundary><NewTagModal modalProps={props} onMade={onMade} /></ErrorBoundary>);
+
+export function renderTagManager(props: RenderModalProps) { return (<ErrorBoundary><ManagerModal modalProps={props} /></ErrorBoundary>); }

@@ -46,13 +46,16 @@ import { FluxDispatcher, Menu, showToast } from "@webpack/common";
 import type { ReactNode } from "react";
 
 import { FeatureStatus, openOptions, QolApi } from "./controller/ControlCenter";
-import { openGroup } from "./features/_shared/Hub";
+import { groupSections, openGroup } from "./features/_shared/Hub";
+import { installMergedWindows } from "./features/_shared/mergedWindows";
+import activeTimeouts from "./features/activeTimeouts";
 import anonymiseFileNames from "./features/anonymiseFileNames";
 import antiquest from "./features/antiquest";
 import fontSwapper from "./features/appearance/fontSwapper";
 import smoothChat from "./features/appearance/smoothChat";
 import themeStudio from "./features/appearance/themeStudio";
 import autoCorrect from "./features/autoCorrect";
+import autoModRegex from "./features/autoModRegex";
 import autoReact from "./features/autoReact";
 import autoVolume from "./features/autoVolume";
 import birthdayReminders from "./features/birthdayReminders";
@@ -98,6 +101,7 @@ import gifMaker from "./features/mediaTools/gifMaker";
 import mediaDownloader from "./features/mediaTools/mediaDownloader";
 import screenshotStyler from "./features/mediaTools/screenshotStyler";
 import videoEditor from "./features/mediaTools/videoEditor";
+import memberLogs from "./features/memberLogs";
 import messageCleanerUtil from "./features/messageCleanerUtil";
 import messageLogger from "./features/messageLogger/messageLogger";
 import messageLoggerEnhanced from "./features/messageLogger/messageLoggerEnhanced";
@@ -156,6 +160,7 @@ import charactersPicker from "./features/textStyles/charactersPicker";
 import coloredText from "./features/textStyles/coloredText";
 import fancyText from "./features/textStyles/fancyText";
 import tiktokTracker from "./features/tiktokTracker";
+import timezones from "./features/timezones";
 import todoLists from "./features/todoLists";
 import translate from "./features/translate";
 import typingSounds from "./features/typingSounds";
@@ -309,6 +314,7 @@ type Feature = Record<string, any> & { name: string; description: string; patche
 
 /** Feature key (its folder name) -> the original plugin object. */
 const FEATURES: Record<string, Feature> = {
+    activeTimeouts, memberLogs, timezones,
     anonymiseFileNames, callTimer, crashHandler, disableCallIdle, forceOwnerCrown,
     imageFilename, imageLink, imageZoom, messageLogger, messageLoggerEnhanced, mutualGroupDMs,
     noUnblockToJump, onePingPerDM, permissionsViewer, pinDms, readAllNotificationsButton,
@@ -327,7 +333,7 @@ const FEATURES: Record<string, Feature> = {
     typingSounds, autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
     smoothChat, currencyConverter, giftWrap, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
     reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges, localNames, games, packageTracker, weather, showTracker, radio, discordStatus,
-    antimod, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
+    antimod, autoModRegex, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
 
 /**
@@ -994,7 +1000,7 @@ const isGroup = (key: string) => Object.prototype.hasOwnProperty.call(GROUPS, ke
 const membersOf = (key: string) => isGroup(key) ? GROUPS[key].members.filter(m => FEATURES[m]) : [key];
 const cardName = (key: string) => isGroup(key) ? GROUPS[key].name : displayName(key);
 /** What the Features page lists: each group once, instead of its parts. */
-const CARDS = [...ORDER.filter(k => !GROUP_OF[k]), ...Object.keys(GROUPS)].sort((a, b) => cardName(a).localeCompare(cardName(b)));
+const CARDS = [...ORDER.filter(k => !GROUP_OF[k]), ...Object.keys(GROUPS).filter(key => !GROUPS[key].aliasOf)].sort((a, b) => cardName(a).localeCompare(cardName(b)));
 
 function groupStatus(key: string): FeatureStatus {
     const all = membersOf(key).map(statusOf);
@@ -1002,7 +1008,9 @@ function groupStatus(key: string): FeatureStatus {
     return all.includes("active") ? "active" : "off";
 }
 const anyRunning = (key: string) => membersOf(key).some(m => running.has(m));
-const groupHasWindow = (key: string) => isGroup(key) && membersOf(key).some(m => running.has(m) && typeof (FEATURES[m] as any).openSettingsModal === "function");
+const groupHasWindow = (key: string) => isGroup(key) && (GROUPS[GROUPS[key].aliasOf ?? key].window
+    ? anyRunning(GROUPS[key].aliasOf ?? key) && groupSections(key).length > 0
+    : membersOf(key).some(m => running.has(m) && typeof (FEATURES[m] as any).openSettingsModal === "function"));
 function openGroupWindow(key: string) {
     if (openGroup(key)) return;
     // No part registered a window: the first one that has its own.
@@ -1046,6 +1054,8 @@ const api: QolApi = {
         if (on && pendingCount() > 0) scheduleAutoApply();
     },
 };
+
+installMergedWindows(api);
 
 // Sonata's features in the dock (Plugin Utilities → Dock → Add).
 const hasOptions = (key: string) => (optionKeysByFeature[key] ?? []).some(k => (settings.def as any)[k]?.type !== OptionType.CUSTOM);

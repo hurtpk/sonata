@@ -1,0 +1,23 @@
+/* AutoMod Regex — the shared window kit (_shared/tool.css) does most of it. */
+.vc-amr-wrap { container-type: inline-size; }
+.vc-amr-cols { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 18px; align-items: start; }
+@container (max-width: 640px) { .vc-amr-cols { grid-template-columns: minmax(0, 1fr); } }
+.vc-amr-left, .vc-amr-right { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.vc-amr-area { min-height: 180px; }
+.vc-amr-right { max-height: 56vh; overflow-y: auto; padding-right: 2px; }
+
+.vc-amr-rule {
+    display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: calc(16px * var(--sw-r, 1));
+    border: 1px solid var(--sw-line, color-mix(in srgb, var(--tl-accent) 28%, transparent));
+    background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 14%, transparent), hsl(0 0% 0% / 0.2) 70%));
+}
+.vc-amr-rule-head { display: flex; align-items: center; gap: 10px; }
+.vc-amr-rule-head b { color: var(--text-default, #fff); }
+
+.vc-amr-pat {
+    all: unset; box-sizing: border-box; cursor: pointer; display: block; padding: 7px 10px; border-radius: calc(10px * var(--sw-r, 1));
+    background: var(--sw-card, hsl(0 0% 0% / 0.28)); color: var(--text-default, var(--text-normal));
+    font-size: 12px; line-height: 1.4; word-break: break-all; transition: background 0.12s;
+}
+.vc-amr-pat:hover { background: hsl(from var(--tl-accent) h s l / 0.22); }
+.vc-amr-pat:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 1px; }

@@ -18,6 +18,7 @@ import { React, useState } from "@webpack/common";
 import type { ReactNode } from "react";
 
 import { featureIconKey } from "../../sonata/featureIcons";
+import { GROUPS as FEATURE_GROUPS } from "../../sonata/groups";
 import { DOCK_ICON_MAP } from "../../utilities/icons";
 
 /** What a part gets when it's opened with something (a picture pasted in chat, a file). */
@@ -27,6 +28,9 @@ export interface Section {
     id: string;
     /** The feature it belongs to (its switch decides whether it's listed). */
     feature: string;
+    features?: string[];
+    icon?: string;
+    order?: number;
     name: string;
     sub: string;
     render(props: RenderModalProps, input?: HubInput): ReactNode;
@@ -39,6 +43,11 @@ const GROUPS: Record<string, GroupInfo> = {
     textStyles: { title: "Text Styles", size: "lg" },
     safety: { title: "Safety", size: "lg" },
     profileTools: { title: "Profile Tools", size: "xl" },
+    people: { title: "People", size: "xl" },
+    planner: { title: "Planner", size: "xl" },
+    voiceCalls: { title: "Voice & Calls", size: "xl" },
+    writingAssistant: { title: "Writing Assistant", size: "lg" },
+    serverTools: { title: "Server Tools", size: "xl" },
 };
 
 const sections = new Map<string, Section[]>();
@@ -50,7 +59,11 @@ export function registerSection(group: string, s: Section) {
 }
 
 const isOn = (feature: string) => (Settings.plugins as any)?.Sonata?.[`on_${feature}`] !== false;
-export const groupSections = (group: string) => (sections.get(group) ?? []).filter(s => isOn(s.feature));
+export const groupSections = (group: string) => {
+    const key = FEATURE_GROUPS[group]?.aliasOf ?? group;
+    const members = FEATURE_GROUPS[key]?.members ?? [];
+    return (sections.get(key) ?? []).filter(s => (s.features ?? [s.feature]).some(isOn)).sort((a, b) => (a.order ?? members.indexOf(a.feature)) - (b.order ?? members.indexOf(b.feature)));
+};
 
 export interface HubInfo { title: string; size: string; rail: ReactNode; still: boolean; }
 // Made the first time it's needed: React isn't there yet when Equicord first loads this file.
@@ -64,7 +77,7 @@ function Rail({ list, current, pick }: { list: Section[]; current: string; pick(
     return (
         <>
             {list.map(s => {
-                const { Icon } = DOCK_ICON_MAP[featureIconKey(store, s.feature)] ?? DOCK_ICON_MAP.puzzle;
+                const { Icon } = DOCK_ICON_MAP[s.icon ?? featureIconKey(store, s.feature)] ?? DOCK_ICON_MAP.puzzle;
                 return (
                     <button key={s.id} type="button" className={classes("vc-sw-row", s.id === current && "vc-sw-row-on")} aria-pressed={s.id === current} onClick={() => pick(s.id)}>
                         <span className="vc-sw-pic" aria-hidden><Icon width={18} height={18} /></span>
@@ -120,6 +133,7 @@ function HubWindow({ modalProps, group, start, input: startInput, first }: { mod
  * picture you're editing).
  */
 export function openSection(group: string, id: string, render?: (p: RenderModalProps) => ReactNode, input?: HubInput) {
+    group = FEATURE_GROUPS[group]?.aliasOf ?? group;
     last[group] = id;
     const open = live[group];
     if (open) { open(id, render, input); return; }
@@ -128,6 +142,7 @@ export function openSection(group: string, id: string, render?: (p: RenderModalP
 
 /** Opens a group's window where you were last (Features page, dock). */
 export function openGroup(group: string) {
+    group = FEATURE_GROUPS[group]?.aliasOf ?? group;
     const list = groupSections(group);
     const id = last[group] && list.some(s => s.id === last[group]) ? last[group] : list[0]?.id;
     if (!id) return false;

@@ -20,9 +20,10 @@ import "../_shared/tool.css";
 
 import { classes } from "@utils/misc";
 import { RenderModalProps } from "@vencord/discord-types";
-import { openModal, SearchableSelect, useMemo } from "@webpack/common";
+import { SearchableSelect, useMemo } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { resetLanguageDefaults, settings } from "./settings";
@@ -130,6 +131,8 @@ export function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) 
     );
 }
 
-export function openTranslateModal() {
-    openModal(props => <TranslateModal rootProps={props} />);
+export function openTranslateModal() { openSection("writingAssistant", "translate", props => renderTranslateModal(props)); }
+
+export function renderTranslateModal(props: RenderModalProps) {
+    return (<TranslateModal rootProps={props} />);
 }

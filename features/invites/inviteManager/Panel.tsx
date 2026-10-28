@@ -8,9 +8,10 @@ import { copyToClipboard } from "@utils/clipboard";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, showToast, useEffect, useRef, useState } from "@webpack/common";
+import { showToast, useEffect, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { openSection } from "../../_shared/Hub";
 import { ToolHero } from "../../_shared/ToolHero";
 import { Window } from "../../_shared/Window";
 import { canRevoke, collectInvites, Progress, revokeInvite } from "./fetch";
@@ -197,6 +198,8 @@ function InviteModal({ modalProps, everyoneDefault, setEveryoneDefault }: { moda
     );
 }
 
-export function openInviteManager(everyoneDefault: boolean, setEveryoneDefault: (v: boolean) => void) {
-    openModal(props => <InviteModal modalProps={props} everyoneDefault={everyoneDefault} setEveryoneDefault={setEveryoneDefault} />);
+export function openInviteManager(everyoneDefault: boolean, setEveryoneDefault: (v: boolean) => void) { openSection("serverTools", "inviteManager", props => renderInviteManager(props, everyoneDefault, setEveryoneDefault)); }
+
+export function renderInviteManager(props: RenderModalProps, ...[everyoneDefault, setEveryoneDefault]: Parameters<typeof openInviteManager>) {
+    return (<InviteModal modalProps={props} everyoneDefault={everyoneDefault} setEveryoneDefault={setEveryoneDefault} />);
 }

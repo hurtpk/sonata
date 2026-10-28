@@ -1,0 +1,51 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-merged-select, .vc-merged-select::picker(select) {
+    appearance: base-select;
+}
+
+.vc-merged-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+.vc-merged-select::picker(select) {
+    position-try-order: normal;
+    margin-block: 6px;
+    padding: 5px;
+    max-height: min(360px, 60vh);
+    overflow: auto;
+    border: 1px solid var(--sw-line, var(--border-subtle));
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--sw-win, var(--background-floating)) 90%, transparent);
+    color: var(--text-default, var(--text-normal));
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 32px hsl(0deg 0% 0% / 30%);
+}
+
+.vc-sw .vc-merged-select option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: transparent;
+    white-space: normal;
+}
+
+.vc-sw .vc-merged-select option:checked, .vc-sw .vc-merged-select option:hover {
+    background: color-mix(in srgb, var(--sw-accent, var(--brand-500)) 16%, transparent);
+}
+
+.vc-merged-select option::checkmark {
+    color: var(--sw-accent, var(--brand-500));
+}

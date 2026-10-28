@@ -34,6 +34,7 @@ import { formatBytes, totalFreed } from "./cache";
 import { CacheCard } from "./CacheCard";
 import { CHANGELOG, LATEST, newerThan } from "./changelog";
 import { FeatureIcon, featureIconKey, featureIconsOn, hasPickedIcon, setFeatureIcon } from "./featureIcons";
+import { GROUP_OF, GROUPS } from "./groups";
 import { Note3D } from "./Note3D";
 import { DEFAULT_HOTKEY, DISCORD_OPTIONS, discordState, hasBackup, Impact, isOn, keyName, OPTIONS, prettyKey, putBack, setDiscord, setGaming, speedUp } from "./performance";
 import { ProfilesButton } from "./Profiles";
@@ -58,7 +59,7 @@ export const ACCENTS: { name: string; hex: string; }[] = [
 type StatusFilter = "all" | "on" | "off" | "pending";
 
 /** The features you pinned, in the order you pinned them. */
-const readPinned = (raw: unknown): string[] => { try { const v = JSON.parse(typeof raw === "string" && raw ? raw : "[]"); return Array.isArray(v) ? v.filter(x => typeof x === "string") : []; } catch { return []; } };
+const readPinned = (raw: unknown): string[] => { try { const v = JSON.parse(typeof raw === "string" && raw ? raw : "[]"); return Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string").map(key => GROUP_OF[key] ?? GROUPS[key]?.aliasOf ?? key))] : []; } catch { return []; } };
 
 const isPending = (s: FeatureStatus) => s === "apply-on" || s === "apply-off";
 const isLit = (s: FeatureStatus) => s === "active" || s === "apply-on";
@@ -155,9 +156,24 @@ function IconChooser({ featureKey, store }: { featureKey: string; store: any; })
 function FeatureOptions({ api, featureKey, pluginSettings }: { api: QolApi; featureKey: string; pluginSettings: any; }) {
     const keys = featureOptions(api, featureKey);
     const name = api.name(featureKey);
+    const parts = api.parts?.(featureKey);
     return (
         <div className="sonata-options" onClick={e => e.stopPropagation()}>
             <p className="sonata-options-desc">{api.description(featureKey)}</p>
+            {parts && (
+                <div className="sonata-options-list">
+                    {parts.map(part => {
+                        const partOn = api.isOn(part);
+                        const partName = api.partName?.(part) ?? api.name(part);
+                        return (
+                            <div key={part} className="sonata-field sonata-field-row">
+                                <span>{partName}</span>
+                                <GlassSwitch on={partOn} pending={isPending(api.status(part))} onChange={v => api.setOn(part, v)} label={`Turn ${partName} ${partOn ? "off" : "on"}`} />
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
             {api.hasWindow(featureKey) && (
                 <button type="button" className="sonata-btn sonata-btn-accent" onClick={() => api.openWindow(featureKey)}>Open {name}</button>
             )}

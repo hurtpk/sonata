@@ -5,8 +5,9 @@
  */
 
 // What's new in Sonata, newest first. "What's new" shows everything newer
-// than the last version you saw. Add an entry whenever something visible
-// changes; `version` only needs to sort correctly (a date works).
+// than the last version you saw. Keep changes in one entry until the user
+// asks to push to GitHub, then start a new entry for subsequent changes.
+// `version` only needs to sort correctly (a date works).
 
 export interface ChangeEntry {
     version: string;
@@ -16,6 +17,35 @@ export interface ChangeEntry {
 }
 
 export const CHANGELOG: ChangeEntry[] = [
+    {
+        version: "2026.10.27c",
+        date: "October 27, 2026",
+        title: "People, Planner, Server Tools and Exploit Reporter improvements",
+        items: [
+            { icon: "🧩", text: "Five more shared windows: People (Person Tags, Birthday Reminders, Streaks and Timezones), Planner (Calendar, Reminders, To-do Lists and Scheduled Messages), Voice & Calls (Call Timer, Auto Volume, Voice Timeline and Disable Call Idle), Writing Assistant (Quick Text, Auto Correct, Translate and Read Aloud), and Server Tools (Server Insights, Invites, Local Names and AutoMod Regex, plus Member Logs and Active Timeouts). Your settings and individual switches are kept. Relationship Tracker and Bot Manager stay separate." },
+            { icon: "🧹", text: "Server Tools has a shorter sidebar: Insights, Moderation, Invites, Local Names and Settings. Member Logs, Timeouts and AutoMod Regex are together under Moderation. Hidden channels, timeout duration, owner crown and Better Invites are settings rows now, with all their individual options kept." },
+            { icon: "🌎", text: "People has Timezones: right-click someone, open Sonata and choose Set Timezone. Search cities, countries, states, provinces or timezone names, then pick their region. Saved people show their current local time, with daylight-saving changes handled automatically. Your assignments are private." },
+            { icon: "📁", text: "Server Tools has Personal Member Logs for your own moderation notes and ban appeal evidence. Right-click a member to start a record, add a title, notes and an appeal status, then attach your own images and videos or drop them in. The actual files are saved locally for your Discord account, alongside optional links, and can be viewed or saved back to your computer later. Nothing is posted to a server." },
+            { icon: "⏱️", text: "Active Timeouts in Server Tools lists timed-out members Discord has loaded in servers where you have Timeout Members permission. Search by name, nickname or ID, see when each timeout ends and how much time remains, open the profile or start a personal member log. It updates with Discord's member changes and clearly shows that unloaded members aren't included." },
+            { icon: "🎬", text: "Media Tools' Options now shows a switch for each tool, so you can bring back Video Editor if it was switched off and missing from the window. The other merged features have their individual switches back too." },
+            { icon: "🔨", text: "Exploit Reporter: choose \"Application slash command\", then browse your applications down the left and pick a command on the right, with descriptions, subcommands and a search across every app. It includes apps installed on your account and in the command channel's server. Your chosen command stays in place until you pick another, and Refresh applications picks up new ones." },
+            { icon: "🛠️", text: "Exploit Reporter: Text command and Application slash command are buttons beside each action now. Choosing how to send an action no longer opens a menu at the top of Discord." },
+            { icon: "✨", text: "Exploit Reporter's option menus have a softer look: rounded corners, a see-through background, your accent colour on the selected option and a checkmark. They stay attached to the field, with the same keyboard controls." },
+            { icon: "📋", text: "Exploit Reporter has a Logs tab: numbered cases you can search by player, case number or reason, with the command, log, evidence links and any sending problems. Cases stay on this computer for your Discord account. Commands are marked submitted, not confirmed by the bot." },
+            { icon: "⏳", text: "Temp bans can remind you when their duration ends. See upcoming reviews in Logs, cancel a reminder or mark it reviewed, and catch up on reminders when Discord opens again. Sending an unban through the reporter clears that player's reminders in the same server. It never unbans automatically." },
+            { icon: "👤", text: "The report form looks up the player's Roblox avatar, username and profile link. Their profile is kept with the case. Entering a username or ID puts both in the Discord log as one profile link (hurtpk · 81962199). Sending waits for the lookup if needed. The command keeps exactly what you typed." },
+            { icon: "📂", text: "Channels & prefix: Browse opens your servers and their text channels, with a search and the channel's category. Pick a channel you can send to, or keep pasting an ID or channel link as before." },
+            { icon: "📐", text: "Read All fits the actual server-list column instead of a fixed width, so its border and text stay inside narrow lists. The Done confirmation stays centred too." },
+        ],
+    },
+    {
+        version: "2026.10.25d",
+        date: "October 25, 2026",
+        title: "Pick any bot's command in Exploit Reporter",
+        items: [
+            { icon: "🔨", text: "Exploit Reporter: for each action, choose \"A bot's slash command\", then pick the bot and the command from everything the bots in your server have, subcommands too (/mod temp ban). No need to run a command first. Refresh bots picks up new ones." },
+        ],
+    },
     {
         version: "2026.10.25c",
         date: "October 25, 2026",
