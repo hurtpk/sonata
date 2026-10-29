@@ -48,6 +48,12 @@ test("Resetting the bridge resolves pending commands and invalidates voice lease
     assert.equal((await pending).title, "Music disconnected"); assert.equal(bridge.channels.size, 0);
 });
 
+test("Video metadata crosses the bridge with bounded counts and a valid publication date",async()=>{
+    const bridge=new MusicBridge();bridge.poll(BOT,true);const result=bridge.submit({...job,kind:"video"});
+    bridge.complete({id:job.id,title:"Clip",description:"Caption",video:Buffer.from("0000ftyp0000test").toString("base64"),stats:{views:85355,likes:"13.3K",comments:"<@123>",shares:-1,arbitrary:500},published:"2026-09-26T00:12:46.000Z"});
+    const value=await result;assert.deepEqual(value.stats,{views:85355,likes:"13.3K"});assert.equal(value.published,"2026-09-26T00:12:46.000Z");
+});
+
 test("Music commands require the caller's current voice channel and the bot's actual permissions", async t => {
     const f = fixture(t), bridge = { online: () => true, async submit(value) { assert.equal(value.channel, CHANNEL); return { title: "Now playing", description: "Confirmed" }; } };
     f.channels[0].type = 2;

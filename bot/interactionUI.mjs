@@ -13,7 +13,7 @@ export function genuineControl(data, botId) {
     return data.message?.author?.id === botId && data.message.components?.some(row => row.components?.some(value => value.custom_id === data.data.custom_id && !value.disabled));
 }
 export function openForm(data, store, guild, kind, details, title, label, max = 1000) {
-    if (store.get("SELECT COUNT(*) AS n FROM forms WHERE actor=? AND expires>?", actorId(data), Date.now()).n >= 5) fail("Finish an existing form or wait ten minutes before opening another.");
+    if (store.get("SELECT COUNT(*) AS n FROM forms WHERE actor=? AND kind<>'modlogs' AND expires>?", actorId(data), Date.now()).n >= 5) fail("Finish an existing form or wait ten minutes before opening another.");
     const id = crypto.randomUUID();
     store.run("INSERT INTO forms VALUES (?,?,?,?,?,?)", id, actorId(data), guild, kind, JSON.stringify(details), Date.now() + 600_000);
     return { type: 9, data: { custom_id: `snform:${id}`, title, components: [{ type: 18, label, component: { type: 4, custom_id: "value", style: max > 100 ? 2 : 1, required: true, min_length: 1, max_length: max } }] } };

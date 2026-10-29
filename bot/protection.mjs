@@ -19,7 +19,7 @@ export async function protectionCommand(context, store) {
     if (key === "eventlog") {
         settings.eventlogs ??= {};
         if (command.sub === "view") return embed("Server event logs", (Object.entries(settings.eventlogs).map(([kind, id]) => `${kind}: <#${id}>`).join("\n") || "No event logs configured.") + (settings.securityError ? `\n\nLast issue: ${settings.securityError}` : ""));
-        if (command.sub === "set") { await messageChannel(context, o.channel); if (o.type !== "voice") context.botPermission(PERMS.AUDIT); settings.eventlogs[o.type] = o.channel; }
+        if (command.sub === "set") { await messageChannel(context, o.channel); if (o.type !== "voice") context.botPermission(PERMS.AUDIT); settings.eventlogs[o.type] = o.channel; if(o.type === "voice") { store.run("DELETE FROM voice_activity WHERE guild=?",guild.id); store.run("INSERT INTO voice_activity SELECT guild,user,channel FROM music_audience WHERE guild=?",guild.id); } }
         else { delete settings.eventlogs[o.type]; if (o.type === "voice") store.run("DELETE FROM voice_activity WHERE guild=?", guild.id); }
     } else if (command.sub === "view") {
         const config = settings[key];
@@ -59,7 +59,7 @@ export async function protectionCommand(context, store) {
         }
     }
     store.saveSettings(guild.id, settings);
-    return embed(key === "eventlog" ? "Event logs saved" : key === "antiraid" ? "Join protection saved" : "Anti-nuke saved", key === "eventlog" ? "Only the configured event categories are logged. Ordinary message contents are not archived by event logs." : key === "antiraid" ? "Configured join protection was updated. Quarantine uses the existing jail for fifteen minutes and applies to flagged new arrivals." : "Protection watches confirmed bans, channel deletions and role deletions. It cannot undo deleted content or manage members above Sonata.");
+    return embed(key === "eventlog" ? "Event logs saved" : key === "antiraid" ? "Join protection saved" : "Anti-nuke saved", key === "eventlog" ? "Only the configured event categories are logged. Deleted-message logging keeps a short, bounded memory cache only while enabled, then posts deleted content to its configured channel. Audit entries identify actors only when Discord supplies them." : key === "antiraid" ? "Configured join protection was updated. Quarantine uses the existing jail for fifteen minutes and applies to flagged new arrivals." : "Protection watches confirmed bans, channel deletions and role deletions. It cannot undo deleted content or manage members above Sonata.");
 }
 
 async function notify(store, api, guild, channel, title, description) {
@@ -83,7 +83,7 @@ export async function protectionEvent(event, data, store, api, botId, perform) {
         if (previous === data.channel_id) return;
         if (data.channel_id) store.run("INSERT OR REPLACE INTO voice_activity VALUES (?,?,?)", guildId, data.user_id, data.channel_id);
         else store.run("DELETE FROM voice_activity WHERE guild=? AND user=?", guildId, data.user_id);
-        await notify(store, api, guildId, settings.eventlogs.voice, "Voice activity", `<@${data.user_id}> (${data.user_id})\n${previous ? `From <#${previous}>` : "Joined voice"}${data.channel_id ? ` → <#${data.channel_id}>` : " → Left voice"}`);
+        await notify(store, api, guildId, settings.eventlogs.voice, "Voice activity", `<@${data.user_id}> (${data.user_id})\n${previous ? `From <#${previous}>` : "Joined voice"}${data.channel_id ? ` → <#${data.channel_id}>` : " → Left voice"}\nAction by: Discord does not identify the actor in voice-state events. Check a matching audit entry for staff moves or disconnects.`);
         return;
     }
     if (event === "GUILD_MEMBER_ADD") {
@@ -108,7 +108,7 @@ export async function protectionEvent(event, data, store, api, botId, perform) {
     }
     if (event !== "GUILD_AUDIT_LOG_ENTRY_CREATE" || !isId(data.id) || now - stamp(data.id) > 300_000 || !store.claim(`audit:${data.id}`)) return;
     const category = auditKinds[data.action_type], destination = settings.eventlogs?.[category];
-    if (destination) {
+    if (destination && ![10,11,12].includes(data.action_type)) {
         const changes = (data.changes ?? []).slice(0, 6).map(value => `${value.key}: ${JSON.stringify(value.old_value ?? "None").slice(0, 100)} → ${JSON.stringify(value.new_value ?? "None").slice(0, 100)}`).join("\n");
         await notify(store, api, guildId, destination, labels[data.action_type], `Actor: ${data.user_id ? `<@${data.user_id}> (${data.user_id})` : "Unavailable"}\nTarget: ${data.target_id || "Unavailable"}\n${changes}${data.reason ? `\nReason: ${data.reason.slice(0, 300)}` : ""}`);
     }

@@ -8,6 +8,7 @@
 // than the last version you saw. Keep changes in one entry until the user
 // asks to push to GitHub, then start a new entry for subsequent changes.
 // `version` only needs to sort correctly (a date works).
+// Public changes only. Never include private Sonata admin or owner controls.
 
 export interface ChangeEntry {
     version: string;
@@ -18,11 +19,20 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.29",
+        date: "October 29, 2026",
+        title: "Moderation logs, video uploads and folder fixes",
+        items: [
+            { icon: "📋", text: "Sonata Bot: modlogs opens a member's cases with emoji page buttons and moderator/action filters. Case views include reasons and saved images or videos, while modstats lists a staff member's Sonata actions and case numbers. Adds configurable deletion, join/leave, voice and channel logs, with names, types and reliable actor attribution." },
+            { icon: "🎬", text: "TikTok links upload playable videos with captions, platform details, available stats and sender credit. Sonata shows typing while retrieving a clip and removes the original link after a successful upload. Automatic uploads support multiple selected channels or every channel, including new ones. Failed downloads keep the original message and show the problem. The bot's profile is simpler, with a live server count in its status. Fixes Better Folders duplicating servers and folders after Discord's server-list update." },
+        ],
+    },
+    {
         version: "2026.10.28d",
         date: "October 28, 2026",
         title: "Sonata interfaces, dashboards and bot tools",
         items: [
-            { icon: "🎨", text: "Sonata's plugin and feature windows now match the website with flat dark surfaces, subtle corners and sidebar navigation. Removes decorative layers and particles, adds Dashboard access and fixes fullscreen gaps. Owner controls can blacklist servers or make the bot leave. The private Admin page adds Allow ID and Discord avatars. Adds a message designer, server-owner dashboard whitelists, limited administrator accounts and service health. Bot invites request Administrator, and crowns identify owners, administrators and moderators." },
+            { icon: "🎨", text: "Sonata's plugin and feature windows now match the website with flat dark surfaces, subtle corners and sidebar navigation. Removes decorative layers and particles, adds Dashboard access and fixes fullscreen gaps. Bot invites request Administrator, and crowns identify owners, administrators and moderators." },
             { icon: "🎙️", text: "Voice Timeline: click a person to open their profile, or right-click to copy their user ID. Works in the people list, timeline events and weekly recap." },
             { icon: "🤖", text: "Sonata Bot now has 282 command forms in eight help categories, with working home arrows, three-hour role recovery, case exports, audio effects and DJ skip voting. Adds nickname policies, bot-only role permissions, command disabling, usage insights and a dashboard link in help. Also adds server dashboards, verification, XP, AFK, aliases, protection and AutoMod, moderation statistics, appeals, tickets, giveaways, voice controls and expression tools. Reply to emojis or stickers to download or import them, including standard emoji PNGs and animated emoji GIFs. Sticky messages stay below new chat messages, and supported short video links can be embedded manually or automatically with sender credit." },
         ],

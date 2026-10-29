@@ -21,8 +21,8 @@ export const SERVER_COMMANDS = [
         sub("restore", "Restore unchanged roles saved by protection", [member()]),
     ]),
     command("eventlog", "Configure logs for Discord server changes", PERMS.GUILD, [
-        sub("set", "Enable one kind of event log", [choices("type", "Event category", ["channels", "roles", "members", "voice", "bans"]), channel([0, 5])]),
-        sub("off", "Disable one kind of event log", [choices("type", "Event category", ["channels", "roles", "members", "voice", "bans"])]), sub("view", "Show configured event logs"),
+        sub("set", "Enable one kind of event log", [choices("type", "Event category", ["channels", "roles", "members", "voice", "bans", "messages", "joins"]), channel([0, 5])]),
+        sub("off", "Disable one kind of event log", [choices("type", "Event category", ["channels", "roles", "members", "voice", "bans", "messages", "joins"])]), sub("view", "Show configured event logs"),
     ]),
     command("escalation", "Configure warning expiry and automatic consequences", PERMS.ADMIN, [
         sub("set", "Set an action at an active warning count", [integer("warnings", "Active warning count", 1, 20), choices("action", "Automatic action", ["timeout", "kick", "ban"]), option("duration", 3, "Timeout duration, default one hour", false)]),

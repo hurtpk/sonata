@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { modlogInteraction } from "./modlogs.mjs";
 import { appealEligible, decideAppeal, submitAppeal } from "./appeals.mjs";
 import { parseSlash } from "./commands.mjs";
 import { fail } from "./discord.mjs";
@@ -56,6 +57,7 @@ export async function featureAction(data, store, api, botId, music) {
         fail("This form is no longer supported.");
     }
     const id = data.data.custom_id;
+    if(id.startsWith("snlogs:"))return modlogInteraction(data,store,api,botId);
     const verification = /^snverify:(\d{17,20})$/.exec(id);
     if (verification) {
         const config = store.settings(verification[1]).verification;

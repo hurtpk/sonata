@@ -4,7 +4,13 @@ An independent Discord moderation bot with the same commands available as slash 
 
 ## Commands
 
-There are 278 command forms under 98 top-level slash commands. Help has eight broad categories and emoji-only back, home and forward buttons. Both arrows browse All commands directly from the overview, without selecting a category. Prefix commands post only their final result or error, without a temporary checking message. `ping` measures a read-only Discord API request for prefix commands or the acknowledgement request for slash commands (including API queue wait), alongside the latest Gateway heartbeat round trip. A new connection shows an unavailable heartbeat value until an acknowledgement arrives.
+There are 282 command forms under 100 top-level slash commands. Help has eight broad categories and emoji-only back, home and forward buttons. Both arrows browse All commands directly from the overview, without selecting a category. Prefix commands post only their final result or error, without a temporary checking message. `ping` measures a read-only Discord API request for prefix commands or the acknowledgement request for slash commands (including API queue wait), alongside the latest Gateway heartbeat round trip. A new connection shows an unavailable heartbeat value until an acknowledgement arrives.
+
+## Profile
+
+The bot uses Do Not Disturb and a custom `harmonizing N servers` status. The count follows active Gateway server membership, including joins and departures; temporary server outages do not lower it. Updates are coalesced to respect Discord's presence limits. The connection identifies as Discord iOS to request mobile presence; Discord controls how the client displays its badge.
+
+`npm run setup -- --profile` applies the description in `profile/profile.json` and the fully transparent PNG banner, while keeping the existing avatar. The profile files contain no credentials. Run this only when intentionally changing the bot's public profile.
 
 New server tools include configurable anti-raid and owner-only anti-nuke protection, server event logs, warning escalation and expiry, ban appeal forms, private tickets with file transcripts, persistent giveaways, and voice/music control panels. They reuse existing permissions, cases and scheduled releases. New automation stays off until configured. Read [server tools setup](SERVER_TOOLS.md) for commands, permission requirements and limits. Audit-based logs and anti-nuke require View Audit Log, now included in the invite.
 

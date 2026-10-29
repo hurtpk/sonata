@@ -26,11 +26,10 @@ import { memberActivity } from "./levels.mjs";
 import { dashboardRequest, enforceGuildBlock, guildEvent } from "./dashboard.mjs";
 import { recoveryEvent } from "./roleRecovery.mjs";
 import { musicAudienceEvent } from "./musicPolicy.mjs";
+import { eventLog, rememberLogEvent } from "./eventLogs.mjs";
 import { stickyEvent } from "./sticky.mjs";
 import { videoSource } from "./videoEmbeds.mjs";
 import { nicknameEvent } from "./nicknamePolicy.mjs";
-
-const PRESENCE = { since: null, activities: [{ name: "Sonata • /help", type: 1, url: "https://www.youtube.com/watch?v=sMK6XgyLJGg" }], status: "online", afk: false };
 
 export function controlAuthorized(request, secret) {
     if (typeof secret !== "string" || secret.length < 32) return false;
@@ -72,7 +71,9 @@ export class SonataBot {
         this.api = discordApi(env.DISCORD_BOT_TOKEN);
         this.responses = discordApi(env.DISCORD_BOT_TOKEN);
         this.socket = null; this.connecting = null; this.heartbeat = null; this.retryTimer = null;
+        this.presenceTimer = null; this.presenceSentAt = 0; this.presenceCount = -1;
         this.ready = false; this.acked = true; this.session = {}; this.paused = false; this.nextConnect = 0; this.failures = 0;
+        this.eventCache = { messages: new Map(), channels: new Map() };
         this.tasks = Promise.resolve(); this.queued = 0; this.cooldowns = new Map(); this.lastJobs = 0;
         this.music = new MusicBridge();
         ctx.blockConcurrencyWhile(async () => {
@@ -83,7 +84,20 @@ export class SonataBot {
         });
     }
 
-    status() { return { version: this.env.VERSION?.id || "local", connected: this.ready, paused: this.paused, queued: this.queued, commandCount: COMMANDS.length, nicknamePolicies: true, commandInsights: true, botRoleGrants: true, mediaReplies: true, interactiveHelp: true, prefixReplyMode: "final", musicOnline: this.music.online(), activity: this.ready ? PRESENCE.activities[0] : null, applicationId: this.env.DISCORD_APPLICATION_ID, botId: this.session.userId ?? null, nextConnectionAttempt: this.nextConnect || null, lastOpcode: this.lastOpcode ?? null, heartbeatAcknowledged: this.acked }; }
+    presence() {
+        const count = this.store.get("SELECT COUNT(*) AS n FROM bot_guilds WHERE active=1").n;
+        return { since: null, activities: [{ name: "Custom Status", type: 4, state: `harmonizing ${count} server${count === 1 ? "" : "s"}` }], status: "dnd", afk: false };
+    }
+    updatePresence(force = false) {
+        if (!this.ready) return;
+        const count = this.store.get("SELECT COUNT(*) AS n FROM bot_guilds WHERE active=1").n;
+        if (!force && count === this.presenceCount) return;
+        const delay = Math.max(0, 5000 - (Date.now() - this.presenceSentAt));
+        if (!force && delay) { if (!this.presenceTimer) this.presenceTimer = setTimeout(() => { this.presenceTimer = null; this.updatePresence(); }, delay); return; }
+        clearTimeout(this.presenceTimer); this.presenceTimer = null;
+        this.send(this.socket, { op: 3, d: this.presence() }); this.presenceCount = count; this.presenceSentAt = Date.now();
+    }
+    status() { return { version: this.env.VERSION?.id || "local", connected: this.ready, paused: this.paused, queued: this.queued, commandCount: COMMANDS.length, nicknamePolicies: true, commandInsights: true, botRoleGrants: true, mediaReplies: true, interactiveHelp: true, prefixReplyMode: "final", musicOnline: this.music.online(), activity: this.ready ? this.presence().activities[0] : null, presenceStatus: this.ready ? "dnd" : null, applicationId: this.env.DISCORD_APPLICATION_ID, botId: this.session.userId ?? null, nextConnectionAttempt: this.nextConnect || null, lastOpcode: this.lastOpcode ?? null, heartbeatAcknowledged: this.acked }; }
 
     close(socket, reason) { this.localCloseReason = reason; socket.close(4000, reason); }
 
@@ -113,7 +127,7 @@ export class SonataBot {
         }
         if (path === "/stop") {
             this.paused = true; await this.ctx.storage.put("paused", true);
-            clearTimeout(this.retryTimer); clearTimeout(this.heartbeat);
+            clearTimeout(this.retryTimer); clearTimeout(this.heartbeat); clearTimeout(this.presenceTimer); this.presenceTimer = null;
             this.socket?.close(1000, "Owner stopped the bot"); this.socket = null; this.ready = false;
             this.session = {}; await this.ctx.storage.delete("session");
             this.music.reset();
@@ -171,7 +185,7 @@ export class SonataBot {
         socket.addEventListener("close", event => {
             if (this.socket !== socket) return;
             this.ctx.waitUntil(this.ctx.storage.put("disconnect", { code: event.code, at: Date.now(), reason: (this.localCloseReason || event.reason || "Discord closed the connection").replaceAll(this.env.DISCORD_BOT_TOKEN, "[redacted]").slice(0, 200), lastOpcode: this.lastOpcode ?? null, heartbeatAcknowledged: this.acked }));
-            this.socket = null; this.ready = false; clearTimeout(this.heartbeat);
+            this.socket = null; this.ready = false; clearTimeout(this.heartbeat); clearTimeout(this.presenceTimer); this.presenceTimer = null;
             if ([4004, 4010, 4011, 4012, 4013, 4014].includes(event.code)) {
                 this.paused = true;
                 this.ctx.waitUntil(Promise.all([this.ctx.storage.put("paused", true), this.ctx.storage.put("fatal", event.code === 4014 ? "Enable Message Content Intent and Server Members Intent in the Discord Developer Portal, then start the bot again." : `Discord stopped the connection (${event.code}). Check the token, application and Gateway settings.`)]));
@@ -210,7 +224,7 @@ export class SonataBot {
                 this.heartbeat = setTimeout(() => this.ctx.waitUntil(beat()), interval);
             };
             if (this.session.id) this.send(socket, { op: 6, d: { token: this.env.DISCORD_BOT_TOKEN, session_id: this.session.id, seq: this.session.seq ?? null } });
-            else this.send(socket, { op: 2, d: { token: this.env.DISCORD_BOT_TOKEN, intents: 33415, properties: { os: "linux", browser: "Sonata", device: "Sonata" }, large_threshold: 50, presence: PRESENCE } });
+            else this.send(socket, { op: 2, d: { token: this.env.DISCORD_BOT_TOKEN, intents: 33415, properties: { os: "ios", browser: "Discord iOS", device: "Discord iOS" }, large_threshold: 50, presence: this.presence() } });
             clearTimeout(this.heartbeat); this.heartbeat = setTimeout(() => this.ctx.waitUntil(beat()), Math.random() * interval);
         }
         if (packet.op === 11) { this.acked = true; if (Number.isFinite(this.heartbeatSent)) this.gatewayLatency = Date.now() - this.heartbeatSent; }
@@ -233,7 +247,15 @@ export class SonataBot {
             await this.ctx.storage.put("failures", 0);
         }
         if (packet.t === "RESUMED") { this.ready = true; this.nextConnect = 0; this.failures = 0; await this.ctx.storage.put("failures", 0); for (const row of this.store.all("SELECT id FROM bot_guilds WHERE active=1")) if (this.store.settings(row.id).roleRecovery) this.send(socket, { op: 8, d: { guild_id: row.id, query: "", limit: 0 } }); }
-        if (["READY", "RESUMED"].includes(packet.t)) this.send(socket, { op: 3, d: PRESENCE });
+        if (["READY", "RESUMED", "GUILD_CREATE", "GUILD_DELETE"].includes(packet.t)) this.updatePresence(["READY", "RESUMED"].includes(packet.t));
+        if (["GUILD_CREATE","MESSAGE_CREATE","MESSAGE_UPDATE","CHANNEL_CREATE","CHANNEL_UPDATE","CHANNEL_DELETE"].includes(packet.t)) {
+            const guildId=packet.t==="GUILD_CREATE"?packet.d.id:packet.d.guild_id;
+            if(guildId)rememberLogEvent(packet.t,packet.d,this.store.settings(guildId),this.eventCache);
+        }
+        if (["MESSAGE_DELETE","MESSAGE_DELETE_BULK","GUILD_MEMBER_ADD","GUILD_MEMBER_REMOVE","GUILD_AUDIT_LOG_ENTRY_CREATE"].includes(packet.t)&&packet.d.guild_id&&this.queued<100) {
+            const logs=this.store.settings(packet.d.guild_id).eventlogs;
+            if(logs&&Object.keys(logs).length)this.enqueue(()=>eventLog(packet.t,{...packet.d,eventId:`${this.session.id}:${packet.s}`},this.store,this.api,this.eventCache,this.session.userId));
+        }
         if (packet.t === "MESSAGE_CREATE" && packet.d.guild_id && !packet.d.author.bot && !packet.d.webhook_id) {
             this.ctx.waitUntil(this.command(packet.d, false));
             if (this.queued < 25 && this.store.get("SELECT channel FROM sticky_messages WHERE channel=?", packet.d.channel_id)) this.enqueue(() => stickyEvent(packet.d, this.store, this.api));
@@ -274,16 +296,16 @@ export class SonataBot {
                 form = featureForm(data, this.store);
             } catch (error) { try { await immediate({ type: 4, data: { ...embed("Control not available", error.message), flags: 64 } }); } catch { return; } return; }
             if (form) { try { await immediate(form); } catch { return; } return; }
-            const player = data.data.custom_id?.startsWith("snmusic:");
-            try { await immediate(player ? { type: 6 } : { type: 5, data: { flags: 64 } }); } catch { return; }
+            const player = data.data.custom_id?.startsWith("snmusic:"), logs = data.data.custom_id?.startsWith("snlogs:");
+            try { await immediate(player || logs ? { type: 6 } : { type: 5, data: { flags: 64 } }); } catch { return; }
             const run = async () => {
                 try {
                     if (this.store.get("SELECT id FROM guild_blacklist WHERE id=?", data.guild_id)) throw new Error("This server is blacklisted from Sonata Bot.");
                     const body = await featureAction(data, this.store, this.api, this.session.userId, this.music);
                     await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", body });
                 } catch (error) {
-                    const body = { ...embed("Control not completed", error.message), ...(player ? { flags: 64 } : {}) };
-                    try { await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}${player ? "" : "/messages/@original"}`, { method: player ? "POST" : "PATCH", body }); } catch { return; }
+                    const body = { ...embed("Control not completed", error.message), ...(player || logs ? { flags: 64 } : {}) };
+                    try { await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}${player || logs ? "" : "/messages/@original"}`, { method: player || logs ? "POST" : "PATCH", body }); } catch { return; }
                 }
             };
             if (player) this.ctx.waitUntil(run()); else this.enqueue(run);
@@ -298,7 +320,7 @@ export class SonataBot {
         if (!this.ready) return;
         const actor = slash ? data.member?.user?.id : data.author.id;
         if (!isId(actor) || !isId(data.guild_id) || !isId(data.channel_id)) return;
-        let parsed, parsingError, parsingName;
+        let parsed, parsingError, parsingName, automaticVideo = false;
         try {
             if (slash) parsed = parseSlash(data.data, data.data.resolved?.attachments);
             else {
@@ -309,9 +331,10 @@ export class SonataBot {
                 if (prefix) parsed = parsePrefix(expandAlias(data.content ?? "", prefix, settings.aliases), prefix, data.attachments);
             }
         } catch (error) { parsingError = error.message; parsingName = error.commandName; }
-        if (!parsed && !parsingError && !slash && this.store.settings(data.guild_id).videoEmbeds?.[data.channel_id]) {
+        const videoSettings = this.store.settings(data.guild_id);
+        if (!parsed && !parsingError && !slash && (videoSettings.videoEmbeds?.[data.channel_id] ?? videoSettings.videoEmbedsAll)) {
             const matches = [...(data.content || "").matchAll(/https:\/\/[^\s<>]+/g)];
-            for (const match of matches.slice(0, 3)) { try { const url = videoSource(match[0]); parsed = parseSlash({ name: "sonata", options: [{name:"url",value:url}] }); break; } catch { continue; } }
+            for (const match of matches.slice(0, 3)) { try { const url = videoSource(match[0]); parsed = parseSlash({ name: "sonata", options: [{name:"url",value:url}] }); automaticVideo = true; break; } catch { continue; } }
         }
         if (!parsed && !parsingError) return;
         if (this.store.get("SELECT id FROM requests WHERE id=?", data.id)) return;
@@ -330,17 +353,32 @@ export class SonataBot {
             else if (parsed?.name === "ping") await this.responses("/users/@me");
             if (slash || parsed?.name === "ping") apiLatency = Date.now() - responseStarted;
         } catch { return; }
-        const respond = body => slash ? this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body) }) : this.responses(`/channels/${data.channel_id}/messages`, { method: "POST", ...replyPayload({ ...body, message_reference: { message_id: data.id, fail_if_not_exists: false } }) });
+        const respond = body => slash ? this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body) }) : this.responses(`/channels/${data.channel_id}/messages`, { method: "POST", ...replyPayload({ ...body, ...(!(parsed?.name === "sonata" && body.files?.length) ? { message_reference: { message_id: data.id, fail_if_not_exists: false } } : {}) }) });
         if (parsingError || this.queued >= 25) {
             if ((parsed || parsingName) && this.store.claim(data.id)) { this.store.usage(data.guild_id, parsed?.name ?? parsingName); this.store.outcome(data.guild_id, parsed ? [parsed.name, parsed.sub].filter(Boolean).join(" ") : parsingName, parsingError ? "invalid" : "busy"); }
             try { await respond(embed("Command not completed", parsingError ?? "Sonata is busy. Try again shortly.")); } catch { return; } return;
         }
-        const command = { ...parsed, id: data.id, prefix: !slash, reply: !slash ? data.message_reference : undefined, actor, guild: data.guild_id, channel: data.channel_id, latency: { api: apiLatency, gateway: this.gatewayLatency } };
+        const command = { ...parsed, id: data.id, prefix: !slash, evidence: !slash && ["warn","kick","ban"].includes(parsed.name) ? data.attachments : undefined, reply: !slash ? data.message_reference : undefined, actor, guild: data.guild_id, channel: data.channel_id, latency: { api: apiLatency, gateway: this.gatewayLatency } };
         const run = async () => {
             let response;
             try { response = await this.execute(command); }
             catch (error) { response = embed("Command not completed", error.message); }
-            try { const { silent, ...payload } = response; if (!silent || slash) await respond(payload); } catch { return; }
+            try {
+                const { silent, ...payload } = response;
+                if (silent && !slash) return;
+                const sent = await respond(payload);
+                if (!slash && command.name === "sonata" && payload.files?.length && !data.attachments?.length) {
+                    const links = [...(data.content || "").matchAll(/https:\/\/[^\s<>]+/g)];
+                    if (links.length !== 1 || (automaticVideo && data.content.trim().replace(/^<|>$/g, "") !== links[0][0])) return;
+                    try {
+                        const original = await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { optional: true });
+                        if (original?.author.id === actor && original.content === data.content && !original.attachments?.length) await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { method: "DELETE", optional: true, reason: "Sonata uploaded this video." });
+                    } catch {
+                        payload.embeds[0].footer.text += " • Original link could not be removed";
+                        await this.responses(`/channels/${data.channel_id}/messages/${sent.id}`, { method: "PATCH", body: { embeds: payload.embeds } });
+                    }
+                }
+            } catch { return; }
         };
         if (MUSIC_NAMES.includes(command.name) || command.name === "sonata") this.ctx.waitUntil(run());
         else this.enqueue(run);

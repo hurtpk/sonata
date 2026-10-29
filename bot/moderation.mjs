@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { openModlogs } from "./modlogs.mjs";
+import { caseDetails, saveCaseEvidence, validateEvidence } from "./caseEvidence.mjs";
 import { stickyCommand } from "./sticky.mjs";
 import { videoCommand } from "./videoEmbeds.mjs";
 import { EXTRA_COMMANDS, extraCommand } from "./actions.mjs";
@@ -36,7 +38,7 @@ import { advancedAutomod, AUTOMOD_OPTIONS } from "./advancedAutomod.mjs";
 import { lockdownCommand } from "./lockdown.mjs";
 
 export const caseMarker = (guild, n) => `[Sonata case ${guild}-${n}]`;
-const caseTarget = (kind, id) => (kind === "role created" || kind.startsWith("server ")) ? `Server ${id}` : `${["lock", "unlock", "hide", "unhide", "slowmode", "purge", "pin", "unpin"].includes(kind) || kind.startsWith("channel ") ? `<#${id}>` : kind.startsWith("bot permission ") || (kind.startsWith("role ") && !["role add", "role remove"].includes(kind)) ? `<@&${id}>` : `<@${id}>`} (${id})`;
+export const caseTarget = (kind, id) => (kind === "role created" || kind.startsWith("server ")) ? `Server ${id}` : `${["lock", "unlock", "hide", "unhide", "slowmode", "purge", "pin", "unpin"].includes(kind) || kind.startsWith("channel ") ? `<#${id}>` : kind.startsWith("bot permission ") || (kind.startsWith("role ") && !["role add", "role remove"].includes(kind)) ? `<@&${id}>` : `<@${id}>`} (${id})`;
 const recentCases = rows => rows.length ? rows.map(row => `**#${row.n} · ${row.kind} · ${row.status}**\nTarget: ${caseTarget(row.kind, row.target)} · Moderator: <@${row.actor}>\n${clean(row.reason)}${row.detail ? `\n${clean(row.detail)}` : ""}`).join("\n\n").slice(0, 1750) : "No cases found.";
 
 export async function commandContext(command, botId, api, settings = {}) {
@@ -81,6 +83,9 @@ export async function perform(context, store, kind, target, reason, duration, ac
     catch (error) { store.status(command.guild, n, "needs_review", error.message); if (appealNotice) try { await context.api(`/channels/${appealNotice.channel}/messages/${appealNotice.message}`, { method: "PATCH", body: { ...embed("Ban needs staff review", "The requested action was not confirmed. Contact staff before assuming the ban completed."), components: [] } }); } catch { store.addNote(command.guild, n, command.actor, "appeal notice", "Could not update the earlier moderation notice."); } return embed(`Case #${n} needs review`, `${error.message}\nThe action may not have completed. Check the member's current state before repeating it.`); }
     store.status(command.guild, n, "completed", detail);
     const notices = [];
+    if (kind === command.name && ["warn","kick","ban"].includes(kind)) for (const file of command.evidence || (command.options.file ? [command.options.file] : [])) {
+        try { await saveCaseEvidence(context,store,n,file); } catch(error) { store.addNote(command.guild,n,command.actor,"evidence issue",error.message); notices.push("The action completed, but an evidence file could not be archived. View the case before retrying evidence."); }
+    }
     try { await caseLog(store, context.api, command.guild, n); } catch { notices.push("The action succeeded, but its log message could not be posted."); }
     if (appealNotice) try { await context.api(`/channels/${appealNotice.channel}/messages/${appealNotice.message}`, { method: "PATCH", body: { ...embed("Sonata ban notice", `Server: ${context.guild.name}\nReason: ${reason}\nCase #${n}. You may submit one appeal using the form below.`), components: appealButtons(command.guild, n) } }); } catch { notices.push("The ban completed, but the earlier DM could not be updated."); }
     if (canAppeal && !appealNotice) notices.push("The member could not receive the ban appeal DM.");
@@ -101,35 +106,25 @@ export async function perform(context, store, kind, target, reason, duration, ac
     return embed(`Case #${n} · ${kind}`, `Target: ${caseTarget(kind, target)}\nReason: ${reason}${detail ? `\n${detail}` : ""}${notices.length ? `\n\n${notices.join("\n")}` : ""}`);
 }
 
-async function evidence(context, store, options) {
-    const file = options.file, settings = store.settings(context.guild.id);
-    if (!settings.logChannel) fail("Set a moderation log channel first so evidence files can be kept in your server.");
-    if (!file || typeof file.url !== "string" || !Number.isInteger(file.size) || file.size > 8 * 1024 * 1024 || !/^(?:image|video)\//.test(file.content_type ?? "")) fail("Attach an image or video no larger than 8 MiB.");
-    const url = new URL(file.url);
-    if (url.protocol !== "https:" || !["cdn.discordapp.com", "media.discordapp.net"].includes(url.hostname) || !url.pathname.startsWith("/attachments/")) fail("Use a file attached directly to the command.");
-    const response = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(12_000) });
-    if (!response.ok || !response.body) fail("Discord could not provide that attachment. Upload it again and retry.");
-    const chunks = []; let size = 0;
-    for await (const chunk of response.body) { size += chunk.length; if (size > 8 * 1024 * 1024) fail("That file is larger than 8 MiB."); chunks.push(chunk); }
-    const filename = String(file.filename ?? "evidence").replace(/[^\w. -]/g, "_").slice(0, 100);
-    const form = new FormData();
-    form.set("payload_json", JSON.stringify({ ...embed(`Evidence for case #${options.case}`, `Submitted by <@${context.command.actor}>.`), attachments: [{ id: "0", filename }] }));
-    form.set("files[0]", new Blob(chunks, { type: file.content_type }), filename);
-    const posted = await context.api(`/channels/${settings.logChannel}/messages`, { method: "POST", form });
-    const link = `https://discord.com/channels/${context.guild.id}/${settings.logChannel}/${posted.id}`;
-    store.addNote(context.guild.id, options.case, context.command.actor, "evidence", link);
-    return embed("Evidence saved", `The file is saved in your moderation log channel:\n${link}\nKeep that Discord message to retain the evidence.`);
-}
-
 async function configure(context, store) {
     const { command, api, guild } = context, options = command.options, settings = store.settings(guild.id);
     if (command.sub === "view") return embed("Sonata settings", `Prefix: \`${settings.prefix}\`\nLog channel: ${settings.logChannel ? `<#${settings.logChannel}>` : "Not configured"}\nPunishment DMs: ${settings.dm ? "On" : "Off"}\nJail role: ${settings.jailRole ? `<@&${settings.jailRole}>` : "Not configured"}${settings.automationError ? `\n\nLast member automation issue <t:${Math.floor(settings.automationError.at / 1000)}:R>:\n${settings.automationError.message}` : ""}`);
     if (command.sub === "prefix") { if (!/^[^\s/@<>`]{1,5}$/.test(options.prefix)) fail("Choose one to five characters without whitespace, mentions, a slash, or backticks."); settings.prefix = options.prefix; }
     if (command.sub === "videoembeds") {
-        const channel = await api(`/channels/${options.channel}`);
-        if (channel.guild_id !== guild.id || ![0,5].includes(channel.type)) fail("Choose a text channel in this server.");
-        requirePermission(channelPermissions(context.actor, context.roles, guild, channel), PERMS.VIEW);
-        settings.videoEmbeds ??= {}; if (options.enabled) settings.videoEmbeds[channel.id] = true; else delete settings.videoEmbeds[channel.id];
+        const ids = [...new Set([options.channel, ...(options.channels || "").split(/[\s,]+/)].filter(Boolean).map(value => /^(?:<#)?(\d{17,20})>?$/.exec(value)?.[1]))];
+        if (ids.some(id => !isId(id)) || ids.length > 100 || (options.all === true && ids.length) || (options.enabled && options.all !== true && !ids.length)) fail("Choose all channels, or up to 100 text channel mentions or IDs.");
+        if (options.all === undefined && !ids.length) fail("Choose a channel, multiple channel IDs, or all.");
+        if (ids.length) {
+            const channels = await api(`/guilds/${guild.id}/channels`);
+            for (const id of ids) {
+                const channel = channels.find(value => value.id === id);
+                if (!channel || ![0,5].includes(channel.type)) fail("Choose text channels in this server.");
+                requirePermission(channelPermissions(context.actor, context.roles, guild, channel), PERMS.VIEW);
+            }
+        }
+        if (options.all !== undefined) { settings.videoEmbedsAll = options.all && options.enabled; settings.videoEmbeds = {}; }
+        settings.videoEmbeds ??= {};
+        for (const id of ids) { if (options.enabled || settings.videoEmbedsAll) settings.videoEmbeds[id] = options.enabled; else delete settings.videoEmbeds[id]; }
     }
     if (command.sub === "dm") settings.dm = options.enabled;
     if (command.sub === "message") settings.templates[options.action] = options.text;
@@ -209,6 +204,12 @@ async function runCommand(command, store, api, botId, music) {
     const context = await commandContext(command, botId, api, settings), { guild, channel } = context, options = command.options, reason = options.reason ?? "No reason supplied.";
     if (command.name === "stick") return stickyCommand(context, store);
     if (command.name === "sonata") return videoCommand(context, music);
+    if (["warn","kick","ban"].includes(command.name)) {
+        const files=command.evidence || (options.file?[options.file]:[]);
+        if(files.length>3)fail("Attach at most three evidence files to one action.");
+        if(files.length&&!settings.logChannel)fail("Set a moderation log channel before attaching evidence.");
+        for(const file of files)validateEvidence(file);
+    }
     if (command.name === "fakepermissions") return fakePermissions(context, store);
     if (command.name === "commandsettings") return commandSettings(context, store, COMMANDS);
     if (command.name === "commandstats") return insightsCommand(context, store);
@@ -242,10 +243,10 @@ async function runCommand(command, store, api, botId, music) {
     if (command.name === "case") {
         if (command.sub === "export") return caseExport(context, store);
         if (command.sub === "list") return embed("Server case history", recentCases(store.all("SELECT * FROM cases WHERE guild=? AND n<? ORDER BY n DESC LIMIT 8", guild.id, options.before ?? 2147483647)));
-        if (command.sub === "history") return embed("Member case history", recentCases(store.all("SELECT * FROM cases WHERE guild=? AND target=? AND n<? ORDER BY n DESC LIMIT 8", guild.id, options.member, options.before ?? 2147483647)));
+        if (command.sub === "history") return openModlogs(context, store);
         const row = store.case(guild.id, options.case); if (!row) fail("That case does not exist in this server.");
-        if (command.sub === "view") return embed(`Case #${row.n}`, recentCases([row]) + "\n\n" + store.all("SELECT * FROM notes WHERE guild=? AND n=? ORDER BY at DESC LIMIT 5", guild.id, row.n).map(note => `${note.kind}: ${clean(note.value)}\nBy <@${note.actor}>`).join("\n"));
-        if (command.sub === "evidence") return evidence(context, store, options);
+        if (command.sub === "view") return caseDetails(context, store, row);
+        if (command.sub === "evidence") return saveCaseEvidence(context, store, options.case, options.file);
         store.addNote(guild.id, row.n, command.actor, command.sub === "reason" ? "reason change" : "note", command.sub === "reason" ? `Previous: ${row.reason}\nNew: ${options.reason}` : options.note);
         if (command.sub === "reason") store.run("UPDATE cases SET reason=? WHERE guild=? AND n=?", options.reason, guild.id, row.n);
         return embed(`Case #${row.n} updated`, "The change and its author are saved in this server's case history.");

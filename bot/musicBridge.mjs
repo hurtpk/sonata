@@ -44,7 +44,13 @@ export class MusicBridge {
         clearTimeout(pending.timer); this.jobs.delete(body.id);
         if (pending.job.kind !== "video" && body.disconnected === true && ![...this.jobs.values()].some(value => value.job.guild === pending.job.guild)) this.channels.delete(pending.job.guild);
         if (body.video != null && (pending.job.kind !== "video" || typeof body.video !== "string" || body.video.length > 11_184_812 || !/^[A-Za-z0-9+/]*={0,2}$/.test(body.video))) { pending.resolve({ title: "Video not completed", description: "The video service returned an invalid file." }); return; }
-        pending.resolve({ title: body.title, description: body.description, ...(pending.job.kind === "video" && body.video ? { video: body.video } : {}) });
+        const stats = {};
+        for (const key of ["views", "likes", "comments", "shares"]) {
+            const value = body.stats?.[key];
+            if ((Number.isSafeInteger(value) && value >= 0) || (typeof value === "string" && value.length <= 24 && /^\d[\d,.]*[KMB]?$/i.test(value))) stats[key] = value;
+        }
+        const date = typeof body.published === "string" && body.published.length <= 30 ? Date.parse(body.published) : NaN;
+        pending.resolve({ title: body.title, description: body.description, ...(pending.job.kind === "video" && body.video ? { video: body.video, stats, ...(Number.isFinite(date) && date >= 946684800000 && date <= Date.now() + 86400000 ? { published: new Date(date).toISOString() } : {}) } : {}) });
     }
     voice(body, send) {
         const d = body.d;

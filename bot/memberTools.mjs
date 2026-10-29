@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { openModlogs } from "./modlogs.mjs";
 import { COMMANDS } from "./commands.mjs";
 import { messageChannel, safeAutorole } from "./community.mjs";
 import { embed, fail, highestRole, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
@@ -72,10 +73,11 @@ export function afkCommand(context, store) {
 
 export function moderationStats(store, guild, days = 30, actor) {
     const since = Date.now() - days * 86400_000, where = actor ? "guild=? AND actor=? AND at>=?" : "guild=? AND at>=?", params = actor ? [guild, actor, since] : [guild, since], day = new Date(since).toISOString().slice(0, 10);
-    const counts = store.get(`SELECT COUNT(*) AS total,SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) AS completed,SUM(CASE WHEN status='needs_review' THEN 1 ELSE 0 END) AS needsReview FROM cases WHERE ${where}`, ...params);
+    const counts = store.get(`SELECT COUNT(*) AS total,SUM(CASE WHEN status IN ('completed','cleared','expired') THEN 1 ELSE 0 END) AS completed,SUM(CASE WHEN status='needs_review' THEN 1 ELSE 0 END) AS needsReview FROM cases WHERE ${where}`, ...params);
     return { days, total: counts.total, completed: counts.completed || 0, needsReview: counts.needsReview || 0, actions: Object.fromEntries(store.all(`SELECT kind,COUNT(*) AS n FROM cases WHERE ${where} GROUP BY kind`, ...params).map(row => [row.kind, row.n])), staff: Object.fromEntries(store.all(`SELECT actor,COUNT(*) AS n FROM cases WHERE ${where} GROUP BY actor ORDER BY n DESC LIMIT 10`, ...params).map(row => [row.actor, row.n])), appeals: store.all("SELECT status,COUNT(*) AS n FROM appeals WHERE guild=? AND at>=? GROUP BY status", guild, since), usage: store.all("SELECT name,SUM(uses) AS n FROM command_usage WHERE guild=? AND day>=? GROUP BY name ORDER BY n DESC LIMIT 10", guild, day), totalUses: store.get("SELECT COALESCE(SUM(uses),0) AS n FROM command_usage WHERE guild=? AND day>=?", guild, day).n };
 }
 export function statsCommand(context, store) {
+    if(context.command.sub === "staff") return openModlogs(context,store,true);
     const stats = moderationStats(store, context.guild.id, context.command.options.days ?? 30, context.command.sub === "staff" ? context.command.options.member : undefined);
     return embed(`Moderation · past ${stats.days} days`, context.command.sub === "appeals" ? stats.appeals.map(row => `${row.status}: ${row.n}`).join("\n") || "No appeals in this period." : context.command.sub === "actions" ? Object.entries(stats.actions).map(([kind, n]) => `${kind}: ${n}`).join("\n") || "No cases in this period." : `Cases: ${stats.total}\nCompleted: ${stats.completed}\nNeeds review: ${stats.needsReview}\n\n` + Object.entries(stats.staff).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([id, n]) => `<@${id}>: ${n} cases`).join("\n"));
 }

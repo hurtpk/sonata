@@ -67,16 +67,16 @@ export const COMMANDS = [
     ...["servericon", "serverbanner", "boosts"].map(name => command(name, name === "boosts" ? "Show this server's boost level and count" : `Show this server's ${name === "servericon" ? "icon" : "banner"}`, 0n)),
     command("help", "See commands, a help page, or help for a specific command", 0n, [text("command", "Command name or help page number", false)]),
     command("ping", "Check whether Sonata is responding", 0n),
-    command("ban", "Ban a member or user ID", PERMS.BAN, [member(), reason()], ["b"]),
+    command("ban", "Ban a member or user ID", PERMS.BAN, [member(), reason(), option("file",11,"Image or video evidence, up to 8 MB",false)], ["b"]),
     command("tempban", "Ban a member until a chosen time", PERMS.BAN, [member(), duration(), reason()], ["tban"]),
     command("softban", "Remove a member and delete their recent messages, then unban", PERMS.BAN, [member(), option("days", 4, "Days of messages to remove, from one to seven", true, { min_value: 1, max_value: 7 }), reason()]),
     command("banlist", "Browse this server's bans", PERMS.BAN, [option("after", 3, "Show bans after this user ID", false)], ["bans"]),
     command("nickname", "Change a member's nickname, or omit the name to reset it", PERMS.NICKNAMES, [member(), option("name", 3, "The new nickname, or omit to reset", false, { max_length: 32 })], ["nick"]),
     command("unban", "Remove a user's ban", PERMS.BAN, [option("user", 3, "The banned user's ID"), reason()]),
-    command("kick", "Remove a member from the server", PERMS.KICK, [member(), reason()]),
+    command("kick", "Remove a member from the server", PERMS.KICK, [member(), reason(), option("file",11,"Image or video evidence, up to 8 MB",false)]),
     command("timeout", "Temporarily prevent a member from participating", PERMS.TIMEOUT, [member(), duration(), reason()], ["mute"]),
     command("untimeout", "Remove a member's timeout", PERMS.TIMEOUT, [member(), reason()], ["unmute"]),
-    command("warn", "Record a warning for a member", PERMS.TIMEOUT, [member(), reason()]),
+    command("warn", "Record a warning for a member", PERMS.TIMEOUT, [member(), reason(), option("file",11,"Image or video evidence, up to 8 MB",false)]),
     command("warnings", "List a member's warnings", PERMS.TIMEOUT, [member()], ["warns"]),
     command("warnremove", "Clear one warning while keeping its case history", PERMS.TIMEOUT, [caseNumber(), reason()]),
     command("warnclear", "Clear a member's warnings while keeping their case history", PERMS.TIMEOUT, [member(), reason()]),
@@ -123,10 +123,10 @@ export const COMMANDS = [
         sub("reason", "Update a case's reason", [caseNumber(), text("reason", "The corrected reason")]),
         sub("note", "Add a staff note to a case", [caseNumber(), text("note", "The note to save")]),
         sub("evidence", "Attach an evidence file to a case", [caseNumber(), option("file", 11, "An image or video file")]),
-    ]),
+    ], ["modlogs"]),
     command("settings", "Configure Sonata for this server", PERMS.GUILD, [
         sub("view", "See this server's Sonata settings"),
-        sub("videoembeds", "Automatically embed supported videos in a channel", [option("enabled", 5, "Enable automatic video embeds"), channel([0, 5])]),
+        sub("videoembeds", "Automatically upload supported videos in selected or all channels", [option("enabled", 5, "Enable automatic video embeds"), channel([0, 5], false), option("all", 5, "Apply to every channel, including new channels", false), option("channels", 3, "Channel mentions or IDs separated by spaces", false, { max_length: 2200 })]),
         sub("prefix", "Set the prefix used for message commands", [option("prefix", 3, "Between one and five characters", true, { min_length: 1, max_length: 5 })]),
         sub("modlog", "Choose the moderation log channel", [option("channel", 7, "Where moderation actions are logged", true, { channel_types: [0, 5] })]),
         sub("dm", "Choose whether punishments send a DM", [option("enabled", 5, "Send the affected user a DM")]),
@@ -192,6 +192,9 @@ export function parsePrefix(content, prefix, attachments = []) {
     if (!word) return null;
     const definition = COMMANDS.find(command => command.name === word || command.aliases.includes(word));
     if (!definition) return null;
+    if (word === "modlogs") { if(tokens.length!==1 || !/^\d{17,20}$/.test(tokens[0])) fail("Use modlogs followed by the victim's Discord ID."); tokens.unshift("history"); }
+    else if(definition.name === "case" && /^\d+$/.test(tokens[0] || ""))tokens.unshift("view");
+    if (definition.name === "modstats" && /^(?:<@!?)?\d{17,20}>?$/.test(tokens[0] || ""))tokens.unshift("staff");
     if (definition.name === "afk" && !["set", "clear", "view"].includes(tokens[0])) tokens.unshift("set");
     if (["levels", "verification", "lockdown"].includes(definition.name) && !tokens.length) tokens.push(definition.name === "levels" ? "rank" : "view");
     if (definition.name === "modstats" && !tokens.length) tokens.push("summary");
@@ -208,12 +211,19 @@ export function parsePrefix(content, prefix, attachments = []) {
     const selected = group ? definition.options.find(option => option.name === subName) : definition;
     if (!selected) throw Object.assign(new Error(`Use ${prefix}help to see this command's subcommands.`), { commandName: definition.name });
     const values = {};
+    if (definition.name === "settings" && subName === "videoembeds") {
+        values.enabled = tokens.shift();
+        if (tokens.length === 1 && tokens[0].toLowerCase() === "all") values.all = true;
+        else if (tokens.length) values.channels = tokens.join(" ");
+        try { return { definition, name: definition.name, sub: subName, options: validate(values, selected.options) }; }
+        catch (error) { throw Object.assign(error, { commandName: definition.name }); }
+    }
     for (let i = 0; i < selected.options.length; i++) {
         const option = selected.options[i];
         if (option.type === 11) values[option.name] = attachments[0];
         else if ([6, 7, 8].includes(option.type) && !option.required && tokens[0] && !/^(?:<@!?|<@&|<#)?\d{17,20}>?$/.test(tokens[0])) values[option.name] = undefined;
         else if (option.name === "duration" && !option.required && tokens[0] && !/^(?:\d+(?:\.\d+)?[smhdw])+$/i.test(tokens[0])) values[option.name] = undefined;
-        else values[option.name] = option.type === 3 && i === selected.options.length - 1 ? tokens.splice(0).join(" ") || undefined : tokens.shift();
+        else values[option.name] = option.type === 3 && selected.options.slice(i+1).every(option=>option.type===11) ? tokens.splice(0).join(" ") || undefined : tokens.shift();
     }
     const replyField = definition.name === "download" ? { message: "message", emoji: "emoji", sticker: "id" }[subName] : ["emoji", "sticker"].includes(definition.name) && subName === "steal" ? definition.name === "emoji" ? "emoji" : "id" : null;
     if (replyField && !values[replyField]) values[replyField] = "reply";

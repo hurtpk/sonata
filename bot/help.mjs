@@ -58,6 +58,7 @@ export function helpInteraction(data, botId) {
 export function help(command) {
     const query = command.options.command?.trim().toLowerCase();
     if (!query) return helpPage(command.actor);
+    if (query.replace(/^[,/]/, "") === "modlogs") return embed("Help · modlogs", "`modlogs <victim ID>`\nBrowse a member's Sonata cases with emoji page buttons and moderator/action filters.\n\n`case <case number>` shows a single action and evidence.\n`modstats <staff ID>` shows completed actions and case numbers for that moderator.");
     if (/^\d+$/.test(query)) return helpPage(command.actor, "all", Number(query) - 1);
     if (Object.hasOwn(GROUPS, query) && !COMMANDS.some(value => value.name === query)) return helpPage(command.actor, query);
     const [name, sub] = query.replace(/^[,/]/, "").split(/\s+/), definition = COMMANDS.find(value => value.name === name || value.aliases.includes(name));

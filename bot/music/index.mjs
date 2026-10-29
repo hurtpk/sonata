@@ -37,7 +37,7 @@ while (running) {
                 if (accepted !== epoch || Date.now() >= job.expires) return;
                 let result;
                 try { result = job.kind === "video" ? await downloadVideo(job.source) : await music.command(job); }
-                catch (error) { result = { title: "Music not completed", description: error.message.slice(0, 1500) }; }
+                catch (error) { result = { title: job.kind === "video" ? "Video not completed" : "Music not completed", description: error.message.slice(0, 1500) }; }
                 if (accepted !== epoch) return;
                 for (let attempt = 0; attempt < 2; attempt++) {
                     try { await request("result", { id: job.id, ...result, disconnected: !music.rooms.has(job.guild) }); break; }
