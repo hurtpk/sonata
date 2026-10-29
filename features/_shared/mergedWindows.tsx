@@ -45,7 +45,7 @@ const SECTION_SUBS: Record<string, string> = {
     calendar: "Your month at a glance", reminders: "Things to come back to", todoLists: "Your channel checklists", scheduledMessages: "Messages for later",
     callTimer: "Time spent on calls", autoVolume: "Balance voices", voiceTimeline: "Your call history", disableCallIdle: "Stay in idle calls",
     quickText: "Your reusable snippets", autoCorrect: "Fix typos as you type", translate: "Read messages in another language", readAloud: "Listen to messages",
-    serverInfo: "Details, roles and members", showHiddenChannels: "Channel visibility", showTimeoutDuration: "Timeout lengths", forceOwnerCrown: "Show the server owner's crown",
+    serverInfo: "Details, roles and members", showHiddenChannels: "Channel visibility", showTimeoutDuration: "Timeout lengths", forceOwnerCrown: "Gold for owners, silver for administrators, brown for moderators",
     betterInvites: "Invite details and previews", inviteManager: "Your invites across servers", localNames: "Names and icons just for you", autoModRegex: "Patterns for Discord AutoMod",
 };
 const CALENDAR_KEYS: Record<keyof SourceOptions, string> = { birthdays: "showBirthdays", scheduled: "showScheduled", events: "showEvents", reminders: "showReminders", imported: "showImported", packages: "showPackages", episodes: "showEpisodes", weather: "showWeather", interestedOnly: "interestedOnly" };

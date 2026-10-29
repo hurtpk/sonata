@@ -1,10 +1,12 @@
 {
-    "name": "sonata-control-room",
+    "name": "sonata",
     "account_id": "b4858e7c33edcfbfb7c873c96c8142ed",
     "main": "worker.mjs",
+    "version_metadata": { "binding": "VERSION" },
     "compatibility_date": "2026-10-28",
     "compatibility_flags": ["nodejs_compat"],
     "workers_dev": true,
+    "services": [{ "binding": "BOT_SERVICE", "service": "sonata-bot" }],
     "assets": {
         "directory": "../public",
         "binding": "ASSETS",

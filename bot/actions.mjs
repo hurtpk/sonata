@@ -5,6 +5,7 @@
  */
 
 import { channelPermissions, embed, fail, highestRole, isId, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
+import { delegatedRole } from "./commandAccess.mjs";
 
 export const EXTRA_COMMANDS = ["softban", "banlist", "nickname", "warnremove", "warnclear", "role", "voice", "channel", "pin", "unpin", "pins"];
 
@@ -59,6 +60,7 @@ export async function extraCommand(context, store, perform) {
             const target = await context.target(options.member);
             if (store.restriction(guild.id, target.user.id, "jail")) fail("Release this member from jail before changing their roles.");
             if (command.sub === "add") {
+                if (delegatedRole(store.settings(guild.id), role.id)) requirePermission(memberPermissions(actor, roles, guild), PERMS.ADMIN);
                 requirePermission(memberPermissions(actor, roles, guild), BigInt(role.permissions));
                 requirePermission(memberPermissions(bot, roles, guild), BigInt(role.permissions));
             }

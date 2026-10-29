@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { slashCommands } from "./commands.mjs";
 import { discordApi, inviteUrl, isId } from "./discord.mjs";
 
-const origin = "https://sonata-bot.pkispure.workers.dev";
+const origin = "https://sonata.hurts.workers.dev/bot-api";
 const mode = process.argv[2] ?? "--check";
 
 async function main() {
@@ -44,6 +44,18 @@ async function main() {
         });
         return;
     }
+    if (["--upload-music", "--upload-dashboard"].includes(mode)) {
+        const name = mode === "--upload-music" ? "MUSIC_BRIDGE_SECRET" : "BOT_DASHBOARD_SECRET", key = process.env[name];
+        if (!key || key.length < 32) throw new Error(`Configure a separate ${name} of at least 32 characters first.`);
+        await new Promise((resolve, reject) => {
+            const child = spawn(process.execPath, [fileURLToPath(new URL("./node_modules/wrangler/bin/wrangler.js", import.meta.url)), "secret", "bulk"], { cwd: fileURLToPath(new URL("./", import.meta.url)), windowsHide: true, stdio: ["pipe", "inherit", "inherit"] });
+            child.stdin.on("error", () => reject(new Error("Cloudflare could not accept the service key.")));
+            child.once("error", () => reject(new Error("Could not start Wrangler.")));
+            child.once("exit", code => code === 0 ? resolve() : reject(new Error("Cloudflare did not finish saving the service key.")));
+            child.stdin.end(JSON.stringify({ [name]: key, ...(mode === "--upload-dashboard" ? { DASHBOARD_OWNER_IDS: process.env.DASHBOARD_OWNER_IDS || "779172192461783110" } : {}) }));
+        });
+        return;
+    }
     if (["--start", "--stop", "--status"].includes(mode)) {
         const response = await fetch(`${origin}/control/${mode.slice(2)}`, { method: mode === "--status" ? "GET" : "POST", redirect: "manual", headers: { Authorization: `Bearer ${secret}` }, signal: AbortSignal.timeout(25_000) });
         if (!response.ok) throw new Error(`The bot control endpoint returned ${response.status}.`);
@@ -51,7 +63,7 @@ async function main() {
         process.stdout.write(JSON.stringify(status, null, 2) + "\n");
         return;
     }
-    throw new Error("Use --check, --register, --upload, --start, --stop or --status.");
+    throw new Error("Use --check, --register, --upload, --upload-music, --upload-dashboard, --start, --stop or --status.");
 }
 
 main().catch(error => { process.stderr.write(error.message + "\n"); process.exitCode = 1; });

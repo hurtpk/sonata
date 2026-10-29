@@ -224,7 +224,7 @@
 .vc-mg-rp-score { display: flex; align-items: center; gap: 12px; font-size: 13.5px; }
 .vc-mg-rp-score b { font-size: 22px; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; }
 .vc-mg-rp-rounds { display: flex; flex-wrap: wrap; gap: 6px; }
-.vc-mg-rp-round { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 99px; font-size: 16px; background: var(--sw-card, hsl(0 0% 100% / 0.05)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); }
+.vc-mg-rp-round { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 8px; font-size: 16px; background: var(--sw-card, hsl(0 0% 100% / 0.05)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07)); }
 .vc-mg-rp-round small { font-size: 10px; color: var(--text-muted); }
 .vc-mg-rp-x { border-color: var(--sw-line, color-mix(in srgb, var(--mg-x) 60%, transparent)); background: color-mix(in srgb, var(--mg-x) 16%, transparent); }
 .vc-mg-rp-o { border-color: var(--sw-line, color-mix(in srgb, var(--mg-o) 60%, transparent)); background: color-mix(in srgb, var(--mg-o) 16%, transparent); }

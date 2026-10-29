@@ -15,7 +15,7 @@
     gap: 10px;
     min-width: 0;
     max-width: 100%;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 .vc-merged-select::picker(select) {
@@ -25,7 +25,7 @@
     max-height: min(360px, 60vh);
     overflow: auto;
     border: 1px solid var(--sw-line, var(--border-subtle));
-    border-radius: 12px;
+    border-radius: 8px;
     background: color-mix(in srgb, var(--sw-win, var(--background-floating)) 90%, transparent);
     color: var(--text-default, var(--text-normal));
     backdrop-filter: blur(16px);

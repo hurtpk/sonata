@@ -72,7 +72,7 @@
 .vc-remw-new { align-self: flex-start; }
 .vc-remw-editor { --rem: #4f8cff; display: flex; flex-direction: column; gap: 10px; border: 1px solid color-mix(in srgb, var(--rem) 40%, transparent) !important; background: linear-gradient(160deg, color-mix(in srgb, var(--rem) 16%, transparent), hsl(0 0% 0% / 0.2) 60%) !important; box-shadow: none; }
 .vc-remw-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.vc-remw-chip { all: unset; padding: 6px 10px; border-radius: 99px; border: 1px solid var(--tl-line); font-size: 13px; color: var(--text-default, var(--text-normal)); cursor: pointer; }
+.vc-remw-chip { all: unset; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--tl-line); font-size: 13px; color: var(--text-default, var(--text-normal)); cursor: pointer; }
 .vc-remw-chip:hover { border-color: color-mix(in srgb, var(--rem) 60%, transparent); }
 .vc-remw-chip-on { border-color: var(--rem); background: color-mix(in srgb, var(--rem) 18%, transparent); }
 .vc-remw-date { width: auto; padding: 6px 10px; color-scheme: dark; }
@@ -97,7 +97,7 @@
 .vc-remw-row-main { all: unset; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
 .vc-remw-row-text { font-size: 14.5px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-remw-row-when { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
-.vc-remw-pill { padding: 2px 8px; border-radius: 99px; font-weight: 700; color: #fff; background: color-mix(in srgb, var(--rem) 35%, transparent); }
+.vc-remw-pill { padding: 2px 8px; border-radius: 8px; font-weight: 700; color: #fff; background: color-mix(in srgb, var(--rem) 35%, transparent); }
 .vc-remw-x { all: unset; box-sizing: border-box; display: grid; place-items: center; width: 28px; height: 28px; border-radius: calc(8px * var(--sw-r, 1)); color: #f23f43; background: hsl(358 75% 50% / 0.14); border: 1px solid hsl(358 75% 55% / 0.35); cursor: pointer; font-size: 12px; }
 .vc-remw-x:hover { color: #fff; background: hsl(358 75% 50% / 0.9); }
 .vc-remw-sure { display: flex; gap: 4px; }

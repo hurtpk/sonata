@@ -50,5 +50,5 @@
 .vc-whisper-pic { position: relative; display: block; max-width: 320px; border-radius: calc(10px * var(--sw-r, 1)); overflow: hidden; line-height: 0; }
 .vc-whisper-pic img { display: block; max-width: 320px; max-height: 240px; object-fit: cover; }
 .vc-whisper-yt::after { content: "▶"; position: absolute; left: 50%; top: 50%; translate: -50% -50%; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; line-height: 1; color: #fff; background: var(--sw-inner, hsl(0 0% 0% / 0.6)); }
-.vc-whisper-link { padding: 3px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 600; color: var(--text-link, #00a8fc); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); text-decoration: none; }
+.vc-whisper-link { padding: 3px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-link, #00a8fc); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); text-decoration: none; }
 .vc-whisper-save { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); cursor: pointer; }

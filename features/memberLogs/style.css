@@ -28,7 +28,7 @@
     min-width: 0;
     padding: 12px;
     border: 1px solid var(--tl-line);
-    border-radius: 12px;
+    border-radius: 8px;
 }
 
 .vc-memberlogs-evidence img, .vc-memberlogs-evidence video {

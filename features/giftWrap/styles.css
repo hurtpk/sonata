@@ -109,7 +109,7 @@
 /* "Not until…": the date picker when wrapping, and the waiting box. */
 .vc-gw-when { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .vc-gw-when input { flex: 1; min-width: 190px; color-scheme: dark; }
-.vc-gw-lock { padding: 3px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: var(--header-primary, #fff); background: var(--sw-chip, hsl(0 0% 100% / 0.08)); font-variant-numeric: tabular-nums; }
+.vc-gw-lock { padding: 3px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--header-primary, #fff); background: var(--sw-chip, hsl(0 0% 100% / 0.08)); font-variant-numeric: tabular-nums; }
 .vc-gw-nudge .vc-gw-box { animation: vc-gw-nope 0.5s ease; }
 @keyframes vc-gw-nope { 20% { translate: -6px 0; rotate: -4deg; } 40% { translate: 6px 0; rotate: 4deg; } 60% { translate: -4px 0; rotate: -2deg; } 80% { translate: 3px 0; } }
 @media (prefers-reduced-motion: reduce) { .vc-gw-nudge .vc-gw-box { animation: none; } }

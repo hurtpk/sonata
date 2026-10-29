@@ -25,7 +25,7 @@
 
 .vc-bpf-count {
     padding: 1px 7px;
-    border-radius: 99px;
+    border-radius: 8px;
     font-size: 11px;
     font-weight: 700;
     color: var(--tl-accent);

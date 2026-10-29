@@ -32,7 +32,7 @@ This is a server application with a persistent database. GitHub Pages alone cann
 
 After the real service is configured and reachable, set `ACCESS_SERVICE_URL` in `sonata/access/config.ts` to the exact HTTPS origin and rebuild Equicord. Fully restart Discord to load the native helpers. The URL is public configuration; application secrets and administrator credentials never belong in the plugin.
 
-This workspace's desktop build is configured for `https://sonata-control-room.pkispure.workers.dev`. The owner dashboard and its Discord sign-in have been verified. People using this build appear after completing activation; earlier builds do not register themselves automatically. Signing into the owner dashboard alone does not activate the desktop plugin.
+This workspace's desktop build is configured for `https://sonata.hurts.workers.dev`. The owner dashboard and its Discord sign-in have been verified. People using this build appear after completing activation; earlier builds do not register themselves automatically. Signing into the owner dashboard alone does not activate the desktop plugin.
 
 An empty service URL keeps the existing public build working without activation or check-ins. Managed activation currently requires the desktop app. Do not ship a build pointed at localhost or the demo service.
 

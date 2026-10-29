@@ -25,7 +25,6 @@ import { FeatureIcon, featureIconsOn } from "../sonata/featureIcons";
 import { UtilitiesView } from "../utilities/UtilitiesView";
 import { getChannelSettingsAccent } from "./accent";
 import { CATEGORIES, categoryOf } from "./categories";
-import { Particles } from "./Particles";
 
 const cl = classNameFactory("vc-qolcc-");
 
@@ -334,7 +333,6 @@ export function ControlCenter({ api, initialView = "qol" }: { api: QolApi; initi
 
     return (
         <div className={cl("page")} style={accent ? ({ "--vc-qolcc-accent": accent, "--vc-chsettings-accent": accent } as React.CSSProperties) : undefined}>
-            <Particles className={cl("particles")} />
 
             <div className={cl("header")}>
                 <div className={cl("header-text")}>

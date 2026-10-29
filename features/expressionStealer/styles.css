@@ -87,4 +87,4 @@
     background: var(--sw-card, linear-gradient(135deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.16) 65%)); transition: border-color 0.15s, transform 0.12s; }
 .vc-steal-row:hover { border-color: color-mix(in srgb, var(--tl-accent) 40%, transparent); transform: translateY(-1px); }
 .vc-steal-icon { width: 42px; height: 42px; border-radius: calc(14px * var(--sw-r, 1)); }
-.vc-steal-done { padding: 4px 10px; border-radius: 99px; background: hsl(145 63% 42% / 0.16); }
+.vc-steal-done { padding: 4px 10px; border-radius: 8px; background: hsl(145 63% 42% / 0.16); }

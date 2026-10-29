@@ -90,8 +90,8 @@
 .vc-ocr-image { border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, color-mix(in srgb, var(--tl-accent) 25%, transparent)); box-shadow: none; background: var(--sw-inner, hsl(0 0% 0% / 0.28)); }
 .vc-ocr-side { padding: 16px; border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07));
     background: var(--sw-card, linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
-.vc-ocr-tabs { padding: 4px; border-radius: 99px; background: var(--sw-inner, hsl(0 0% 0% / 0.28)); }
-.vc-ocr-tab { border-radius: 99px; }
+.vc-ocr-tabs { padding: 4px; border-radius: 8px; background: var(--sw-inner, hsl(0 0% 0% / 0.28)); }
+.vc-ocr-tab { border-radius: 8px; }
 .vc-ocr-tab-on { color: #fff; background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-ocr-text { border-radius: calc(12px * var(--sw-r, 1)); transition: border-color 0.15s, box-shadow 0.15s; }
 .vc-ocr-text:focus { box-shadow: var(--sw-noglow, 0 0 0 3px color-mix(in srgb, var(--tl-accent) 22%, transparent)); }

@@ -6,18 +6,65 @@
 
 import { fail, isId, PERMS } from "./discord.mjs";
 
-const option = (name, type, description, required = true, extra = {}) => ({ name, type, description, required, ...extra });
-const member = () => option("member", 6, "The member to moderate");
-const reason = () => option("reason", 3, "The reason for this action", false, { max_length: 500 });
-const duration = () => option("duration", 3, "Duration, such as 30m, 2h or 7d");
-const caseNumber = () => option("case", 4, "The case number", true, { min_value: 1 });
-const text = (name, description, required = true) => option(name, 3, description, required, { max_length: 1000 });
-const sub = (name, description, options = []) => ({ name, description, type: 1, options });
-const command = (name, description, permission, options = [], aliases = []) => ({ name, description, permission, options, aliases });
-const role = () => option("role", 8, "The role to manage");
-const channel = (types, required = true) => option("channel", 7, "The server channel", required, { channel_types: types });
+import { channel, command, duration, member, option, reason, role, sub, text, caseNumber } from "./commandOptions.mjs";
+import { ADVANCED_COMMANDS } from "./advancedCommands.mjs";
+import { MUSIC_COMMANDS, MUSIC_SETTINGS_COMMAND } from "./musicCommands.mjs";
+import { SERVER_COMMANDS } from "./serverCommands.mjs";
+import { DASHBOARD_COMMANDS } from "./dashboardCommands.mjs";
+import { AUTOMOD_OPTIONS } from "./advancedAutomod.mjs";
+import { delegatedCommand } from "./commandAccess.mjs";
 
 export const COMMANDS = [
+    command("stick", "Keep a message below new channel messages", PERMS.MESSAGES, [sub("set", "Set sticky text or copy a message from this channel", [option("message", 3, "Text or message link, or reply to a message", false, { max_length: 1800 })]), sub("remove", "Stop reposting the channel sticky message", [text("message", "Current or original sticky message link", false)])], ["stickmessage", "unstick", "unstickmessage"]),
+    command("sonata", "Embed a supported public video with sender credit", 0n, [option("url", 3, "TikTok, Instagram, X or YouTube video URL", true, { max_length: 500 })]),
+    ...ADVANCED_COMMANDS,
+    ...MUSIC_COMMANDS,
+    MUSIC_SETTINGS_COMMAND,
+    ...SERVER_COMMANDS,
+    ...DASHBOARD_COMMANDS,
+    command("tag", "Save and retrieve server text snippets", 0n, [
+        sub("create", "Create a server tag", [text("name", "Tag name"), text("text", "Tag text")]),
+        sub("edit", "Edit a server tag", [text("name", "Tag name"), text("text", "New text")]),
+        sub("delete", "Delete a server tag", [text("name", "Tag name")]),
+        sub("show", "Read a server tag", [text("name", "Tag name")]),
+        sub("info", "Show a tag's author and last edit", [text("name", "Tag name")]),
+        sub("list", "Browse server tags", [option("page", 4, "Page number", false, { min_value: 1 })]),
+    ]),
+    command("autoresponder", "Configure exact-text automatic replies", PERMS.GUILD, [
+        ...["add", "update"].map(name => sub(name, `${name === "add" ? "Add" : "Update"} an automatic reply`, [text("trigger", "Exact trigger text, quote multiple words in prefix commands"), text("reply", "Reply text")])),
+        sub("remove", "Remove an automatic reply", [text("trigger", "Trigger text")]),
+        sub("view", "View an automatic reply", [text("trigger", "Trigger text")]),
+        sub("list", "List automatic reply triggers"),
+    ]),
+    ...["welcome", "goodbye"].map(name => command(name, `Configure ${name} messages`, PERMS.GUILD, [
+        sub("add", "Set a channel's message", [channel([0, 5]), text("message", "Use {user}, {username}, {server} and {id}")]),
+        sub("remove", "Remove a channel's message", [channel([0, 5])]),
+        sub("view", "View a channel's configured message", [channel([0, 5])]),
+        sub("list", "List configured channels"),
+        sub("variables", "List available message variables"),
+        sub("test", "Post a preview using your own account", [channel([0, 5])]),
+    ])),
+    command("autorole", "Configure safe roles for new members", PERMS.GUILD | PERMS.ROLES, [
+        sub("add", "Add a role for new members", [role(), option("audience", 3, "Who receives it", true, { choices: ["humans", "bots", "all"].map(value => ({ name: value, value })) })]),
+        sub("remove", "Remove a configured role", [role()]),
+        sub("list", "Show configured roles"),
+        sub("enable", "Enable configured autoroles"),
+        sub("disable", "Pause autoroles without deleting their configuration"),
+    ]),
+    command("joinlogs", "Configure member join and leave logs", PERMS.GUILD, [sub("set", "Choose a log channel", [channel([0, 5])]), sub("off", "Disable member logs"), sub("view", "View member log configuration")]),
+    command("autonick", "Configure nicknames for new human members", PERMS.GUILD | PERMS.NICKNAMES, [sub("set", "Set a nickname template", [option("template", 3, "Use {username} and {id}; at most 32 characters", true, { max_length: 32 })]), sub("off", "Disable automatic nicknames"), sub("view", "View the nickname template")]),
+    command("poll", "Create polls and inspect poll results", 0n, [
+        sub("create", "Create a native Discord poll", [text("question", "Question, quote multiple words in prefix commands"), text("answers", "Two to ten answers separated by |")]),
+        sub("results", "Show results for a poll in this channel", [option("message", 3, "The poll message ID")]),
+    ]),
+    command("choose", "Choose randomly from options separated by |", 0n, [text("options", "Options separated by |")]),
+    command("roll", "Roll dice such as 2d6", 0n, [option("dice", 3, "One to twenty dice, with two to one thousand sides")]),
+    command("coinflip", "Flip a coin", 0n),
+    command("8ball", "Ask the magic eight ball", 0n, [text("question", "Your question")]),
+    command("timestamp", "Format a Unix timestamp for Discord", 0n, [option("seconds", 4, "Unix time in seconds", true, { min_value: 0, max_value: 253402300799 })]),
+    command("snowflake", "Show when a Discord ID was created", 0n, [option("id", 3, "Discord ID")]),
+    command("firstmessage", "Link the first available message in this channel", 0n),
+    ...["servericon", "serverbanner", "boosts"].map(name => command(name, name === "boosts" ? "Show this server's boost level and count" : `Show this server's ${name === "servericon" ? "icon" : "banner"}`, 0n)),
     command("help", "See commands, a help page, or help for a specific command", 0n, [text("command", "Command name or help page number", false)]),
     command("ping", "Check whether Sonata is responding", 0n),
     command("ban", "Ban a member or user ID", PERMS.BAN, [member(), reason()], ["b"]),
@@ -39,6 +86,8 @@ export const COMMANDS = [
     ...["pin", "unpin"].map(name => command(name, `${name === "pin" ? "Pin" : "Unpin"} a message in this channel`, PERMS.PINS, [option("message", 3, "A message ID or link in this channel"), reason()])),
     command("pins", "Browse this channel's pinned messages", 0n, [option("before", 3, "Show pins before this ISO timestamp", false)]),
     command("role", "Assign roles and manage role appearance", PERMS.ROLES, [
+        sub("restore", "Restore basic roles within three hours of departure", [member()]),
+        sub("recovery", "Enable or disable future role recovery snapshots", [option("enabled", 5, "Remember role IDs for three-hour staff recovery")]),
         sub("add", "Give a member a role", [member(), role(), reason()]),
         sub("remove", "Remove a member's role", [member(), role(), reason()]),
         sub("create", "Create a role without extra permissions", [option("name", 3, "Role name", true, { max_length: 100 })]),
@@ -67,6 +116,7 @@ export const COMMANDS = [
     command("jail", "Restrict a member to the jail channel", PERMS.TIMEOUT | PERMS.ROLES, [member(), option("duration", 3, "Optional duration, such as 2h or 7d", false), reason()]),
     command("unjail", "Release a member and restore their saved roles", PERMS.TIMEOUT | PERMS.ROLES, [member(), reason()]),
     command("case", "View and maintain server moderation records", PERMS.TIMEOUT, [
+        sub("export", "Download up to one hundred member cases and their notes", [member(), option("format", 3, "Report format", false, { choices: ["json", "csv", "text"].map(value => ({ name: value, value })) }), option("before", 4, "Export case numbers below this number", false, { min_value: 1 })]),
         sub("list", "Browse this server's recent cases", [option("before", 4, "Show cases before this case number", false, { min_value: 1 })]),
         sub("view", "View one case", [caseNumber()]),
         sub("history", "See a member's recent cases", [member(), option("before", 4, "Show cases before this case number", false, { min_value: 1 })]),
@@ -76,12 +126,20 @@ export const COMMANDS = [
     ]),
     command("settings", "Configure Sonata for this server", PERMS.GUILD, [
         sub("view", "See this server's Sonata settings"),
+        sub("videoembeds", "Automatically embed supported videos in a channel", [option("enabled", 5, "Enable automatic video embeds"), channel([0, 5])]),
         sub("prefix", "Set the prefix used for message commands", [option("prefix", 3, "Between one and five characters", true, { min_length: 1, max_length: 5 })]),
         sub("modlog", "Choose the moderation log channel", [option("channel", 7, "Where moderation actions are logged", true, { channel_types: [0, 5] })]),
         sub("dm", "Choose whether punishments send a DM", [option("enabled", 5, "Send the affected user a DM")]),
         sub("message", "Customize a punishment DM", [option("action", 3, "The punishment", true, { choices: ["ban", "tempban", "softban", "kick", "timeout", "warn", "jail", "unjail"].map(value => ({ name: value, value })) }), text("text", "Use {user}, {moderator}, {reason}, {duration}, {case} or {server}")]),
     ]),
     command("automod", "Configure Discord's built-in automatic moderation", PERMS.GUILD, [
+        ...AUTOMOD_OPTIONS,
+        sub("allowadd", "Allow a word in Sonata's word filter", [text("word", "Allowed word or wildcard")]),
+        sub("allowremove", "Remove an allowed word", [text("word", "Existing allowed word")]),
+        sub("exemptrole", "Exempt a role from a Sonata rule", [option("rule", 3, "Sonata rule", true, { choices: ["words", "mentions", "spam", "regex", "profile"].map(value => ({ name: value, value })) }), role(), option("enabled", 5, "Exempt this role")]),
+        sub("exemptchannel", "Exempt a channel from a Sonata rule", [option("rule", 3, "Sonata message rule", true, { choices: ["words", "mentions", "spam", "regex"].map(value => ({ name: value, value })) }), channel([0, 5, 15, 16]), option("enabled", 5, "Exempt this channel")]),
+        sub("words", "View Sonata's blocked and allowed words"),
+        sub("config", "View Sonata's rules and their exemptions"),
         sub("wordsadd", "Add a blocked word or wildcard", [text("word", "A word or wildcard, such as *badword*")]),
         sub("wordsremove", "Remove a blocked word or wildcard", [text("word", "The existing word or wildcard")]),
         sub("mentions", "Set the blocked mention threshold", [option("limit", 4, "Between one and fifty unique mentions", true, { min_value: 1, max_value: 50 })]),
@@ -90,7 +148,7 @@ export const COMMANDS = [
     ]),
 ];
 
-export const slashCommands = () => COMMANDS.map(({ permission, aliases, ...value }) => ({ ...value, default_member_permissions: permission ? permission.toString() : null, contexts: [0], integration_types: [0] }));
+export const slashCommands = () => COMMANDS.map(({ permission, aliases, ...value }) => ({ ...value, default_member_permissions: permission && !delegatedCommand(value.name) ? permission.toString() : null, contexts: [0], integration_types: [0] }));
 
 export function parseDuration(value, maximum = 365 * 86400_000) {
     if (typeof value !== "string" || value.length > 40 || !/^(?:\d+(?:\.\d+)?[smhdw])+$/i.test(value)) fail("Use a duration such as 30m, 2h, 7d or 1h30m.");
@@ -121,9 +179,10 @@ export function parseSlash(data, attachments = {}) {
     if (!definition) fail("That command is not available.");
     const group = definition.options[0]?.type === 1;
     const selected = group ? definition.options.find(option => option.name === data.options?.[0]?.name) : definition;
-    if (!selected) fail("Choose a valid subcommand.");
+    if (!selected) throw Object.assign(new Error("Choose a valid subcommand."), { commandName: definition.name });
     const values = Object.fromEntries((group ? data.options[0].options ?? [] : data.options ?? []).map(option => [option.name, option.type === 11 ? attachments[option.value] : option.value]));
-    return { definition, name: definition.name, sub: group ? selected.name : "", options: validate(values, selected.options) };
+    try { return { definition, name: definition.name, sub: group ? selected.name : "", options: validate(values, selected.options) }; }
+    catch (error) { throw Object.assign(error, { commandName: definition.name }); }
 }
 
 export function parsePrefix(content, prefix, attachments = []) {
@@ -133,10 +192,21 @@ export function parsePrefix(content, prefix, attachments = []) {
     if (!word) return null;
     const definition = COMMANDS.find(command => command.name === word || command.aliases.includes(word));
     if (!definition) return null;
+    if (definition.name === "afk" && !["set", "clear", "view"].includes(tokens[0])) tokens.unshift("set");
+    if (["levels", "verification", "lockdown"].includes(definition.name) && !tokens.length) tokens.push(definition.name === "levels" ? "rank" : "view");
+    if (definition.name === "modstats" && !tokens.length) tokens.push("summary");
+    if (definition.name === "commandstats" && !tokens.length) tokens.push("summary");
+    if (["commandsettings", "fakepermissions", "nicknamepolicy"].includes(definition.name) && !tokens.length) tokens.push("view");
+    if (definition.name === "musicsettings" && !tokens.length) tokens.push("view");
+    if (definition.name === "prefix" && !tokens.length) tokens.push("view");
+    if (["emoji", "sticker", "honeypot"].includes(definition.name) && !tokens.length) tokens.push("list");
+    if (definition.name === "voicemaster" && !tokens.length) tokens.push("room");
+    if (definition.name === "download" && !tokens.length) tokens.push("message");
     const group = definition.options[0]?.type === 1;
+    if (definition.name === "stick") tokens.unshift(["unstick", "unstickmessage"].includes(word) ? "remove" : ["set", "remove"].includes(tokens[0]) ? tokens.shift() : "set");
     const subName = group ? tokens.shift()?.toLowerCase() : "";
     const selected = group ? definition.options.find(option => option.name === subName) : definition;
-    if (!selected) fail(`Use ${prefix}help to see this command's subcommands.`);
+    if (!selected) throw Object.assign(new Error(`Use ${prefix}help to see this command's subcommands.`), { commandName: definition.name });
     const values = {};
     for (let i = 0; i < selected.options.length; i++) {
         const option = selected.options[i];
@@ -145,5 +215,15 @@ export function parsePrefix(content, prefix, attachments = []) {
         else if (option.name === "duration" && !option.required && tokens[0] && !/^(?:\d+(?:\.\d+)?[smhdw])+$/i.test(tokens[0])) values[option.name] = undefined;
         else values[option.name] = option.type === 3 && i === selected.options.length - 1 ? tokens.splice(0).join(" ") || undefined : tokens.shift();
     }
-    return { definition, name: definition.name, sub: group ? selected.name : "", options: validate(values, selected.options) };
+    const replyField = definition.name === "download" ? { message: "message", emoji: "emoji", sticker: "id" }[subName] : ["emoji", "sticker"].includes(definition.name) && subName === "steal" ? definition.name === "emoji" ? "emoji" : "id" : null;
+    if (replyField && !values[replyField]) values[replyField] = "reply";
+    try { return { definition, name: definition.name, sub: group ? selected.name : "", options: validate(values, selected.options) }; }
+    catch (error) { throw Object.assign(error, { commandName: definition.name }); }
+}
+
+export function expandAlias(content, prefix, aliases = {}) {
+    const match = /^\s*(\S+)/.exec(content.slice(prefix.length));
+    const name = match?.[1].toLowerCase();
+    if (!content.startsWith(prefix) || !name || !Object.hasOwn(aliases, name)) return content;
+    return prefix + aliases[name] + content.slice(prefix.length + match[0].length);
 }

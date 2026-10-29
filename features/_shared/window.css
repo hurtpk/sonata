@@ -1,35 +1,33 @@
-/* Sonata's window: the frame, its layouts, and the window kit (tool.css) in the window look.
-   Window style (Roundness, Darkness, Borders) comes in as --sw-r and data-sw-dark / data-sw-borders. */
 
 /* ── Colours and corners ── */
 
 .vc-sw, .vc-sw-styled {
     --sw-r: 1;
-    --sw-win: #121212;
-    --sw-card: #171717;
-    --sw-inner: #1b1b1b;
-    --sw-chip: #222222;
-    --sw-hover: #1d1d1d;
+    --sw-win: #111112;
+    --sw-card: #19191b;
+    --sw-inner: #202022;
+    --sw-chip: #252527;
+    --sw-hover: #252527;
     --sw-hi: #2a2a2a;
-    --sw-sel: #1d1d1d;
+    --sw-sel: #302326;
     --sw-seg: #2a2a2a;
-    --sw-line: #232323;
-    --sw-line2: #2a2a2a;
-    --sw-text: #ededed;
-    --sw-soft: #a3a3a3;
-    --sw-muted: #8f8f8f;
-    --sw-faint: #555555;
+    --sw-line: #303032;
+    --sw-line2: #454144;
+    --sw-text: #f1efed;
+    --sw-soft: #a7a1a2;
+    --sw-muted: #a7a1a2;
+    --sw-faint: #817b7e;
     --sw-accent: var(--vc-tool-accent, var(--brand-500));
     /* What accent-filled things (picked buttons, chips, tabs) are painted with: the accent, or a
        gradient between both colours when the accent style has two (set by featureAccent.ts). */
     --sw-accent-fill: var(--sw-accent);
     --sw-on: #ffffff;
     --sw-mono: var(--font-code, ui-monospace, Consolas, monospace);
-    --sw-rw: calc(22px * var(--sw-r));
-    --sw-rc: calc(14px * var(--sw-r));
-    --sw-rb: calc(11px * var(--sw-r));
-    --sw-rs: calc(8px * var(--sw-r));
-    --sw-rp: calc(10px * var(--sw-r));
+    --sw-rw: 8px;
+    --sw-rc: 8px;
+    --sw-rb: 6px;
+    --sw-rs: 6px;
+    --sw-rp: 6px;
 
     /* The kit's own names, so everything inside follows. */
     --tl-accent: var(--sw-accent);
@@ -66,9 +64,6 @@
     --border-faint: var(--sw-line);
 }
 
-[data-sw-dark="darker"] { --sw-win: #0c0c0c; --sw-card: #111111; --sw-inner: #151515; --sw-chip: #1b1b1b; --sw-hover: #171717; --sw-hi: #242424; --sw-sel: #171717; --sw-seg: #242424; }
-[data-sw-dark="black"] { --sw-win: #000000; --sw-card: #0a0a0a; --sw-inner: #0e0e0e; --sw-chip: #151515; --sw-hover: #111111; --sw-hi: #1e1e1e; --sw-sel: #111111; --sw-seg: #1e1e1e; }
-[data-sw-borders="clear"] { --sw-line: #363636; --sw-line2: #444444; }
 
 /* ── The frame ── */
 
@@ -95,7 +90,7 @@
     background: var(--sw-win);
     border: 1px solid var(--sw-line);
     color: var(--sw-text);
-    font-family: var(--font-primary, "gg sans", sans-serif);
+    font-family: "Segoe UI", Arial, sans-serif;
     font-size: 14px;
     line-height: 1.4;
     box-shadow: 0 24px 64px hsl(0 0% 0% / 0.5);
@@ -130,8 +125,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: var(--sw-mono);
-    font-size: 12.5px;
+    font-family: inherit;
+    font-size: 14px;
     color: var(--sw-muted);
 }
 
@@ -372,7 +367,7 @@
     width: 38px;
     height: 22px;
     box-sizing: border-box;
-    border-radius: 99px;
+    border-radius: 6px;
     border: 1px solid var(--sw-line2);
     background: var(--sw-inner);
     cursor: pointer;
@@ -502,7 +497,7 @@
 :where(.vc-sw, .sonata-window, .sonata-welcome) ::-webkit-scrollbar-thumb, :where([class*="vc-"])::-webkit-scrollbar-thumb {
     min-height: 40px;
     border: 2px solid transparent;
-    border-radius: 99px;
+    border-radius: 6px;
     background: color-mix(in srgb, currentColor 18%, transparent);
     background-clip: padding-box;
 }
@@ -515,36 +510,8 @@
     .vc-sw, .vc-sw-layer-closing .vc-sw { animation: none; }
 }
 
-/* ── Appearance → Windows: the small preview and its slider ── */
 
-.vc-sw-mini {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: var(--sw-rw);
-    background: var(--sw-win);
-    border: 1px solid var(--sw-line);
-    color: var(--sw-text);
-    font-size: 11px;
-}
 
-.vc-sw-mini-top { padding: 10px 14px; font-family: var(--sw-mono); font-size: 10.5px; color: var(--sw-muted); }
-.vc-sw-mini-tabs { display: flex; gap: 14px; padding: 0 14px; border-bottom: 1px solid var(--sw-line); color: var(--sw-muted); }
-.vc-sw-mini-tabs > span { padding: 6px 0; }
-.vc-sw-mini-tabs > .vc-sw-mini-tab-on { color: var(--sw-text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--sw-accent); }
-.vc-sw-mini-body { display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; }
-.vc-sw-mini-card { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--sw-rc); background: var(--sw-card); border: 1px solid var(--sw-line); }
-.vc-sw-mini-card > i { width: 24px; height: 21px; border-radius: var(--sw-rs); background: var(--sw-chip); border: 1px solid var(--sw-line); }
-.vc-sw-mini-card > span { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.vc-sw-mini-card b { width: 45%; height: 6px; border-radius: 3px; background: #3a3a3a; }
-.vc-sw-mini-card small { width: 70%; height: 5px; border-radius: 3px; background: #262626; }
-.vc-sw-mini-btns { display: flex; gap: 6px; }
-.vc-sw-mini-btns > span { flex: 1; height: 22px; border-radius: var(--sw-rb); border: 1px solid var(--sw-line2); }
-.vc-sw-mini-btns > .vc-sw-mini-primary { background: var(--sw-accent-fill); border-color: var(--sw-accent); }
-.vc-sw-mini-foot { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-top: 1px solid var(--sw-line); font-family: var(--sw-mono); font-size: 10px; color: var(--sw-muted); }
-
-.vc-sw-range { width: 100%; margin: 0; accent-color: var(--sn-hi, var(--brand-500)); cursor: pointer; }
-.vc-sw-reset { align-self: flex-start; }
 
 /* Settings drawn by the form: sliders with their number, and Equicord's own controls. */
 .vc-sw-slider { flex: 1; min-width: 120px; margin: 0; accent-color: var(--sw-accent); cursor: pointer; }
@@ -553,7 +520,7 @@
 .vc-sw-frow-control > .vc-tool-select { max-width: 320px; }
 
 /* A small count next to a tab's name. */
-.vc-sw-count { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 99px; background: color-mix(in srgb, var(--sw-accent) 22%, transparent); color: var(--sw-text); font-family: var(--sw-mono); font-size: 10.5px; line-height: 17px; font-weight: 500; vertical-align: 1px; }
+.vc-sw-count { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 6px; background: color-mix(in srgb, var(--sw-accent) 22%, transparent); color: var(--sw-text); font-family: var(--sw-mono); font-size: 10.5px; line-height: 17px; font-weight: 500; vertical-align: 1px; }
 
 /* A column on the left of the content (Window's `side`), like Games' list of platforms. */
 .vc-sw-sided { flex: 1; min-height: 0; display: grid; grid-template-columns: 220px minmax(0, 1fr); border-top: 1px solid var(--sw-line); }

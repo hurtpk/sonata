@@ -125,7 +125,7 @@ body.vc-fakedms-indicator-active .vc-fakedms-fake-highlight:hover {
     align-items: center;
     gap: 6px;
     padding: 3px 10px 3px 8px;
-    border-radius: 100px;
+    border-radius: 8px;
     background: var(--background-tertiary);
     font-size: 12px;
     font-weight: 600;

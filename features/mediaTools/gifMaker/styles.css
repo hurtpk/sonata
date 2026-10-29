@@ -225,7 +225,7 @@
 
 /* Chips (text layers, stickers, presets) */
 .vc-gifmaker-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.vc-gifmaker-chip { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 10px; border-radius: 99px; font-size: 13px; color: var(--gm-text); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-gifmaker-chip { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 10px; border-radius: 8px; font-size: 13px; color: var(--gm-text); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-gifmaker-chip:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.13)); }
 .vc-gifmaker-chip-on { color: #fff; background: var(--gm-a); }
 .vc-gifmaker-chip img { width: 18px; height: 18px; object-fit: contain; }
@@ -348,7 +348,7 @@
 .vc-gifmaker-recent-art img, .vc-gifmaker-recent-art video { max-width: 100%; max-height: 100%; object-fit: contain; }
 .vc-gifmaker-recent-meta { display: flex; justify-content: space-between; gap: 6px; padding: 8px 12px 0; font-size: 12px; font-weight: 600; color: #fff; }
 .vc-gifmaker-recent-actions { display: flex; gap: 5px; padding: 10px; }
-.vc-gifmaker-recent-actions button { all: unset; cursor: pointer; flex: 1; padding: 6px 0; border-radius: 99px; font-size: 12px; font-weight: 700; text-align: center; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); transition: background 0.15s, box-shadow 0.15s; }
+.vc-gifmaker-recent-actions button { all: unset; cursor: pointer; flex: 1; padding: 6px 0; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); transition: background 0.15s, box-shadow 0.15s; }
 .vc-gifmaker-recent-actions button:hover { background: var(--sw-accent-fill, var(--tl-accent)); color: #fff; box-shadow: none; }
 .vc-gifmaker-recent-actions .vc-gifmaker-recent-x { flex: none; min-width: 28px; padding: 6px 8px; color: #f23f43; background: hsl(358 75% 50% / 0.14); }
 .vc-gifmaker-recent-actions .vc-gifmaker-recent-x:hover, .vc-gifmaker-recent-actions .vc-gifmaker-recent-sure { color: #fff; background: hsl(358 75% 50% / 0.9); box-shadow: none; }

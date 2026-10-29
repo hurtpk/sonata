@@ -89,7 +89,7 @@
 
 .vc-steam-meta { display: flex; gap: 6px; flex-wrap: wrap; }
 .vc-steam-meta:empty { display: none; }
-.vc-steam-chip, .vc-steam-chip-hot { padding: 2px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 700; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); }
+.vc-steam-chip, .vc-steam-chip-hot { padding: 2px 8px; border-radius: 8px; font-size: 11.5px; font-weight: 700; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); }
 .vc-steam-chip-hot { color: #1b2838; background: var(--sw-hot); }
 
 .vc-steam-news {
@@ -259,7 +259,7 @@
 /* Pictures, clips and trailers inside patch notes. */
 .vc-steam-media { margin: 6px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .vc-steam-media-img { display: block; max-width: 100%; max-height: 420px; border-radius: calc(12px * var(--sw-r, 1)); object-fit: contain; background: var(--sw-inner, hsl(0 0% 0% / 0.25)); box-shadow: 0 10px 28px -18px hsl(0 0% 0% / 0.9); cursor: zoom-in; }
-.vc-steam-media-link { all: unset; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); cursor: pointer; }
+.vc-steam-media-link { all: unset; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); cursor: pointer; }
 .vc-steam-media-link:hover { background: color-mix(in srgb, var(--tl-accent) 25%, transparent); }
 .vc-steam-yt { all: unset; position: relative; display: block; max-width: 100%; cursor: pointer; border-radius: calc(12px * var(--sw-r, 1)); overflow: hidden; }
 .vc-steam-yt .vc-steam-media-img { cursor: pointer; max-height: 320px; }
@@ -271,7 +271,7 @@
 
 /* ─── Friends ─── */
 .vc-steam-friend-stats { display: flex; gap: 8px; flex-wrap: wrap; }
-.vc-steam-stat { padding: 5px 12px; border-radius: 99px; font-size: 12.5px; color: var(--text-muted); background: var(--sw-card, hsl(0 0% 100% / 0.05)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06)); }
+.vc-steam-stat { padding: 5px 12px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted); background: var(--sw-card, hsl(0 0% 100% / 0.05)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.06)); }
 .vc-steam-stat b { color: #fff; font-variant-numeric: tabular-nums; }
 .vc-steam-popular { display: flex; flex-direction: column; gap: 6px; }
 .vc-steam-friends { display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; padding-right: 2px; }
@@ -351,8 +351,8 @@ button.vc-steam-hit-text, button.vc-steam-recent-text { flex: 1; display: flex; 
 .vc-steam-gp-rev-head { display: flex; align-items: baseline; gap: 10px; }
 .vc-steam-gp-rev-head b { font-size: 18px; font-weight: 900; color: #fff; }
 .vc-steam-gp-rev-head span { font-size: 12.5px; color: var(--text-muted); }
-.vc-steam-gp-rev-bar { height: 10px; border-radius: 99px; background: hsl(0 85% 60% / 0.35); overflow: hidden; }
-.vc-steam-gp-rev-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #66c0f4, color-mix(in srgb, #66c0f4 55%, #fff)); }
+.vc-steam-gp-rev-bar { height: 10px; border-radius: 8px; background: hsl(0 85% 60% / 0.35); overflow: hidden; }
+.vc-steam-gp-rev-bar i { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, #66c0f4, color-mix(in srgb, #66c0f4 55%, #fff)); }
 .vc-steam-gp-rev-counts { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
 .vc-steam-gp-reqs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 12.5px; }
 .vc-steam-gp-reqs b { color: #fff; }

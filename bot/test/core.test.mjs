@@ -117,11 +117,11 @@ test("Jail saves roles, blocks channel access, and restores the roles on release
     assert.equal(f.store.restriction(GUILD, TARGET, "jail"), null);
 });
 
-test("Prefix purge keeps its command and working reply so the result can be delivered", async t => {
+test("Prefix purge excludes its invoking command from the requested cleanup count", async t => {
     const f = fixture(t), snowflake = age => String((BigInt(Date.now() - age - 1420070400000) << 22n));
-    const command = f.command(",purge 1"); command.id = snowflake(1000); command.reply = snowflake(500);
+    const command = f.command(",purge 1"); command.id = snowflake(1000);
     const message = snowflake(2000);
-    f.messages.push({ id: command.reply, author: { id: BOT } }, { id: command.id, author: { id: ACTOR } }, { id: message, author: { id: TARGET } });
+    f.messages.push({ id: command.id, author: { id: ACTOR } }, { id: message, author: { id: TARGET } });
     await executeCommand(command, f.store, f.api, BOT);
     const deletions = f.calls.filter(call => call.method === "DELETE");
     assert.equal(deletions.length, 1); assert.equal(deletions[0].route, `/channels/${CHANNEL}/messages/${message}`);

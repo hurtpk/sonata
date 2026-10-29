@@ -13,15 +13,13 @@ import { Settings } from "@api/Settings";
 
 import { QOL_NAME } from "../../featureSettings";
 import { GRADIENTS } from "../../sonata/accent";
-import { presetOf } from "../../sonata/scenes/presets";
 import { refreshDock } from "../../utilities/dock";
 import { clearCustomDockButtons, FEATURE_PREFIX, parseStringMap, syncCustomDockButtons } from "../../utilities/shared";
 
 export type Part = "look" | "dock" | "features";
 
 const LOOK_KEYS = [
-    "sonataPreset", "sonataLayers",
-    "sonataAnimate", "sonataInverted", "aboutAmbientColor", "sonataAccentMode", "sonataGradient",
+    "aboutAmbientColor", "sonataAccentMode", "sonataGradient",
     "sonataGradientA", "sonataGradientB", "sonataHolidays", "sonataSouthern", "sonataOccasion",
     "sonataFeatureIcons", "sonataFeatureIconMap",
 ] as const;
@@ -83,8 +81,7 @@ export function describe(setup: Setup): Summary {
     const out: Summary = {};
     const l = setup.look as any;
     if (l) {
-        const preset = presetOf(l.sonataPreset);
-        out.look = `${preset.name}${l.sonataInverted ? " · inverted" : ""}`;
+        out.look = "Sonata";
         const mode = l.sonataAccentMode ?? "solid";
         if (mode === "gradient") {
             const g = l.sonataGradient === "custom" ? { name: "Custom", a: l.sonataGradientA, b: l.sonataGradientB } : GRADIENTS.find(x => x.id === l.sonataGradient) ?? GRADIENTS[0];

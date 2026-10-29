@@ -1,15 +1,10 @@
-/* ─── Sonata ───
-   A rounded canvas set into the window: a dark base tinted by the accent, a
-   soft wash of colour, thin grid lines and a turning music note, with a floating
-   pill of tabs on top. Big wide display type for headings (Unbounded), the
-   usual sans for everything else. Only the note moves, and nothing is blurred. */
-
 .sonata {
-    --sn-accent: #3b82f6;
+    box-sizing: border-box;
+    --sn-accent: #c58d91;
     /* The second colour of a gradient accent (the same colour when the accent is solid). */
     --sn-accent-2: var(--sn-accent);
-    --sn-hi: color-mix(in oklab, var(--sn-accent) 55%, white);
-    --sn-hi-2: color-mix(in oklab, var(--sn-accent-2) 55%, white);
+    --sn-hi: var(--sn-accent);
+    --sn-hi-2: var(--sn-accent-2);
     --sn-glow-2: color-mix(in srgb, var(--sn-accent-2) 55%, transparent);
     --sn-soft: color-mix(in oklab, var(--sn-accent) 70%, white 30%);
     --sn-deep: color-mix(in oklab, var(--sn-accent) 45%, black);
@@ -18,18 +13,28 @@
     --sn-faint: color-mix(in srgb, var(--sn-accent) 14%, transparent);
     /* The colour of faint tints, lines and highlights (white on dark, dark ink on light). */
     --sn-ink-rgb: 255 255 255;
-    --sn-text: #f4f5fa;
-    --sn-muted: rgb(220 224 240 / 0.66);
-    --sn-dim: rgb(220 224 240 / 0.44);
-    --sn-line: rgb(var(--sn-ink-rgb) / 0.08);
+    --sn-text: #f1efed;
+    --sn-muted: #a7a1a2;
+    --sn-dim: #817b7e;
+    --sn-line: #303032;
     /* The canvas, and the surfaces on it. */
-    --sn-outside: #040406;
-    --sn-base: color-mix(in oklab, var(--sn-accent) 7%, #08080d);
-    --sn-surface: color-mix(in oklab, var(--sn-accent) 9%, #101017);
+    --sn-outside: #111112;
+    --sn-base: #111112;
+    --sn-surface: #19191b;
     --sn-glass: rgb(var(--sn-ink-rgb) / 0.04);
     --sn-blur: none;
-    --sn-font: "gg sans", "Inter", "Noto Sans", system-ui, sans-serif;
-    --sn-display: "Unbounded", "gg sans", system-ui, sans-serif;
+    --sn-font: "Segoe UI", Arial, sans-serif;
+    --sn-display: var(--sn-font);
+    --text-default: var(--sn-text);
+    --text-normal: var(--sn-text);
+    --text-muted: var(--sn-muted);
+    --header-primary: var(--sn-text);
+    --header-secondary: var(--sn-muted);
+    --background-surface-high: #202022;
+    --background-surface-higher: #252527;
+    --background-floating: var(--sn-surface);
+    --input-background: #202022;
+    --border-subtle: var(--sn-line);
     --sn-ink: color-mix(in srgb, var(--sn-hi-2) 55%, white);
 
     position: relative;
@@ -38,160 +43,44 @@
     overflow: hidden;
     isolation: isolate;
     /* --sn-safe-top: room for the window buttons along the top (see open.tsx). */
-    padding: calc(8px + var(--sn-safe-top, 0px)) 8px 8px;
+    padding: var(--sn-safe-top, 0px) 0 0;
     background: var(--sn-outside);
     color: var(--sn-text);
     font-family: var(--sn-font);
     -webkit-font-smoothing: antialiased;
 }
 
-/* ─── Light ─── */
-.sonata-inverted {
-    color-scheme: light;
-    --sn-ink-rgb: 30 24 48;
-    --sn-text: #16121f;
-    --sn-muted: rgb(22 18 31 / 0.68);
-    --sn-dim: rgb(22 18 31 / 0.5);
-    --sn-line: rgb(30 24 48 / 0.1);
-    --sn-hi: color-mix(in oklab, var(--sn-accent) 75%, #120e1a);
-    --sn-hi-2: color-mix(in oklab, var(--sn-accent-2) 75%, #120e1a);
-    --sn-glow: color-mix(in srgb, var(--sn-accent) 28%, transparent);
-    --sn-glow-2: color-mix(in srgb, var(--sn-accent-2) 28%, transparent);
-    --sn-outside: #e9e9ef;
-    --sn-base: color-mix(in oklab, var(--sn-accent) 9%, #f4f3f8);
-    --sn-surface: color-mix(in oklab, var(--sn-accent) 4%, #ffffff);
-    --sn-glass: rgb(255 255 255 / 0.62);
-    --sn-ink-top: #1f1830;
-    --sn-ink: color-mix(in oklab, var(--sn-accent) 60%, #1f1830);
-    /* Discord's own controls inside Sonata follow along. */
-    --text-default: #16121f;
-    --text-normal: #16121f;
-    --text-muted: rgb(22 18 31 / 0.62);
-    --header-primary: #16121f;
-    --header-secondary: rgb(22 18 31 / 0.75);
-    --interactive-normal: #4a3f55;
-    --interactive-hover: #16121f;
-    --input-background: rgb(255 255 255 / 0.8);
-    --background-surface-high: rgb(255 255 255 / 0.7);
-}
-
-.sonata-inverted .sonata-status-apply-on, .sonata-inverted .sonata-status-apply-off { color: #b45309; }
-.sonata-inverted .sonata-status-paused, .sonata-inverted .sonata-status-needs { color: #b91c1c; }
-
-.sonata *, .sonata *::before, .sonata *::after { box-sizing: border-box; }
+ .sonata *, .sonata *::before, .sonata *::after { box-sizing: border-box; }
 /* Italic letters lean past their own box, and a text-clipped gradient stops at the box — so the box is
    padded out on both sides (and pulled back in with negative margins, so the spacing doesn't change). */
-.sonata em { font-style: italic; font-weight: inherit; background: linear-gradient(100deg, var(--sn-hi), var(--sn-hi-2) 80%); -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0.04em 0.2em 0.08em 0.1em; margin: -0.04em -0.2em -0.08em -0.1em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.sonata em { font-style: normal; color: var(--sn-text); }
 
 /* ─── The canvas ─── */
 
-.sonata-frame {
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: 24px;
-    background: var(--sn-base);
-    box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07), inset 0 1px 0 rgb(var(--sn-ink-rgb) / 0.06);
-}
-
-.sonata-ambience { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
-
-/* A soft wash of colour from the top right, and a fainter second one bottom left. */
-.sn-mn-glow { position: absolute; inset: 0; overflow: hidden; }
-
-/* Two big soft patches of colour that drift slowly round the canvas. Only their position and size
-   change (no repainting), and each is far bigger than the canvas so its edge never comes into view. */
-.sn-mn-glow i { position: absolute; border-radius: 50%; will-change: transform; }
-.sn-mn-glow i:first-child { width: 120%; height: 130%; left: 30%; top: -75%; background: radial-gradient(closest-side, color-mix(in srgb, var(--sn-accent) 30%, transparent), transparent); animation: sn-wash-a 22s ease-in-out infinite alternate; }
-.sn-mn-glow i:last-child { width: 110%; height: 120%; left: -55%; top: 35%; background: radial-gradient(closest-side, color-mix(in srgb, var(--sn-accent-2) 17%, transparent), transparent); animation: sn-wash-b 28s ease-in-out infinite alternate; }
-.sonata-inverted .sn-mn-glow i:first-child { background: radial-gradient(closest-side, color-mix(in srgb, var(--sn-accent) 34%, transparent), transparent); }
-.sonata-inverted .sn-mn-glow i:last-child { background: radial-gradient(closest-side, color-mix(in srgb, var(--sn-accent-2) 22%, transparent), transparent); }
-
-@keyframes sn-wash-a { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-28%, 22%) scale(1.12); } 100% { transform: translate(-48%, 6%) scale(0.95); } }
-@keyframes sn-wash-b { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30%, -18%) scale(1.1); } 100% { transform: translate(55%, -4%) scale(0.92); } }
-
-/* Motion off (Appearance), or the system asks for less motion: everything holds still. */
-.sonata-still .sn-mn-glow i, .sonata-still .sn-note-bob, .sonata-still .sn-note-spin, .sonata-still .sn-ripple { animation: none !important; }
-.sonata-still .sn-ripple { display: none; }
-@media (prefers-reduced-motion: reduce) { .sn-mn-glow i { animation: none; } .sn-ripple { display: none; } }
-
-/* Thin lines splitting the canvas into quarters, like a layout grid. */
-.sn-mn-grid {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to right, rgb(var(--sn-ink-rgb) / 0.045) 1px, transparent 1px) -1px 0 / 25% 100%;
-    mask-image: linear-gradient(to bottom, #000 40%, transparent);
-}
-
-.sonata-grain {
-    position: absolute;
-    inset: 0;
-    opacity: 0.04;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
-
-.sonata-vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 30%, transparent 55%, rgb(0 0 0 / 0.5)); }
-.sonata-inverted .sonata-vignette { background: radial-gradient(120% 90% at 50% 30%, transparent 55%, rgb(60 40 90 / 0.12)); }
+.sonata-frame { position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--sn-base); }
 
 /* ─── Top bar: name, a floating pill of tabs, actions ─── */
 
-.sonata-top {
-    position: relative;
-    z-index: 3;
-    flex: none;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 16px 10px 22px;
-}
+.sonata-top { position: relative; z-index: 3; flex: none; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; min-height: 68px; padding: 14px 28px; border-bottom: 1px solid var(--sn-line); background: #141415; }
 
 .sonata-brand { all: unset; cursor: pointer; justify-self: start; display: inline-flex; align-items: center; gap: 9px; font-family: var(--sn-display); font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--sn-text); }
 .sonata-brand svg { color: var(--sn-hi); }
 .sonata-brand:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 4px; border-radius: 6px; }
 
-.sonata-tabs { display: flex; gap: 2px; padding: 4px; border-radius: 99px; background: var(--sn-surface); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.08), 0 8px 24px -12px rgb(0 0 0 / 0.5); overflow-x: auto; scrollbar-width: none; }
+.sonata-tabs { display: flex; flex-direction: column; gap: 4px; flex: 0 0 180px; min-height: 0; padding: 24px 16px; border-right: 1px solid var(--sn-line); overflow-y: auto; }
 .sonata-tabs::-webkit-scrollbar { display: none; }
 
-.sonata-tab {
-    all: unset;
-    cursor: pointer;
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 34px;
-    padding: 0 16px;
-    border-radius: 99px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--sn-muted);
-    white-space: nowrap;
-    transition: color 0.15s, background 0.15s;
-}
+.sonata-tab { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-left: 2px solid transparent; border-radius: 0 6px 6px 0; font-size: 13px; font-weight: 500; color: var(--sn-muted); white-space: nowrap; transition: color .15s, background .15s; }
 
-.sonata-tab:hover { color: var(--sn-text); background: rgb(var(--sn-ink-rgb) / 0.06); }
+.sonata-tab:hover { color: var(--sn-text); }
 .sonata-tab:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: -2px; }
-.sonata-tab-on, .sonata-tab-on:hover { color: #fff; background: linear-gradient(160deg, var(--sn-hi), var(--sn-accent-2)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25); }
-.sonata-inverted .sonata-tab-on, .sonata-inverted .sonata-tab-on:hover { color: #fff; background: #16121f; box-shadow: none; }
-.sonata-tab b { min-width: 18px; padding: 1px 6px; border-radius: 99px; font-size: 11px; font-weight: 700; text-align: center; color: inherit; background: rgb(var(--sn-ink-rgb) / 0.1); font-variant-numeric: tabular-nums; }
-.sonata-tab-on b { background: rgb(255 255 255 / 0.22); }
+.sonata-tab-on, .sonata-tab-on:hover { color: var(--sn-text); border-left-color: var(--sn-accent); background: var(--sn-faint); }
+.sonata-tab b { margin-left: auto; min-width: 20px; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; color: var(--sn-muted); background: #252527; font-variant-numeric: tabular-nums; }
+.sonata-tab-on b { background: var(--sn-faint); color: var(--sn-hi); }
 
-.sonata-corner { justify-self: end; display: flex; align-items: center; gap: 8px; }
+.sonata-corner { justify-self: end; display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 
-.sonata-close {
-    all: unset;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    color: var(--sn-text);
-    background: rgb(var(--sn-ink-rgb) / 0.08);
-}
+.sonata-close { all: unset; cursor: pointer; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; color: var(--sn-muted); }
 
 .sonata-close:hover { background: rgb(var(--sn-ink-rgb) / 0.16); }
 .sonata-corner .sonata-close { width: 38px; height: 38px; background: var(--sn-surface); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.08); }
@@ -199,11 +88,12 @@
 
 .sonata-link { all: unset; cursor: pointer; color: var(--sn-hi); text-decoration: underline; text-underline-offset: 3px; }
 
-@media (max-width: 1080px) { .sonata-top { grid-template-columns: auto 1fr auto; } .sonata-brand span { display: none; } .sonata-tabs { justify-self: center; max-width: 100%; } }
 
 /* ─── Panes ─── */
 
-.sonata-body { position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; }
+.sonata-workspace { flex: 1; min-height: 0; display: flex; }
+
+.sonata-body { position: relative; flex: 1; min-width: 0; min-height: 0; display: flex; }
 
 .sonata-pane {
     flex: 1;
@@ -217,114 +107,38 @@
 .sonata-pane-inner { width: min(1440px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 .sonata-pane-narrow { width: min(1000px, 100%); }
 
-/* A page's heading: a small label, a big wide title, and its name again, huge and faint, behind it. */
-.sonata-head { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 18px 24px; flex-wrap: wrap; padding: 26px 0 18px; border-bottom: 1px solid var(--sn-line); overflow: hidden; }
+.sonata-head { display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding: 22px 0 8px; }
 .sonata-head > div:first-child { position: relative; z-index: 1; flex: 1 1 320px; min-width: 0; }
-/* Written big and faint behind the title, as a solid fill (an outline would show the overlapping pieces the letters are built from), fading out to the left and the bottom. */
-.sonata-head-giant { position: absolute; z-index: 0; right: 0; top: 10px; font-family: var(--sn-display); font-size: 120px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: rgb(var(--sn-ink-rgb) / 0.05); white-space: nowrap; pointer-events: none; user-select: none; -webkit-mask-image: linear-gradient(to bottom, #000 25%, transparent 88%), linear-gradient(to right, transparent, #000 45%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to bottom, #000 25%, transparent 88%), linear-gradient(to right, transparent, #000 45%); mask-composite: intersect; }
 .sonata-kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sn-hi); }
 .sonata-kicker i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.sonata-head-title { margin: 10px 0 0; font-family: var(--sn-display); font-size: clamp(28px, 3.2vw, 42px); line-height: 1.05; font-weight: 300; letter-spacing: -0.03em; text-transform: uppercase; color: var(--sn-text); }
+.sonata-head-title { margin: 0; font-family: var(--sn-font); font-size: 26px; line-height: 1.25; font-weight: 600; letter-spacing: -0.5px; color: var(--sn-text); }
 .sonata-head-title b { font-weight: 700; }
-.sonata-head-sub { margin: 10px 0 0; max-width: 620px; font-size: 14px; line-height: 1.5; color: var(--sn-muted); }
+.sonata-head-sub { margin: 7px 0 0; max-width: 620px; font-size: 13px; line-height: 1.5; color: var(--sn-muted); }
 .sonata-pane-tools { position: relative; z-index: 1; flex: none; max-width: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 
-/* ─── Features: the hero ─── */
 
-.sonata-hero { position: relative; min-height: 330px; display: flex; flex-direction: column; justify-content: flex-end; padding: 34px 0 0; overflow: hidden; }
 
-/* The turning note. Its box holds the whole note however it's turned, so nothing gets clipped. */
-.sonata-hero-note { position: absolute; z-index: 1; top: 30px; right: 345px; width: 180px; height: 240px; perspective: 900px; pointer-events: none; }
-/* Rings that spread out from the note every few seconds, as if it's playing. They fade to nothing
-   well before they'd reach the edge of the header, so they're never cut off. */
-.sn-ripples { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
-.sn-ripple { position: absolute; left: -110px; top: -110px; width: 220px; height: 220px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sn-hi) 70%, transparent); opacity: 0; will-change: transform, opacity; animation: sn-ripple 6s cubic-bezier(.2, .6, .35, 1) infinite; }
-.sn-ripple:nth-child(2) { animation-delay: 2s; }
-.sn-ripple:nth-child(3) { animation-delay: 4s; }
-@keyframes sn-ripple { 0% { transform: scale(0.45); opacity: 0; } 12% { opacity: 0.55; } 100% { transform: scale(1.3); opacity: 0; } }
-.sn-note-bob, .sn-note-spin { position: absolute; inset: 0; transform-style: preserve-3d; }
-.sn-note-bob { animation: sn-note-bob 7s ease-in-out infinite; }
-.sn-note-spin { animation: sn-note-spin 14s linear infinite; }
-.sn-note-layer { position: absolute; inset: 0; }
-/* The note's sides, for when it's turned edge-on: one down the stem (its top to where it meets the head)
-   and one through the middle of the head, each kept inside the shape so it never pokes out. The note is
-   drawn 1.5× its 120×160 picture. */
-.sn-note-side { position: absolute; border-radius: 99px; background: linear-gradient(to bottom, color-mix(in oklab, var(--sn-accent) 62%, black), color-mix(in oklab, var(--sn-accent-2) 48%, black)); transform: rotateY(90deg); }
-.sn-note-side-stem { left: 99px; top: 29px; height: 160px; }
-.sn-note-side-head { left: 66px; top: 170px; height: 44px; }
-.sn-note-layer svg { display: block; width: 100%; height: 100%; }
-@keyframes sn-note-spin { from { transform: rotateX(-10deg) rotateY(0deg); } to { transform: rotateX(-10deg) rotateY(360deg); } }
-@keyframes sn-note-bob { 0%, 100% { transform: translateY(-7px); } 50% { transform: translateY(7px); } }
-@media (prefers-reduced-motion: reduce) { .sn-note-bob { animation: none; } .sn-note-spin { animation: none; transform: rotateX(-10deg) rotateY(-30deg); } }
 
-.sonata-hero-giant { position: absolute; z-index: 0; left: -0.03em; top: 60px; font-family: var(--sn-display); font-size: 220px; font-weight: 800; line-height: 1; letter-spacing: -0.05em; color: rgb(var(--sn-ink-rgb) / 0.035); white-space: nowrap; pointer-events: none; user-select: none; -webkit-mask-image: linear-gradient(to bottom, #000 20%, transparent 82%), linear-gradient(to right, #000 40%, transparent 92%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to bottom, #000 20%, transparent 82%), linear-gradient(to right, #000 40%, transparent 92%); mask-composite: intersect; }
 
-.sonata-hero-text { position: relative; z-index: 1; max-width: 760px; }
-.sonata-display { margin: 14px 0 0; display: flex; flex-direction: column; font-family: var(--sn-display); font-size: clamp(36px, 4.8vw, 66px); line-height: 1.02; font-weight: 300; letter-spacing: -0.035em; text-transform: uppercase; color: var(--sn-text); }
-.sonata-display > span { display: flex; align-items: center; gap: 0.28em; }
-.sonata-display b { font-weight: 800; }
+.sonata-toolbar { position: sticky; top: -6px; z-index: 4; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--sn-line); background: var(--sn-base); }
 
-.sonata-hero-arrow { all: unset; cursor: pointer; flex: none; display: grid; place-items: center; width: 0.95em; height: 0.95em; border-radius: 50%; font-size: 1em; color: var(--sn-text); background: var(--sn-surface); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.12); transition: background 0.15s; }
-.sonata-hero-arrow svg { width: 0.42em; height: 0.42em; }
-.sonata-hero-arrow:hover { background: rgb(var(--sn-ink-rgb) / 0.12); }
-.sonata-hero-arrow:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 3px; }
-
-.sonata-hero-lead { margin: 16px 0 0; max-width: 480px; font-size: 15px; line-height: 1.55; color: var(--sn-muted); }
-
-/* What's new, as a card in the corner. */
-.sonata-hero-news { all: unset; box-sizing: border-box; cursor: pointer; position: absolute; z-index: 2; right: 0; bottom: 74px; width: 290px; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 18px; background: var(--sn-surface); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.09), 0 18px 40px -20px rgb(0 0 0 / 0.6); transition: transform 0.15s; }
-.sonata-hero-news:hover { transform: translateY(-2px); }
-.sonata-hero-news:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 2px; }
-.sonata-hero-news small { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sn-hi); }
-.sonata-hero-news b { font-size: 14px; line-height: 1.35; color: var(--sn-text); }
-.sonata-hero-news span { font-size: 12.5px; color: var(--sn-muted); }
-
-/* The line under the hero: how much is on, and what's waiting. */
-.sonata-hero-foot { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 26px; padding: 16px 0 18px; border-top: 1px solid var(--sn-line); }
-.sonata-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; border-radius: 99px; font-size: 13px; color: var(--sn-muted); background: var(--sn-surface); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.08); }
-.sonata-badge b { display: inline-grid; place-items: center; min-width: 26px; height: 22px; padding: 0 7px; border-radius: 99px; font-size: 12px; font-weight: 800; color: #fff; background: linear-gradient(160deg, var(--sn-hi), var(--sn-accent-2)); font-variant-numeric: tabular-nums; }
-.sonata-badge-plain { padding-left: 12px; }
-button.sonata-badge { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; border-radius: 99px; font-size: 13px; font-weight: 600; color: #fcd34d; background: rgb(251 191 36 / 0.12); box-shadow: inset 0 0 0 1px rgb(251 191 36 / 0.35); }
-button.sonata-badge b { color: #1a1306; background: #fbbf24; }
-.sonata-inverted button.sonata-badge { color: #92400e; }
-
-@media (max-width: 1100px) { .sonata-hero-note { right: 30px; } .sonata-hero-news { display: none; } }
-@media (max-width: 820px) { .sonata-hero-note { display: none; } }
-
-/* ─── Features: the toolbar (stays at the top while you scroll) ─── */
-
-.sonata-toolbar {
-    position: sticky;
-    /* Flush with the top of the pane (it has 6px of padding there). */
-    top: -6px;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    border-radius: 18px;
-    background: var(--sn-surface);
-    box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.08), 0 14px 30px -18px rgb(0 0 0 / 0.65);
-}
-
-.sonata-toolbar-cats { flex: 1; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+.sonata-toolbar-cats { order: 3; flex: 1 1 100%; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .sonata-toolbar-cats::-webkit-scrollbar { display: none; }
-.sonata-toolbar .sonata-searchbox { flex: none; width: 250px; }
+.sonata-toolbar .sonata-searchbox { flex: 1; min-width: 180px; }
 .sonata-toolbar-end { flex: none; display: flex; align-items: center; gap: 6px; }
 /* Dropdowns: the text centred, room on the right for the arrow. */
-.sonata-select { box-sizing: border-box; appearance: none; -webkit-appearance: none; cursor: pointer; height: 36px; margin: 0; padding: 0 34px 0 13px; border: 0; border-radius: 11px; font: 600 13px/36px var(--sn-font); color: var(--sn-text); background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'><path d='m6 9 6 6 6-6' fill='none' stroke='%23aab0c0' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 12px center / 12px, rgb(var(--sn-ink-rgb) / 0.05); box-shadow: inset 0 0 0 1px var(--sn-line); outline: none; transition: box-shadow 0.15s, background-color 0.15s; }
+.sonata-select { box-sizing: border-box; appearance: none; -webkit-appearance: none; cursor: pointer; height: 36px; margin: 0; padding: 0 34px 0 13px; border: 0; border-radius: 6px; font: 600 13px/36px var(--sn-font); color: var(--sn-text); background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'><path d='m6 9 6 6 6-6' fill='none' stroke='%23aab0c0' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 12px center / 12px, rgb(var(--sn-ink-rgb) / 0.05); box-shadow: inset 0 0 0 1px var(--sn-line); outline: none; transition: box-shadow 0.15s, background-color 0.15s; }
 .sonata-select:hover { background-color: rgb(var(--sn-ink-rgb) / 0.08); }
 .sonata-select:focus-visible { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-accent) 65%, transparent); }
-.sonata-inverted .sonata-select { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'><path d='m6 9 6 6 6-6' fill='none' stroke='%23564d66' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
-.sonata-toolbar .sonata-select { height: 34px; line-height: 34px; border-radius: 99px; font-size: 12.5px; color: var(--sn-muted); }
+.sonata-toolbar .sonata-select { height: 34px; line-height: 34px; border-radius: 6px; font-size: 12px; color: var(--sn-muted); }
 .sonata-select option { background: #121218; color: #f4f5fa; }
 
-.sonata-searchbox { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px 0 13px; border-radius: 99px; color: var(--sn-dim); background: rgb(var(--sn-ink-rgb) / 0.05); box-shadow: inset 0 0 0 1px var(--sn-line); transition: box-shadow 0.15s, background 0.15s; }
+.sonata-searchbox { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px 0 13px; border-radius: 6px; color: var(--sn-dim); background: rgb(var(--sn-ink-rgb) / 0.05); box-shadow: inset 0 0 0 1px var(--sn-line); transition: box-shadow 0.15s, background 0.15s; }
 .sonata-searchbox:focus-within { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-accent) 65%, transparent); background: rgb(var(--sn-ink-rgb) / 0.07); }
 .sonata-searchbox-wide { flex: none; width: 300px; max-width: 100%; }
 .sonata-search { all: unset; flex: 1; min-width: 0; font-size: 13.5px; color: var(--sn-text); }
 .sonata-search::placeholder { color: var(--sn-dim); }
-.sonata-kbd { flex: none; padding: 1px 7px; border-radius: 99px; font-size: 10.5px; font-weight: 700; color: var(--sn-dim); box-shadow: inset 0 0 0 1px var(--sn-line); }
+.sonata-kbd { flex: none; padding: 1px 7px; border-radius: 6px; font-size: 10.5px; font-weight: 700; color: var(--sn-dim); box-shadow: inset 0 0 0 1px var(--sn-line); }
 .sonata-clear { all: unset; cursor: pointer; flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; color: var(--sn-muted); background: rgb(var(--sn-ink-rgb) / 0.1); }
 .sonata-clear:hover { color: var(--sn-text); }
 
@@ -337,7 +151,7 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
     gap: 7px;
     height: 34px;
     padding: 0 13px;
-    border-radius: 99px;
+    border-radius: 6px;
     font-size: 13px;
     font-weight: 600;
     color: var(--sn-muted);
@@ -349,46 +163,30 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 .sonata-chip small { font-size: 11.5px; font-weight: 600; color: var(--sn-dim); font-variant-numeric: tabular-nums; }
 .sonata-chip:hover { color: var(--sn-text); background: rgb(var(--sn-ink-rgb) / 0.06); }
 .sonata-chip:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: -2px; }
-.sonata-chip-on, .sonata-chip-on:hover { color: var(--sn-text); background: color-mix(in srgb, var(--sn-accent) 22%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-hi) 40%, transparent); }
+.sonata-chip-on, .sonata-chip-on:hover { color: var(--sn-text); background: var(--sn-faint); box-shadow: inset 0 0 0 1px var(--sn-line); }
 .sonata-chip-on small { color: var(--sn-muted); }
 
 /* ─── Features: groups & cards ─── */
 
 .sonata-group { display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 70px; }
 .sonata-group + .sonata-group { margin-top: 16px; }
-.sonata-group-head { display: flex; align-items: center; gap: 12px; margin: 0; padding: 14px 2px 0; border-top: 1px solid var(--sn-line); }
+.sonata-group-head { display: flex; align-items: center; gap: 12px; margin: 0; padding: 8px 0 0; }
 .sonata-group-name { display: inline-flex; align-items: center; gap: 10px; font-family: var(--sn-display); font-size: 14px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sn-text); }
 .sonata-group-name i { width: 8px; height: 8px; border-radius: 50%; }
 .sonata-group-count { margin-left: auto; font-size: 12.5px; color: var(--sn-dim); font-variant-numeric: tabular-nums; }
 .sonata-group-count b { color: var(--sn-text); font-weight: 700; }
 
-.sonata-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.sonata-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 10px; }
 
-.sonata-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 16px;
-    border-radius: 18px;
-    cursor: default;
-    background: var(--sn-glass);
-    box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07);
-    transition: box-shadow 0.15s, background 0.15s;
-    /* Cards scrolled out of sight aren't drawn at all. */
-    content-visibility: auto;
-    contain-intrinsic-size: auto 150px;
-}
+.sonata-card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 8px; cursor: default; background: var(--sn-surface); box-shadow: inset 0 0 0 1px var(--sn-line); transition: box-shadow 0.15s, background 0.15s; content-visibility: auto; contain-intrinsic-size: auto 150px; }
 
 .sonata-card[role="button"] { cursor: pointer; }
 .sonata-card:hover { background: rgb(var(--sn-ink-rgb) / 0.065); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.14); }
 .sonata-card:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 2px; }
 
 /* On: a wash of the accent from the top left, inside the card. */
-.sonata-card-lit { background: linear-gradient(150deg, color-mix(in srgb, var(--sn-accent) 15%, transparent), rgb(var(--sn-ink-rgb) / 0.03) 60%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-accent) 30%, transparent), inset 0 1px 0 rgb(var(--sn-ink-rgb) / 0.08); }
-.sonata-card-lit:hover { background: linear-gradient(150deg, color-mix(in srgb, var(--sn-accent) 20%, transparent), rgb(var(--sn-ink-rgb) / 0.05) 60%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-accent) 48%, transparent); }
-.sonata-inverted .sonata-card { background: rgb(255 255 255 / 0.55); }
-.sonata-inverted .sonata-card-lit { background: linear-gradient(150deg, color-mix(in srgb, var(--sn-accent) 16%, white), rgb(255 255 255 / 0.7) 60%); }
+.sonata-card-lit { background: var(--sn-surface); box-shadow: inset 2px 0 var(--sn-accent), inset 0 0 0 1px var(--sn-line); }
+.sonata-card-lit:hover { background: color-mix(in srgb, var(--sn-surface) 94%, var(--sn-accent)); box-shadow: inset 2px 0 var(--sn-accent), inset 0 0 0 1px var(--sn-line); }
 
 .sonata-card-open, .sonata-card-open:hover { grid-column: 1 / -1; cursor: default; padding: 18px 20px 20px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-hi) 45%, transparent); content-visibility: visible; }
 .sonata-card-pending { box-shadow: inset 0 0 0 1px rgb(251 191 36 / 0.45); }
@@ -400,7 +198,7 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 .sonata-card-more { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; font-weight: 600; color: var(--sn-dim); }
 .sonata-card:hover .sonata-card-more { color: var(--sn-muted); }
 
-.sonata-tag { flex: none; padding: 1px 7px; border-radius: 99px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sn-hi); background: var(--sn-faint); }
+.sonata-tag { flex: none; padding: 1px 7px; border-radius: 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sn-hi); background: var(--sn-faint); }
 .sonata-instant { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--sn-hi); }
 
 .sonata-status { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 12px; font-weight: 600; color: var(--sn-dim); }
@@ -408,7 +206,6 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 .sonata-status span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sonata-status-active { color: var(--sn-soft); }
 .sonata-status-active i { background: var(--sn-hi); }
-.sonata-inverted .sonata-status-active { color: var(--sn-hi); }
 .sonata-status-apply-on i, .sonata-status-apply-off i { background: #fbbf24; }
 .sonata-status-apply-on, .sonata-status-apply-off { color: #fcd34d; }
 .sonata-status-paused, .sonata-status-needs { color: #fca5a5; }
@@ -421,32 +218,11 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 
 /* ─── Switch ─── */
 
-.sonata-switch {
-    all: unset;
-    cursor: pointer;
-    position: relative;
-    flex-shrink: 0;
-    width: 42px;
-    height: 24px;
-    border-radius: 99px;
-    background: rgb(var(--sn-ink-rgb) / 0.13);
-    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.3), inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07);
-    transition: background 0.2s;
-}
+.sonata-switch { all: unset; cursor: pointer; position: relative; flex-shrink: 0; width: 42px; height: 24px; border-radius: 12px; background: #3a3a3d; transition: background .15s; }
 
-.sonata-switch-knob {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: linear-gradient(180deg, #fff, #dfe4ef);
-    box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
-    transition: transform 0.22s cubic-bezier(.3, 1.4, .5, 1);
-}
+.sonata-switch-knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #f1efed; transition: transform .15s; }
 
-.sonata-switch-on { background: linear-gradient(160deg, var(--sn-hi), var(--sn-accent-2)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28); }
+.sonata-switch-on { background: var(--sn-accent); }
 .sonata-switch-on .sonata-switch-knob { transform: translateX(18px); }
 .sonata-switch-pending { outline: 1px dashed #fbbf24; outline-offset: 2px; }
 .sonata-switch:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 2px; }
@@ -460,8 +236,7 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 
 /* Equicord's own option controls, re-tinted for Sonata. */
 .sonata-options-list, .sonata-legacy { color: var(--sn-text); }
-.sonata-options-list [class*="title"], .sonata-options-list h5, .sonata-options-list label { color: var(--sn-text); }
-.sonata-options-list [class*="description"], .sonata-options-list [class*="Description"] { color: var(--sn-muted); }
+.sonata-options-list h5, .sonata-options-list label { color: var(--sn-text); }
 
 /* ─── Buttons ─── */
 
@@ -470,7 +245,7 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
     cursor: pointer;
     align-self: flex-start;
     padding: 8px 16px;
-    border-radius: 99px;
+    border-radius: 6px;
     font-size: 13px;
     font-weight: 650;
     color: var(--sn-text);
@@ -484,23 +259,22 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 .sonata-btn:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 2px; }
 .sonata-btn-light { color: #0a0c12; background: #fff; box-shadow: none; }
 .sonata-btn-light:hover { background: #e7ebf5; }
-.sonata-inverted .sonata-btn-light { color: #fff; background: #16121f; }
-.sonata-btn-accent { color: #fff; background: linear-gradient(160deg, var(--sn-hi), var(--sn-accent-2)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25); }
-.sonata-btn-accent:hover { filter: brightness(1.08); background: linear-gradient(160deg, var(--sn-hi), var(--sn-accent-2)); }
+.sonata-btn-accent { color: var(--sn-text); background: var(--sn-faint); box-shadow: inset 0 0 0 1px var(--sn-accent); }
+.sonata-btn-accent:hover { background: color-mix(in srgb, var(--sn-accent) 24%, transparent); }
 .sonata-more { align-self: center; margin-top: 6px; }
 
-.sonata-icon-btn { all: unset; cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; color: var(--sn-muted); }
+.sonata-icon-btn { all: unset; cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 6px; color: var(--sn-muted); }
 .sonata-icon-btn:hover { color: var(--sn-text); background: rgb(var(--sn-ink-rgb) / 0.08); }
 
 /* ─── Segments ─── */
 
-.sonata-segment { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border-radius: 99px; background: rgb(var(--sn-ink-rgb) / 0.05); box-shadow: inset 0 0 0 1px var(--sn-line); }
+.sonata-segment { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border-radius: 6px; background: #202022; border: 1px solid var(--sn-line); }
 .sonata-segment-left { align-self: flex-start; }
 
-.sonata-seg { all: unset; cursor: pointer; padding: 6px 15px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--sn-muted); transition: color 0.15s, background 0.15s; }
+.sonata-seg { all: unset; cursor: pointer; padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--sn-muted); transition: color 0.15s, background 0.15s; }
 .sonata-seg:hover { color: var(--sn-text); }
 .sonata-seg:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: -2px; }
-.sonata-seg-on, .sonata-seg-on:hover { color: #fff; background: linear-gradient(160deg, var(--sn-hi), var(--sn-accent-2)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22); }
+.sonata-seg-on, .sonata-seg-on:hover { color: var(--sn-text); background: var(--sn-faint); }
 
 /* ─── Plugins ─── */
 
@@ -511,7 +285,7 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
     align-items: center;
     gap: 12px;
     padding: 13px 12px 13px 16px;
-    border-radius: 16px;
+    border-radius: 6px;
     background: var(--sn-glass);
     box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07);
     content-visibility: auto;
@@ -525,13 +299,13 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 
 /* ─── Panels (dock, keybinds, appearance, performance) ─── */
 
-.sonata-panel { position: relative; width: 100%; padding: 20px; border-radius: 20px; background: var(--sn-glass); box-shadow: inset 0 0 0 1px var(--sn-line); }
-.sonata-panel-title { margin: 0 0 2px; font-family: var(--sn-display); font-size: 14px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sn-text); }
+.sonata-panel { position: relative; width: 100%; padding: 20px; border: 1px solid var(--sn-line); border-radius: 8px; background: var(--sn-surface); }
+.sonata-panel-title { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--sn-text); }
 .sonata-legacy [class*="vc-chsettings-"] { --background-secondary: rgb(var(--sn-ink-rgb) / 0.04); --background-tertiary: rgb(var(--sn-ink-rgb) / 0.06); }
 .sonata-legacy .vc-chsettings-keybind-row, .sonata-legacy .vc-chsettings-dock-cell, .sonata-legacy .vc-chsettings-dock-add-section {
     background: rgb(var(--sn-ink-rgb) / 0.04);
     border: 1px solid rgb(var(--sn-ink-rgb) / 0.07);
-    border-radius: 14px;
+    border-radius: 6px;
 }
 
 /* Two columns side by side when there's room, one under the other when there isn't. */
@@ -565,76 +339,51 @@ button.sonata-badge b { color: #1a1306; background: #fbbf24; }
 .sonata-swatch-custom span { font-size: 18px; font-weight: 700; color: rgb(255 255 255 / 0.9); text-shadow: 0 1px 3px rgb(0 0 0 / 0.5); pointer-events: none; }
 .sonata-swatch-custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-.sonata-swatch-grad { width: 52px; border-radius: 99px; background: linear-gradient(135deg, var(--sw), var(--sw2)); }
+.sonata-swatch-grad { width: 52px; border-radius: 6px; background: linear-gradient(135deg, var(--sw), var(--sw2)); }
 
 .sonata-gradient-edit { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.sonata-gradient-bar { flex: 1; min-width: 120px; height: 14px; border-radius: 99px; box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.15); }
+.sonata-gradient-bar { flex: 1; min-width: 120px; height: 14px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.15); }
 .sonata-color { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--sn-dim); cursor: pointer; }
 /* Round, like the gradient swatches above them. */
-.sonata-color input { appearance: none; width: 52px; height: 34px; padding: 0; border: 0; border-radius: 99px; overflow: hidden; background: none; cursor: pointer; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.15); transition: transform 0.15s; }
+.sonata-color input { appearance: none; width: 52px; height: 34px; padding: 0; border: 0; border-radius: 6px; overflow: hidden; background: none; cursor: pointer; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.15); transition: transform 0.15s; }
 .sonata-color input:hover { transform: scale(1.08); }
 .sonata-color input:focus-visible { outline: 2px solid var(--sn-text); outline-offset: 3px; }
 .sonata-color input::-webkit-color-swatch-wrapper { padding: 0; }
-.sonata-color input::-webkit-color-swatch { border: 0; border-radius: 99px; }
+.sonata-color input::-webkit-color-swatch { border: 0; border-radius: 6px; }
 
 .sonata-range-field { gap: 8px; }
 .sonata-range-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .sonata-range-value { font-size: 13px; color: var(--sn-text); font-variant-numeric: tabular-nums; }
 .sonata-range { width: 100%; margin: 0; accent-color: var(--sn-hi); cursor: pointer; }
 
-.sonata-album { display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 14px; background: rgb(var(--sn-ink-rgb) / 0.04); }
+.sonata-album { display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 6px; background: rgb(var(--sn-ink-rgb) / 0.04); }
 .sonata-album img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; flex: none; }
 .sonata-album > div:nth-child(2) { flex: 1; min-width: 0; }
 .sonata-album-title { font-size: 14px; font-weight: 600; color: var(--sn-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sonata-album-chips { display: flex; gap: 6px; }
 .sonata-album-chips span { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.25); }
 
-/* Background layers (Appearance). */
-.sonata-layers { display: flex; flex-wrap: wrap; gap: 6px; }
-
-.sonata-layer {
-    all: unset;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 14px 7px 11px;
-    border-radius: 99px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--sn-muted);
-    background: rgb(var(--sn-ink-rgb) / 0.05);
-    box-shadow: inset 0 0 0 1px var(--sn-line);
-    transition: color 0.15s, background 0.15s;
-}
-
-.sonata-layer i { width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--sn-ink-rgb) / 0.2); transition: background 0.15s; }
-.sonata-layer:hover { color: var(--sn-text); }
-.sonata-layer-on { color: var(--sn-text); background: color-mix(in srgb, var(--sn-accent) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-hi) 40%, transparent); }
-.sonata-layer-on i { background: var(--sn-hi); }
-.sonata-layer:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 2px; }
-
 .sonata-footer { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 30px; font-size: 12px; color: var(--sn-dim); }
 
 /* ─── As a full-screen window ─── */
 
-.sonata-window { pointer-events: all; position: relative; width: 100vw; height: 100vh; animation: sonata-in 0.28s cubic-bezier(.2, .8, .2, 1); }
+.sonata-window { pointer-events: all; position: fixed; inset: 0; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #111112; animation: sonata-in 0.18s ease-out; }
 .sonata-drag { position: absolute; z-index: 10; top: 0; left: 0; right: 0; height: var(--sn-safe-top, 0px); -webkit-app-region: drag; app-region: drag; }
 .sonata-window-closing { animation: sonata-out 0.18s ease-in forwards; }
 
-@keyframes sonata-in { from { opacity: 0; transform: scale(1.015); } to { opacity: 1; transform: none; } }
-@keyframes sonata-out { to { opacity: 0; transform: scale(1.01); } }
+@keyframes sonata-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sonata-out { to { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) { .sonata-window, .sonata-window-closing { animation: none; } }
 
 /* ─── Seasons & holidays ─── */
-.sonata-occasion { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: rgb(var(--sn-ink-rgb) / 0.05); border: 1px solid var(--sn-line); }
+.sonata-occasion { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 6px; background: rgb(var(--sn-ink-rgb) / 0.05); border: 1px solid var(--sn-line); }
 .sonata-occasion-emoji { font-size: 30px; line-height: 1; }
 .sonata-occasion-text { flex: 1; min-width: 0; }
 .sonata-occasion-name { font-size: 16px; font-weight: 700; color: var(--sn-text); }
 .sonata-occasion-chip { display: inline-block; width: 26px; height: 26px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.25); }
 .sonata-occasion-all { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.sonata-occasion-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 99px; font-size: 12.5px; color: var(--sn-muted); background: rgb(var(--sn-ink-rgb) / 0.04); border: 1px solid var(--sn-line); }
+.sonata-occasion-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 6px; font-size: 12.5px; color: var(--sn-muted); background: rgb(var(--sn-ink-rgb) / 0.04); border: 1px solid var(--sn-line); }
 .sonata-occasion-pill .sonata-occasion-chip { width: 18px; height: 18px; }
 .sonata-occasion-pill-on { color: var(--sn-text); border-color: var(--sn-accent); background: color-mix(in srgb, var(--sn-accent) 16%, transparent); }
 .sonata-occasion-switches { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 10px; }
@@ -661,7 +410,7 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
     gap: 6px;
     height: 34px;
     padding: 0 13px;
-    border-radius: 99px;
+    border-radius: 6px;
     font-size: 12.5px;
     font-weight: 600;
     color: var(--sn-text);
@@ -680,20 +429,20 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 /* ─── Performance ─── */
 .sonata-perf { display: flex; flex-direction: column; gap: 10px; }
 .sonata-perf > .sonata-field-label { margin-top: 8px; }
-.sonata-perf-hero { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 18px 20px; border-radius: 18px; background: linear-gradient(135deg, color-mix(in srgb, var(--sn-accent) 22%, transparent), color-mix(in srgb, var(--sn-accent-2) 10%, transparent)); border: 1px solid color-mix(in srgb, var(--sn-accent) 35%, transparent); }
+.sonata-perf-hero { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 18px 20px; border-radius: 6px; background: var(--sn-faint); border: 1px solid color-mix(in srgb, var(--sn-accent) 35%, transparent); }
 .sonata-perf-hero-title { font-size: 18px; font-weight: 800; color: var(--sn-text, #fff); }
-.sonata-perf-row { position: relative; display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-radius: 16px; cursor: pointer; background: hsl(0 0% 100% / 0.03); border: 1px solid hsl(0 0% 100% / 0.06); transition: background 0.15s, border-color 0.15s; }
+.sonata-perf-row { position: relative; display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-radius: 6px; cursor: pointer; background: hsl(0 0% 100% / 0.03); border: 1px solid hsl(0 0% 100% / 0.06); transition: background 0.15s, border-color 0.15s; }
 .sonata-perf-row:hover { background: hsl(0 0% 100% / 0.055); }
 .sonata-perf-row-on { border-color: color-mix(in srgb, var(--sn-accent) 40%, transparent); }
 .sonata-perf-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .sonata-perf-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 15px; font-weight: 700; color: var(--sn-text, #fff); }
 .sonata-perf-text .sonata-field-hint { margin-top: 3px; }
-.sonata-perf-impact { padding: 1px 8px; border-radius: 99px; font-size: 11px; font-style: normal; font-weight: 700; letter-spacing: 0.02em; }
+.sonata-perf-impact { padding: 1px 8px; border-radius: 6px; font-size: 11px; font-style: normal; font-weight: 700; letter-spacing: 0.02em; }
 .sonata-perf-big { color: #4ade80; background: rgb(74 222 128 / 0.14); }
 .sonata-perf-medium { color: #facc15; background: rgb(250 204 21 / 0.12); }
 .sonata-perf-small { color: var(--sn-muted); background: hsl(0 0% 100% / 0.07); }
 .sonata-perf-row input { position: absolute; opacity: 0; pointer-events: none; }
-.sonata-perf-switch { flex: none; position: relative; width: 44px; height: 24px; border-radius: 24px; background: hsl(0 0% 100% / 0.16); transition: background 0.15s; }
+.sonata-perf-switch { flex: none; position: relative; width: 44px; height: 24px; border-radius: 6px; background: hsl(0 0% 100% / 0.16); transition: background 0.15s; }
 .sonata-perf-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform 0.18s cubic-bezier(0.3, 1.4, 0.5, 1); }
 .sonata-perf-row input:checked ~ .sonata-perf-switch { background: var(--sn-accent); }
 .sonata-perf-row input:checked ~ .sonata-perf-switch::after { transform: translateX(20px); }
@@ -702,33 +451,33 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-perf-row-static { cursor: default; }
 .sonata-perf-row-static:hover { background: hsl(0 0% 100% / 0.03); }
 .sonata-perf-seg { margin-top: 10px; flex-wrap: wrap; }
-.sonata-perf-gaming { background: linear-gradient(135deg, hsl(140 60% 45% / 0.14), hsl(200 70% 50% / 0.08)); border-color: hsl(140 60% 50% / 0.3); }
+.sonata-perf-gaming { background: var(--sn-faint); border-color: hsl(140 60% 50% / 0.3); }
 .sonata-perf-gaming-on { border-color: hsl(140 70% 55% / 0.7); box-shadow: inset 0 0 0 1px hsl(140 70% 55% / 0.35), inset 0 0 36px -16px hsl(140 70% 50% / 0.45); }
 .sonata-perf-hero-title .sonata-perf-impact { margin-left: 6px; vertical-align: middle; }
 
 /* ─── Welcome tour & What's new ─── */
 .sonata-welcome { position: absolute; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: hsl(0 0% 0% / 0.55); backdrop-filter: blur(6px); animation: sonata-welcome-fade 0.3s ease; }
 @keyframes sonata-welcome-fade { from { opacity: 0; } }
-.sonata-welcome-card { width: min(640px, 100%); max-height: calc(100% - 20px); overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 30px 32px; border-radius: 26px; background: color-mix(in srgb, var(--sn-bg, #0b0d12) 88%, var(--sn-accent) 12%); border: 1px solid color-mix(in srgb, var(--sn-accent) 35%, transparent); box-shadow: 0 30px 80px hsl(0 0% 0% / 0.55); animation: sonata-welcome-rise 0.45s cubic-bezier(0.2, 1.2, 0.4, 1); color: var(--sn-text); }
+.sonata-welcome-card { width: min(640px, 100%); max-height: calc(100% - 20px); overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 30px 32px; border-radius: 6px; background: var(--sn-surface); border: 1px solid color-mix(in srgb, var(--sn-accent) 35%, transparent); box-shadow: 0 30px 80px hsl(0 0% 0% / 0.55); animation: sonata-welcome-rise 0.45s cubic-bezier(0.2, 1.2, 0.4, 1); color: var(--sn-text); }
 @keyframes sonata-welcome-rise { from { opacity: 0; transform: translateY(18px) scale(0.97); } }
-.sonata-welcome-card h2 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
-.sonata-welcome-card h2 em { font-style: italic; padding-right: 0.08em; background: linear-gradient(90deg, var(--sn-accent), var(--sn-accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sonata-welcome-card h2 { margin: 0; font-size: 26px; font-weight: 600; line-height: 1.25; color: var(--sn-text); }
+.sonata-welcome-card h2 em { font-style: normal; color: var(--sn-text); }
 .sonata-welcome-card p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--sn-muted); }
 .sonata-welcome-small { font-size: 12.5px !important; color: var(--sn-dim) !important; }
-.sonata-welcome-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 20px; font-size: 32px; color: #fff; background: linear-gradient(135deg, var(--sn-accent), var(--sn-accent-2)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25); }
+.sonata-welcome-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 6px; font-size: 32px; color: #fff; background: var(--sn-faint); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25); }
 .sonata-welcome-dots { display: flex; gap: 6px; }
 .sonata-welcome-dots i { width: 22px; height: 5px; border-radius: 5px; background: hsl(0 0% 100% / 0.14); transition: background 0.2s, width 0.2s; }
 .sonata-welcome-dots i.on { width: 34px; background: var(--sn-accent); }
 .sonata-welcome-dots i.done { background: color-mix(in srgb, var(--sn-accent) 55%, transparent); }
 .sonata-welcome-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; }
 .sonata-welcome-picks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.sonata-welcome-pick { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 16px; border: 1px solid hsl(0 0% 100% / 0.08); background: hsl(0 0% 100% / 0.03); transition: border-color 0.15s, background 0.15s; }
+.sonata-welcome-pick { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 6px; border: 1px solid hsl(0 0% 100% / 0.08); background: hsl(0 0% 100% / 0.03); transition: border-color 0.15s, background 0.15s; }
 .sonata-welcome-pick:hover { background: hsl(0 0% 100% / 0.06); }
 .sonata-welcome-pick:focus-visible { outline: 2px solid var(--sn-accent); }
 .sonata-welcome-pick.on { border-color: var(--sn-accent); background: color-mix(in srgb, var(--sn-accent) 14%, transparent); }
 .sonata-welcome-pick-icon { font-size: 24px; }
 .sonata-welcome-pick-name { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: var(--sn-text); }
-.sonata-welcome-pick-name i { padding: 1px 8px; border-radius: 99px; font-size: 11px; font-style: normal; color: #fff; background: var(--sn-accent); }
+.sonata-welcome-pick-name i { padding: 1px 8px; border-radius: 6px; font-size: 11px; font-style: normal; color: #fff; background: var(--sn-accent); }
 .sonata-welcome-swatches { margin-top: 2px; }
 .sonata-welcome-tips { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; line-height: 1.5; color: var(--sn-muted); }
 .sonata-welcome-tips b { color: var(--sn-text); }
@@ -742,30 +491,30 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 @media (width <= 640px) { .sonata-welcome-picks { grid-template-columns: 1fr; } }
 
 /* ─── Disk space & memory ─── */
-.sonata-cache { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 18px; background: hsl(0 0% 100% / 0.03); border: 1px solid hsl(0 0% 100% / 0.06); }
+.sonata-cache { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 6px; background: hsl(0 0% 100% / 0.03); border: 1px solid hsl(0 0% 100% / 0.06); }
 .sonata-cache-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .sonata-cache-big { font-size: 22px; font-weight: 800; color: var(--sn-text); font-variant-numeric: tabular-nums; }
-.sonata-cache-kind { display: flex; flex-direction: column; gap: 5px; padding: 10px 12px; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.05); transition: border-color 0.15s, background 0.15s; }
+.sonata-cache-kind { display: flex; flex-direction: column; gap: 5px; padding: 10px 12px; border-radius: 6px; border: 1px solid hsl(0 0% 100% / 0.05); transition: border-color 0.15s, background 0.15s; }
 .sonata-cache-kind-on { border-color: color-mix(in srgb, var(--sn-accent) 35%, transparent); background: color-mix(in srgb, var(--sn-accent) 6%, transparent); }
 .sonata-cache-kind-top { display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .sonata-cache-kind-top input { width: 16px; height: 16px; accent-color: var(--sn-accent); cursor: pointer; }
 .sonata-cache-kind-name { flex: 1; font-size: 14.5px; font-weight: 700; color: var(--sn-text); }
 .sonata-cache-kind-size { font-size: 13px; font-weight: 700; color: var(--sn-text); font-variant-numeric: tabular-nums; }
 .sonata-cache-bar { height: 6px; border-radius: 6px; overflow: hidden; background: hsl(0 0% 100% / 0.07); }
-.sonata-cache-bar > div { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--sn-accent), var(--sn-accent-2)); transition: width 0.4s ease; }
+.sonata-cache-bar > div { height: 100%; border-radius: 6px; background: var(--sn-faint); transition: width 0.4s ease; }
 .sonata-cache-link { align-self: flex-start; font-size: 12.5px; }
 .sonata-cache-version { display: flex; justify-content: space-between; gap: 10px; padding: 3px 4px; font-size: 12.5px; color: var(--sn-muted); font-variant-numeric: tabular-nums; }
 .sonata-cache-auto, .sonata-cache-history, .sonata-cache-storage, .sonata-cache-memory { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid hsl(0 0% 100% / 0.06); }
 .sonata-cache-parts { display: flex; flex-wrap: wrap; gap: 6px; }
-.sonata-cache-part { padding: 3px 10px; border-radius: 99px; font-size: 12px; color: var(--sn-muted); background: hsl(0 0% 100% / 0.06); }
+.sonata-cache-part { padding: 3px 10px; border-radius: 6px; font-size: 12px; color: var(--sn-muted); background: hsl(0 0% 100% / 0.06); }
 .sonata-cache-part b { color: var(--sn-text); }
 .sonata-cache-row-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .sonata-cache-thing { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 6px 4px; font-size: 13.5px; color: var(--sn-text); border-bottom: 1px solid hsl(0 0% 100% / 0.04); }
 .sonata-cache-thing-size { font-size: 12.5px; color: var(--sn-muted); font-variant-numeric: tabular-nums; }
 .sonata-btn-danger { color: #fff !important; background: #d83c3e !important; }
-.sonata-cache-restart { padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.45; color: var(--sn-text); background: rgb(240 178 50 / 0.12); border: 1px solid rgb(240 178 50 / 0.4); }
+.sonata-cache-restart { padding: 10px 12px; border-radius: 6px; font-size: 13px; line-height: 1.45; color: var(--sn-text); background: rgb(240 178 50 / 0.12); border: 1px solid rgb(240 178 50 / 0.4); }
 .sonata-cache-parts-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; padding-left: 26px; }
-.sonata-cache-subpart { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; cursor: pointer; }
+.sonata-cache-subpart { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
 .sonata-cache-subpart:hover { background: hsl(0 0% 100% / 0.03); }
 .sonata-cache-subpart input { width: 15px; height: 15px; accent-color: var(--sn-accent); }
 .sonata-cache-subpart-text { display: flex; flex-direction: column; font-size: 13.5px; font-weight: 600; color: var(--sn-text); }
@@ -781,7 +530,7 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-cache-legend i.w { background: var(--sn-accent); }
 .sonata-cache-legend i.j { background: #f0b232; }
 .sonata-cache-deep { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid hsl(0 0% 100% / 0.06); }
-.sonata-cache-deep-proc { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: hsl(0 0% 100% / 0.03); }
+.sonata-cache-deep-proc { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 6px; background: hsl(0 0% 100% / 0.03); }
 .sonata-cache-deep-title { font-size: 13.5px; font-weight: 800; color: var(--sn-text); }
 .sonata-cache-deep-row { display: grid; grid-template-columns: 170px 1fr 70px; align-items: center; gap: 10px; font-size: 13px; color: var(--sn-muted); cursor: help; }
 .sonata-cache-deep-row b { text-align: right; color: var(--sn-text); font-variant-numeric: tabular-nums; }
@@ -789,28 +538,28 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-cache-part-warn { color: #f0b232; background: rgb(240 178 50 / 0.12); }
 
 /* Feature icons */
-.sonata-card-icon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 13px; color: #fff; background: linear-gradient(150deg, var(--sn-hi), var(--sn-accent-2)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 -8px 16px -8px rgb(0 0 0 / 0.25); transition: color .2s, background .2s; }
+.sonata-card-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 7px; color: var(--sn-hi); background: var(--sn-faint); }
 .sonata-card:not(.sonata-card-lit) .sonata-card-top > .sonata-card-icon { color: var(--sn-muted); background: rgb(var(--sn-ink-rgb) / 0.06); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.08); }
 .sonata-icon-choose { display: flex; flex-direction: column; gap: 8px; padding: 8px 0 4px; }
 .sonata-icon-choose-row { display: flex; align-items: center; gap: 10px; }
-.sonata-icon-choose .sonata-card-icon { width: 30px; height: 30px; border-radius: 9px; }
+.sonata-icon-choose .sonata-card-icon { width: 30px; height: 30px; border-radius: 6px; }
 .sonata-spacer { flex: 1; }
 
 /* Update log */
-.sonata-updates { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px; border-radius: 999px; font-size: 13.5px; font-weight: 700; color: var(--sn-text); background: var(--sn-surface); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.08); transition: background 0.15s; }
+.sonata-updates { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 7px 11px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--sn-text); background: var(--sn-surface); box-shadow: inset 0 0 0 1px var(--sn-line); transition: background 0.15s; }
 .sonata-updates:hover { background: rgb(var(--sn-ink-rgb) / 0.12); }
 .sonata-updates:focus-visible { outline: 2px solid var(--sn-accent); }
-.sonata-updates-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--sn-accent), var(--sn-accent-2)); box-sizing: border-box; }
+.sonata-updates-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff; background: var(--sn-faint); box-sizing: border-box; }
 .sonata-log { width: min(780px, 100%); gap: 12px; padding: 24px 26px; }
 .sonata-log-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .sonata-log-top .sonata-close { flex: none; }
 .sonata-log-tools { display: flex; gap: 8px; }
-.sonata-log-search { flex: 1; min-width: 0; padding: 10px 14px; border-radius: 12px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 0% / 0.25); color: var(--sn-text); font: inherit; font-size: 14px; outline: none; }
+.sonata-log-search { flex: 1; min-width: 0; padding: 10px 14px; border-radius: 6px; border: 1px solid hsl(0 0% 100% / 0.1); background: hsl(0 0% 0% / 0.25); color: var(--sn-text); font: inherit; font-size: 14px; outline: none; }
 .sonata-log-search:focus { border-color: var(--sn-accent); }
 .sonata-log-list { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; margin-right: -10px; padding-right: 10px; }
 .sonata-log-month { display: flex; flex-direction: column; gap: 6px; }
 .sonata-log-month-name { position: sticky; top: 0; z-index: 1; padding: 4px 0; font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sn-dim); background: color-mix(in srgb, var(--sn-bg, #0b0d12) 88%, var(--sn-accent) 12%); }
-.sonata-log-entry { border-radius: 14px; border: 1px solid hsl(0 0% 100% / 0.07); background: hsl(0 0% 100% / 0.025); overflow: hidden; }
+.sonata-log-entry { border-radius: 6px; border: 1px solid hsl(0 0% 100% / 0.07); background: hsl(0 0% 100% / 0.025); overflow: hidden; }
 .sonata-log-entry-new { border-color: color-mix(in srgb, var(--sn-accent) 45%, transparent); }
 .sonata-log-head { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; }
 .sonata-log-head:hover { background: hsl(0 0% 100% / 0.04); }
@@ -820,8 +569,8 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-log-title b { font-size: 14.5px; color: var(--sn-text); }
 .sonata-log-title small { font-size: 12px; color: var(--sn-dim); }
 .sonata-log-head > i { flex: none; font-style: normal; color: var(--sn-dim); }
-.sonata-log-new, .sonata-log-latest { flex: none; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
-.sonata-log-new { color: #fff; background: linear-gradient(135deg, var(--sn-accent), var(--sn-accent-2)); }
+.sonata-log-new, .sonata-log-latest { flex: none; padding: 2px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+.sonata-log-new { color: #fff; background: var(--sn-faint); }
 .sonata-log-latest { color: var(--sn-muted); background: hsl(0 0% 100% / 0.08); }
 .sonata-log-entry ul { margin: 0; padding: 2px 16px 14px 78px; display: flex; flex-direction: column; gap: 8px; list-style: none; }
 .sonata-log-entry li { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.5; color: var(--sn-muted); }
@@ -833,17 +582,17 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 /* ── Profiles ── */
 .sonata-profiles { position: relative; }
 .sonata-profiles-open { background: rgb(var(--sn-ink-rgb) / 0.16); }
-.sonata-profiles-pop { position: absolute; top: calc(100% + 8px); right: 0; width: 320px; max-height: min(480px, 70vh); overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 18px; color: var(--sn-text); background: color-mix(in srgb, var(--sn-deep) 90%, transparent); border: 1px solid rgb(var(--sn-ink-rgb) / 0.12); box-shadow: 0 18px 50px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(var(--sn-ink-rgb) / 0.14); -webkit-backdrop-filter: var(--sn-blur); backdrop-filter: var(--sn-blur); animation: sonata-profiles-in 0.14s ease-out; }
+.sonata-profiles-pop { position: absolute; top: calc(100% + 8px); right: 0; width: 320px; max-height: min(480px, 70vh); overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 6px; color: var(--sn-text); background: color-mix(in srgb, var(--sn-deep) 90%, transparent); border: 1px solid rgb(var(--sn-ink-rgb) / 0.12); box-shadow: 0 18px 50px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(var(--sn-ink-rgb) / 0.14); -webkit-backdrop-filter: var(--sn-blur); backdrop-filter: var(--sn-blur); animation: sonata-profiles-in 0.14s ease-out; }
 @keyframes sonata-profiles-in { from { opacity: 0; transform: translateY(-4px); } }
 .sonata-profiles-head { display: flex; flex-direction: column; gap: 2px; }
 .sonata-profiles-head b { font-size: 15px; }
 .sonata-profiles-head span { font-size: 12.5px; opacity: 0.7; }
-.sonata-profiles-undo { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; font-size: 12.5px; background: rgb(var(--sn-ink-rgb) / 0.07); }
+.sonata-profiles-undo { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 6px; font-size: 12.5px; background: rgb(var(--sn-ink-rgb) / 0.07); }
 .sonata-profiles-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
-.sonata-profiles-row { display: flex; align-items: center; gap: 4px; border-radius: 12px; }
+.sonata-profiles-row { display: flex; align-items: center; gap: 4px; border-radius: 6px; }
 .sonata-profiles-row:hover { background: rgb(var(--sn-ink-rgb) / 0.06); }
 .sonata-profiles-row-on { background: color-mix(in srgb, var(--sn-accent) 16%, transparent); }
-.sonata-profiles-use { all: unset; cursor: pointer; flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; }
+.sonata-profiles-use { all: unset; cursor: pointer; flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; }
 .sonata-profiles-use:disabled { cursor: default; }
 .sonata-profiles-use:focus-visible { outline: 2px solid var(--sn-accent); }
 .sonata-profiles-icon { font-size: 20px; line-height: 1; }
@@ -856,33 +605,12 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-profiles-new { display: flex; flex-direction: column; gap: 8px; }
 .sonata-profiles-suggest { display: flex; flex-wrap: wrap; gap: 6px; }
 .sonata-profiles-icons { display: flex; flex-wrap: wrap; gap: 4px; }
-.sonata-profiles-icon-pick { all: unset; cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; font-size: 16px; }
+.sonata-profiles-icon-pick { all: unset; cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 6px; font-size: 16px; }
 .sonata-profiles-icon-pick:hover { background: rgb(var(--sn-ink-rgb) / 0.1); }
 .sonata-profiles-icon-on { background: color-mix(in srgb, var(--sn-accent) 28%, transparent); }
-.sonata-profiles-input { box-sizing: border-box; width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid rgb(var(--sn-ink-rgb) / 0.14); background: rgb(0 0 0 / 0.2); color: var(--sn-text); font: inherit; font-size: 14px; outline: none; }
+.sonata-profiles-input { box-sizing: border-box; width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid rgb(var(--sn-ink-rgb) / 0.14); background: rgb(0 0 0 / 0.2); color: var(--sn-text); font: inherit; font-size: 14px; outline: none; }
 .sonata-profiles-input:focus { border-color: var(--sn-accent); }
 .sonata-profiles-actions { display: flex; align-items: center; gap: 10px; }
-
-/* ─── Living cards ───
-   The card under the mouse tilts a little towards it (the tilt is only set on that one card, while
-   hovered — no other card does anything), with a soft shine inside where the mouse is. The icon
-   wiggles on hover and hops when the feature is switched on. */
-.sonata-card { transition: box-shadow 0.15s, background 0.15s, transform 0.35s cubic-bezier(.2, .8, .2, 1); }
-.sonata-card:hover:not(.sonata-card-open) { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-2px); transition: box-shadow 0.15s, background 0.15s, transform 0.12s ease-out; }
-.sonata-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(260px circle at var(--sx, 50%) var(--sy, 0%), rgb(var(--sn-ink-rgb) / 0.075), transparent 65%); opacity: 0; transition: opacity 0.2s; }
-.sonata-card:hover:not(.sonata-card-open)::after { opacity: 1; }
-
-.sonata-card:hover .sonata-card-icon svg { animation: sn-icon-wiggle 0.55s ease; }
-.sonata-card-pop .sonata-card-icon { animation: sn-icon-pop 0.6s cubic-bezier(.3, 1.6, .5, 1); }
-@keyframes sn-icon-wiggle { 25% { rotate: -11deg; } 55% { rotate: 8deg; } 80% { rotate: -3deg; } }
-@keyframes sn-icon-pop { 0% { scale: 1; } 35% { scale: 1.22; translate: 0 -3px; } 100% { scale: 1; translate: 0 0; } }
-
-.sonata-still .sonata-card:hover:not(.sonata-card-open) { transform: none; }
-.sonata-still .sonata-card-icon, .sonata-still .sonata-card-icon svg { animation: none !important; }
-@media (prefers-reduced-motion: reduce) {
-    .sonata-card:hover:not(.sonata-card-open) { transform: none; }
-    .sonata-card-icon, .sonata-card-icon svg { animation: none !important; }
-}
 
 /* Pinning: a star on each card (shown on hover, or always once pinned), and the Pinned row. */
 .sonata-pin { all: unset; cursor: pointer; flex: none; display: grid; place-items: center; width: 24px; height: 24px; margin-left: auto; border-radius: 7px; color: var(--sn-dim); opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s; }
@@ -893,70 +621,14 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-pin-on, .sonata-pin-on:hover { color: var(--sn-hi); }
 .sonata-group-star { color: var(--sn-hi); font-size: 14px; }
 
-/* ─── Music staves ───
-   Three bands of five faint lines waving across the canvas at slight angles. Each band's lines are
-   twice as wide as the canvas and slide left by half their width, which loops seamlessly; the band
-   itself stays still and fades out at both ends, so the lines drift in and out of view. */
-.sn-staves { position: absolute; inset: 0; overflow: hidden; }
-.sn-staff { position: absolute; left: -10%; right: -10%; height: 140px; -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent); }
-.sn-staff-a { top: 14%; rotate: -5deg; opacity: 0.9; }
-.sn-staff-b { top: 52%; rotate: 3deg; opacity: 0.6; }
-.sn-staff-c { top: 80%; rotate: -2deg; opacity: 0.75; }
-.sn-staff-move { display: block; width: 200%; height: 100%; overflow: visible; will-change: transform; animation: sn-staff-drift 60s linear infinite; }
-.sn-staff-b .sn-staff-move { animation-duration: 80s; animation-direction: reverse; }
-.sn-staff-c .sn-staff-move { animation-duration: 48s; }
-.sn-staff path { fill: none; stroke: color-mix(in srgb, var(--sn-hi) 45%, rgb(var(--sn-ink-rgb) / 0.5)); stroke-width: 1.15; stroke-opacity: 0.3; }
-.sonata-inverted .sn-staff path { stroke-opacity: 0.32; }
-@keyframes sn-staff-drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.sonata-still .sn-staff-move { animation: none; }
-@media (prefers-reduced-motion: reduce) { .sn-staff-move { animation: none; } }
-
-/* The staves also rise and fall a little, each band at its own pace. */
-.sn-staff { animation: sn-staff-bob 11s ease-in-out infinite alternate; }
-.sn-staff-b { animation-duration: 14s; animation-delay: -5s; }
-.sn-staff-c { animation-duration: 9s; animation-delay: -3s; }
-@keyframes sn-staff-bob { from { translate: 0 -16px; } to { translate: 0 16px; } }
-
-/* ─── Floating notes ───
-   Each note rises from below the canvas to above it (the outer span) while it sways and turns (the
-   svg inside); it fades in near the bottom and out near the top. Far ones are smaller, slower and
-   softer. */
-.sn-notes { position: absolute; inset: 0; overflow: hidden; }
-.sn-float { position: absolute; bottom: -60px; opacity: 0; will-change: transform, opacity; animation: sn-float-rise var(--rise, 28s) linear var(--delay, 0s) infinite; }
-.sn-float svg { display: block; fill: color-mix(in srgb, var(--sn-hi) 80%, white); will-change: transform; animation: sn-float-sway var(--sway-time, 7s) ease-in-out infinite alternate; }
-.sn-float-far svg { filter: blur(1.2px); fill: color-mix(in srgb, var(--sn-hi-2) 70%, white); }
-.sonata-inverted .sn-float svg { fill: color-mix(in srgb, var(--sn-hi) 85%, black); }
-@keyframes sn-float-rise {
-    0% { transform: translateY(0); opacity: 0; }
-    8% { opacity: var(--o, 0.3); }
-    80% { opacity: var(--o, 0.3); }
-    100% { transform: translateY(calc(-100vh - 120px)); opacity: 0; }
-}
-@keyframes sn-float-sway { from { transform: translateX(calc(var(--sway, 20px) * -1)) rotate(calc(var(--spin, 20deg) * -1)); } to { transform: translateX(var(--sway, 20px)) rotate(var(--spin, 20deg)); } }
-
-/* ─── Equalizer ───
-   Thin bars along the bottom edge, each bouncing at its own speed. Only their height scale changes. */
-.sn-eq { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; padding: 0 2%; -webkit-mask-image: linear-gradient(to right, transparent, #000 15%, #000 85%, transparent), linear-gradient(to top, #000 30%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 15%, #000 85%, transparent), linear-gradient(to top, #000 30%, transparent); mask-composite: intersect; opacity: 0.5; }
-.sn-eq i { flex: 1; max-width: 10px; height: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(to top, color-mix(in srgb, var(--sn-accent) 55%, transparent), color-mix(in srgb, var(--sn-hi-2) 35%, transparent)); transform-origin: bottom; will-change: transform; animation: sn-eq var(--t, 2s) ease-in-out var(--d, 0s) infinite alternate; }
-@keyframes sn-eq { from { transform: scaleY(0.08); } to { transform: scaleY(var(--peak, 0.8)); } }
-
-.sonata-still .sn-staff, .sonata-still .sn-float, .sonata-still .sn-float svg, .sonata-still .sn-eq i { animation: none !important; }
-.sonata-still .sn-notes { display: none; }
-.sonata-still .sn-eq i { transform: scaleY(calc(var(--peak, 0.8) * 0.4)); }
-@media (prefers-reduced-motion: reduce) {
-    .sn-staff, .sn-float, .sn-float svg, .sn-eq i { animation: none !important; }
-    .sn-notes { display: none; }
-    .sn-eq i { transform: scaleY(calc(var(--peak, 0.8) * 0.4)); }
-}
-
 /* ─── Performance, compact ─── */
-.sonata-modes { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; padding: 6px; border-radius: 20px; background: var(--sn-surface); box-shadow: inset 0 0 0 1px var(--sn-line); }
-.sonata-mode { all: unset; box-sizing: border-box; cursor: pointer; flex: 1 1 180px; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 15px; transition: background 0.15s, box-shadow 0.15s; }
+.sonata-modes { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; padding: 6px; border-radius: 6px; background: var(--sn-surface); box-shadow: inset 0 0 0 1px var(--sn-line); }
+.sonata-mode { all: unset; box-sizing: border-box; cursor: pointer; flex: 1 1 180px; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 6px; transition: background 0.15s, box-shadow 0.15s; }
 .sonata-mode:hover { background: rgb(var(--sn-ink-rgb) / 0.05); }
 .sonata-mode:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: -2px; }
-.sonata-mode-on, .sonata-mode-on:hover { background: linear-gradient(150deg, color-mix(in srgb, var(--sn-accent) 26%, transparent), color-mix(in srgb, var(--sn-accent-2) 10%, transparent)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-hi) 45%, transparent); }
-.sonata-mode-gaming.sonata-mode-on { background: linear-gradient(150deg, hsl(140 60% 45% / 0.22), hsl(200 70% 50% / 0.1)); box-shadow: inset 0 0 0 1px hsl(140 60% 55% / 0.5); }
-.sonata-mode-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; font-size: 18px; background: rgb(var(--sn-ink-rgb) / 0.06); }
+.sonata-mode-on, .sonata-mode-on:hover { background: var(--sn-faint); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-hi) 45%, transparent); }
+.sonata-mode-gaming.sonata-mode-on { background: var(--sn-faint); box-shadow: inset 0 0 0 1px hsl(140 60% 55% / 0.5); }
+.sonata-mode-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 6px; font-size: 18px; background: rgb(var(--sn-ink-rgb) / 0.06); }
 .sonata-mode-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .sonata-mode-text b { font-size: 14.5px; color: var(--sn-text); }
 .sonata-mode-text small { font-size: 12px; color: var(--sn-muted); }
@@ -968,9 +640,9 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-ptiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
 .sonata-ptiles + .sonata-panel-title { margin-top: 6px; }
 
-.sonata-ptile { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 14px; border-radius: 13px; cursor: pointer; background: rgb(var(--sn-ink-rgb) / 0.03); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07); transition: background 0.15s, box-shadow 0.15s; }
+.sonata-ptile { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 14px; border-radius: 6px; cursor: pointer; background: rgb(var(--sn-ink-rgb) / 0.03); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07); transition: background 0.15s, box-shadow 0.15s; }
 .sonata-ptile:hover { background: rgb(var(--sn-ink-rgb) / 0.055); }
-.sonata-ptile-on { background: linear-gradient(150deg, color-mix(in srgb, var(--sn-accent) 13%, transparent), rgb(var(--sn-ink-rgb) / 0.03) 70%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-accent) 32%, transparent); }
+.sonata-ptile-on { background: var(--sn-faint); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sn-accent) 32%, transparent); }
 .sonata-ptile-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .sonata-ptile-name { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; font-weight: 650; line-height: 1.3; color: var(--sn-text); }
 .sonata-ptile-meta { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--sn-dim); }
@@ -980,13 +652,13 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-ptile-dot.sonata-perf-medium { background: #facc15; }
 .sonata-ptile-dot.sonata-perf-small { background: rgb(var(--sn-ink-rgb) / 0.4); }
 .sonata-ptile input { position: absolute; opacity: 0; pointer-events: none; }
-.sonata-ptile input:checked ~ .sonata-perf-switch { background: linear-gradient(160deg, var(--sn-hi), var(--sn-accent-2)); }
+.sonata-ptile input:checked ~ .sonata-perf-switch { background: var(--sn-faint); }
 .sonata-ptile input:checked ~ .sonata-perf-switch::after { transform: translateX(20px); }
 .sonata-ptile input:focus-visible ~ .sonata-perf-switch { outline: 2px solid var(--sn-hi); outline-offset: 2px; }
 .sonata-ptile .sonata-perf-switch { background: rgb(var(--sn-ink-rgb) / 0.14); }
 
 .sonata-pbg { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px; }
-.sonata-pbg-item { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px 14px; border-radius: 13px; background: rgb(var(--sn-ink-rgb) / 0.03); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07); }
+.sonata-pbg-item { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px 14px; border-radius: 6px; background: rgb(var(--sn-ink-rgb) / 0.03); box-shadow: inset 0 0 0 1px rgb(var(--sn-ink-rgb) / 0.07); }
 .sonata-pbg-item .sonata-select { align-self: stretch; }
 .sonata-pbg > .sonata-ptile { align-self: stretch; }
 
@@ -998,6 +670,8 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-pclean-open > .sonata-cache { margin: 0 16px 16px; }
 
 /* Updates window: the update bar switch and Check now. */
-.sonata-log-notice { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border-radius: 12px; background: rgb(var(--sn-ink-rgb) / 0.04); border: 1px solid var(--sn-line); }
+.sonata-log-notice { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border-radius: 6px; background: rgb(var(--sn-ink-rgb) / 0.04); border: 1px solid var(--sn-line); }
 .sonata-log-notice .sonata-check { font-size: 13px; }
 .sonata-log-notice .sonata-field-hint { margin: 0; }
+
+@media (max-width: 760px) { .sonata-top { padding-inline: 18px; } .sonata-workspace { flex-direction: column; } .sonata-tabs { flex: none; flex-direction: row; padding: 12px 18px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--sn-line); } .sonata-tab { border-left: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0; } .sonata-tab-on, .sonata-tab-on:hover { border-bottom-color: var(--sn-accent); } .sonata .sonata-pane { padding-inline: 18px; } }

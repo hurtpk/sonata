@@ -14,7 +14,7 @@
     top: 0;
     border-radius: calc(14px * var(--sw-r, 1));
     overflow: hidden;
-    background: #232428;
+    background: var(--sw-card, var(--background-surface-high));
     padding: 4px;
     box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
 }
@@ -67,7 +67,7 @@
 .vc-steal-tag {
     margin-left: auto;
     padding: 1px 7px;
-    border-radius: 99px;
+    border-radius: 8px;
     font-size: 11px;
     font-weight: 600;
     color: var(--tl-accent);

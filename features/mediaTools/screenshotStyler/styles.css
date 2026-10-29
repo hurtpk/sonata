@@ -220,9 +220,9 @@
 .vc-shot-empty-title { font-size: 18px; font-weight: 800; color: #fff; }
 .vc-shot-controls { max-height: calc(62vh - 40px); border-radius: calc(16px * var(--sw-r, 1)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.07));
     background: var(--sw-card, linear-gradient(160deg, color-mix(in srgb, var(--tl-accent) 10%, transparent), hsl(0 0% 0% / 0.18) 60%)); }
-.vc-shot-seg { border-radius: 99px; padding: 4px; }
-.vc-shot-seg-btn { border-radius: 99px; }
+.vc-shot-seg { border-radius: 8px; padding: 4px; }
+.vc-shot-seg-btn { border-radius: 8px; }
 .vc-shot-seg-on { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
-.vc-shot-chip { border-radius: 99px; }
+.vc-shot-chip { border-radius: 8px; }
 .vc-shot-chip-on, .vc-shot-chip-on:hover:not(:disabled) { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)))); box-shadow: none; }
 .vc-shot-btn-primary { background: linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 60%, #000)) !important; box-shadow: none; }

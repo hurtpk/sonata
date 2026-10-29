@@ -51,7 +51,7 @@
 .vc-ansi-effects .vc-tool-label { width: 52px; }
 .vc-ansi-fade { display: inline-flex; align-items: center; gap: 6px; }
 .vc-ansi-fade .vc-ansi-swatch { border-radius: 50%; }
-.vc-ansi-fade-line { width: 54px; height: 6px; border-radius: 99px; }
+.vc-ansi-fade-line { width: 54px; height: 6px; border-radius: 8px; }
 .vc-ansi-rainbow { background-image: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bff95, #6bc5ff, #c56bff); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 800; }
 .vc-ansi-fade .vc-ansi-swatch { background: var(--cp-color); }
 .vc-ansi-bar .vc-ansi-none { background: linear-gradient(135deg, transparent 44%, #f23f43 44%, #f23f43 56%, transparent 56%), hsl(0 0% 100% / 0.04); }

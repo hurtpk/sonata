@@ -173,7 +173,7 @@
 .vc-purger-person-name small { font-size: 11.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-purger-person-msg { margin-left: 42px; width: calc(100% - 42px); box-sizing: border-box; }
 
-.vc-purger-pill { flex: none; padding: 3px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); }
+.vc-purger-pill { flex: none; padding: 3px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); }
 .vc-purger-pill-keep { color: #fff; background: color-mix(in srgb, var(--pg-good) 55%, transparent); box-shadow: var(--sw-noglow, 0 0 12px -4px var(--pg-good)); }
 
 .vc-purger-acts { display: flex; gap: 4px; flex: none; }
@@ -291,7 +291,7 @@
 .vc-purger-msg-time { font-size: 11px; color: var(--text-muted); }
 .vc-purger-msg-text { font-size: 12.5px; line-height: 1.35; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-purger-msg-deleted .vc-purger-msg-text { text-decoration: line-through; }
-.vc-purger-msg-status { flex: none; align-self: center; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; color: #fff; background: color-mix(in srgb, var(--k) 45%, transparent); }
+.vc-purger-msg-status { flex: none; align-self: center; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; color: #fff; background: color-mix(in srgb, var(--k) 45%, transparent); }
 .vc-purger-msg-status-pending { color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.07)); }
 
 /* ─── Footer ─── */

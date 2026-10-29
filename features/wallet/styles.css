@@ -102,7 +102,7 @@
 
 /* Converter */
 .vc-wallet-coins { display: flex; gap: 6px; flex-wrap: wrap; }
-.vc-wallet-coin { box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; min-width: 0; margin: 0; padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); color: var(--text-default, #dbdee1); font: 700 12.5px var(--font-primary); cursor: pointer; appearance: none; }
+.vc-wallet-coin { box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; min-width: 0; margin: 0; padding: 4px 10px 4px 4px; border-radius: 8px; border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); color: var(--text-default, #dbdee1); font: 700 12.5px var(--font-primary); cursor: pointer; appearance: none; }
 .vc-wallet-coin:hover { border-color: hsl(0 0% 100% / 0.22); }
 .vc-wallet-coin-on { border-color: var(--k); background: color-mix(in srgb, var(--k) 18%, transparent); color: #fff; }
 .vc-wallet-coin .vc-wallet-badge { border-radius: 50%; box-shadow: none; }
@@ -174,10 +174,10 @@
 .vc-wallet-reqcard-head { display: flex; align-items: baseline; gap: 10px; }
 .vc-wallet-reqcard-head b { font-size: 24px; font-weight: 900; color: #fff; }
 .vc-wallet-reqcard-note { font-size: 14px; color: var(--text-default, var(--text-normal)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.vc-wallet-reqbar { height: 8px; border-radius: 99px; background: var(--sw-chip, hsl(0 0% 100% / 0.08)); overflow: hidden; }
-.vc-wallet-reqbar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--status-positive, #23a55a), color-mix(in srgb, var(--status-positive, #23a55a) 55%, #fff)); transition: width 0.3s; }
+.vc-wallet-reqbar { height: 8px; border-radius: 8px; background: var(--sw-chip, hsl(0 0% 100% / 0.08)); overflow: hidden; }
+.vc-wallet-reqbar i { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--status-positive, #23a55a), color-mix(in srgb, var(--status-positive, #23a55a) 55%, #fff)); transition: width 0.3s; }
 .vc-wallet-payers { display: flex; gap: 6px; flex-wrap: wrap; }
-.vc-wallet-payer { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px 5px 6px; border-radius: 99px; font-size: 13px; font-weight: 600; cursor: pointer;
+.vc-wallet-payer { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px 5px 6px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
     color: var(--text-default, var(--text-normal)); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08)); }
 .vc-wallet-payer:hover { border-color: color-mix(in srgb, var(--status-positive, #23a55a) 50%, transparent); }
 .vc-wallet-payer-tick { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; color: #fff; border: 2px solid hsl(0 0% 100% / 0.3); box-sizing: border-box; }

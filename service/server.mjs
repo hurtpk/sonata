@@ -14,7 +14,7 @@ import { openStore, validId } from "./store.mjs";
 
 const DAY = 86400_000;
 const publicPath = fileURLToPath(new URL("./public/", import.meta.url));
-export const createApplication = (config, store, discordFetch) => application(config, store, discordFetch, name => readFile(resolve(publicPath, name)));
+export const createApplication = (config, store, discordFetch, botFetch) => application(config, store, discordFetch, name => readFile(resolve(publicPath, name)), botFetch);
 
 export function readConfig(demo = false) {
     if (demo) { if (process.env.NODE_ENV === "production") throw new Error("Demo mode is only available locally."); return { publicUrl: "http://127.0.0.1:4173", clientId: "", clientSecret: "", adminIds: ["111111111111111111"], host: "127.0.0.1", port: 4173, database: ":memory:", demo: true }; }

@@ -2,6 +2,7 @@
     "name": "sonata-bot",
     "account_id": "b4858e7c33edcfbfb7c873c96c8142ed",
     "main": "worker.mjs",
+    "version_metadata": { "binding": "VERSION" },
     "compatibility_date": "2026-10-28",
     "compatibility_flags": ["nodejs_compat"],
     "workers_dev": true,

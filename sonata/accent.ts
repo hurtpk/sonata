@@ -27,7 +27,7 @@ export const GRADIENTS: GradientPreset[] = [
     { id: "frost", name: "Frost", a: "#7dd3fc", b: "#818cf8" },
 ];
 
-export const DEFAULT_ACCENT = "#3b82f6";
+export const DEFAULT_ACCENT = "#c58d91";
 export const validHex = (v: unknown): v is string => typeof v === "string" && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.trim());
 const hexOr = (v: unknown, fallback: string) => validHex(v) ? v.trim() : fallback;
 

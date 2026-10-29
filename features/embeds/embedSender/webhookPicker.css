@@ -32,7 +32,7 @@
 .vc-whp-item-on, .vc-whp-item-on:hover { background: hsl(from var(--tl-accent) h s l / 0.25); box-shadow: inset 0 0 0 1px hsl(from var(--tl-accent) h s l / 0.6); }
 
 .vc-whp-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; }
-.vc-whp-item-meta { flex: none; padding: 1px 7px; border-radius: 99px; font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); }
+.vc-whp-item-meta { flex: none; padding: 1px 7px; border-radius: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); }
 .vc-whp-hash { flex: none; width: 18px; text-align: center; font-size: 16px; color: var(--text-muted); }
 
 .vc-whp-guild-icon { flex: none; width: 30px; height: 30px; border-radius: calc(10px * var(--sw-r, 1)); object-fit: cover; }

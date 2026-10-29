@@ -26,7 +26,7 @@ async function fixture(t) {
         if (providerMode === "invalid") return new Response("not JSON");
         if (url === "https://discord.com/api/oauth2/token") return Response.json({ access_token: "test-oauth-token", token_type: "Bearer" });
         assert.equal(url, "https://discord.com/api/v10/users/@me");
-        return Response.json({ id: identity, username: `name_${identity}`, global_name: "Verified member" });
+        return Response.json({ id: identity, username: `name_${identity}`, global_name: "Verified member", avatar: "0123456789abcdef0123456789abcdef", discriminator: "0" });
     });
     t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await store.db.close(); });
     const request = (path, body, headers = {}) => fetch(base + path, { method: body ? "POST" : "GET", redirect: "manual", headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...headers }, body: body ? JSON.stringify(body) : undefined });
@@ -57,6 +57,26 @@ test("Only verified owner sessions can access the dashboard and mutations requir
     assert.equal((await f.request("/api/admin/block", { userId: USER, blocked: true, reason: "Test" }, { Cookie: headers.Cookie })).status, 403);
     assert.equal((await f.request("/api/admin/block", { userId: USER, blocked: true, reason: "Test" }, { ...headers, Origin: "https://other.example" })).status, 403);
     assert.equal((await f.request("/api/admin/block", { userId: OWNER, blocked: true, reason: "Test" }, headers)).status, 400);
+});
+
+test("The Accounts page stays hidden from visitors and server managers", async t => {
+    const f = await fixture(t);
+    const visitor = await f.request("/admin");
+    assert.equal(visitor.status, 302); assert.equal(visitor.headers.get("location"), "/");
+    assert.doesNotMatch(await visitor.text(), /Administrator sign-in|Registered accounts/);
+    const token = random(), headers = { Cookie: `sonata_bot=${token}` };
+    await f.store.run("INSERT INTO bot_sessions VALUES (?,?,?,?,?)", hash(token), USER, "Server manager", random(), Date.now() + 3600_000);
+    const manager = await f.request("/admin", null, headers);
+    assert.equal(manager.status, 302); assert.equal(manager.headers.get("location"), "/");
+    assert.equal((await f.request("/api/admin/users", null, headers)).status, 401);
+    await f.store.run("UPDATE bot_sessions SET user_id=? WHERE hash=?", OWNER, hash(token));
+    const owner = await f.request("/admin", null, headers);
+    assert.equal(owner.status, 302); assert.equal(owner.headers.get("location"), "/auth/start");
+    const page = await f.request("/admin", null, await f.admin());
+    assert.equal(page.status, 200); assert.match(await page.text(), /Registered accounts/);
+    assert.equal(page.headers.get("cache-control"), "no-store");
+    assert.equal((await f.request("/")).status, 200);
+    assert.equal((await f.request("/activate")).status, 200);
 });
 
 test("Activation binds a Discord identity to the device verifier and stores only hashed device credentials", async t => {
@@ -127,4 +147,41 @@ test("Concurrent activation requests can issue only one device credential", asyn
     const results = await Promise.all([f.request("/api/activation/finish", pair), f.request("/api/activation/finish", pair)]);
     assert.deepEqual(results.map(result => result.status).sort(), [200, 400]);
     assert.equal((await f.store.get("SELECT COUNT(*) AS n FROM devices")).n, 1);
+});
+
+
+test("Allow ID can register a new account or restore a block without bypassing Discord activation", async t => {
+    const f = await fixture(t), headers = await f.admin();
+    assert.equal((await f.request("/api/admin/block", { userId: USER, blocked: false, reason: "" }, headers)).status, 200);
+    const pending = await f.store.get("SELECT * FROM users WHERE id=?", USER);
+    assert.equal(pending.blocked, 0); assert.equal(pending.first_seen, null);
+    const audit = await f.store.get("SELECT * FROM audit WHERE target=?", USER); assert.equal(audit.action, "allowed");
+    await f.request("/api/admin/block", { userId: USER, blocked: true, reason: "Review" }, headers);
+    await f.request("/api/admin/block", { userId: USER, blocked: false, reason: "" }, headers);
+    const activated = await f.activate(USER); assert.equal(activated.status, "allowed");
+    const profile = await f.store.get("SELECT * FROM user_profiles WHERE id=?", USER);
+    assert.equal(profile.avatar, "0123456789abcdef0123456789abcdef"); assert.equal(profile.discriminator, "0");
+    const users = await (await f.request("/api/admin/users", null, headers)).json(); assert.equal(users.users[0].avatar, profile.avatar);
+    assert.equal((await f.request("/api/admin/avatars?ids=" + USER)).status, 401);
+    assert.equal((await f.request("/api/admin/avatars?ids=invalid", null, headers)).status, 400);
+    await f.store.run("DELETE FROM users WHERE id=?", USER); assert.equal(await f.store.get("SELECT id FROM user_profiles WHERE id=?", USER), undefined);
+});
+
+
+test("Owner grants limit administrator tools, reject escalation and revoke existing sessions immediately", async t => {
+    const f = await fixture(t), owner = await f.admin();
+    assert.equal((await f.request("/api/admin/staff", { id: USER, permissions: ["health"] }, owner)).status, 200);
+    const signed = await f.login(USER); assert.equal(signed.response.status, 302);
+    const info = await (await f.request("/api/admin/session", null, { Cookie: signed.cookies })).json();
+    assert.deepEqual(info.permissions, ["health"]); assert.equal(info.owner, false);
+    const headers = { Cookie: signed.cookies, Origin: f.base, "X-CSRF-Token": info.csrf };
+    assert.equal((await f.request("/api/admin/health", null, headers)).status, 200);
+    assert.equal((await f.request("/api/admin/users", null, headers)).status, 403);
+    assert.equal((await f.request("/api/admin/bot/action", { guild: OTHER, action: "leave" }, headers)).status, 403);
+    assert.equal((await f.request("/api/admin/staff", { id: OTHER, permissions: ["access"] }, headers)).status, 403);
+    assert.equal((await f.request("/api/admin/staff", { id: OTHER, permissions: ["health"] }, { Cookie: owner.Cookie })).status, 403);
+    assert.equal((await f.request("/api/admin/staff", { id: USER, permissions: [] }, owner)).status, 200);
+    assert.equal((await f.request("/api/admin/session", null, headers)).status, 401);
+    assert.equal((await f.login(USER)).response.status, 403);
+    assert.equal((await f.request("/api/admin/staff", { id: OWNER, permissions: [] }, owner)).status, 400);
 });

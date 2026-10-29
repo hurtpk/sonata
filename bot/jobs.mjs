@@ -6,8 +6,13 @@
 
 import { caseLog, caseMarker } from "./moderation.mjs";
 import { releaseJail } from "./restrictions.mjs";
+import { expireWarnings } from "./escalation.mjs";
+import { giveawayTimers } from "./giveaways.mjs";
+import { ticketTimers } from "./ticketExtras.mjs";
 
 export async function runDueJobs(store, api, botId) {
+    store.run("DELETE FROM role_returns WHERE expires<=?", Date.now());
+    for (const row of store.all("SELECT guild FROM settings")) expireWarnings(store, row.guild);
     const now = Date.now();
     for (const found of store.all("SELECT * FROM jobs WHERE state='pending' AND due<=? ORDER BY due LIMIT 5", now)) {
         const job = store.get("UPDATE jobs SET due=?,tries=tries+1 WHERE id=? AND state='pending' AND due<=? RETURNING *", now + 60_000, found.id, now);
@@ -36,4 +41,6 @@ export async function runDueJobs(store, api, botId) {
             store.addNote(job.guild, job.n, botId, "timer", retry ? "A scheduled release failed and will be retried." : "A scheduled release could not complete. Staff must review the member's current state.");
         }
     }
+    await giveawayTimers(store, api);
+    await ticketTimers(store, api);
 }

@@ -9,14 +9,14 @@ import { canManage, channelPermissions, embed, fail, isId, memberPermissions, PE
 const view = PERMS.VIEW, send = PERMS.SEND;
 const channelsForJail = values => values.filter(channel => [0, 2, 4, 5, 13, 15, 16].includes(channel.type));
 
-async function editBits(api, channel, id, type, mask, allow, deny, audit) {
+export async function editBits(api, channel, id, type, mask, allow, deny, audit) {
     const original = channel.permission_overwrites?.find(value => value.id === id);
     const value = { id, type, allow: ((BigInt(original?.allow ?? "0") & ~mask) | allow).toString(), deny: ((BigInt(original?.deny ?? "0") & ~mask) | deny).toString() };
     await api(`/channels/${channel.id}/permissions/${id}`, { method: "PUT", body: value, reason: audit });
     return { id, type, mask: mask.toString(), allow: (BigInt(original?.allow ?? "0") & mask).toString(), deny: (BigInt(original?.deny ?? "0") & mask).toString() };
 }
 
-async function restoreBits(api, channelId, saved, audit) {
+export async function restoreBits(api, channelId, saved, audit) {
     const channel = await api(`/channels/${channelId}`, { optional: true });
     if (channel) await editBits(api, channel, saved.id, saved.type, BigInt(saved.mask), BigInt(saved.allow), BigInt(saved.deny), audit);
 }
@@ -30,7 +30,7 @@ export async function channelAction(context, store, audit) {
         const cutoff = Date.now() - 14 * 86400_000 + 60_000;
         const filters = { all: () => true, bots: message => !!message.author.bot, humans: message => !message.author.bot, links: message => /https?:\/\/\S+/i.test(message.content ?? ""), files: message => !!message.attachments?.length, embeds: message => !!message.embeds?.length, pinned: message => !!message.pinned };
         const filter = options.filter ?? "all";
-        const matching = messages.filter(message => message.id !== command.id && message.id !== command.reply && (!options.member || message.author.id === options.member) && (!message.pinned || filter === "pinned") && filters[filter](message)).slice(0, options.count);
+        const matching = messages.filter(message => message.id !== command.id && (!options.member || message.author.id === options.member) && (!message.pinned || filter === "pinned") && filters[filter](message)).slice(0, options.count);
         const ids = matching.filter(message => Number((BigInt(message.id) >> 22n) + 1420070400000n) > cutoff).map(message => message.id);
         if (ids.length === 1) await api(`/channels/${channel.id}/messages/${ids[0]}`, { method: "DELETE", reason: audit });
         if (ids.length > 1) await api(`/channels/${channel.id}/messages/bulk-delete`, { method: "POST", reason: audit, body: { messages: ids } });

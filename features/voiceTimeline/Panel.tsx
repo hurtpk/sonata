@@ -5,9 +5,10 @@
  */
 
 import { classNameFactory } from "@utils/css";
+import { copyWithToast, openUserProfile } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildMemberStore, GuildStore, useEffect, UserStore, useState } from "@webpack/common";
+import { ChannelStore, Clickable, ContextMenuApi, GuildMemberStore, GuildStore, Menu, useEffect, UserStore, useState } from "@webpack/common";
 
 import { openSection } from "../_shared/Hub";
 import { ToolHero } from "../_shared/ToolHero";
@@ -75,6 +76,21 @@ function useNow() {
 
 interface Row { userId: string; joinedAt: number | null; leftAt: number | null; }
 
+export function personActions(userId: string) {
+    return {
+        onClick: () => void openUserProfile(userId),
+        onContextMenu: (event: React.MouseEvent<HTMLElement>) => {
+            event.preventDefault();
+            event.stopPropagation();
+            ContextMenuApi.openContextMenu(event, () => (
+                <Menu.Menu navId="sonata-voice-timeline-user" aria-label="Voice Timeline user" onClose={ContextMenuApi.closeContextMenu}>
+                    <Menu.MenuItem id="copy-user-id" label="Copy User ID" action={() => copyWithToast(userId, "User ID copied")} />
+                </Menu.Menu>
+            ));
+        }
+    };
+}
+
 /** Everyone who was in the session: still here (live) first, then those who left. */
 function rowsFor(s: Session): Row[] {
     const here = [...s.present.values()].map(p => ({ userId: p.userId, joinedAt: p.joinedAt, leftAt: null as number | null }));
@@ -92,7 +108,7 @@ function PersonRow({ row, s, now }: { row: Row; s: Session; now: number; }) {
     const live = row.leftAt == null && s.endedAt == null;
 
     return (
-        <div className={classes(cl("person"), !live && cl("person-gone"))}>
+        <Clickable className={classes(cl("person"), cl("user-action"), !live && cl("person-gone"))} {...personActions(row.userId)} aria-label={`Open profile for ${displayName(row.userId, guildId)}`}>
             <img className={cl("avatar")} src={avatar(row.userId, guildId)} alt="" />
             <div className={cl("person-text")}>
                 <div className={cl("person-name")}>{displayName(row.userId, guildId)}</div>
@@ -106,7 +122,7 @@ function PersonRow({ row, s, now }: { row: Row; s: Session; now: number; }) {
             <div className={classes(cl("time"), live && cl("time-live"))}>
                 {before ? `${atLeast(end - start)}+` : duration(end - start)}
             </div>
-        </div>
+        </Clickable>
     );
 }
 
@@ -126,12 +142,12 @@ function TimelineEvent({ e, s }: { e: VtEvent; s: Session; }) {
     const guildId = guildOf(s.channelId);
     const mine = e.type === "you-joined" || e.type === "you-left";
     return (
-        <div className={classes(cl("event"), cl(`event-${e.type}`))}>
+        <Clickable className={classes(cl("event"), cl("user-action"), cl(`event-${e.type}`))} {...personActions(e.userId)} aria-label={`Open profile for ${displayName(e.userId, guildId)}`}>
             <span className={cl("event-time")}>{clock(e.t)}</span>
             <span className={cl("event-dot")} />
             {!mine && <img className={cl("event-avatar")} src={avatar(e.userId, guildId)} alt="" />}
             <span className={cl("event-text")}>{eventText(e, s)}</span>
-        </div>
+        </Clickable>
     );
 }
 

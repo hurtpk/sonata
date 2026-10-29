@@ -54,24 +54,12 @@ export interface WindowProps extends RenderModalProps {
 
 /* ── Window style: what people can change for every window ── */
 
-export type Darkness = "dark" | "darker" | "black";
-export type Borders = "subtle" | "clear";
-export interface WindowStyle { roundness: number; darkness: Darkness; borders: Borders; footer: boolean; }
+export interface WindowStyle { footer: boolean; }
 
-export const ROUNDNESS_MIN = 0.4;
-export const ROUNDNESS_MAX = 1.6;
-export const DEFAULT_WINDOW_STYLE: WindowStyle = { roundness: 1, darkness: "dark", borders: "subtle", footer: true };
+const STYLE_KEYS = ["sonataWinFooter"] as const;
 
-const STYLE_KEYS = ["sonataWinRound", "sonataWinDark", "sonataWinBorders", "sonataWinFooter"] as const;
-
-export function readWindowStyle(store: any): WindowStyle {
-    const r = Number(store?.sonataWinRound);
-    return {
-        roundness: Number.isFinite(r) && r > 0 ? Math.min(ROUNDNESS_MAX, Math.max(ROUNDNESS_MIN, r)) : 1,
-        darkness: (["dark", "darker", "black"] as const).includes(store?.sonataWinDark) ? store.sonataWinDark : "dark",
-        borders: store?.sonataWinBorders === "clear" ? "clear" : "subtle",
-        footer: store?.sonataWinFooter !== false,
-    };
+export function readWindowStyle(store?: { sonataWinFooter?: boolean; }): WindowStyle {
+    return { footer: store?.sonataWinFooter !== false };
 }
 
 export function useWindowStyle(): WindowStyle {
@@ -89,15 +77,11 @@ export function textOn(hex: string) {
 }
 
 /** The attributes and variables that give an element the window style, for Sonata bits that aren't in a Window. */
-export function windowStyleProps(style: WindowStyle, accent = windowAccent()) {
+export function windowStyleProps(accent = windowAccent()) {
     return {
-        "data-sw-dark": style.darkness,
-        "data-sw-borders": style.borders,
-        style: { "--sw-r": style.roundness, "--vc-tool-accent": accent, "--sw-on": textOn(accent) } as CSSProperties,
+        style: { "--vc-tool-accent": accent, "--sw-on": textOn(accent) } as CSSProperties,
     };
 }
-
-const nameOf = (title: ReactNode) => typeof title === "string" ? title.toLowerCase() : title;
 
 // Drawn as a tab of another window (Server Insights): only the insides — the outer window has the frame.
 // Made the first time it's needed: React isn't there yet when Equicord first loads this file.
@@ -123,7 +107,7 @@ function Frame({ transitionState, onClose, size = "md", title, subtitle, childre
     return (
         <div className={classes("vc-sw-layer", closing && "vc-sw-layer-closing", still && "vc-sw-still")}>
             <div
-                {...windowStyleProps(style, accent)}
+                {...windowStyleProps(accent)}
                 role={role}
                 aria-modal
                 aria-label={typeof title === "string" ? title : undefined}
@@ -131,7 +115,7 @@ function Frame({ transitionState, onClose, size = "md", title, subtitle, childre
             >
                 <header className="vc-sw-top">
                     <div className="vc-sw-name" title={typeof subtitle === "string" ? subtitle : undefined}>
-                        sonata <span className="vc-sw-dash">—</span> <span className="vc-sw-here">{nameOf(title)}</span>
+                        sonata <span className="vc-sw-dash">/</span> <span className="vc-sw-here">{title}</span>
                     </div>
                     {tools && <div className="vc-sw-tools">{tools}</div>}
                     <button type="button" className="vc-sw-close" aria-label="Close" onClick={onClose}>

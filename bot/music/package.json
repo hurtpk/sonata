@@ -1,0 +1,8 @@
+{
+    "name": "sonata-voice",
+    "private": true,
+    "type": "module",
+    "engines": { "node": ">=24" },
+    "scripts": { "start": "node --env-file=.env index.mjs", "test": "node --test test/*.test.mjs" },
+    "dependencies": { "@discordjs/voice": "0.19.2" }
+}

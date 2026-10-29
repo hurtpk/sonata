@@ -127,7 +127,7 @@
     all: unset;
     cursor: pointer;
     padding: 6px 11px;
-    border-radius: 99px;
+    border-radius: 8px;
     border: 1px solid var(--tl-line);
     background: var(--vtl-surface);
     font-size: 12.5px;
@@ -215,7 +215,7 @@
     font-size: 11px;
     font-weight: 700;
     padding: 1px 7px;
-    border-radius: 99px;
+    border-radius: 8px;
     color: var(--tl-accent);
     background: hsl(from var(--tl-accent) h s l / 0.15);
 }
@@ -236,7 +236,7 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border-radius: 99px;
+    border-radius: 8px;
     border: 1px solid var(--tl-line);
     background: var(--vtl-surface);
     font-size: 12.5px;
@@ -282,6 +282,15 @@
     gap: 4px;
     max-height: 430px;
     overflow-y: auto;
+}
+
+.vc-vtl-user-action {
+    cursor: pointer;
+}
+
+.vc-vtl-user-action:focus-visible {
+    outline: 2px solid var(--text-link);
+    outline-offset: -2px;
 }
 
 .vc-vtl-person {

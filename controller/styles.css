@@ -19,25 +19,14 @@
     position: relative;
     overflow: hidden;
     container-type: inline-size;
-    background-color: var(--background-base-lowest, var(--background-base-lower));
-    background-image:
-        var(--sw-card, radial-gradient(900px 600px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.06), transparent 60%),
-        radial-gradient(800px 600px at 100% 100%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.045), transparent 60%));
+    background-color: #111112;
 }
 
-.vc-qolcc-page > *:not(.vc-qolcc-particles) {
+.vc-qolcc-page > * {
     position: relative;
     z-index: 1;
 }
 
-.vc-qolcc-particles {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-}
 
 /* ─── Header ─── */
 
@@ -50,15 +39,6 @@
     overflow: hidden;
 }
 
-.vc-qolcc-header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        var(--sw-card, radial-gradient(900px 200px at 0% 0%, hsl(from var(--qolcc-accent) h s l / 0.07), transparent 60%),
-        radial-gradient(600px 200px at 100% 0%, hsl(from var(--qolcc-accent) calc(h + 50) s l / 0.05), transparent 60%));
-    pointer-events: none;
-}
 
 .vc-qolcc-header-text {
     position: relative;
@@ -126,7 +106,7 @@
     display: flex;
     gap: 3px;
     padding: 3px;
-    border-radius: 99px;
+    border-radius: 6px;
     border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1));
     background: var(--neutral-82, hsl(0 0% 100% / 0.04));
 }
@@ -135,7 +115,7 @@
     all: unset;
     cursor: pointer;
     padding: 7px 15px;
-    border-radius: 99px;
+    border-radius: 6px;
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
@@ -177,7 +157,7 @@
     color: var(--text-default);
     background: var(--neutral-82, hsl(0 0% 100% / 0.04));
     border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1));
-    border-radius: 99px;
+    border-radius: 6px;
     transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
@@ -260,7 +240,7 @@
     font-size: 11.5px;
     font-weight: 700;
     padding: 1px 7px;
-    border-radius: 99px;
+    border-radius: 6px;
     color: var(--text-muted);
     background: var(--sw-chip, hsl(0 0% 100% / 0.06));
 }
@@ -389,7 +369,7 @@
     color: var(--text-muted);
     background: var(--neutral-82, hsl(0 0% 100% / 0.04));
     border: 1px solid var(--sw-line, hsl(0 0% 100% / 0.08));
-    border-radius: 99px;
+    border-radius: 6px;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
@@ -414,7 +394,7 @@
 .vc-qolcc-filter-badge {
     min-width: 16px;
     padding: 0 5px;
-    border-radius: 99px;
+    border-radius: 6px;
     background: var(--qolcc-amber);
     color: #241600;
     font-size: 10.5px;
@@ -572,7 +552,7 @@
     flex-shrink: 0;
     width: 42px;
     height: 24px;
-    border-radius: 99px;
+    border-radius: 6px;
     background: hsl(0 0% 100% / 0.18);
     transition: background 0.2s ease, box-shadow 0.2s ease;
 }

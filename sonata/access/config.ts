@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export const ACCESS_SERVICE_URL: string = "https://sonata-control-room.pkispure.workers.dev";
+export const ACCESS_SERVICE_URL: string = "https://sonata.hurts.workers.dev";
 export const ACCESS_ENABLED = ACCESS_SERVICE_URL.length > 0;
 
 export interface AccessResult {

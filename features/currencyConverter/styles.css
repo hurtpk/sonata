@@ -50,7 +50,7 @@
 .vc-conv-ins:hover { color: var(--text-default, var(--text-normal)); background: var(--sw-hi, hsl(0 0% 100% / 0.08)); }
 
 .vc-conv-examples { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.vc-conv-example { all: unset; padding: 5px 10px; border-radius: 99px; border: 1px solid var(--tl-line); font-size: 13px; color: var(--text-default, var(--text-normal)); cursor: pointer; }
+.vc-conv-example { all: unset; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--tl-line); font-size: 13px; color: var(--text-default, var(--text-normal)); cursor: pointer; }
 .vc-conv-example:hover { border-color: var(--tl-accent); }
 
 /* Favourites and recent */
@@ -60,7 +60,7 @@
 .vc-conv-saved { display: flex; flex-direction: column; gap: 6px; }
 .vc-conv-saved-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .vc-conv-saved-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); margin-right: 2px; }
-.vc-conv-chip { display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); overflow: hidden; }
+.vc-conv-chip { display: inline-flex; align-items: center; border-radius: 8px; border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); overflow: hidden; }
 .vc-conv-chip button { box-sizing: border-box; min-width: 0; margin: 0; padding: 3px 10px; border: 0; background: none; color: var(--text-default, #dbdee1); font: 500 12.5px var(--font-primary); cursor: pointer; appearance: none; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .vc-conv-chip:hover { border-color: hsl(0 0% 100% / 0.22); }
 .vc-conv-chip-fav { border-color: hsl(40 90% 55% / 0.35); }

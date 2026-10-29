@@ -4,26 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { COMMANDS } from "./commands.mjs";
 import { channelPermissions, embed, fail, PERMS, requirePermission } from "./discord.mjs";
 
-const usage = (name, options) => `${name} ${options.map(option => option.required ? `<${option.name}>` : `[${option.name}]`).join(" ")}`.trim();
 const created = id => `<t:${Math.floor(Number((BigInt(id) >> 22n) + 1420070400000n) / 1000)}:F>`;
 const timestamp = value => value && Number.isFinite(Date.parse(value)) ? `<t:${Math.floor(Date.parse(value) / 1000)}:F>` : "Unknown";
-
-export function help(command) {
-    const query = command.options.command?.trim().toLowerCase();
-    if (query && !/^\d+$/.test(query)) {
-        const [name, sub] = query.replace(/^[,/]/, "").split(/\s+/), definition = COMMANDS.find(value => value.name === name || value.aliases.includes(name));
-        if (!definition) fail("That command does not exist. Use help to browse the available commands.");
-        const entries = definition.options[0]?.type === 1 ? definition.options.filter(value => !sub || value.name === sub) : [definition];
-        if (!entries.length) fail("That subcommand does not exist.");
-        return embed(`Help · ${definition.name}`, `${definition.description}\n\n` + entries.map(value => `\`${usage(value === definition ? definition.name : `${definition.name} ${value.name}`, value.options)}\`\n${value.description}`).join("\n\n") + (definition.aliases.length ? `\n\nPrefix aliases: ${definition.aliases.join(", ")}.` : "") + "\n\nUse slash commands or your server's prefix. <Required> · [Optional]");
-    }
-    const pages = Math.ceil(COMMANDS.length / 10), page = query ? Number(query) : 1;
-    if (!Number.isSafeInteger(page) || page < 1 || page > pages) fail(`Choose a help page from 1 to ${pages}.`);
-    return embed(`Sonata Bot commands · ${page}/${pages}`, COMMANDS.slice((page - 1) * 10, page * 10).map(value => `**${value.name}** · ${value.description}`).join("\n\n") + `\n\nUse help <command> for its syntax and subcommands.${page < pages ? ` Next page: help ${page + 1}.` : ""}\nSlash commands and your server's prefix both work.`);
-}
 
 export async function information(context) {
     const { command, api, guild, roles, actor, bot } = context, options = command.options;

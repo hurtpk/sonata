@@ -18,16 +18,21 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.10.28d",
+        date: "October 28, 2026",
+        title: "Sonata interfaces, dashboards and bot tools",
+        items: [
+            { icon: "🎨", text: "Sonata's plugin and feature windows now match the website with flat dark surfaces, subtle corners and sidebar navigation. Removes decorative layers and particles, adds Dashboard access and fixes fullscreen gaps. Owner controls can blacklist servers or make the bot leave. The private Admin page adds Allow ID and Discord avatars. Adds a message designer, server-owner dashboard whitelists, limited administrator accounts and service health. Bot invites request Administrator, and crowns identify owners, administrators and moderators." },
+            { icon: "🎙️", text: "Voice Timeline: click a person to open their profile, or right-click to copy their user ID. Works in the people list, timeline events and weekly recap." },
+            { icon: "🤖", text: "Sonata Bot now has 282 command forms in eight help categories, with working home arrows, three-hour role recovery, case exports, audio effects and DJ skip voting. Adds nickname policies, bot-only role permissions, command disabling, usage insights and a dashboard link in help. Also adds server dashboards, verification, XP, AFK, aliases, protection and AutoMod, moderation statistics, appeals, tickets, giveaways, voice controls and expression tools. Reply to emojis or stickers to download or import them, including standard emoji PNGs and animated emoji GIFs. Sticky messages stay below new chat messages, and supported short video links can be embedded manually or automatically with sender credit." },
+        ],
+    },
+    {
         version: "2026.10.28c",
         date: "October 28, 2026",
         title: "Sonata Bot joins your server",
         items: [
-            { icon: "🤖", text: "Sonata's top bar has an Add Sonata Bot button where Profiles used to be. Choose a server to invite the moderation bot. It works independently of the client, with slash commands and a customisable prefix (a comma by default)." },
-            { icon: "🔨", text: "Sonata Bot: ban, temp ban, unban, kick, timeout, warnings, message cleanup, slowmode, lock and hide channels, plus a jail role and channel. Commands check your Discord permissions and both your role position and the bot's. Timed bans and jails are checked each minute, with failed releases saved for review." },
-            { icon: "📁", text: "The bot keeps numbered cases for each server, with member history, reasons and staff notes. Attach images or videos to a case to copy the actual file into your chosen moderation log channel. Configure logs, optional punishment DMs and messages, and Discord's built-in word, spam and mention filters through the bot's settings and AutoMod commands." },
-            { icon: "🛠️", text: "More Sonata Bot moderation commands: soft bans, paged ban lists, nicknames, clearing one warning or a member's warnings while keeping their original cases, and browsing recent server cases. Help has pages and detailed syntax for each command and subcommand." },
-            { icon: "🏷️", text: "The bot can give and remove roles, create roles without extra permissions, and change a role's name, colour, separate member-list display and mentionability. It checks role positions and prevents assigning permissions the moderator or bot doesn't hold. Voice commands move, disconnect, mute, unmute, deafen and undeafen members, with channel permission checks." },
-            { icon: "🔎", text: "Sonata Bot has member, server, role and channel information, member counts, role pages, avatars and banners. Channel commands change names, topics, age restrictions and voice user limits. Pin and unpin messages, browse pins, and clean up bot messages, human messages, links, attachments or embeds. Cleanup keeps pinned messages unless you choose the pinned filter." },
+            { icon: "🤖", text: "Invite Sonata Bot from the top bar for moderation, role and voice management, channel tools and server information. It supports slash commands and a custom prefix, with permission checks, timed bans and jails, case history, evidence attachments, moderation logs and optional punishment DMs." },
         ],
     },
     {

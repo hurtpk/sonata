@@ -34,7 +34,7 @@
 
 /* Found by themselves, under messages */
 .vc-qr-auto { display: flex; flex-wrap: wrap; gap: 6px; }
-.vc-qr-chip { all: unset; box-sizing: border-box; cursor: pointer; margin-top: 4px; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.12)); background: var(--sw-card, hsl(0 0% 100% / 0.04)); font-size: 12.5px; color: var(--text-muted); }
+.vc-qr-chip { all: unset; box-sizing: border-box; cursor: pointer; margin-top: 4px; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--sw-line2, hsl(0 0% 100% / 0.12)); background: var(--sw-card, hsl(0 0% 100% / 0.04)); font-size: 12.5px; color: var(--text-muted); }
 .vc-qr-chip:hover { border-color: var(--brand-500, #5865f2); color: var(--text-default, #fff); }
 .vc-qr-chip b { color: var(--text-default, #fff); }
 .vc-qr-chip span:last-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

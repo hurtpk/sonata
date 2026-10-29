@@ -30,7 +30,7 @@
 .vc-mlx-node:hover { background: var(--tl-hover); color: var(--text-default, var(--text-normal)); }
 .vc-mlx-node-on, .vc-mlx-node-on:hover { background: var(--tl-sel); color: var(--text-default, #fff); box-shadow: inset 2px 0 var(--tl-accent); }
 .vc-mlx-node-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.vc-mlx-node i, .vc-mlx-side-head i, .vc-mlx-cat-name i { flex: none; margin-left: auto; padding: 0 6px; border-radius: 99px; background: var(--sw-chip, hsl(0 0% 100% / 0.07)); font-size: 11px; font-style: normal; font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.vc-mlx-node i, .vc-mlx-side-head i, .vc-mlx-cat-name i { flex: none; margin-left: auto; padding: 0 6px; border-radius: 8px; background: var(--sw-chip, hsl(0 0% 100% / 0.07)); font-size: 11px; font-style: normal; font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .vc-mlx-node-icon { flex: none; width: 22px; text-align: center; }
 .vc-mlx-node-guild { padding: 0; gap: 0; }
 .vc-mlx-node-btn { all: unset; flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 2px; cursor: pointer; }
@@ -60,7 +60,7 @@
 .vc-mlx-crumb-text span { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-mlx-views { flex: none; }
 .vc-mlx-views .vc-tool-tab { flex: none; padding: 6px 12px; }
-.vc-mlx-fresh { all: unset; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 99px; background: hsl(from var(--tl-accent) h s l / 0.22); font-size: 12px; font-weight: 700; color: var(--text-default, #fff); cursor: pointer; }
+.vc-mlx-fresh { all: unset; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 8px; background: hsl(from var(--tl-accent) h s l / 0.22); font-size: 12px; font-weight: 700; color: var(--text-default, #fff); cursor: pointer; }
 .vc-mlx-fresh i { width: 7px; height: 7px; border-radius: 50%; background: var(--sw-accent-fill, var(--tl-accent)); animation: vc-mlx-pulse 1.4s ease-in-out infinite; }
 @keyframes vc-mlx-pulse { 50% { opacity: 0.3; } }
 
@@ -92,7 +92,7 @@
 /* ── Messages ── */
 .vc-mlx-feed { display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; }
 .vc-mlx-day { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 6px 0 2px; pointer-events: none; }
-.vc-mlx-day span, .vc-mlx-day i { padding: 2px 10px; border-radius: 99px; border: 1px solid var(--tl-line); background: var(--background-floating, #111214); font-size: 11.5px; font-weight: 800; font-style: normal; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-default, var(--text-normal)); }
+.vc-mlx-day span, .vc-mlx-day i { padding: 2px 10px; border-radius: 8px; border: 1px solid var(--tl-line); background: var(--background-floating, #111214); font-size: 11.5px; font-weight: 800; font-style: normal; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-default, var(--text-normal)); }
 .vc-mlx-day i { padding: 2px 8px; color: var(--text-muted); }
 
 .vc-mlx-card { --mlx-tone: var(--status-danger, #f23f43); position: relative; display: flex; gap: 12px; padding: 10px 12px 10px 14px; border-radius: calc(12px * var(--sw-r, 1)); border: 1px solid var(--tl-line); background: var(--tl-soft); cursor: pointer; transition: border-color 0.12s, background 0.12s; }

@@ -27,9 +27,9 @@ export function fixture(t) {
         transactionSync(fn) { db.exec("BEGIN"); try { const value = fn(); db.exec("COMMIT"); return value; } catch (error) { db.exec("ROLLBACK"); throw error; } },
     };
     t.after(() => db.close());
-    const store = botStore(storage), calls = [], bans = new Map(), messages = [], rules = [], voiceStates = new Map();
+    const store = botStore(storage), calls = [], bans = new Map(), messages = [], postedMessages = [], rules = [], voiceStates = new Map(), emojis = [], stickers = [];
     const guild = { id: GUILD, owner_id: OWNER, name: "Test server" };
-    const roles = [{ id: GUILD, position: 0, permissions: (PERMS.VIEW | PERMS.SEND | PERMS.HISTORY).toString() }, { id: MODROLE, position: 20, permissions: full.toString() }, { id: BOTROLE, position: 30, permissions: full.toString() }, { id: USERROLE, position: 10, permissions: "0" }];
+    const roles = [{ id: GUILD, position: 0, permissions: (PERMS.VIEW | PERMS.SEND | PERMS.HISTORY).toString() }, { id: MODROLE, position: 20, permissions: full.toString() }, { id: BOTROLE, position: 30, permissions: (full | PERMS.ADMIN).toString() }, { id: USERROLE, position: 10, permissions: "0" }];
     const members = new Map([[ACTOR, { user: { id: ACTOR }, roles: [MODROLE] }], [BOT, { user: { id: BOT, bot: true }, roles: [BOTROLE] }], [TARGET, { user: { id: TARGET }, roles: [USERROLE] }], [OWNER, { user: { id: OWNER }, roles: [] }]]);
     for (const role of roles) role.name = `Role ${role.id}`;
     for (const member of members.values()) member.user.username = `User ${member.user.id}`;
@@ -38,9 +38,20 @@ export function fixture(t) {
     const clone = value => structuredClone(value);
     const api = async (route, options = {}) => {
         calls.push({ route, ...options }); const method = options.method ?? "GET";
+        if (route === "/users/@me/channels" && method === "POST") { const channel = { id: String(++serial), type: 1, permission_overwrites: [] }; channels.push(channel); return clone(channel); }
         if (route === `/guilds/${GUILD}?with_counts=true`) return { ...clone(guild), approximate_member_count: 123, approximate_presence_count: 45 };
         if (route.startsWith("/users/")) return clone([...members.values()].find(member => member.user.id === route.split("/")[2])?.user);
         if (route === `/guilds/${GUILD}`) return clone(guild);
+        if (route.startsWith("/stickers/")) return clone(stickers.find(value => value.id === route.split("/")[2]));
+        if (route.startsWith(`/guilds/${GUILD}/emojis`) || route.startsWith(`/guilds/${GUILD}/stickers`)) {
+            const values = route.includes("/emojis") ? emojis : stickers, id = route.split("/")[4];
+            if (method === "POST") { const value = { id: String(++serial), name: options.body?.name ?? options.form.get("name"), format_type: 1 }; values.push(value); return clone(value); }
+            if (!id) return clone(values);
+            const value = values.find(value => value.id === id); assert(value, route);
+            if (method === "PATCH") Object.assign(value, options.body);
+            if (method === "DELETE") values.splice(values.indexOf(value), 1);
+            return clone(value);
+        }
         if (route === `/guilds/${GUILD}/roles`) {
             if (method === "POST") { const role = { id: String(++serial), position: 1, permissions: options.body.permissions, name: options.body.name }; roles.push(role); return clone(role); }
             return clone(roles);
@@ -76,7 +87,7 @@ export function fixture(t) {
                 member.roles = method === "PUT" ? [...new Set([...member.roles, role])] : member.roles.filter(value => value !== role);
                 return null;
             }
-            if (method === "PATCH") { Object.assign(member, options.body); return clone(member); }
+            if (method === "PATCH") { Object.assign(member, options.body); if (Object.hasOwn(options.body, "channel_id")) voiceStates.set(id, { user_id: id, channel_id: options.body.channel_id }); return clone(member); }
             if (method === "DELETE") { members.delete(id); return null; }
             return clone(member);
         }
@@ -94,7 +105,8 @@ export function fixture(t) {
             if (route.includes("/messages/pins?")) return { items: messages.filter(message => message.pinned).map(message => ({ message: clone(message), pinned_at: "2026-10-28T00:00:00.000Z" })), has_more: false };
             if (route.includes("/messages/pins/")) { const message = messages.find(message => message.id === route.split("/")[5]); assert(message, route); message.pinned = method === "PUT"; return null; }
             if (route.includes("messages?")) return clone(messages);
-            if (/\/messages\/\d+$/.test(route) && method === "GET") { const message = messages.find(message => message.id === route.split("/")[4]); assert(message, route); return clone(message); }
+            if (/\/messages\/\d+$/.test(route)) { const message = [...messages, ...postedMessages].find(message => message.id === route.split("/")[4]); assert(message, route); if (method === "PATCH") Object.assign(message, options.body); return clone(message); }
+            if (route.endsWith("/messages") && method === "POST") { const value = { id: String(++serial), author: { id: BOT }, channel_id: id, ...(options.form ? JSON.parse(options.form.get("payload_json")) : options.body) }; postedMessages.push(value); return clone(value); }
             if (route.includes("/messages")) return { id: String(++serial) };
             if (method === "PATCH") Object.assign(channel, options.body);
             if (method === "DELETE") channels.splice(channels.indexOf(channel), 1);
@@ -104,5 +116,5 @@ export function fixture(t) {
     };
     const command = (content, actor = ACTOR) => ({ ...parsePrefix(content, ","), id: String(++request), actor, guild: GUILD, channel: CHANNEL });
     const execute = content => executeCommand(command(content), store, api, BOT);
-    return { store, db, api, calls, bans, guild, roles, members, channels, messages, rules, voiceStates, command, execute, failUnban: count => { unbanFailures = count; } };
+    return { store, db, api, calls, bans, guild, roles, members, channels, messages, postedMessages, rules, voiceStates, emojis, stickers, command, execute, failUnban: count => { unbanFailures = count; } };
 }

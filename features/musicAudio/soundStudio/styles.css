@@ -4,7 +4,7 @@
     all: unset;
     cursor: pointer;
     padding: 6px 12px;
-    border-radius: 99px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     color: var(--text-muted);

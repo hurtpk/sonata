@@ -4,11 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Sonata's screen, set into the window as a rounded canvas: a floating pill
-// of tabs (Features, Plugins, Dock, Keybinds, Appearance, Performance) and a
-// pane under it that scrolls on its own. Features opens on a big headline and
-// a turning music note, then a toolbar that stays put while you scroll the cards.
-
 import "./sonata.css";
 import "../utilities/styles.css";
 
@@ -30,20 +25,18 @@ import { KeybindsTab } from "../utilities/KeybindsTab";
 import { isUserPlugin, togglePlugin } from "../utilities/PluginsTab";
 import { getAllPlugins, pluginHasSettingsUi } from "../utilities/shared";
 import { accentColors, AccentMode, albumState, chosenOccasion, DEFAULT_ACCENT, GRADIENTS, HOLIDAYS, Occasion, occasionOn, onAlbumChange, SEASONS, upcomingHolidays, validHex } from "./accent";
-import { Ambience } from "./Ambience";
 import { formatBytes, totalFreed } from "./cache";
 import { CacheCard } from "./CacheCard";
-import { CHANGELOG, LATEST, newerThan } from "./changelog";
+import { LATEST, newerThan } from "./changelog";
 import { FeatureIcon, featureIconKey, featureIconsOn, hasPickedIcon, setFeatureIcon } from "./featureIcons";
 import { GROUP_OF, GROUPS } from "./groups";
-import { Note3D } from "./Note3D";
 import { DEFAULT_HOTKEY, DISCORD_OPTIONS, discordState, hasBackup, Impact, isOn, keyName, OPTIONS, prettyKey, putBack, setDiscord, setGaming, speedUp } from "./performance";
-import { layersOn, presetOf, readLayers } from "./scenes/presets";
 import { unseenCount, UpdateLog } from "./UpdateLog";
 import { Welcome, WhatsNew } from "./Welcome";
 import { WindowStylePanel } from "./WindowStylePanel";
 
 export const ACCENTS: { name: string; hex: string; }[] = [
+    { name: "Dusty rose", hex: "#c58d91" },
     { name: "Sapphire", hex: "#3b82f6" },
     { name: "Iris", hex: "#6366f1" },
     { name: "Violet", hex: "#8b5cf6" },
@@ -111,16 +104,13 @@ function SearchBox({ value, onChange, inputRef, placeholder, wide }: { value: st
     );
 }
 
-/** A page's heading: a small label, a big wide title, and a word written huge and faint behind it. */
-function PaneHead({ kicker, title, sub, giant, children }: { kicker: string; title: React.ReactNode; sub?: React.ReactNode; giant?: string; children?: React.ReactNode; }) {
+function PaneHead({ title, sub, children }: { title: React.ReactNode; sub?: React.ReactNode; children?: React.ReactNode; }) {
     return (
         <header className="sonata-head">
             <div>
-                <span className="sonata-kicker"><i />{kicker}</span>
                 <h2 className="sonata-head-title">{title}</h2>
                 {sub && <p className="sonata-head-sub">{sub}</p>}
             </div>
-            {giant && <span className="sonata-head-giant" aria-hidden>{giant}</span>}
             {children && <div className="sonata-pane-tools">{children}</div>}
         </header>
     );
@@ -205,23 +195,6 @@ function FeatureOptions({ api, featureKey, pluginSettings }: { api: QolApi; feat
     );
 }
 
-/** Tilts the card under the mouse a little towards it, with a soft shine where the mouse is. Only that card, only while hovered. */
-function tilt(e: React.PointerEvent<HTMLDivElement>) {
-    const el = e.currentTarget;
-    if (el.classList.contains("sonata-card-open") || e.pointerType !== "mouse") return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-    el.style.setProperty("--ry", `${((x - 0.5) * 7).toFixed(2)}deg`);
-    el.style.setProperty("--rx", `${((0.5 - y) * 7).toFixed(2)}deg`);
-    el.style.setProperty("--sx", `${(x * 100).toFixed(1)}%`);
-    el.style.setProperty("--sy", `${(y * 100).toFixed(1)}%`);
-}
-
-function untilt(e: React.PointerEvent<HTMLDivElement>) {
-    const el = e.currentTarget;
-    for (const k of ["--rx", "--ry", "--sx", "--sy"]) el.style.removeProperty(k);
-}
-
 function FeatureCard({ api, featureKey, open, onToggleOpen, pluginSettings, pinned, onPin }: {
     api: QolApi; featureKey: string; open: boolean; onToggleOpen(): void; pluginSettings: any; pinned: boolean; onPin(): void;
 }) {
@@ -232,18 +205,10 @@ function FeatureCard({ api, featureKey, open, onToggleOpen, pluginSettings, pinn
     const expandable = icons || featureOptions(api, featureKey).length > 0 || api.hasWindow(featureKey);
     const label = statusLabel(api, featureKey, status);
 
-    // The icon gives a little hop when the feature is switched on.
-    const [pop, setPop] = useState(false);
-    const wasOn = useRef(on);
-    useEffect(() => {
-        if (on && !wasOn.current) { setPop(true); const t = setTimeout(() => setPop(false), 700); wasOn.current = on; return () => clearTimeout(t); }
-        wasOn.current = on;
-    }, [on]);
-
     return (
-        <div className={classes("sonata-card", isLit(status) && "sonata-card-lit", open && "sonata-card-open", isPending(status) && "sonata-card-pending", pop && "sonata-card-pop", pinned && "sonata-card-pinned")}
+        <div className={classes("sonata-card", isLit(status) && "sonata-card-lit", open && "sonata-card-open", isPending(status) && "sonata-card-pending", pinned && "sonata-card-pinned")}
             onClick={expandable ? onToggleOpen : undefined} role={expandable ? "button" : undefined} tabIndex={expandable ? 0 : undefined}
-            aria-expanded={expandable ? open : undefined} onPointerMove={tilt} onPointerLeave={untilt}
+            aria-expanded={expandable ? open : undefined}
             onKeyDown={e => { if (expandable && (e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) { e.preventDefault(); onToggleOpen(); } }}>
             <div className="sonata-card-top">
                 {icons && <span className="sonata-card-icon"><FeatureIcon store={pluginSettings} featureKey={featureKey} /></span>}
@@ -323,7 +288,6 @@ function FeaturesTab({ api, s, query, setQuery, search, onSearchPlugins, onOpenL
     const running = getAllPlugins().filter(p => isPluginEnabled(p.name) && p.name !== QOL_NAME).length;
     const cats = CATEGORIES.filter(c => api.keys.some(k => categoryOf(k).id === c.id));
     const pending = api.pendingCount();
-    const latest = CHANGELOG[0];
     const unseen = unseenCount(s.sonataSeenVersion);
 
     // Pinned features: a row of your favourites above the categories.
@@ -338,34 +302,10 @@ function FeaturesTab({ api, s, query, setQuery, search, onSearchPlugins, onOpenL
     return (
         <div className="sonata-pane" ref={pane}>
             <div className="sonata-pane-inner">
-                <section className="sonata-hero">
-                    <Note3D className="sonata-hero-note" />
-                    <span className="sonata-hero-giant" aria-hidden>SONATA</span>
-                    <div className="sonata-hero-text">
-                        <span className="sonata-kicker"><i />Sonata · {api.keys.length} features</span>
-                        <h1 className="sonata-display">
-                            <span>Your Discord,</span>
-                            <span>
-                                <button type="button" className="sonata-hero-arrow" aria-label="Go to the features" title="Go to the features"
-                                    onClick={() => { const t = toolbar.current; if (t) pane.current?.scrollTo({ top: t.offsetTop - 6, behavior: "smooth" }); }}>
-                                    <svg viewBox="0 0 24 24" fill="none" aria-hidden><path d="M12 4v16m0 0-6-6m6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                </button>
-                                <b><em>composed</em></b>
-                            </span>
-                        </h1>
-                        <p className="sonata-hero-lead">Every feature in one place. Switch on what you like, open a card for its options.</p>
-                    </div>
-                    <button type="button" className="sonata-hero-news" onClick={onOpenLog}>
-                        <small>{unseen ? `${unseen} new update${unseen === 1 ? "" : "s"}` : "Latest update"}<span>{latest.date}</span></small>
-                        <b>{latest.title}</b>
-                        <span>See everything that changed →</span>
-                    </button>
-                    <div className="sonata-hero-foot">
-                        <span className="sonata-badge"><b>{onCount}</b>of {api.keys.length} features on</span>
-                        <span className="sonata-badge"><b>{running}</b>other plugins running</span>
-                        {pending > 0 && <button type="button" className="sonata-badge" onClick={api.apply}><b>{pending}</b>waiting for a reload — apply now</button>}
-                    </div>
-                </section>
+                <PaneHead title="Features" sub={`${onCount} of ${api.keys.length} enabled · ${running} other plugins running`}>
+                    <button type="button" className="sonata-btn" onClick={onOpenLog}>{unseen ? `${unseen} new update${unseen === 1 ? "" : "s"}` : "Update log"}</button>
+                    {pending > 0 && <button type="button" className="sonata-btn sonata-btn-accent" onClick={api.apply}>Apply {pending} changes</button>}
+                </PaneHead>
 
                 <div className="sonata-toolbar" ref={toolbar}>
                     <SearchBox value={query} onChange={setQuery} inputRef={search} placeholder="Search features…" />
@@ -473,7 +413,7 @@ function PluginsTab({ query, setQuery, search }: { query: string; setQuery(q: st
     return (
         <div className="sonata-pane">
             <div className="sonata-pane-inner">
-                <PaneHead kicker="Plugins" title={<>Everything else <b>Equicord</b> runs</>} giant="PLUGINS" sub={`${running} of ${all.length} running. Plugins that change Discord's code apply after a reload.`}>
+                <PaneHead title="Plugins" sub={`${running} of ${all.length} running. Code changes apply after a reload.`}>
                     <SearchBox value={query} onChange={setQuery} inputRef={search} placeholder="Search plugins…" wide />
                     <div className="sonata-segment" role="tablist">
                         {([["running", "Running"], ["all", "All"], ["user", "User plugins"]] as [PluginFilter, string][]).map(([id, label]) => (
@@ -577,15 +517,11 @@ function AppearanceTab({ store }: { store: any; }) {
     const gA = validHex(store.sonataGradientA) ? store.sonataGradientA : "#22d3ee";
     const gB = validHex(store.sonataGradientB) ? store.sonataGradientB : "#8b5cf6";
     const full = (hex: string) => hex.length === 4 ? `#${[...hex.slice(1)].map(c => c + c).join("")}` : hex;
-    const preset = presetOf(store.sonataPreset);
-    const layers = readLayers(store.sonataLayers);
-    const on = layersOn(preset, layers);
-    const setLayer = (id: string, value: boolean) => { store.sonataLayers = JSON.stringify({ ...layers, [preset.id]: { ...layers[preset.id], [id]: value } }); };
 
     return (
         <div className="sonata-pane">
             <div className="sonata-pane-inner">
-                <PaneHead kicker="Appearance" title={<>Make it <b><em>yours</em></b></>} giant="COLOUR" sub="The accent colours the background and every highlight — Sonata's windows use it too." />
+                <PaneHead title="Appearance" sub="Accent colors, feature icons and window details." />
                 <div className="sonata-cols">
                     <div className="sonata-panel sonata-appearance">
                         <h3 className="sonata-panel-title">Colour</h3>
@@ -640,30 +576,6 @@ function AppearanceTab({ store }: { store: any; }) {
                     </div>
 
                     <div className="sonata-col">
-                        <div className="sonata-panel sonata-appearance">
-                            <h3 className="sonata-panel-title">Background</h3>
-                            <div className="sonata-field">
-                                <div className="sonata-field-label">Layers</div>
-                                <div className="sonata-layers">
-                                    {preset.layers.map(l => (
-                                        <button key={l.id} type="button" role="switch" aria-checked={on.has(l.id)} className={classes("sonata-layer", on.has(l.id) && "sonata-layer-on")} onClick={() => setLayer(l.id, !on.has(l.id))}>
-                                            <i />{l.name}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="sonata-field-hint">{preset.blurb}</div>
-                            </div>
-                            <div className="sonata-field">
-                                <div className="sonata-field-label">Motion</div>
-                                <Seg value={store.sonataAnimate !== false} options={[[true, "On"], [false, "Off"]]} onChange={v => { store.sonataAnimate = v; }} />
-                                <div className="sonata-field-hint">The colour wash drifts, the note turns and rings spread out from it. Off holds it all still.</div>
-                            </div>
-                            <div className="sonata-field">
-                                <div className="sonata-field-label">Brightness</div>
-                                <Seg value={!!store.sonataInverted} options={[[false, "Dark"], [true, "Light"]]} onChange={v => { store.sonataInverted = v; }} />
-                                <div className="sonata-field-hint">Light gives Sonata a pale canvas with dark text; your colour stays the same.</div>
-                            </div>
-                        </div>
                         <div className="sonata-panel sonata-appearance">
                             <h3 className="sonata-panel-title">Feature icons</h3>
                             <div className="sonata-field">
@@ -751,8 +663,7 @@ function PerformanceTab({ store }: { store: any; }) {
     return (
         <div className="sonata-pane">
             <div className="sonata-pane-inner">
-                <PaneHead kicker="Performance" title={<>Make it <b><em>faster</em></b></>} giant="SPEED"
-                    sub="Pick a mode, or switch single things off. Nothing here changes how Discord works — only how much it animates and redraws." />
+                <PaneHead title="Performance" sub="Animation, rendering and background activity." />
 
                 <div className="sonata-modes" role="radiogroup" aria-label="Performance mode">
                     {MODES.map(m => (
@@ -822,16 +733,6 @@ const TABS: [Tab, string][] = [["features", "Features"], ["plugins", "Plugins"],
 let lastTab: Tab = "features";
 let lastCategory = "all";
 
-/** The wide display font for headings (Equicord allows Google Fonts); body text keeps Discord's font. */
-function loadDisplayFont() {
-    if (document.getElementById("sonata-display-font")) return;
-    const link = document.createElement("link");
-    link.id = "sonata-display-font";
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700;800&display=swap";
-    document.head.appendChild(link);
-}
-
 export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; }) {
     const s = api.settings.use() as any;
     const store = api.settings.store as any;
@@ -841,8 +742,6 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
     const search = useRef<HTMLInputElement>(null);
 
     const accentMode: AccentMode = s.sonataAccentMode ?? "solid";
-
-    useEffect(loadDisplayFont, []);
 
     // Album art changes as songs change; seasons change at midnight.
     const [, albumTick] = useState(0);
@@ -854,7 +753,6 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
     }, [accentMode]);
 
     const [accentA, accentB] = accentColors(s);
-    const on = layersOn(presetOf(s.sonataPreset), readLayers(s.sonataLayers));
     const pending = api.pendingCount();
     const [welcome, setWelcome] = useState(() => !s.sonataWelcomed);
     const [news, setNews] = useState(() => s.sonataWelcomed ? newerThan(s.sonataSeenVersion) : []);
@@ -888,10 +786,9 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
     );
 
     return (
-        <div className={classes("sonata", "sonata-preset-minimal", accentA !== accentB && "sonata-duo", s.sonataInverted && "sonata-inverted", s.sonataAnimate === false && "sonata-still")}
+        <div className={classes("sonata", accentA !== accentB && "sonata-duo")}
             style={{ "--sn-accent": accentA, "--sn-accent-2": accentB } as React.CSSProperties}>
             <div className="sonata-frame">
-                <Ambience on={on} />
                 {welcome && <Welcome api={api} store={store} accents={ACCENTS} onDone={() => { setWelcome(false); store.sonataSeenVersion = LATEST; }} />}
                 {!welcome && !log && news.length > 0 && <WhatsNew entries={news} onClose={closeNews} />}
                 {log && <UpdateLog seen={s.sonataSeenVersion} onClose={closeLog} store={store} />}
@@ -900,17 +797,16 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                     <button type="button" className="sonata-brand" title="Features" onClick={() => setTab("features")}>
                         <SonataIcon width={20} height={20} /><span>Sonata</span>
                     </button>
-                    <nav className="sonata-tabs" role="tablist" aria-label="Sonata">
-                        {TABS.map(([id, label]) => (
-                            <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("sonata-tab", tab === id && "sonata-tab-on")} onClick={() => setTab(id)}>
-                                {label}{id === "features" && <b title={`${onCount} of ${api.keys.length} on`}>{onCount}</b>}
-                            </button>
-                        ))}
-                    </nav>
+
                     <div className="sonata-corner">
                         {pending > 0 && <button type="button" className="sonata-btn sonata-btn-light" onClick={api.apply}>Apply {pending} · reload</button>}
+                        <Button variant="none" size="min" className="sonata-updates" title="Open the Sonata dashboard"
+                            onClick={() => VencordNative.native.openExternal("https://sonata.hurts.workers.dev/")}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /></svg>
+                            Dashboard
+                        </Button>
                         <Button variant="none" size="min" className="sonata-updates" title="Add Sonata Bot to your Discord server"
-                            onClick={() => VencordNative.native.openExternal("https://sonata-bot.pkispure.workers.dev/invite")}>
+                            onClick={() => VencordNative.native.openExternal("https://sonata.hurts.workers.dev/invite")}>
                             <SonataIcon width={16} height={16} />
                             Add Sonata Bot
                         </Button>
@@ -927,29 +823,38 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                     </div>
                 </header>
 
-                <div className="sonata-body">
-                    {tab === "features" && <FeaturesTab api={api} s={s} query={query} setQuery={setQuery} search={search} onSearchPlugins={() => setTab("plugins")} onOpenLog={openLog} footer={footer} />}
-                    {tab === "plugins" && <PluginsTab query={query} setQuery={setQuery} search={search} />}
-                    {tab === "dock" && (
-                        <div className="sonata-pane">
-                            <div className="sonata-pane-inner sonata-pane-narrow">
-                                <PaneHead kicker="Dock" title={<>The <b>dock</b></>} giant="DOCK" sub="Buttons under your user panel. Sonata's own button always sits first." />
-                                <div className="sonata-panel sonata-legacy"><DockTab settings={store} /></div>
-                                {footer}
+                <div className="sonata-workspace">
+                    <nav className="sonata-tabs" role="tablist" aria-label="Sonata" aria-orientation="vertical">
+                        {TABS.map(([id, label]) => (
+                            <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("sonata-tab", tab === id && "sonata-tab-on")} onClick={() => setTab(id)}>
+                                {label}{id === "features" && <b title={`${onCount} of ${api.keys.length} on`}>{onCount}</b>}
+                            </button>
+                        ))}
+                    </nav>
+                    <div className="sonata-body">
+                        {tab === "features" && <FeaturesTab api={api} s={s} query={query} setQuery={setQuery} search={search} onSearchPlugins={() => setTab("plugins")} onOpenLog={openLog} footer={footer} />}
+                        {tab === "plugins" && <PluginsTab query={query} setQuery={setQuery} search={search} />}
+                        {tab === "dock" && (
+                            <div className="sonata-pane">
+                                <div className="sonata-pane-inner sonata-pane-narrow">
+                                    <PaneHead title="Dock" sub="Choose and arrange buttons under your user panel." />
+                                    <div className="sonata-panel sonata-legacy"><DockTab settings={store} /></div>
+                                    {footer}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                    {tab === "keybinds" && (
-                        <div className="sonata-pane">
-                            <div className="sonata-pane-inner sonata-pane-narrow">
-                                <PaneHead kicker="Keybinds" title={<>Shortcuts for <b>everything</b></>} giant="KEYS" sub="Give any on/off setting a key combination." />
-                                <div className="sonata-panel sonata-legacy"><KeybindsTab /></div>
-                                {footer}
+                        )}
+                        {tab === "keybinds" && (
+                            <div className="sonata-pane">
+                                <div className="sonata-pane-inner sonata-pane-narrow">
+                                    <PaneHead title="Keybinds" sub="Keyboard shortcuts for features and settings." />
+                                    <div className="sonata-panel sonata-legacy"><KeybindsTab /></div>
+                                    {footer}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                    {tab === "appearance" && <AppearanceTab store={store} />}
-                    {tab === "performance" && <PerformanceTab store={store} />}
+                        )}
+                        {tab === "appearance" && <AppearanceTab store={store} />}
+                        {tab === "performance" && <PerformanceTab store={store} />}
+                    </div>
                 </div>
             </div>
         </div>

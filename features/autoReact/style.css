@@ -1,7 +1,7 @@
 /* Auto React — the shared window kit (_shared/tool.css) does most of it. */
 .vc-autoreact-panel { padding-bottom: 12px; }
 
-.vc-autoreact-status { all: unset; display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); cursor: pointer; }
+.vc-autoreact-status { all: unset; display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--text-muted); background: var(--sw-chip, hsl(0 0% 100% / 0.06)); cursor: pointer; }
 .vc-autoreact-status:hover { background: var(--sw-hi, hsl(0 0% 100% / 0.1)); }
 .vc-autoreact-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
 .vc-autoreact-status-active { color: var(--status-positive, #23a55a); background: hsl(from var(--status-positive, #23a55a) h s l / 0.14); }

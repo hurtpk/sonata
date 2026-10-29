@@ -4,7 +4,7 @@
 .vc-radio-pad { padding: 10px 14px; }
 
 .vc-radio-genres { display: flex; flex-wrap: wrap; gap: 6px; }
-.vc-radio-genre { all: unset; cursor: pointer; padding: 5px 12px; border-radius: 99px; font-size: 12.5px; font-weight: 600; color: var(--sw-soft); background: var(--sw-chip); text-transform: capitalize; }
+.vc-radio-genre { all: unset; cursor: pointer; padding: 5px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--sw-soft); background: var(--sw-chip); text-transform: capitalize; }
 .vc-radio-genre:hover { color: var(--sw-text); background: var(--sw-hover); }
 .vc-radio-genre-on, .vc-radio-genre-on:hover { color: var(--sw-on); background: var(--sw-accent-fill, var(--sw-accent)); }
 
@@ -18,7 +18,7 @@
 .vc-radio-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .vc-radio-row-text b { font-size: 13.5px; color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vc-radio-row-text span { font-size: 12px; color: var(--sw-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.vc-radio-bad { flex: none; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; color: #f0b232; background: hsl(40 90% 55% / 0.12); }
+.vc-radio-bad { flex: none; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; color: #f0b232; background: hsl(40 90% 55% / 0.12); }
 .vc-radio-small { padding: 5px 10px !important; font-size: 12px !important; }
 
 .vc-radio-play { all: unset; box-sizing: border-box; flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--sw-text); background: var(--sw-chip); }
@@ -45,7 +45,7 @@
 .vc-radio-ctl-main:hover { color: oklch(from var(--brand-500) clamp(0.2, (0.78 - l) * 1000, 1) 0 0); background: var(--vc-sonata-gradient, var(--brand-500)); filter: brightness(1.08); }
 .vc-radio-prev svg { transform: scaleX(-1); }
 .vc-radio-vol { display: inline-flex; align-items: center; gap: 2px; margin: 0 4px; }
-.vc-radio-vol input { appearance: none; width: 80px; height: 4px; border-radius: 99px; cursor: pointer; background: linear-gradient(90deg, var(--sw-accent, var(--brand-500)) var(--fill), color-mix(in srgb, var(--text-muted, #949ba4) 30%, transparent) var(--fill)); }
+.vc-radio-vol input { appearance: none; width: 80px; height: 4px; border-radius: 8px; cursor: pointer; background: linear-gradient(90deg, var(--sw-accent, var(--brand-500)) var(--fill), color-mix(in srgb, var(--text-muted, #949ba4) 30%, transparent) var(--fill)); }
 .vc-radio-vol input::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--sw-text, #fff); }
 
 .vc-radio-mini { position: fixed; right: 18px; bottom: 150px; z-index: 999; width: 340px; animation: vc-radio-in 0.25s cubic-bezier(0.3, 1.3, 0.5, 1); }
@@ -66,7 +66,7 @@
 .vc-radio-scrub { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; font-family: var(--sw-mono, monospace); font-size: 11px; color: var(--sw-muted, var(--text-muted)); font-variant-numeric: tabular-nums; }
 .vc-radio-scrub > span { flex: none; min-width: 34px; }
 .vc-radio-scrub > span:last-child { text-align: right; }
-.vc-radio-scrub input { flex: 1; min-width: 0; appearance: none; height: 4px; border-radius: 99px; cursor: pointer; background: linear-gradient(90deg, var(--sw-accent, var(--brand-500)) var(--fill), color-mix(in srgb, var(--text-muted, #949ba4) 30%, transparent) var(--fill)); }
+.vc-radio-scrub input { flex: 1; min-width: 0; appearance: none; height: 4px; border-radius: 8px; cursor: pointer; background: linear-gradient(90deg, var(--sw-accent, var(--brand-500)) var(--fill), color-mix(in srgb, var(--text-muted, #949ba4) 30%, transparent) var(--fill)); }
 .vc-radio-scrub input:disabled { cursor: default; opacity: 0.5; }
 .vc-radio-scrub input::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--sw-text, #fff); box-shadow: 0 1px 4px hsl(0 0% 0% / 0.4); opacity: 0; transition: opacity 0.12s; }
 .vc-radio-scrub:hover input::-webkit-slider-thumb, .vc-radio-scrub input:focus-visible::-webkit-slider-thumb { opacity: 1; }

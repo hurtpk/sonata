@@ -21,3 +21,7 @@ bot/.env*
 bot/.dev.vars*
 bot/.wrangler/
 bot/.check/
+bot/music/.ssh/
+bot/music/.env*
+!bot/music/.env.example
+bot/music/data/

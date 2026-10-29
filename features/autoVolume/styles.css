@@ -28,7 +28,7 @@
 .vc-avb-level-text { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .vc-avb-word { font-size: 13px; font-weight: 700; color: var(--text-muted); }
 
-.vc-avb-meter { position: relative; height: 10px; border-radius: 99px; overflow: hidden; background: var(--sw-inner, hsl(0 0% 0% / 0.35)); }
+.vc-avb-meter { position: relative; height: 10px; border-radius: 8px; overflow: hidden; background: var(--sw-inner, hsl(0 0% 0% / 0.35)); }
 /* Faint zones: quiet (-40 to -24), normal (to -12), loud (to -6), very loud (to -2), maxed out. */
 .vc-avb-meter-zones { position: absolute; inset: 0; opacity: 0.22; background: linear-gradient(90deg, #64748b 0 40%, #22c55e 40% 70%, #eab308 70% 85%, #f97316 85% 95%, #ef4444 95%); }
 .vc-avb-meter-fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); transition: transform 0.25s ease, background 0.25s; border-radius: inherit; }

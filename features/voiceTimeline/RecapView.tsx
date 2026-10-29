@@ -8,10 +8,11 @@
 // where — this week or any of the nine before it, next to the week before.
 
 import { classNameFactory } from "@utils/css";
-import { useEffect, useState } from "@webpack/common";
+import { classes } from "@utils/misc";
+import { Clickable, useEffect, useState } from "@webpack/common";
 
 import { ToolHero } from "../_shared/ToolHero";
-import { avatar, channelName, displayName } from "./Panel";
+import { avatar, channelName, displayName, personActions } from "./Panel";
 import { clearRecap, dayKey, useRecap, weekOf } from "./recapStore";
 import { getCurrent } from "./tracker";
 
@@ -78,7 +79,7 @@ export function RecapView() {
                     <div className={cl("card-title")}>Who you talked with most<span className={cl("count")}>{week.people.length}</span></div>
                     <div className={cl("people")}>
                         {week.people.length ? week.people.slice(0, 10).map(([id, ms], i) => (
-                            <div key={id} className={cl("recap-row")}>
+                            <Clickable key={id} className={classes(cl("recap-row"), cl("user-action"))} {...personActions(id)} aria-label={`Open profile for ${displayName(id, null)}`}>
                                 <span className={cl("recap-rank")}>{i + 1}</span>
                                 {avatar(id, null) ? <img className={cl("recap-avatar")} src={avatar(id, null)} alt="" /> : <span className={cl("recap-avatar")} />}
                                 <div className={cl("recap-who")}>
@@ -86,7 +87,7 @@ export function RecapView() {
                                     <div className={cl("recap-bar")}><i style={{ width: `${ms / week.people[0][1] * 100}%` }} /></div>
                                 </div>
                                 <span className={cl("recap-ms")}>{long(ms)}</span>
-                            </div>
+                            </Clickable>
                         )) : <div className={cl("hint")}>Nobody yet — people you're in calls with show up here.</div>}
                     </div>
                 </section>
