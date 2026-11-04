@@ -34,3 +34,19 @@ test("Queue controls affect only the caller's server and stop closes its connect
     await music.command(job("stop")); assert.equal(destroyed, 1); assert.equal(music.rooms.size, 0);
     await assert.rejects(music.command(job("pause")), /No music/);
 });
+
+
+test("SoundCloud HLS starts without zero-time input seeking; segmented seeks decode after input", async () => {
+    const { mediaInput } = await import("../attachments.mjs");
+    const url = "https://playback.media-streaming.soundcloud.cloud/test.m3u8";
+    assert.equal(mediaInput(url, 0, true).includes("-ss"), false);
+    const hls = mediaInput(url, 12, true), direct = mediaInput(url, 12, false);
+    assert(hls.indexOf("-ss") > hls.indexOf("-i")); assert(direct.indexOf("-ss") < direct.indexOf("-i"));
+});
+
+test("Music uploads allow only the five requested extensions, bounded Discord attachments and no arbitrary URLs", async () => {
+    const { musicAttachment, MUSIC_FILE_LIMIT } = await import("../attachments.mjs");
+    const file = { filename: "audio.mp3", size: 1000, url: "https://cdn.discordapp.com/attachments/111111111111111111/222222222222222222/audio.mp3?ex=1&hm=test" };
+    for (const ext of ["mp3", "wav", "mov", "mp4", "ogg"]) assert.equal(musicAttachment({ ...file, filename: "audio." + ext }).size, 1000);
+    for (const change of [{filename:"audio.flac"},{filename:"audio.m4a"},{filename:"audio.exe"},{size:MUSIC_FILE_LIMIT+1},{size:0},{url:"http://127.0.0.1/a.mp3"},{url:"https://cdn.discordapp.com.evil.test/attachments/111111111111111111/222222222222222222/a.mp3"},{url:"https://cdn.discordapp.com/avatars/111111111111111111/a.mp3"}]) assert.throws(()=>musicAttachment({...file,...change}));
+});

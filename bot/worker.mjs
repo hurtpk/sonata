@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
+import { requireBotUser } from "./ownerConsole.mjs";
 import { timingSafeEqual } from "node:crypto";
 import { Buffer } from "node:buffer";
 
@@ -17,6 +19,7 @@ import { honeypotEvent } from "./honeypot.mjs";
 import { voiceRoomEvent } from "./voiceRooms.mjs";
 import { maintainJail } from "./restrictions.mjs";
 import { botStore } from "./store.mjs";
+import { lastfmClient } from "./lastfm.mjs";
 import { MusicBridge } from "./musicBridge.mjs";
 import { MUSIC_NAMES } from "./musicCommands.mjs";
 import { protectionEvent } from "./protection.mjs";
@@ -28,7 +31,11 @@ import { recoveryEvent } from "./roleRecovery.mjs";
 import { musicAudienceEvent } from "./musicPolicy.mjs";
 import { eventLog, rememberLogEvent } from "./eventLogs.mjs";
 import { stickyEvent } from "./sticky.mjs";
-import { videoSource } from "./videoEmbeds.mjs";
+import { starboardEvent } from "./starboard.mjs";
+import { maintainProfileBio } from "./guildProfile.mjs";
+import { videoInvocation, videoModeReply } from "./videoEmbeds.mjs";
+import { errorReply, recordCommandFailure } from "./commandFailures.mjs";
+import { VIDEO_MAX_BYTES, videoLimit } from "./music/videoSource.mjs";
 import { nicknameEvent } from "./nicknamePolicy.mjs";
 
 export function controlAuthorized(request, secret) {
@@ -50,7 +57,7 @@ export default {
         }
         if (url.pathname.startsWith("/music/")) {
             if (!controlAuthorized(request, env.MUSIC_BRIDGE_SECRET)) return Response.json({ error: "Not authorized." }, { status: 401, headers });
-            if (!((request.method === "GET" && url.pathname === "/music/poll") || (request.method === "POST" && ["/music/voice", "/music/result"].includes(url.pathname)))) return Response.json({ error: "Not found." }, { status: 404, headers });
+            if (!((request.method === "GET" && url.pathname === "/music/poll") || (request.method === "POST" && ["/music/voice", "/music/result", "/music/video"].includes(url.pathname)))) return Response.json({ error: "Not found." }, { status: 404, headers });
             return env.BOT.getByName("sonata").fetch(request);
         }
         if (!url.pathname.startsWith("/control/")) return Response.json({ error: "Not found." }, { status: 404, headers });
@@ -70,12 +77,14 @@ export class SonataBot {
         this.store = botStore(ctx.storage);
         this.api = discordApi(env.DISCORD_BOT_TOKEN);
         this.responses = discordApi(env.DISCORD_BOT_TOKEN);
+        this.typing = discordApi(env.DISCORD_BOT_TOKEN); this.videoRequests = 0;
         this.socket = null; this.connecting = null; this.heartbeat = null; this.retryTimer = null;
         this.presenceTimer = null; this.presenceSentAt = 0; this.presenceCount = -1;
         this.ready = false; this.acked = true; this.session = {}; this.paused = false; this.nextConnect = 0; this.failures = 0;
         this.eventCache = { messages: new Map(), channels: new Map() };
         this.tasks = Promise.resolve(); this.queued = 0; this.cooldowns = new Map(); this.lastJobs = 0;
         this.music = new MusicBridge();
+        this.lastfm = lastfmClient(env.LASTFM_API_KEY);
         ctx.blockConcurrencyWhile(async () => {
             this.session = await ctx.storage.get("session") ?? {};
             this.paused = await ctx.storage.get("paused") ?? false;
@@ -86,7 +95,7 @@ export class SonataBot {
 
     presence() {
         const count = this.store.get("SELECT COUNT(*) AS n FROM bot_guilds WHERE active=1").n;
-        return { since: null, activities: [{ name: "Custom Status", type: 4, state: `harmonizing ${count} server${count === 1 ? "" : "s"}` }], status: "dnd", afk: false };
+        return { since: null, activities: [{ name: "Custom Status", type: 4, state: `♫ harmonizing ${count} servers • ,help` }], status: "dnd", afk: false };
     }
     updatePresence(force = false) {
         if (!this.ready) return;
@@ -102,7 +111,7 @@ export class SonataBot {
     close(socket, reason) { this.localCloseReason = reason; socket.close(4000, reason); }
 
     async execute(command) {
-        const response = await executeCommand(command, this.store, this.api, this.session.userId, this.music);
+        const response = await executeCommand(command, this.store, this.api, this.session.userId, this.music, this.lastfm);
         if (this.ready && command.name === "role" && command.sub === "recovery" && response.embeds?.[0]?.title === "Role recovery saved" && this.store.settings(command.guild).roleRecovery) this.send(this.socket, { op: 8, d: { guild_id: command.guild, query: "", limit: 0 } });
         return response;
     }
@@ -110,18 +119,32 @@ export class SonataBot {
     async fetch(request) {
         const path = new URL(request.url).pathname;
         if (path.startsWith("/dashboard/")) {
-            try { return Response.json(await dashboardRequest(request, this, command => this.enqueue(() => this.execute(command))), { headers: { "Cache-Control": "no-store" } }); }
+            try { const run = () => dashboardRequest(request, this, command => this.enqueue(() => this.execute(command))); return Response.json(await (["/dashboard/profile", "/dashboard/owner/profile"].includes(path) && request.method === "POST" ? this.enqueue(run) : run()), { headers: { "Cache-Control": "no-store" } }); }
             catch (error) { return Response.json({ error: error.message }, { status: error.status || 400, headers: { "Cache-Control": "no-store" } }); }
         }
         if (path.startsWith("/music/")) {
             const headers = { "Cache-Control": "no-store" };
-            if (path === "/music/poll") return Response.json(this.music.poll(this.session.userId, this.ready), { headers });
+            if (path === "/music/poll") return Response.json(new URL(request.url).searchParams.get("wait") === "1" ? await this.music.waitPoll(() => [this.session.userId, this.ready]) : this.music.poll(this.session.userId, this.ready), { headers });
             try {
+                if (path === "/music/video") {
+                    const meta = request.headers.get("X-Sonata-Video") || "";
+                    if (!meta || meta.length > 12_000) return new Response("Invalid video metadata.", { status: 400 });
+                    const body = JSON.parse(Buffer.from(meta, "base64").toString("utf8"));
+                    if (this.music.jobs.get(body.id)?.job.kind !== "video") { await request.body?.cancel(); return Response.json({ ok: true }, { headers }); }
+                    const length = Number(request.headers.get("content-length"));
+                    const limit = Math.min(VIDEO_MAX_BYTES, this.music.jobs.get(body.id).job.limit ?? videoLimit());
+                    if (length > limit) { await request.body?.cancel(); return new Response("Video exceeds this server's upload limit.", { status: 413 }); }
+                    const bytes = Buffer.alloc(length > 0 ? length : limit); let size = 0;
+                    if (request.body) for await (const part of request.body) { if (size + part.length > bytes.length) return new Response("Video exceeds the upload limit.", { status: 413 }); bytes.set(part, size); size += part.length; }
+                    this.music.complete(body, bytes.subarray(0, size));
+                    this.store.run("INSERT INTO resource_usage (day,video_bytes,videos) VALUES (?,?,1) ON CONFLICT(day) DO UPDATE SET video_bytes=video_bytes+excluded.video_bytes,videos=videos+1", new Date().toISOString().slice(0, 10), size);
+                    return Response.json({ ok: true }, { headers });
+                }
                 let raw = "", size = 0;
                 if (request.body) for await (const part of request.body) { size += part.length; if (size > (path === "/music/result" ? 12_000_000 : 8192)) return new Response("Request too large.", { status: 413, headers }); raw += new TextDecoder().decode(part); }
                 const body = JSON.parse(raw);
                 if (path === "/music/result") this.music.complete(body);
-                if (path === "/music/voice") { if (!this.ready) throw new Error("Gateway offline."); this.music.voice(body, value => this.send(this.socket, value)); }
+                if (path === "/music/voice") { if (body.d?.channel_id && !featureEnabled(this.store.settings(body.d.guild_id), "music")) throw new Error("Music disabled."); if (!this.ready) throw new Error("Gateway offline."); this.music.voice(body, value => this.send(this.socket, value)); }
                 return Response.json({ ok: true }, { headers });
             } catch { return Response.json({ error: "Invalid music request." }, { status: 400, headers }); }
         }
@@ -224,7 +247,7 @@ export class SonataBot {
                 this.heartbeat = setTimeout(() => this.ctx.waitUntil(beat()), interval);
             };
             if (this.session.id) this.send(socket, { op: 6, d: { token: this.env.DISCORD_BOT_TOKEN, session_id: this.session.id, seq: this.session.seq ?? null } });
-            else this.send(socket, { op: 2, d: { token: this.env.DISCORD_BOT_TOKEN, intents: 33415, properties: { os: "ios", browser: "Discord iOS", device: "Discord iOS" }, large_threshold: 50, presence: this.presence() } });
+            else this.send(socket, { op: 2, d: { token: this.env.DISCORD_BOT_TOKEN, intents: 34439, properties: { os: "ios", browser: "Discord iOS", device: "Discord iOS" }, large_threshold: 50, presence: this.presence() } });
             clearTimeout(this.heartbeat); this.heartbeat = setTimeout(() => this.ctx.waitUntil(beat()), Math.random() * interval);
         }
         if (packet.op === 11) { this.acked = true; if (Number.isFinite(this.heartbeatSent)) this.gatewayLatency = Date.now() - this.heartbeatSent; }
@@ -238,6 +261,7 @@ export class SonataBot {
         if (["READY", "GUILD_CREATE", "GUILD_DELETE", "VOICE_STATE_UPDATE"].includes(packet.t)) musicAudienceEvent(packet.t, packet.d, this.store);
         if (["GUILD_CREATE", "GUILD_DELETE", "GUILD_MEMBER_ADD", "GUILD_MEMBER_UPDATE", "GUILD_MEMBER_REMOVE", "GUILD_MEMBERS_CHUNK"].includes(packet.t)) recoveryEvent(packet.t, packet.d, this.store);
         if (packet.t === "GUILD_CREATE" && this.store.settings(packet.d.id).roleRecovery) this.send(socket, { op: 8, d: { guild_id: packet.d.id, query: "", limit: 0 } });
+        if (packet.t === "GUILD_CREATE" && !packet.d.unavailable) this.enqueue(() => maintainProfileBio(this.store, this.api, packet.d.id));
         if (["VOICE_STATE_UPDATE", "VOICE_SERVER_UPDATE"].includes(packet.t)) this.music.event(packet.t, packet.d, this.session.userId);
         if (packet.t === "READY") {
             this.session = { id: packet.d.session_id, resumeUrl: packet.d.resume_gateway_url, seq: packet.s, userId: packet.d.user.id };
@@ -250,15 +274,22 @@ export class SonataBot {
         if (["READY", "RESUMED", "GUILD_CREATE", "GUILD_DELETE"].includes(packet.t)) this.updatePresence(["READY", "RESUMED"].includes(packet.t));
         if (["GUILD_CREATE","MESSAGE_CREATE","MESSAGE_UPDATE","CHANNEL_CREATE","CHANNEL_UPDATE","CHANNEL_DELETE"].includes(packet.t)) {
             const guildId=packet.t==="GUILD_CREATE"?packet.d.id:packet.d.guild_id;
-            if(guildId)rememberLogEvent(packet.t,packet.d,this.store.settings(guildId),this.eventCache);
+            if(guildId && featureEnabled(this.store.settings(guildId), "logging"))rememberLogEvent(packet.t,packet.d,this.store.settings(guildId),this.eventCache);
         }
         if (["MESSAGE_DELETE","MESSAGE_DELETE_BULK","GUILD_MEMBER_ADD","GUILD_MEMBER_REMOVE","GUILD_AUDIT_LOG_ENTRY_CREATE"].includes(packet.t)&&packet.d.guild_id&&this.queued<100) {
             const logs=this.store.settings(packet.d.guild_id).eventlogs;
             if(logs&&Object.keys(logs).length)this.enqueue(()=>eventLog(packet.t,{...packet.d,eventId:`${this.session.id}:${packet.s}`},this.store,this.api,this.eventCache,this.session.userId));
         }
+        if (["MESSAGE_REACTION_ADD", "MESSAGE_REACTION_REMOVE", "MESSAGE_REACTION_REMOVE_ALL", "MESSAGE_REACTION_REMOVE_EMOJI", "MESSAGE_UPDATE", "MESSAGE_DELETE", "MESSAGE_DELETE_BULK"].includes(packet.t) && packet.d.guild_id && this.queued < 50) {
+            const settings = this.store.settings(packet.d.guild_id);
+            if (featureEnabled(settings, "server") && (settings.starboard?.enabled || (packet.t.startsWith("MESSAGE_DELETE") && this.store.get("SELECT source FROM starboard_posts WHERE guild=? LIMIT 1", packet.d.guild_id)))) this.enqueue(async () => {
+                try { await starboardEvent(packet.t, packet.d, this.store, this.api); }
+                catch (error) { const current = this.store.settings(packet.d.guild_id); if (current.starboard) { current.starboard.error = error.message.slice(0, 300); this.store.saveSettings(packet.d.guild_id, current); } }
+            });
+        }
         if (packet.t === "MESSAGE_CREATE" && packet.d.guild_id && !packet.d.author.bot && !packet.d.webhook_id) {
             this.ctx.waitUntil(this.command(packet.d, false));
-            if (this.queued < 25 && this.store.get("SELECT channel FROM sticky_messages WHERE channel=?", packet.d.channel_id)) this.enqueue(() => stickyEvent(packet.d, this.store, this.api));
+            if (featureEnabled(this.store.settings(packet.d.guild_id), "server") && this.queued < 25 && this.store.get("SELECT channel FROM sticky_messages WHERE channel=?", packet.d.channel_id)) this.enqueue(() => stickyEvent(packet.d, this.store, this.api));
         }
         if (packet.t === "INTERACTION_CREATE" && packet.d.type === 2 && packet.d.guild_id) this.ctx.waitUntil(this.command(packet.d, true));
         if (packet.t === "INTERACTION_CREATE" && [3, 5].includes(packet.d.type)) this.ctx.waitUntil(this.component(packet.d));
@@ -283,6 +314,11 @@ export class SonataBot {
 
     async component(data) {
         if (!this.ready || !isId(actorId(data)) || !isId(data.channel_id)) return;
+        if (this.store.get("SELECT id FROM user_blacklist WHERE id=?", actorId(data))) {
+            const code = recordCommandFailure(this.store, { id: data.id, guild: data.guild_id, channel: data.channel_id, actor: actorId(data), name: "control" }, { message: "This account is blocked from Sonata Bot.", outcome: "denied" });
+            try { await this.responses(`/interactions/${data.id}/${data.token}/callback`, { method: "POST", body: { type: 4, data: { ...errorReply(code), flags: 64 } } }); } catch { return; }
+            return;
+        }
         const now = Date.now(), key = `help:${data.guild_id ?? "dm"}:${actorId(data)}`, previous = this.cooldowns.get(key);
         const limited = previous && previous.until > now && previous.n >= 10;
         this.cooldowns.set(key, previous && previous.until > now ? { until: previous.until, n: previous.n + 1 } : { until: now + 10_000, n: 1 });
@@ -294,21 +330,28 @@ export class SonataBot {
                 if (limited || this.queued >= 25) throw new Error("Sonata is busy. Wait a few seconds before trying this control again.");
                 if (data.type === 3 && !genuineControl(data, this.session.userId)) throw new Error("This control is no longer available.");
                 form = featureForm(data, this.store);
-            } catch (error) { try { await immediate({ type: 4, data: { ...embed("Control not available", error.message), flags: 64 } }); } catch { return; } return; }
+            } catch (error) { const code = recordCommandFailure(this.store, { id: data.id, guild: data.guild_id, channel: data.channel_id, actor: actorId(data), name: "control", sub: data.data.custom_id?.split(":")[0] }, error); try { await immediate({ type: 4, data: { ...errorReply(code), flags: 64 } }); } catch { return; } return; }
             if (form) { try { await immediate(form); } catch { return; } return; }
-            const player = data.data.custom_id?.startsWith("snmusic:"), logs = data.data.custom_id?.startsWith("snlogs:");
-            try { await immediate(player || logs ? { type: 6 } : { type: 5, data: { flags: 64 } }); } catch { return; }
+            const player = data.data.custom_id?.startsWith("snmusic:"), logs = data.data.custom_id?.startsWith("snlogs:"), video = data.data.custom_id?.startsWith("snvideo:");
+            try { await immediate(player || logs || video ? { type: 6 } : { type: 5, data: { flags: 64 } }); } catch { return; }
             const run = async () => {
+                let videoClaimed = false;
                 try {
-                    if (this.store.get("SELECT id FROM guild_blacklist WHERE id=?", data.guild_id)) throw new Error("This server is blacklisted from Sonata Bot.");
-                    const body = await featureAction(data, this.store, this.api, this.session.userId, this.music);
-                    await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", body });
+                    requireBotUser(this.store, actorId(data));
+                    if (video && data.guild_id && !featureEnabled(this.store.settings(data.guild_id), "media")) throw new Error("Media is disabled in this server.");
+                    if (video) { if (this.videoRequests) throw new Error("A video is already being processed. Try again shortly."); this.videoRequests++; videoClaimed = true; }
+                    if (data.guild_id && this.store.get("SELECT id FROM guild_blacklist WHERE id=?", data.guild_id)) throw new Error("This server is blacklisted from Sonata Bot.");
+                    const body = video ? await videoModeReply(data, this.api, this.music, this.session.userId) : await featureAction(data, this.store, this.api, this.session.userId, this.music);
+                    if (video) requireBotUser(this.store, actorId(data));
+                    if (video && data.guild_id && !featureEnabled(this.store.settings(data.guild_id), "media")) throw new Error("Media is disabled in this server.");
+                    await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body) });
                 } catch (error) {
-                    const body = { ...embed("Control not completed", error.message), ...(player || logs ? { flags: 64 } : {}) };
-                    try { await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}${player || logs ? "" : "/messages/@original"}`, { method: player || logs ? "POST" : "PATCH", body }); } catch { return; }
-                }
+                    const code = recordCommandFailure(this.store, { id: data.id, guild: data.guild_id, channel: data.channel_id, actor: actorId(data), name: "control", sub: data.data.custom_id?.split(":")[0] }, error);
+                    const body = { ...errorReply(code), ...(player || logs || video ? { flags: 64 } : {}) };
+                    try { await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}${player || logs || video ? "" : "/messages/@original"}`, { method: player || logs || video ? "POST" : "PATCH", body }); } catch { return; }
+                } finally { if (videoClaimed) this.videoRequests--; }
             };
-            if (player) this.ctx.waitUntil(run()); else this.enqueue(run);
+            if (player || video) this.ctx.waitUntil(run()); else this.enqueue(run);
             return;
         }
         if (!isId(data.guild_id)) return;
@@ -320,6 +363,14 @@ export class SonataBot {
         if (!this.ready) return;
         const actor = slash ? data.member?.user?.id : data.author.id;
         if (!isId(actor) || !isId(data.guild_id) || !isId(data.channel_id)) return;
+        if (this.store.get("SELECT id FROM user_blacklist WHERE id=?", actor)) {
+            if (slash) {
+                const code = recordCommandFailure(this.store, { id: data.id, guild: data.guild_id, channel: data.channel_id, actor, name: data.data?.name || "unknown" }, { message: "This account is blocked from Sonata Bot.", outcome: "denied" });
+                try { await this.responses(`/interactions/${data.id}/${data.token}/callback`, { method: "POST", body: { type: 4, data: { ...errorReply(code), flags: 64 } } }); } catch { return; }
+            }
+            return;
+        }
+        const invocation = !slash ? videoInvocation(data.content, this.session.userId) : null;
         let parsed, parsingError, parsingName, automaticVideo = false;
         try {
             if (slash) parsed = parseSlash(data.data, data.data.resolved?.attachments);
@@ -327,21 +378,22 @@ export class SonataBot {
                 const settings = this.store.settings(data.guild_id);
                 const personal = this.store.get("SELECT prefix FROM user_prefixes WHERE user=?", actor)?.prefix;
                 const prefix = [personal, settings.prefix].filter(Boolean).sort((a, b) => b.length - a.length).find(prefix => (data.content ?? "").startsWith(prefix));
-                if (!prefix && /^sonata\s+https:\/\//i.test(data.content || "")) parsed = parsePrefix(data.content, "", data.attachments);
+                if (!prefix && invocation?.explicit) parsed = parseSlash({ name: "sonata", options: [{ name: "url", value: invocation.source }] });
                 if (prefix) parsed = parsePrefix(expandAlias(data.content ?? "", prefix, settings.aliases), prefix, data.attachments);
             }
         } catch (error) { parsingError = error.message; parsingName = error.commandName; }
         const videoSettings = this.store.settings(data.guild_id);
-        if (!parsed && !parsingError && !slash && (videoSettings.videoEmbeds?.[data.channel_id] ?? videoSettings.videoEmbedsAll)) {
-            const matches = [...(data.content || "").matchAll(/https:\/\/[^\s<>]+/g)];
-            for (const match of matches.slice(0, 3)) { try { const url = videoSource(match[0]); parsed = parseSlash({ name: "sonata", options: [{name:"url",value:url}] }); automaticVideo = true; break; } catch { continue; } }
+        if (!parsed && !parsingError && !slash && featureEnabled(videoSettings, "media") && (videoSettings.videoEmbeds?.[data.channel_id] ?? videoSettings.videoEmbedsAll)) {
+            if (invocation && !invocation.explicit) { parsed = parseSlash({ name: "sonata", options: [{name:"url",value:invocation.source}] }); automaticVideo = true; }
         }
         if (!parsed && !parsingError) return;
+        const failureCommand = { id: data.id, guild: data.guild_id, channel: data.channel_id, actor, name: parsed?.name ?? parsingName ?? "unknown", sub: parsed?.sub, options: parsed?.options };
         if (this.store.get("SELECT id FROM requests WHERE id=?", data.id)) return;
         const key = `${data.guild_id}:${actor}`, now = Date.now(), previous = this.cooldowns.get(key);
         if (previous && previous.until > now && previous.n >= 5) {
             if ((parsed || parsingName) && this.store.claim(data.id)) { this.store.usage(data.guild_id, parsed?.name ?? parsingName); this.store.outcome(data.guild_id, parsed ? [parsed.name, parsed.sub].filter(Boolean).join(" ") : parsingName, "rate_limited"); }
-            if (slash) try { await this.responses(`/interactions/${data.id}/${data.token}/callback`, { method: "POST", body: { type: 4, data: { ...embed("Slow down", "Wait a few seconds before using another command."), flags: 64 } } }); } catch { return; }
+            const code = recordCommandFailure(this.store, failureCommand, { message: "Command rate limit exceeded.", outcome: "rate_limited" });
+            if (slash) try { await this.responses(`/interactions/${data.id}/${data.token}/callback`, { method: "POST", body: { type: 4, data: { ...errorReply(code), flags: 64 } } }); } catch { return; }
             return;
         }
         this.cooldowns.set(key, previous && previous.until > now ? { until: previous.until, n: previous.n + 1 } : { until: now + 10_000, n: 1 });
@@ -352,33 +404,42 @@ export class SonataBot {
             if (slash) await this.responses(`/interactions/${data.id}/${data.token}/callback`, { method: "POST", body: { type: 5, data: { flags: 64 } } });
             else if (parsed?.name === "ping") await this.responses("/users/@me");
             if (slash || parsed?.name === "ping") apiLatency = Date.now() - responseStarted;
-        } catch { return; }
+        } catch (error) { recordCommandFailure(this.store, failureCommand, error); return; }
         const respond = body => slash ? this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body) }) : this.responses(`/channels/${data.channel_id}/messages`, { method: "POST", ...replyPayload({ ...body, ...(!(parsed?.name === "sonata" && body.files?.length) ? { message_reference: { message_id: data.id, fail_if_not_exists: false } } : {}) }) });
         if (parsingError || this.queued >= 25) {
             if ((parsed || parsingName) && this.store.claim(data.id)) { this.store.usage(data.guild_id, parsed?.name ?? parsingName); this.store.outcome(data.guild_id, parsed ? [parsed.name, parsed.sub].filter(Boolean).join(" ") : parsingName, parsingError ? "invalid" : "busy"); }
-            try { await respond(embed("Command not completed", parsingError ?? "Sonata is busy. Try again shortly.")); } catch { return; } return;
+            const code = recordCommandFailure(this.store, failureCommand, { message: parsingError ?? "Sonata is busy. Try again shortly.", outcome: parsingError ? "invalid" : "busy" });
+            try { await respond(errorReply(code)); } catch { return; } return;
         }
         const command = { ...parsed, id: data.id, prefix: !slash, evidence: !slash && ["warn","kick","ban"].includes(parsed.name) ? data.attachments : undefined, reply: !slash ? data.message_reference : undefined, actor, guild: data.guild_id, channel: data.channel_id, latency: { api: apiLatency, gateway: this.gatewayLatency } };
         const run = async () => {
-            let response;
-            try { response = await this.execute(command); }
-            catch (error) { response = embed("Command not completed", error.message); }
+            const video = command.name === "sonata";
+            if (video && this.videoRequests) { const code = recordCommandFailure(this.store, command, { message: "A video is already being processed. Try again shortly.", outcome: "busy" }); await respond(errorReply(code)).catch(() => false); return; }
+            if (video) this.videoRequests++;
+            const typing = () => this.typing(`/channels/${data.channel_id}/typing`, { method: "POST" }).catch(() => false);
+            let typingTimer;
             try {
-                const { silent, ...payload } = response;
-                if (silent && !slash) return;
-                const sent = await respond(payload);
-                if (!slash && command.name === "sonata" && payload.files?.length && !data.attachments?.length) {
-                    const links = [...(data.content || "").matchAll(/https:\/\/[^\s<>]+/g)];
-                    if (links.length !== 1 || (automaticVideo && data.content.trim().replace(/^<|>$/g, "") !== links[0][0])) return;
-                    try {
-                        const original = await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { optional: true });
-                        if (original?.author.id === actor && original.content === data.content && !original.attachments?.length) await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { method: "DELETE", optional: true, reason: "Sonata uploaded this video." });
-                    } catch {
-                        payload.embeds[0].footer.text += " • Original link could not be removed";
-                        await this.responses(`/channels/${data.channel_id}/messages/${sent.id}`, { method: "PATCH", body: { embeds: payload.embeds } });
+                if (video && !slash) { await typing(); typingTimer = setInterval(typing, 7000); }
+                let response;
+                try { response = await this.execute(command); if (video) requireBotUser(this.store, actor); if (video && !featureEnabled(this.store.settings(command.guild), "media")) throw new Error("Media is disabled in this server."); }
+                catch (error) { response = error.publicNotice ? { content: `Temporarily unavailable. ${error.publicNotice}`, allowed_mentions: { parse: [] } } : errorReply(error.sonataCode || recordCommandFailure(this.store, command, error)); }
+                try {
+                    const { silent, ...payload } = response;
+                    if (silent && !slash) return;
+                    const sent = await respond(payload);
+                    if (!slash && command.name === "sonata" && payload.files?.length && !data.attachments?.length) {
+                        const links = [...(data.content || "").matchAll(/https:\/\/[^\s<>]+/g)];
+                        if (!invocation && (links.length !== 1 || automaticVideo)) return;
+                        try {
+                            const original = await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { optional: true });
+                            if (original?.author.id === actor && original.content === data.content && !original.attachments?.length) await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { method: "DELETE", optional: true, reason: "Sonata uploaded this video." });
+                        } catch {
+                            payload.embeds[0].footer.text += " • Original link could not be removed";
+                            await this.responses(`/channels/${data.channel_id}/messages/${sent.id}`, { method: "PATCH", body: { embeds: payload.embeds } });
+                        }
                     }
-                }
-            } catch { return; }
+                } catch (error) { recordCommandFailure(this.store, command, { message: `Response delivery failed: ${error.message}`, outcome: "delivery_failed" }); return; }
+            } finally { clearInterval(typingTimer); if (video) this.videoRequests--; }
         };
         if (MUSIC_NAMES.includes(command.name) || command.name === "sonata") this.ctx.waitUntil(run());
         else this.enqueue(run);

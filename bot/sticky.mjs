@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { channelPermissions, embed, fail, isId, PERMS, requirePermission } from "./discord.mjs";
 
 export async function stickyCommand(context, store) {
@@ -38,6 +39,7 @@ export async function stickyCommand(context, store) {
 }
 
 export async function stickyEvent(data, store, api) {
+    if (data.guild_id && !featureEnabled(store.settings(data.guild_id), "server")) return;
     if (!data.guild_id || data.author?.bot || data.webhook_id || !data.id) return;
     const row = store.get("SELECT * FROM sticky_messages WHERE channel=? AND guild=?", data.channel_id, data.guild_id);
     if (!row || row.message === data.id || (row.message && BigInt(data.id) < BigInt(row.message))) return;

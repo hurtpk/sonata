@@ -25,8 +25,8 @@ test("Prefix and slash commands share validated names, options and aliases", () 
     assert.equal(parsePrefix("hello", ","), null);
     assert.throws(() => parsePrefix(",purge 101", ","));
     assert.throws(() => parsePrefix(",ban nope", ","));
-    assert.equal(slashCommands().length, COMMANDS.length);
-    assert.equal(new Set(slashCommands().map(command => command.name)).size, COMMANDS.length);
+    assert.equal(slashCommands().length, COMMANDS.length - 3);
+    assert.equal(new Set(slashCommands().map(command => command.name)).size, COMMANDS.length - 3);
 });
 
 test("Durations reject invalid, overflowing and excessive values", () => {
@@ -131,7 +131,7 @@ test("A moderator cannot restore saved jail roles above their own position", asy
     const f = fixture(t); await f.execute(",jailsetup"); await f.execute(`,jail ${TARGET} spam`);
     f.roles.find(role => role.id === USERROLE).position = 25;
     const response = await f.execute(`,unjail ${TARGET} reviewed`);
-    assert.match(response.embeds[0].description, /Your highest role/);
+    assert.match(response.content, /^Error code: S\d+$/); assert.match(f.store.get("SELECT detail FROM command_failures ORDER BY id DESC LIMIT 1").detail, /Your highest role/);
     assert(f.store.restriction(GUILD, TARGET, "jail"));
 });
 
@@ -159,6 +159,6 @@ test("A non-administrator cannot restore a saved role that later gained administ
     const f = fixture(t); await f.execute(",jailsetup"); await f.execute(`,jail ${TARGET} spam`);
     f.roles.find(role => role.id === USERROLE).permissions = PERMS.ADMIN.toString();
     const response = await f.execute(`,unjail ${TARGET} reviewed`);
-    assert.match(response.embeds[0].description, /administrator must restore/);
+    assert.match(response.content, /^Error code: S\d+$/); assert.match(f.store.get("SELECT detail FROM command_failures ORDER BY id DESC LIMIT 1").detail, /administrator must restore/);
     assert(f.store.restriction(GUILD, TARGET, "jail"));
 });

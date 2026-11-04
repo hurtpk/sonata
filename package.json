@@ -2,9 +2,13 @@
     "name": "sonata",
     "private": true,
     "description": "Extra parts Sonata needs that Equicord doesn't come with. Install Sonata.bat installs them into this folder.",
+    "scripts": {
+        "check": "tsc --project tsconfig.json",
+        "test": "node --test test/*.test.cjs"
+    },
     "dependencies": {
         "heic2any": "0.0.4",
         "js-yaml": "4.3.2",
-        "pdfjs-dist": "6.3.289"
+        "pdfjs-dist": "6.5.438"
     }
 }

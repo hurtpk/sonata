@@ -8,9 +8,10 @@ import { command, option, role, sub } from "./commandOptions.mjs";
 import { channelPermissions, embed, fail, PERMS, requirePermission } from "./discord.mjs";
 import { musicPanel } from "./controlPanels.mjs";
 import { musicPolicy } from "./musicPolicy.mjs";
+import { musicAttachment } from "./music/attachments.mjs";
 
 export const MUSIC_COMMANDS = [
-    command("play", "Play or queue a track in your voice channel", 0n, [option("query", 3, "Song name, SoundCloud track or YouTube video link", true, { max_length: 200 })], ["p"]),
+    command("play", "Play or queue a track or uploaded audio in your voice channel", 0n, [option("query", 3, "Song name, SoundCloud track or YouTube video link", false, { max_length: 200 }), option("file", 11, "One MP3, WAV, MOV, MP4 or OGG file, up to 20 MiB", false)], ["p"]),
     command("pause", "Pause music in your voice channel", 0n),
     command("resume", "Resume paused music", 0n),
     command("skip", "Skip the current track", 0n, [], ["next"]),
@@ -30,6 +31,10 @@ export const MUSIC_SETTINGS_COMMAND = command("musicsettings", "Configure DJ con
 
 export async function musicCommand(context, broker, store) {
     const { api, guild, actor, bot, roles, command } = context;
+    if (command.name === "play") {
+        if (!!command.options.file === !!command.options.query) fail("Enter a song name or link, or attach one MP3, WAV, MOV, MP4 or OGG file.");
+        if (command.options.file) command.options.file = musicAttachment(command.options.file);
+    }
     if (!broker?.online()) fail("Music is offline. The separate voice service must be running before music commands can work.");
     const state = await api(`/guilds/${guild.id}/voice-states/${actor.user.id}`, { optional: true });
     if (!state?.channel_id) fail("Join a voice channel first.");

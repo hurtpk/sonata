@@ -55,6 +55,6 @@ test("Both home help arrows browse immediately and Home returns to the eight-cat
     const home = helpPage(ACTOR), button = home.components[1].components[2]; assert.equal(button.disabled, false); assert.equal(home.components[1].components[0].disabled, false);
     const click = (message, control) => helpInteraction({ member: { user: { id: ACTOR } }, message: { ...message, author: { id: BOT } }, data: { custom_id: control.custom_id, component_type: 2 } }, BOT);
     const first = click(home, button); assert.equal(first.type, 7); assert.match(first.data.embeds[0].footer.text, /Page 1/);
-    const last = click(home, home.components[1].components[0]); assert.equal(last.type, 7); assert.match(last.data.embeds[0].footer.text, /Page 10 of 10/);
+    const last = click(home, home.components[1].components[0]); assert.equal(last.type, 7); assert.match(last.data.embeds[0].footer.text, /Page 11 of 11/);
     assert.match(click(first.data, first.data.components[1].components[1]).data.embeds[0].description, /8 categories/);
 });

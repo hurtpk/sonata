@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { requireFeature } from "./featureGroups.mjs";
 import { embed, fail, highestRole, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 
 export const DELEGATED_COMMANDS = {
@@ -19,6 +20,7 @@ export const delegatedCommand = name => Object.values(DELEGATED_COMMANDS).some(n
 export const delegatedRole = (settings, id) => !!settings.fakePermissions?.[id]?.length;
 
 export function commandAccess(command, settings, actor, roles) {
+    requireFeature(command, settings);
     if ((settings.disabledCommands ?? []).some(name => name === command.name || name === `${command.name} ${command.sub}`)) fail("This command is disabled in this server. A server manager can enable it in the Sonata dashboard.", "denied");
     return roles.some(role => actor.roles.includes(role.id) && (settings.fakePermissions?.[role.id] ?? []).some(capability => DELEGATED_COMMANDS[capability]?.includes(command.name)));
 }

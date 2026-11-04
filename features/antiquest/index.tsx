@@ -105,7 +105,7 @@ export default definePlugin({
                     replace: "||true",
                 },
                 {
-                    match: /(?=let \i=Date.now\(\);\i.recordQuestRequestAttempt.{0,50}QUESTS_FETCH_QUEST_TO_DELIVER_BEGIN)/,
+                    match: /(?<=async function \i\(\i,\i\)\{)(?=.{0,100}?recordQuestRequestAttempt\("\/quests\/decision")/,
                     replace: "return;",
                 },
             ],

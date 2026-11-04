@@ -205,7 +205,7 @@ function handleStatusChange() {
 export default definePlugin({
     name: "StatusAvatar",
     description: "Automatically swaps your profile picture based on your online status (online, idle, dnd, invisible). Just upload an image for each status.",
-    tags: ["Avatar", "Status", "Utility"],
+    tags: ["Appearance", "Activity", "Utility"],
     authors: [{ name: "aiqen", id: 779172192461783110n }],
     settings,
 

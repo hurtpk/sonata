@@ -31,17 +31,18 @@ export function rememberAccess(result: AccessResult) {
     return reload;
 }
 
-export async function checkAccess(action: "check" | "begin" | "finish" | "disconnect" = "check") {
+export async function checkAccess(action: "check" | "begin" | "disconnect" = "check") {
     if (!ACCESS_ENABLED || inFlight) return;
-    const userId = UserStore.getCurrentUser()?.id;
-    if (!userId) return;
+    const user = UserStore.getCurrentUser();
+    if (!user) return;
+    const userId = user.id;
     const current = generation;
     inFlight = true;
     let result: AccessResult;
     try {
         if (IS_WEB) throw new Error("Managed activation is currently available in the desktop app.");
         const native = VencordNative.pluginHelpers.Sonata as PluginNative<typeof import("./native")>;
-        result = action === "begin" ? await native.accessBegin(userId, LATEST) : action === "finish" ? await native.accessFinish(userId) : action === "disconnect" ? await native.accessDisconnect(userId) : await native.accessCheck(userId, LATEST);
+        result = action === "begin" ? await native.accessBegin(userId, LATEST, { username: user.username, name: user.globalName || user.username, avatar: user.avatar || "" }) : action === "disconnect" ? await native.accessDisconnect(userId) : await native.accessCheck(userId, LATEST);
         if (result.status === "disabled") result = { status: "unavailable", userId, message: "Fully restart Discord to load this build's activation settings." };
     } catch (error) { result = { status: "unavailable", userId, message: error instanceof Error && IS_WEB ? error.message : "Couldn't reach Sonata's activation service. Try again." }; }
     finally { if (current === generation) inFlight = false; }
@@ -56,7 +57,7 @@ export function startAccess(onChange: (result: AccessResult) => void) {
     generation++;
     inFlight = false;
     void checkAccess();
-    timer = setInterval(() => { if (state.status !== "waiting") void checkAccess(); }, 300_000);
+    timer = setInterval(() => { void checkAccess(); }, 300_000);
 }
 
 export function stopAccess() {

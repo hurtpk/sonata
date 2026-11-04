@@ -2,7 +2,7 @@
 
 This deploys the same Sonata Control Room dashboard and sign-in flow on Cloudflare Workers with a D1 database. Keep the account on Workers Free. A paid domain is not required; use the provided `workers.dev` address. Free usage has limits, so check the [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) and [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) as your installation grows. D1 stops accepting queries when its free daily limits are reached.
 
-This workspace is configured for [Sonata Control Room](https://sonata.hurts.workers.dev/admin). Its database has been created and the initial migration applied. Private configuration is stored in Cloudflare secrets. Discord must allow `https://sonata.hurts.workers.dev/auth/callback` as an OAuth2 redirect before sign-in can complete. Follow the first-deployment steps below when preparing a separate installation.
+This workspace is configured for [Sonata Control Room](https://sonatabot.info/admin). Its database has been created and the initial migration applied. Private configuration is stored in Cloudflare secrets. Discord must allow `https://sonatabot.info/auth/callback` as an OAuth2 redirect before sign-in can complete. Follow the first-deployment steps below when preparing a separate installation.
 
 ## First deployment
 

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { expandMessage, safeAutorole } from "./community.mjs";
 import { canManage, channelPermissions, embed, highestRole, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { delegatedRole } from "./commandAccess.mjs";
@@ -13,6 +14,7 @@ export async function communityEvent(event, data, store, api, botId, cooldowns, 
     if (!user || (event === "MESSAGE_CREATE" && (user.bot || data.webhook_id))) return;
     let reply;
     if (event === "MESSAGE_CREATE") {
+        if (!featureEnabled(settings, "community")) return;
         if (!data.content || data.content.length > 100 || data.content.startsWith(settings.prefix)) return;
         const trigger = data.content.trim().toLowerCase();
         if (!settings.replies || !Object.hasOwn(settings.replies, trigger)) return;
@@ -40,7 +42,7 @@ export async function communityEvent(event, data, store, api, botId, cooldowns, 
     }
     const errors = [];
     const attempt = async task => { try { await task(); } catch { errors.push("A member automation could not complete. Check the configured channel, role and bot permissions."); } };
-    if (["GUILD_MEMBER_ADD", "GUILD_MEMBER_UPDATE"].includes(event) && !store.restriction(guildId, user.id, "jail")) {
+    if (featureEnabled(settings, "community") && ["GUILD_MEMBER_ADD", "GUILD_MEMBER_UPDATE"].includes(event) && !store.restriction(guildId, user.id, "jail")) {
         const target = await api(`/guilds/${guildId}/members/${user.id}`, { optional: true });
         if (target?.pending && (settings.autoroles?.enabled || settings.autonick)) store.run("INSERT INTO onboarding VALUES (?,?,?) ON CONFLICT(guild,target) DO UPDATE SET at=excluded.at", guildId, user.id, Date.now());
         if (target && !target.pending) {
@@ -62,7 +64,7 @@ export async function communityEvent(event, data, store, api, botId, cooldowns, 
     if (event === "GUILD_MEMBER_UPDATE") return;
     if (event === "GUILD_MEMBER_REMOVE") store.run("DELETE FROM onboarding WHERE guild=? AND target=?", guildId, user.id);
     const kind = event === "GUILD_MEMBER_ADD" ? "welcome" : "goodbye";
-    for (const [channelId, text] of Object.entries(settings[kind] ?? {})) await attempt(async () => { const design = settings.designedMessages?.[kind]?.[channelId]; if (!design) return send(channelId, kind === "welcome" ? "Welcome" : "Goodbye", expandMessage(text, user, guild)); const message = embed(design.title || (kind === "welcome" ? "Welcome" : "Goodbye"), expandMessage(text, user, guild)); message.embeds[0].color = parseInt(design.color.slice(1),16); const destination = await api(`/channels/${channelId}`); if (destination.guild_id !== guildId || ![0,5].includes(destination.type)) return; requirePermission(channelPermissions(bot, roles, guild, destination), PERMS.VIEW | PERMS.SEND | PERMS.EMBEDS); await api(`/channels/${channelId}/messages`, {method:"POST",body:message}); });
-    if (settings.joinlogs) await attempt(() => send(settings.joinlogs, event === "GUILD_MEMBER_ADD" ? "Member joined" : "Member left", `<@${user.id}> · ${user.id}\nUsername: ${user.username || "Unknown"}\nAccount created: <t:${Math.floor(Number((BigInt(user.id) >> 22n) + 1420070400000n) / 1000)}:F>`));
+    for (const [channelId, text] of Object.entries(featureEnabled(settings, "community") ? settings[kind] ?? {} : {})) await attempt(async () => { const design = settings.designedMessages?.[kind]?.[channelId]; if (!design) return send(channelId, kind === "welcome" ? "Welcome" : "Goodbye", expandMessage(text, user, guild)); const message = embed(design.title || (kind === "welcome" ? "Welcome" : "Goodbye"), expandMessage(text, user, guild)); message.embeds[0].color = parseInt(design.color.slice(1),16); const destination = await api(`/channels/${channelId}`); if (destination.guild_id !== guildId || ![0,5].includes(destination.type)) return; requirePermission(channelPermissions(bot, roles, guild, destination), PERMS.VIEW | PERMS.SEND | PERMS.EMBEDS); await api(`/channels/${channelId}/messages`, {method:"POST",body:message}); });
+    if (featureEnabled(settings, "logging") && settings.joinlogs) await attempt(() => send(settings.joinlogs, event === "GUILD_MEMBER_ADD" ? "Member joined" : "Member left", `<@${user.id}> · ${user.id}\nUsername: ${user.username || "Unknown"}\nAccount created: <t:${Math.floor(Number((BigInt(user.id) >> 22n) + 1420070400000n) / 1000)}:F>`));
     if (errors.length) { settings.automationError = { at: Date.now(), message: errors[0] }; store.saveSettings(guildId, settings); }
 }

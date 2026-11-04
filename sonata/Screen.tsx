@@ -801,12 +801,12 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                     <div className="sonata-corner">
                         {pending > 0 && <button type="button" className="sonata-btn sonata-btn-light" onClick={api.apply}>Apply {pending} · reload</button>}
                         <Button variant="none" size="min" className="sonata-updates" title="Open the Sonata dashboard"
-                            onClick={() => VencordNative.native.openExternal("https://sonata.hurts.workers.dev/")}>
+                            onClick={() => VencordNative.native.openExternal("https://sonatabot.info/")}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /></svg>
                             Dashboard
                         </Button>
                         <Button variant="none" size="min" className="sonata-updates" title="Add Sonata Bot to your Discord server"
-                            onClick={() => VencordNative.native.openExternal("https://sonata.hurts.workers.dev/invite")}>
+                            onClick={() => VencordNative.native.openExternal("https://sonatabot.info/invite")}>
                             <SonataIcon width={16} height={16} />
                             Add Sonata Bot
                         </Button>

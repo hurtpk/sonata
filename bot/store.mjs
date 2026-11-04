@@ -5,6 +5,15 @@
  */
 
 export const SCHEMA = `
+CREATE TABLE IF NOT EXISTS owner_controls (id TEXT PRIMARY KEY,data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS user_blacklist (id TEXT PRIMARY KEY,actor TEXT NOT NULL,reason TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS owner_messages (id TEXT PRIMARY KEY,actor TEXT NOT NULL,guild TEXT NOT NULL,channel TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS owner_server_notes (guild TEXT PRIMARY KEY,note TEXT NOT NULL,labels TEXT NOT NULL,actor TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS config_history (id TEXT PRIMARY KEY,guild TEXT NOT NULL,actor TEXT NOT NULL,source TEXT NOT NULL,before_data TEXT NOT NULL,after_data TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS config_history_guild ON config_history(guild,at);
+CREATE TABLE IF NOT EXISTS resource_usage (day TEXT PRIMARY KEY,commands INTEGER NOT NULL DEFAULT 0,processing_ms INTEGER NOT NULL DEFAULT 0,video_bytes INTEGER NOT NULL DEFAULT 0,videos INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS guild_profiles (guild TEXT PRIMARY KEY,data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS starboard_posts (guild TEXT NOT NULL,source TEXT NOT NULL,channel TEXT NOT NULL,board TEXT NOT NULL,message TEXT NOT NULL,PRIMARY KEY(guild,source,board));
 CREATE TABLE IF NOT EXISTS case_files (id TEXT PRIMARY KEY,guild TEXT NOT NULL,n INTEGER NOT NULL,actor TEXT NOT NULL,channel TEXT NOT NULL,message TEXT NOT NULL,filename TEXT NOT NULL,type TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS case_files_case ON case_files(guild,n);
 CREATE TABLE IF NOT EXISTS sticky_messages (guild TEXT NOT NULL, channel TEXT PRIMARY KEY, content TEXT NOT NULL, message TEXT NOT NULL, original TEXT NOT NULL, actor TEXT NOT NULL, error TEXT NOT NULL DEFAULT '');
@@ -19,6 +28,7 @@ CREATE TABLE IF NOT EXISTS restrictions (guild TEXT NOT NULL, target TEXT NOT NU
 CREATE TABLE IF NOT EXISTS requests (id TEXT PRIMARY KEY, at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS requests_at ON requests(at);
 CREATE TABLE IF NOT EXISTS onboarding (guild TEXT NOT NULL, target TEXT NOT NULL, at INTEGER NOT NULL, PRIMARY KEY(guild,target));
+CREATE TABLE IF NOT EXISTS lastfm_accounts (user TEXT PRIMARY KEY,username TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS user_prefixes (user TEXT PRIMARY KEY, prefix TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS voice_rooms (guild TEXT NOT NULL, channel TEXT PRIMARY KEY, owner TEXT NOT NULL, data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS security_events (id TEXT PRIMARY KEY, guild TEXT NOT NULL, actor TEXT NOT NULL, kind TEXT NOT NULL, at INTEGER NOT NULL);
@@ -37,6 +47,7 @@ CREATE TABLE IF NOT EXISTS bot_guilds (id TEXT PRIMARY KEY, data TEXT NOT NULL, 
 CREATE TABLE IF NOT EXISTS guild_blacklist (id TEXT PRIMARY KEY, actor TEXT NOT NULL, reason TEXT NOT NULL, at INTEGER NOT NULL, last_error TEXT NOT NULL DEFAULT '');
 CREATE TABLE IF NOT EXISTS command_usage (guild TEXT NOT NULL, name TEXT NOT NULL, day TEXT NOT NULL, uses INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(guild,name,day));
 CREATE TABLE IF NOT EXISTS command_results (guild TEXT NOT NULL, name TEXT NOT NULL, day TEXT NOT NULL, outcome TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(guild,name,day,outcome));
+CREATE TABLE IF NOT EXISTS command_failures (id INTEGER PRIMARY KEY AUTOINCREMENT,request TEXT UNIQUE NOT NULL,guild TEXT NOT NULL,channel TEXT NOT NULL,actor TEXT NOT NULL,name TEXT NOT NULL,outcome TEXT NOT NULL,detail TEXT NOT NULL,source TEXT NOT NULL,at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS recovery_members (guild TEXT NOT NULL, user TEXT NOT NULL, roles TEXT NOT NULL, PRIMARY KEY(guild,user));
 CREATE TABLE IF NOT EXISTS role_returns (guild TEXT NOT NULL, user TEXT NOT NULL, roles TEXT NOT NULL, expires INTEGER NOT NULL, PRIMARY KEY(guild,user));
 CREATE TABLE IF NOT EXISTS music_audience (guild TEXT NOT NULL, user TEXT NOT NULL, channel TEXT NOT NULL, PRIMARY KEY(guild,user));
@@ -51,8 +62,15 @@ export function botStore(storage) {
     storage.sql.exec(SCHEMA);
     return {
         all, get, run: (sql, ...params) => { storage.sql.exec(sql, ...params); },
+        databaseSize: () => Number.isFinite(storage.sql.databaseSize) ? storage.sql.databaseSize : null,
         settings(guild) { const row = get("SELECT data FROM settings WHERE guild=?", guild); return { ...defaults(), ...(row ? JSON.parse(row.data) : {}) }; },
-        saveSettings(guild, value) { storage.sql.exec("INSERT INTO settings VALUES (?,?) ON CONFLICT(guild) DO UPDATE SET data=excluded.data", guild, JSON.stringify(value)); },
+        saveSettings(guild, value, actor = "system", source = "automation") { storage.transactionSync(() => {
+            const previous = get("SELECT data FROM settings WHERE guild=?", guild)?.data ?? JSON.stringify(defaults()), next = JSON.stringify(value);
+            if (previous === next) return;
+            storage.sql.exec("INSERT INTO config_history VALUES (?,?,?,?,?,?,?)", crypto.randomUUID(), guild, actor, source, previous, next, Date.now());
+            storage.sql.exec("INSERT INTO settings VALUES (?,?) ON CONFLICT(guild) DO UPDATE SET data=excluded.data", guild, next);
+            storage.sql.exec("DELETE FROM config_history WHERE guild=? AND id NOT IN (SELECT id FROM config_history WHERE guild=? ORDER BY at DESC,rowid DESC LIMIT 50)", guild, guild);
+        }); },
         claim(id) { return storage.transactionSync(() => { if (get("SELECT id FROM requests WHERE id=?", id)) return false; storage.sql.exec("INSERT INTO requests VALUES (?,?)", id, Date.now()); return true; }); },
         begin(command, kind, target, reason, duration = 0) {
             return storage.transactionSync(() => {

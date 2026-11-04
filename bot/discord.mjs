@@ -14,14 +14,23 @@ export const INVITE_PERMISSIONS = PERMS.ADMIN.toString();
 export const isId = value => typeof value === "string" && /^\d{17,20}$/.test(value);
 export const fail = (message, outcome = "invalid") => { throw Object.assign(new Error(message), { outcome }); };
 export const clean = value => String(value ?? "").slice(0, 1800);
-export const embed = (title, description) => ({ embeds: [{ title: title.slice(0, 250), description: clean(description), color: 0xa78bfa }], allowed_mentions: { parse: [] } });
+export const embed = (title, description) => ({ embeds: [{ title: title.slice(0, 250), description: clean(description), color: 0xc58d91 }], allowed_mentions: { parse: [] } });
 export const inviteUrl = id => { if (!isId(id)) fail("Configure the bot application first."); return `https://discord.com/oauth2/authorize?${new URLSearchParams({ client_id: id, scope: "bot applications.commands", permissions: INVITE_PERMISSIONS, integration_type: "0" })}`; };
 export const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 export function replyPayload(body) {
     const { files, ...payload } = body;
     if (!files) return { body: payload };
-    const form = new FormData();
     payload.attachments = files.map((file, id) => ({ id, filename: file.name }));
+    if (files.some(file => file.bytes.length > 20 * 1024 * 1024)) {
+        const boundary = `sonata-${crypto.randomUUID()}`, encoder = new TextEncoder();
+        const parts = [encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="payload_json"\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(payload)}\r\n`)];
+        files.forEach((file, id) => parts.push(encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="files[${id}]"; filename="${file.name.replace(/["\r\n]/g, "_")}"\r\nContent-Type: ${file.type.replace(/[\r\n]/g, "")}\r\n\r\n`), file.bytes, encoder.encode("\r\n")));
+        parts.push(encoder.encode(`--${boundary}--\r\n`));
+        const length = parts.reduce((n, part) => n + part.length, 0); let index = 0, offset = 0;
+        const stream = new ReadableStream({ pull(controller) { while (index < parts.length && offset === parts[index].length) { index++; offset = 0; } if (index === parts.length) { controller.close(); return; } const end = Math.min(offset + 65536, parts[index].length); controller.enqueue(parts[index].subarray(offset, end)); offset = end; } });
+        return { stream, contentType: `multipart/form-data; boundary=${boundary}`, length };
+    }
+    const form = new FormData();
     form.set("payload_json", JSON.stringify(payload));
     files.forEach((file, id) => form.set(`files[${id}]`, new Blob([file.bytes], { type: file.type }), file.name));
     return { form };
@@ -34,7 +43,7 @@ export function discordApi(token, transport = fetch) {
         const job = async () => {
             for (let attempt = 0; attempt < 3; attempt++) {
                 let response;
-                try { response = await transport(`https://discord.com/api/v10${route}`, { method: options.method ?? "GET", redirect: "manual", signal: AbortSignal.timeout(12_000), headers: { Authorization: `Bot ${token}`, ...(!options.form ? { "Content-Type": "application/json" } : {}), ...(options.reason ? { "X-Audit-Log-Reason": encodeURIComponent(options.reason.slice(0, 500)) } : {}) }, body: options.form ?? (options.body === undefined ? undefined : JSON.stringify(options.body)) }); }
+                try { response = await transport(`https://discord.com/api/v10${route}`, { method: options.method ?? "GET", redirect: "manual", signal: AbortSignal.timeout(options.stream ? 120_000 : options.form ? 30_000 : 12_000), headers: { Authorization: `Bot ${token}`, ...(options.stream ? { "Content-Type": options.contentType, "Content-Length": String(options.length) } : !options.form ? { "Content-Type": "application/json" } : {}), ...(options.reason ? { "X-Audit-Log-Reason": encodeURIComponent(options.reason.slice(0, 500)) } : {}) }, body: options.stream ?? options.form ?? (options.body === undefined ? undefined : JSON.stringify(options.body)), ...(options.stream ? { duplex: "half" } : {}) }); }
                 catch { fail("Discord could not be reached. Check the case status before repeating an action."); }
                 let length = 0, text = "";
                 const decoder = new TextDecoder();
@@ -42,7 +51,7 @@ export function discordApi(token, transport = fetch) {
                 text += decoder.decode();
                 let data = null;
                 try { if (text) data = JSON.parse(text); } catch { fail("Discord returned an unreadable response."); }
-                if (response.status === 429 && typeof data?.retry_after === "number" && data.retry_after <= 10 && attempt < 2) { await wait(Math.max(100, data.retry_after * 1000)); continue; }
+                if (response.status === 429 && !options.stream && typeof data?.retry_after === "number" && data.retry_after <= 10 && attempt < 2) { await wait(Math.max(100, data.retry_after * 1000)); continue; }
                 if (response.status === 404 && options.optional) return null;
                 if (!response.ok) throw Object.assign(new Error(response.status === 403 ? "Discord refused this action. Check the bot's permissions and role position." : response.status === 429 ? "Discord is rate limiting this action. Try again shortly." : `Discord rejected the action (${response.status}${Number.isInteger(data?.code) ? `, code ${data.code}` : ""}).`), { status: response.status });
                 return data;

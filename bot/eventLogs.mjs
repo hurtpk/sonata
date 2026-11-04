@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { embed, isId } from "./discord.mjs";
 
 const channelTypes = {0:"Text",2:"Voice",4:"Category",5:"Announcement",10:"Announcement thread",11:"Public thread",12:"Private thread",13:"Stage",15:"Forum",16:"Media"};
@@ -21,6 +22,7 @@ export function rememberLogEvent(type,data,settings,cache,now=Date.now()) {
     while(cache.channels.size>10000)cache.channels.delete(cache.channels.keys().next().value);
 }
 export async function eventLog(type,data,store,api,cache,botId) {
+    if (!featureEnabled(store.settings(data.guild_id), "logging")) return;
     const guild=data.guild_id,settings=store.settings(guild),logs=settings.eventlogs||{};
     let destination,title,description;
     if(["MESSAGE_DELETE","MESSAGE_DELETE_BULK"].includes(type)&&logs.messages){

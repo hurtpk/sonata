@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { messageChannel } from "./community.mjs";
 import { embed, fail, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 
@@ -53,6 +54,7 @@ export function ticketActivity(data, store) {
 }
 export async function ticketTimers(store, api) {
     for (const row of store.all("SELECT * FROM tickets WHERE state='open' ORDER BY at LIMIT 100")) {
+        if (!featureEnabled(store.settings(row.guild), "community")) continue;
         const config = store.settings(row.guild).tickets, details = ticketDetails(store, row);
         if (!config?.idle?.hours || details.reminded || Date.now() - details.last < config.idle.hours * 3600_000) continue;
         try { await api(`/channels/${config.idle.channel}/messages`, { method: "POST", body: embed("Ticket needs attention", `<#${row.channel}> · ${details.category} · ${details.priority}\nAssigned: ${row.claimed ? `<@${row.claimed}>` : "Unclaimed"}\nInactive since <t:${Math.floor(details.last / 1000)}:R>.`) }); details.reminded = true; saveTicketDetails(store, row.id, details); }

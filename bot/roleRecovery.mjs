@@ -4,17 +4,21 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { embed, fail, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { basicRole } from "./memberTools.mjs";
 
 export function recoveryEvent(type, data, store) {
     const guild = type === "GUILD_CREATE" ? data.id : data.guild_id;
     if (type === "GUILD_DELETE") { if (!data.unavailable) for (const table of ["recovery_members", "role_returns"]) store.run(`DELETE FROM ${table} WHERE guild=?`, data.id); return; }
-    if (!store.settings(guild).roleRecovery) return;
+    if (!store.settings(guild).roleRecovery || !featureEnabled(store.settings(guild), "server")) return;
     if (type === "GUILD_MEMBER_REMOVE") {
         store.run("DELETE FROM role_returns WHERE guild=? AND user=? AND expires<=?", guild, data.user.id, Date.now());
         const found = store.get("SELECT roles FROM recovery_members WHERE guild=? AND user=?", guild, data.user.id);
-        if (found) store.run("INSERT INTO role_returns VALUES (?,?,?,?) ON CONFLICT(guild,user) DO NOTHING", guild, data.user.id, found.roles, Date.now() + 3 * 3600_000);
+        if (found) {
+            const timed = new Set(store.all("SELECT kind FROM jobs WHERE guild=? AND target=? AND kind LIKE 'temprole:%' AND state IN ('pending','failed')", guild, data.user.id).map(row => row.kind.slice(9)));
+            store.run("INSERT INTO role_returns VALUES (?,?,?,?) ON CONFLICT(guild,user) DO NOTHING", guild, data.user.id, JSON.stringify(JSON.parse(found.roles).filter(id => !timed.has(id))), Date.now() + 3 * 3600_000);
+        }
         store.run("DELETE FROM recovery_members WHERE guild=? AND user=?", guild, data.user.id); return;
     }
     const members = ["GUILD_CREATE", "GUILD_MEMBERS_CHUNK"].includes(type) ? data.members ?? [] : [data];

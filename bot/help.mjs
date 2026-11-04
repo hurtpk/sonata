@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { COMMANDS } from "./commands.mjs";
+import { COMMANDS, slashName } from "./commands.mjs";
 import { embed, fail } from "./discord.mjs";
 
 const GROUPS = {
@@ -15,7 +15,7 @@ const GROUPS = {
     community: { label: "Community", names: ["welcome", "goodbye", "autorole", "autonick", "joinlogs", "autoresponder", "tag", "poll", "giveaway", "verification", "levels"] },
     support: { label: "Tickets & appeals", names: ["ticket", "appeals"] },
     media: { label: "Files & expressions", names: ["download", "emoji", "sticker", "sonata"] },
-    music: { label: "Music & voice", names: ["voice", "voicemaster", "play", "pause", "resume", "skip", "stop", "queue", "nowplaying", "volume", "shuffle", "remove", "loop", "seek", "filter", "voteskip", "musicsettings"] },
+    music: { label: "Music & voice", names: ["fm", "voice", "voicemaster", "play", "pause", "resume", "skip", "stop", "queue", "nowplaying", "volume", "shuffle", "remove", "loop", "seek", "filter", "voteskip", "musicsettings"] },
 };
 const usage = (name, options) => `${name} ${options.map(option => option.required ? `<${option.name}>` : `[${option.name}]`).join(" ")}`.trim();
 const entries = names => COMMANDS.filter(command => names.includes(command.name)).flatMap(command => command.options[0]?.type === 1 ? command.options.map(sub => ({ ...sub, name: `${command.name} ${sub.name}` })) : [command]);
@@ -27,7 +27,7 @@ export function helpPage(owner, group = "home", page = 0, expires = Date.now() +
     if (!Number.isInteger(page) || page < 0 || page >= pages) fail(`Choose a help page from 1 to ${pages}.`);
     const response = group === "home" ? embed("Sonata · help", `**${entries(COMMANDS.map(command => command.name)).length} commands across ${Object.keys(GROUPS).length} categories.**\nChoose a category below, or use \`help <command>\`.\n\n` + Object.values(GROUPS).map(value => `**${value.label}** · ${entries(value.names).length}`).join("\n")) : embed(`Sonata · ${group === "all" ? "All commands" : GROUPS[group].label}`, values.slice(page * size, (page + 1) * size).map(value => group === "all" ? `**${value.name}** · ${value.description}` : `**${value.name}**\n\`${usage(value.name, value.options)}\`\n${value.description}`).join("\n\n"));
     response.embeds[0].color = 0x34363c;
-    if (group === "home") response.embeds[0].description += "\n\n[Sonata dashboard](https://sonata.hurts.workers.dev) · Manage settings, disabled commands and more.";
+    if (group === "home") response.embeds[0].description += "\n\n[Sonata dashboard](https://sonatabot.info) · Manage settings, disabled commands and more.";
     response.embeds[0].footer = { text: `${group === "home" ? "Choose a category" : `Page ${page + 1} of ${pages}`} • Slash commands or your server prefix • <Required> [Optional]` };
     const id = (action, destination = group, target = page) => `snhelp:${owner}:${expires}:${destination}:${target}:${action}`;
     response.components = [
@@ -58,6 +58,8 @@ export function helpInteraction(data, botId) {
 export function help(command) {
     const query = command.options.command?.trim().toLowerCase();
     if (!query) return helpPage(command.actor);
+    if (query.replace(/^[,/]/, "") === "temprole") return embed("Help · temprole", "`temprole <member> <role> <duration> [reason]`\nExample: `temprole @member @VIP 7d event reward`\nSlash: `/role temp`\nRequires Manage Roles and the usual role hierarchy checks. Repeating it renews an existing temporary role. Regular role add makes it permanent; role remove cancels its timer.");
+    if (query.replace(/^[,/]/, "") === "starboard") return embed("Help · starboard", "`starboard setup <channel> <stars>`\nExample: `starboard setup #highlights 5`\n`starboard view` · `starboard off`\nSlash: `/settings starboard`, `/settings starboardview`, `/settings starboardoff`\nRequires Manage Server. Counts normal ⭐ reactions and updates highlights as reactions change. Restricted channels need matching board visibility; age-restricted messages require an age-restricted board.");
     if (query.replace(/^[,/]/, "") === "modlogs") return embed("Help · modlogs", "`modlogs <victim ID>`\nBrowse a member's Sonata cases with emoji page buttons and moderator/action filters.\n\n`case <case number>` shows a single action and evidence.\n`modstats <staff ID>` shows completed actions and case numbers for that moderator.");
     if (/^\d+$/.test(query)) return helpPage(command.actor, "all", Number(query) - 1);
     if (Object.hasOwn(GROUPS, query) && !COMMANDS.some(value => value.name === query)) return helpPage(command.actor, query);
@@ -66,6 +68,6 @@ export function help(command) {
     const values = definition.options[0]?.type === 1 ? definition.options.filter(value => !sub || value.name === sub) : [definition];
     if (!values.length) fail("That subcommand does not exist.");
     const response = helpPage(command.actor, Object.keys(GROUPS).find(key => GROUPS[key].names.includes(definition.name)));
-    response.embeds = embed(`Help · ${definition.name}`, `${definition.description}\n\n` + values.map(value => `\`${usage(value === definition ? definition.name : `${definition.name} ${value.name}`, value.options)}\`\n${value.description}`).join("\n\n") + (definition.aliases.length ? `\n\nPrefix aliases: ${definition.aliases.join(", ")}.` : "")).embeds;
+    response.embeds = embed(`Help · ${definition.name}`, `${definition.description}\n${slashName(definition.name) !== definition.name ? `Slash: /${slashName(definition.name)}\n` : ""}\n` + values.map(value => `\`${usage(value === definition ? definition.name : `${definition.name} ${value.name}`, value.options)}\`\n${value.description}`).join("\n\n") + (definition.aliases.length ? `\n\nPrefix aliases: ${definition.aliases.join(", ")}.` : "")).embeds;
     return response;
 }

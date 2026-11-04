@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-const $ = id => document.getElementById(id), ownerMode = new URLSearchParams(location.search).get("owner") === "1";
+const $ = id => document.getElementById(id);
+let ownerMode = new URLSearchParams(location.search).get("owner") === "1", listRequest = 0;
 let session, servers = [], forms = [], selected, current, requestId = 0;
 const labels = { nicknamepolicy: "Nickname policies", fakepermissions: "Bot-only permissions", commandsettings: "Disabled commands", commandstats: "Command insights", musicsettings: "Music and DJs", role: "Role recovery", settings: "General settings", antiraid: "Join protection", antinuke: "Anti-nuke", eventlog: "Server event logs", escalation: "Warning rules", appeals: "Ban appeals", verification: "Verification", levels: "Levels and rewards", alias: "Command shortcuts", automod: "AutoMod", ticket: "Support tickets", lockdown: "Incident lockdown" };
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text != null) node.textContent = text; if (className) node.className = className; return node; };
@@ -23,7 +24,31 @@ function renderDetails() {
     $("readonly-note").hidden = current.manageable; $("tab-configure").hidden = true; $("tab-records").hidden = true; document.querySelector('[data-tab="configure"]').disabled = !current.manageable; document.querySelector('[data-tab="records"]').disabled = !current.manageable;
     breakdown("moderation-breakdown", Object.entries(stats.actions).sort((a, b) => b[1] - a[1])); breakdown("usage-breakdown", stats.usage.map(value => [value.name, value.n]));
     breakdown("outcome-breakdown", Object.entries(current.insights.outcomes).map(([name, n]) => [name.replaceAll("_", " "), n])); breakdown("failure-breakdown", current.insights.failures.map(value => [value.name, value.n]));
+    document.querySelector('[data-tab="features"]').disabled = !current.manageable;
+    if (current.manageable) void renderFeatures();
     renderRecords(); renderTools(); showTab("overview"); document.dispatchEvent(new CustomEvent("sonata-server", {detail:{current,session,selected}}));
+}
+
+async function renderFeatures() {
+    const guild = selected, root = $("feature-manager"); root.replaceChildren(el("p", "Loading features…", "small"));
+    try { const value = await api("/api/bot/features?guild=" + encodeURIComponent(guild)); if (selected === guild) draw(value); }
+    catch (error) { if (selected === guild) root.replaceChildren(el("p", error.message, "error")); }
+    function draw(data) {
+        root.replaceChildren(el("h2", "Features"), el("p", "Pause a feature group without deleting its settings or history. Enabling a group keeps each tool’s own configuration. Timed bans, jails and roles still expire.", "small"));
+        const notice = el("p", "", "small"); notice.setAttribute("role", "status");
+        if (data.serverOwner) {
+            const label = el("label", null, "feature-group-access"), check = el("input"); check.type = "checkbox"; check.checked = data.administrators;
+            label.append(check, el("span", "Allow administrators to manage feature groups")); root.append(label);
+            check.addEventListener("change", async () => { check.disabled = true; try { const value = await api("/api/bot/features", { guild, administrators: check.checked }); if (selected === guild) draw(value); } catch (error) { check.checked = !check.checked; notice.textContent = error.message; } finally { check.disabled = false; } });
+        }
+        if (!data.canManage) root.append(el("p", "Only the server owner and permitted administrators can change these switches.", "small"));
+        const list = el("div", null, "feature-group-list");
+        for (const group of data.groups) {
+            const label = el("label", null, "feature-group-row"), text = el("span"), toggle = el("input"); text.append(el("strong", group.name), el("small", group.description)); toggle.type = "checkbox"; toggle.setAttribute("role", "switch"); toggle.setAttribute("aria-label", group.name); toggle.checked = group.enabled; toggle.disabled = !data.canManage; label.append(text, toggle); list.append(label);
+            toggle.addEventListener("change", async () => { for (const input of list.querySelectorAll("input")) input.disabled = true; try { const value = await api("/api/bot/features", { guild, group: group.id, enabled: toggle.checked }); if (selected === guild) draw(value); } catch (error) { toggle.checked = !toggle.checked; notice.textContent = error.message; for (const input of list.querySelectorAll("input")) input.disabled = !data.canManage; } });
+        }
+        root.append(list, notice);
+    }
 }
 function renderRecords() {
     $("case-list").replaceChildren(); for (const row of current.cases || []) { const card = el("article", null, "record"); card.append(el("h3", `#${row.n} · ${row.kind}`), el("small", `${row.status} · ${date(row.at)}`), el("p", `Target: ${row.target}\nModerator: ${row.actor}\n${row.reason}`)); $("case-list").append(card); } if (!current.cases?.length) $("case-list").append(el("p", "No accessible cases to show."));
@@ -34,7 +59,7 @@ function renderRecords() {
     } if (!current.tickets?.length) $("ticket-list").append(el("p", "No accessible tickets to show."));
 }
 function fill(select, values, placeholder) { select.replaceChildren(); if (placeholder) { const option = el("option", placeholder); option.value = ""; select.append(option); } for (const [value, label] of values) { const option = el("option", label); option.value = value; select.append(option); } }
-function renderTools() { const allowed = forms.filter(form => (form.name !== "antinuke" || current.guild.owner_id === session.id) && (form.name !== "fakepermissions" || current.administrator)).sort((a, b) => a.name === "settings" ? -1 : b.name === "settings" ? 1 : labels[a.name].localeCompare(labels[b.name])); fill($("tool-select"), allowed.map(form => [form.name, labels[form.name] || form.name])); fill($("command-channel"), (current.channels || []).filter(channel => [0, 5].includes(channel.type)).map(channel => [channel.id, `# ${channel.name}`])); renderActions(); }
+function renderTools() { const allowed = forms.filter(form => (form.name !== "antinuke" || current.guild.owner_id === session.id) && (form.name !== "fakepermissions" || current.administrator)).sort((a, b) => a.name === "settings" ? -1 : b.name === "settings" ? 1 : (labels[a.name] || a.name).localeCompare(labels[b.name] || b.name)); fill($("tool-select"), allowed.map(form => [form.name, labels[form.name] || form.name])); fill($("command-channel"), (current.channels || []).filter(channel => [0, 5].includes(channel.type)).map(channel => [channel.id, `# ${channel.name}`])); renderActions(); }
 function renderToolList() {
     const query = $("tool-search").value.trim().toLowerCase(), list = $("tool-list"); list.replaceChildren();
     for (const option of $("tool-select").options) {
@@ -46,7 +71,7 @@ function renderToolList() {
 }
 function renderActions() { const form = forms.find(value => value.name === $("tool-select").value); $("selected-tool-title").textContent = labels[form?.name] || "Settings"; fill($("action-select"), (form?.options || []).map(action => [action.name, action.description])); renderToolList(); renderFields(); }
 function renderFields() {
-    const form = forms.find(value => value.name === $("tool-select").value), action = form?.options.find(value => value.name === $("action-select").value); $("action-fields").replaceChildren(); $("action-description").textContent = action?.description || "Choose an action.";
+    const form = forms.find(value => value.name === $("tool-select").value), action = form?.options.find(value => value.name === $("action-select").value); $("action-fields").replaceChildren(); $("action-description").textContent = action?.documentation ? action.documentation.description + " " + action.documentation.detail + " Required: " + action.documentation.permissions : action?.description || "Choose an action.";
     const video = form?.name === "settings" && action?.name === "videoembeds";
     $("command-channel").closest("label").hidden = video;
     if (video) { renderVideoFields(); return; }
@@ -60,7 +85,7 @@ function renderFields() {
         else if (field.type === 5) control.type = "checkbox";
         else if (field.type === 4) { control.type = "number"; control.min = field.min_value ?? 0; if (field.max_value != null) control.max = field.max_value; }
         else { if (field.max_length) control.maxLength = field.max_length; if (field.type === 6) { control.inputMode = "numeric"; control.placeholder = "Discord user ID"; } }
-        if (field.type !== 5) control.required = !!field.required; label.append(control); $("action-fields").append(label);
+        if (field.type !== 5) control.required = !!field.required; label.append(control); const help = action.documentation?.parameters.find(parameter => parameter.name === field.name); if (help) label.append(el("small", help.description)); $("action-fields").append(label);
     }
 }
 function renderVideoFields() {
@@ -78,11 +103,17 @@ function renderVideoFields() {
 }
 function showResult(result) { $("action-result").hidden = false; $("action-result").classList.remove("error-result"); $("action-result").textContent = (result.embeds || []).map(value => `${value.title}\n${value.description}`).join("\n\n"); }
 function showTab(name) { for (const button of document.querySelectorAll("[data-tab]")) { const active = button.dataset.tab === name; button.setAttribute("aria-selected", String(active)); $(`tab-${button.dataset.tab}`).hidden = !active; } }
-async function loadServer(id) { const request = ++requestId; selected = id; renderServers(); showError(); $("bot-notice").hidden = true; try { const data = await api(`${ownerMode ? "/api/admin/bot/server" : "/api/bot/server"}?guild=${encodeURIComponent(id)}`); if (request !== requestId) return; current = data; $("select-server").hidden = true; $("server-workspace").hidden = false; renderDetails(); history.replaceState(null, "", `/?${ownerMode ? "owner=1&" : ""}guild=${id}`); } catch (error) { if (request === requestId) showError(error); } }
-async function refresh() { showError(); try { const data = await api(ownerMode ? "/api/admin/bot" : "/api/bot/servers"); servers = data.servers; renderServers(); $("no-servers").hidden = servers.length > 0; if (selected && servers.some(server => server.id === selected)) await loadServer(selected); else if (servers.length === 1) await loadServer(servers[0].id); } catch (error) { showError(error); } }
+async function loadServer(id) { const request = ++requestId; selected = id; renderServers(); showError(); $("bot-notice").hidden = true; try { const data = await api(`${ownerMode ? "/api/admin/bot/server" : "/api/bot/server"}?guild=${encodeURIComponent(id)}`); if (request !== requestId) return; current = data; $("select-server").hidden = true; $("server-workspace").hidden = false; renderDetails(); history.replaceState(null, "", `/dashboard?${ownerMode ? "owner=1&" : ""}guild=${id}${new URLSearchParams(location.search).get("embed") === "1" ? "&embed=1" : ""}${new URLSearchParams(location.search).get("setup") ? "&setup=" + encodeURIComponent(new URLSearchParams(location.search).get("setup")) : ""}`); } catch (error) { if (request === requestId) showError(error); } }
+async function refresh() { const revision = ++listRequest; showError(); try { const data = await api(ownerMode ? "/api/admin/bot" : "/api/bot/servers"); if (revision !== listRequest) return; servers = data.servers; renderServers(); $("no-servers").hidden = servers.length > 0; if (selected && servers.some(server => server.id === selected)) await loadServer(selected); else if (servers.length === 1) await loadServer(servers[0].id); else { selected = undefined; current = undefined; $("server-workspace").hidden = true; $("select-server").hidden = false; } } catch (error) { if (revision === listRequest) showError(error); } }
+function renderScope() { $("list-label").textContent = ownerMode ? "All bot servers" : "My servers"; for (const button of document.querySelectorAll("[data-server-scope]")) button.setAttribute("aria-pressed", String((button.dataset.serverScope === "all") === ownerMode)); }
+for (const button of document.querySelectorAll("[data-server-scope]")) button.addEventListener("click", () => {
+    const next = button.dataset.serverScope === "all"; if (next === ownerMode) return;
+    ownerMode = next; requestId++; selected = undefined; current = undefined; servers = []; $("server-search").value = ""; renderServers(); renderScope(); $("server-workspace").hidden = true; $("select-server").hidden = false;
+    const params = new URLSearchParams(location.search); params.delete("guild"); if (ownerMode) params.set("owner", "1"); else params.delete("owner"); history.replaceState(null, "", "/dashboard?" + params); void refresh();
+});
 $("server-search").addEventListener("input", renderServers); $("bot-refresh").addEventListener("click", () => void refresh()); $("tool-select").addEventListener("change", renderActions); $("action-select").addEventListener("change", renderFields); for (const button of document.querySelectorAll("[data-tab]")) button.addEventListener("click", () => showTab(button.dataset.tab));
 $("tool-search").addEventListener("input", renderToolList);
 $("settings-form").addEventListener("submit", async event => { event.preventDefault(); $("apply-settings").disabled = true; showError(); const options = {}; for (const input of $("action-fields").querySelectorAll("[data-option]")) { const type = Number(input.dataset.type); if (type === 5) options[input.dataset.option] = input.checked; else if (input.value !== "") options[input.dataset.option] = type === 4 ? Number(input.value) : input.value; } try { if ($("video-scope")) { options.enabled = $("video-enabled").checked; options.all = $("video-scope").value === "all"; const channels = [...$("action-fields").querySelectorAll(".video-channel-list input:checked")].map(input => input.value); if (!options.all && options.enabled && !channels.length) throw Error("Choose at least one channel, or select All channels."); if (!options.all && channels.length) options.channels = channels.join(" "); } const result = await api("/api/bot/action", { guild: selected, channel: $("command-channel").value, name: $("tool-select").value, sub: $("action-select").value, options }); const tool = $("tool-select").value, action = $("action-select").value; current = await api(`${ownerMode ? "/api/admin/bot/server" : "/api/bot/server"}?guild=${encodeURIComponent(selected)}`); renderDetails(); $("tool-select").value = tool; renderActions(); $("action-select").value = action; renderFields(); showTab("configure"); showResult(result.result); } catch (error) { $("action-result").hidden = false; $("action-result").classList.add("error-result"); $("action-result").textContent = error.message; } finally { $("apply-settings").disabled = false; } });
-$("bot-logout").addEventListener("click", async () => { try { await api("/api/bot/logout", {}); location.assign("/"); } catch (error) { showError(error); } });
-async function start() { if (ownerMode) { $("bot-login").href = "/auth/start"; $("list-label").textContent = "ALL BOT SERVERS"; } try { session = await api("/api/bot/session"); $("bot-user").textContent = `@${session.username}`; $("owner-link").hidden = !session.owner; $("bot-logout").hidden = false; $("bot-workspace").hidden = false; forms = (await api("/api/bot/forms")).forms; selected = new URLSearchParams(location.search).get("guild"); await refresh(); } catch (error) { $("bot-signin").hidden = false; if (error.status !== 401) { $("bot-workspace").hidden = false; showError(error); } } }
+$("bot-logout").addEventListener("click", async () => { try { await api("/api/bot/logout", {}); window.top.location.assign("/"); } catch (error) { showError(error); } });
+async function start() { if (ownerMode) { $("bot-login").href = "/auth/start"; $("list-label").textContent = "ALL BOT SERVERS"; } try { session = await api("/api/bot/session"); const canViewAll = session.sonataOwner || session.permissions?.includes("servers"); $("server-scope").hidden = !canViewAll; if (!canViewAll) ownerMode = false; renderScope(); $("bot-user").textContent = `@${session.username}`; $("owner-link").hidden = !session.owner; $("owner-link").textContent = session.sonataOwner ? "Owner" : "Admin"; $("bot-logout").hidden = false; $("bot-workspace").hidden = false; forms = (await api("/api/bot/forms")).forms; selected = new URLSearchParams(location.search).get("guild"); await refresh(); } catch (error) { $("bot-signin").hidden = false; if (error.status !== 401) { $("bot-workspace").hidden = false; showError(error); } } }
 void start();

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { randomInt } from "node:crypto";
 import { expandAlias, parsePrefix } from "./commands.mjs";
 import { messageChannel } from "./community.mjs";
@@ -35,7 +36,7 @@ export async function levelsCommand(context, store) {
 }
 
 export async function memberActivity(data, store, api, botId, cooldowns) {
-    if (data.author.bot || data.webhook_id) return;
+    if (data.author.bot || data.webhook_id || !featureEnabled(store.settings(data.guild_id), "community")) return;
     ticketActivity(data, store);
     const settings = store.settings(data.guild_id), personal = store.get("SELECT prefix FROM user_prefixes WHERE user=?", data.author.id)?.prefix, prefix = [personal, settings.prefix].filter(Boolean).sort((a, b) => b.length - a.length).find(value => (data.content ?? "").startsWith(value));
     let parsed;

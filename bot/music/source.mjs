@@ -6,6 +6,7 @@
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { mediaInput, musicAttachment } from "./attachments.mjs";
 
 const run = promisify(execFile);
 export function musicSource(raw) {
@@ -37,5 +38,20 @@ export async function resolveTrack(raw) {
     const allowed = soundcloud ? [".sndcdn.com", ".soundcloud.com", ".soundcloud.cloud"].some(suffix => audio.hostname.endsWith(suffix)) : audio.hostname.endsWith(".googlevideo.com") && /^[\w-]{11}$/.test(id);
     if (audio.protocol !== "https:" || audio.username || audio.password || audio.port || !allowed) throw new Error("The provider did not supply a supported audio stream.");
     const url = soundcloud ? musicSource(info.webpage_url) : `https://www.youtube.com/watch?v=${id}`;
-    return { title: String(info.title ?? "Track").replace(/[\r\n]/g, " ").slice(0, 180), url, duration: info.duration, audio: audio.href, resolved: Date.now() };
+    return { title: String(info.title ?? "Track").replace(/[\r\n]/g, " ").slice(0, 180), url, duration: info.duration, audio: audio.href, segmented: info.protocol?.includes("m3u8") === true, resolved: Date.now() };
+}
+
+export async function resolveAttachment(raw) {
+    const file = musicAttachment(raw);
+    const response = await fetch(file.url, { method: "HEAD", redirect: "error", signal: AbortSignal.timeout(10_000) });
+    if (!response.ok || Number(response.headers.get("content-length")) !== file.size) throw new Error("This uploaded file is no longer available. Upload it again with play.");
+    let info;
+    try {
+        const output = await run("ffprobe", ["-v", "error", ...mediaInput(file.url), "-show_entries", "format=duration,format_name:stream=codec_type", "-of", "json"], { timeout: 15_000, maxBuffer: 32_768, windowsHide: true });
+        info = JSON.parse(output.stdout);
+    } catch { throw new Error("This file could not be read as audio. Upload a valid MP3, WAV, MOV, MP4 or OGG file."); }
+    const duration = Number(info.format?.duration);
+    if (!info.streams?.some(stream => stream.codec_type === "audio") || !info.format?.format_name?.split(",").some(format => ["mp3", "wav", "mov", "mp4", "ogg"].includes(format))) throw new Error("The uploaded file must contain audio in MP3, WAV, MOV, MP4 or OGG format.");
+    if (!Number.isFinite(duration) || duration <= 0 || duration > 7200) throw new Error("Choose a recorded file no longer than two hours.");
+    return { title: file.filename, url: file.url, audio: file.url, duration, attachment: file, resolved: Date.now() };
 }

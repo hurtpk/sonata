@@ -47,6 +47,49 @@ async function fixture(t) {
     return { store, base, config, request, login, admin, begin, activate, oauthRequests, providerMode: value => { providerMode = value; } };
 }
 
+test("In-app activation issues an account-bound credential without OAuth and never grants administrator sign-in",async t=>{
+    const f=await fixture(t),input={userId:OWNER,username:'owner',name:'Owner',avatar:'',version:'2026.10.29b'};
+    const response=await f.request('/api/activation/direct',input);assert.equal(response.status,200);assert.equal(response.headers.get('location'),null);
+    const grant=await response.json();assert.equal(grant.status,'allowed');assert.equal(grant.admin,false);assert.equal(grant.userId,OWNER);assert.equal(f.oauthRequests.length,0);
+    const check=await(await f.request('/api/check-in',{userId:OWNER,version:input.version},{Authorization:`Bearer ${grant.token}`})).json();assert.equal(check.status,'allowed');assert.equal(check.admin,false);
+    assert.equal((await f.request('/api/admin/users',null,{Authorization:`Bearer ${grant.token}`})).status,401);assert.equal((await f.store.get('SELECT COUNT(*) AS n FROM sessions')).n,0);
+    assert.equal((await f.request('/api/check-in',{userId:OTHER,version:input.version},{Authorization:`Bearer ${grant.token}`})).status,403);
+    assert.equal((await f.store.get('SELECT username FROM users WHERE id=?',OWNER)).username,'owner');
+    await f.request('/api/disconnect',{}, {Authorization:`Bearer ${grant.token}`});assert.equal((await f.store.get('SELECT COUNT(*) AS n FROM in_app_devices')).n,0);
+});
+
+test("In-app activation honors existing and concurrent blocks and validates profile claims",async t=>{
+    const f=await fixture(t),input={userId:USER,username:'member',name:'Member',avatar:'',version:'2026.10.29b'};
+    await f.store.run('INSERT INTO users (id,blocked,reason) VALUES (?,1,?)',USER,'Restricted');
+    assert.equal((await(await f.request('/api/activation/direct',input)).json()).status,'blocked');assert.equal((await f.store.get('SELECT COUNT(*) AS n FROM devices')).n,0);
+    await f.store.run('UPDATE users SET blocked=0 WHERE id=?',USER);
+    const batch=f.store.batch.bind(f.store);f.store.batch=async statements=>{await f.store.run('UPDATE users SET blocked=1 WHERE id=?',USER);return batch(statements)};
+    assert.equal((await(await f.request('/api/activation/direct',input)).json()).status,'blocked');assert.equal((await f.store.get('SELECT COUNT(*) AS n FROM devices')).n,0);
+    for(const change of [{userId:'bad'},{username:''},{avatar:'https://example.org/avatar.png'},{name:'x'.repeat(101)}])assert.equal((await f.request('/api/activation/direct',{...input,...change})).status,400);
+    assert.equal((await f.request('/api/activation/direct',input,{Origin:'https://other.example'})).status,403);
+});
+
+test("A verified dashboard login opens Admin without another OAuth flow and logout revokes both sections",async t=>{
+    const f=await fixture(t),token=random(),csrf=random();
+    await f.store.run('INSERT INTO bot_sessions VALUES (?,?,?,?,?)',hash(token),OWNER,'Owner',csrf,Date.now()+3600000);
+    const headers={Cookie:`sonata_bot=${token}`,Origin:f.base,'X-CSRF-Token':csrf};
+    const page=await f.request('/admin',null,headers);assert.equal(page.status,200);assert.equal(page.headers.get('location'),null);assert.equal(f.oauthRequests.length,0);
+    const session=await(await f.request('/api/admin/session',null,headers)).json();assert.equal(session.owner,true);assert.equal(session.csrf,csrf);
+    assert.equal((await f.request('/api/admin/block',{userId:USER,blocked:true,reason:'Test'},headers)).status,200);
+    await f.request('/api/admin/logout',{},headers);assert.equal((await f.request('/api/admin/users',null,headers)).status,401);assert.equal((await f.request('/api/bot/session',null,headers)).status,401);
+});
+
+test("Dashboard SSO rechecks staff grants and does not reuse another account's old administrator cookie",async t=>{
+    const f=await fixture(t),ownerToken=random(),userToken=random();
+    await f.store.run('INSERT INTO sessions VALUES (?,?,?,?,?)',hash(ownerToken),OWNER,'Owner',random(),Date.now()+3600000);
+    await f.store.run('INSERT INTO bot_sessions VALUES (?,?,?,?,?)',hash(userToken),USER,'Member',random(),Date.now()+3600000);
+    const headers={Cookie:`sonata_admin=${ownerToken}; sonata_bot=${userToken}`};
+    assert.equal((await f.request('/api/admin/users',null,headers)).status,401);assert.equal((await f.request('/admin',null,headers)).headers.get('location'),'/');
+    const owner=await f.admin();await f.request('/api/admin/staff',{id:USER,permissions:['health']},owner);
+    assert.equal((await f.request('/api/admin/session',null,headers)).status,200);
+    await f.request('/api/admin/staff',{id:USER,permissions:[]},owner);assert.equal((await f.request('/api/admin/session',null,headers)).status,401);
+});
+
 test("Only verified owner sessions can access the dashboard and mutations require CSRF", async t => {
     const f = await fixture(t);
     assert.equal((await f.request("/api/admin/users")).status, 401);
@@ -71,7 +114,7 @@ test("The Accounts page stays hidden from visitors and server managers", async t
     assert.equal((await f.request("/api/admin/users", null, headers)).status, 401);
     await f.store.run("UPDATE bot_sessions SET user_id=? WHERE hash=?", OWNER, hash(token));
     const owner = await f.request("/admin", null, headers);
-    assert.equal(owner.status, 302); assert.equal(owner.headers.get("location"), "/auth/start");
+    assert.equal(owner.status, 200); assert.equal(owner.headers.get("location"), null);
     const page = await f.request("/admin", null, await f.admin());
     assert.equal(page.status, 200); assert.match(await page.text(), /Registered accounts/);
     assert.equal(page.headers.get("cache-control"), "no-store");

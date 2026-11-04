@@ -27,7 +27,7 @@ function showBlock(userId = "", blocked = true) {
     $("access-title").textContent = blocked ? "Block account" : "Allow account";
     $("access-description").textContent = blocked ? "Block an existing account, or add a Discord user ID before it activates." : "Allow a Discord ID to activate Sonata, or restore access to a blocked account.";
     $("access-reason").hidden = !blocked;
-    $("access-note").textContent = blocked ? "Notes stay in this administrator panel. Connected clients stop at their next access check." : "Allowing this ID permits activation. The user still needs to sign in with Discord from Sonata.";
+    $("access-note").textContent = blocked ? "Notes stay in this administrator panel. Connected clients stop at their next access check." : "Allowing this ID permits activation. The user can activate this account inside Sonata.";
     $("confirm-block").textContent = blocked ? "Block access" : "Allow access";
     $("confirm-block").className = blocked ? "danger" : "primary access-submit";
     errorAt("block-error"); $("block-dialog").showModal(); $("block-id").focus();
@@ -102,7 +102,7 @@ async function start() {
         return;
     }
     if (new URLSearchParams(location.search).has("activated")) { showSignIn(); $("signin-title").textContent = "Activation complete"; $("signin-description").textContent = "Return to Sonata and press Finish activation to check your access."; $("login").hidden = true; $("signin-note").textContent = "The owner may allow or restrict this account."; return; }
-    try { const session = await api("/api/admin/session"); csrf = session.csrf; $("owner").textContent = `@${session.username}`; $("accounts-link").hidden = false; $("logout").hidden = false; $("dashboard").hidden = false; document.documentElement.dataset.adminPermissions = session.permissions.join(" "); document.dispatchEvent(new CustomEvent("sonata-admin", {detail:session})); if (session.permissions.includes("users")) await loadUsers(); }
+    try { const session = await api("/api/admin/session"); csrf = session.csrf; $("owner").textContent = `@${session.username}`; $("accounts-link").hidden = false; $("accounts-link").textContent = session.owner ? "Owner" : "Admin"; $("logout").hidden = false; $("dashboard").hidden = false; document.documentElement.dataset.adminPermissions = session.permissions.join(" "); document.dispatchEvent(new CustomEvent("sonata-admin", {detail:session})); if (session.permissions.includes("users")) await loadUsers(); }
     catch { showSignIn(); if (info.demo) { $("login").href = "/demo"; $("login").textContent = "Open local demo →"; } }
 }
 $("search").addEventListener("input", () => { clearTimeout(searchTimer); page = 0; searchTimer = setTimeout(() => void loadUsers(), 250); });

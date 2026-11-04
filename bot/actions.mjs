@@ -6,6 +6,7 @@
 
 import { channelPermissions, embed, fail, highestRole, isId, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { delegatedRole } from "./commandAccess.mjs";
+import { parseDuration } from "./commands.mjs";
 
 export const EXTRA_COMMANDS = ["softban", "banlist", "nickname", "warnremove", "warnclear", "role", "voice", "channel", "pin", "unpin", "pins"];
 
@@ -56,15 +57,22 @@ export async function extraCommand(context, store, perform) {
         const above = member => { const top = highestRole(member, roles, guild.id); return top.position > role.position || (top.position === role.position && BigInt(top.id) < BigInt(role.id)); };
         if (actor.user.id !== guild.owner_id && !above(actor)) fail("Your highest role must be above the role you manage.");
         if (!above(bot)) fail("Sonata Bot's highest role must be above the role it manages.");
-        if (["add", "remove"].includes(command.sub)) {
+        if (["add", "remove", "temp"].includes(command.sub)) {
             const target = await context.target(options.member);
             if (store.restriction(guild.id, target.user.id, "jail")) fail("Release this member from jail before changing their roles.");
-            if (command.sub === "add") {
+            if (command.sub !== "remove") {
                 if (delegatedRole(store.settings(guild.id), role.id)) requirePermission(memberPermissions(actor, roles, guild), PERMS.ADMIN);
                 requirePermission(memberPermissions(actor, roles, guild), BigInt(role.permissions));
                 requirePermission(memberPermissions(bot, roles, guild), BigInt(role.permissions));
             }
-            return record(`role ${command.sub}`, target.user.id, async (_, audit) => { await api(`/guilds/${guild.id}/members/${target.user.id}/roles/${role.id}`, { method: command.sub === "add" ? "PUT" : "DELETE", reason: audit }); return `${command.sub === "add" ? "Added" : "Removed"} <@&${role.id}>.`; });
+            const kind = `temprole:${role.id}`, timed = command.sub === "temp", duration = timed ? parseDuration(options.duration) : 0;
+            if (timed && target.roles.includes(role.id) && !store.get("SELECT id FROM jobs WHERE guild=? AND target=? AND kind=? AND state='pending'", guild.id, target.user.id, kind)) fail("That member already has this role permanently. Their existing role was kept.");
+            return perform(context, store, timed ? "temporary role" : `role ${command.sub}`, target.user.id, reason, duration, async (n, audit) => {
+                await api(`/guilds/${guild.id}/members/${target.user.id}/roles/${role.id}`, { method: command.sub === "remove" ? "DELETE" : "PUT", reason: audit });
+                store.cancelJobs(guild.id, target.user.id, kind);
+                if (timed) store.schedule(guild.id, n, target.user.id, kind, Date.now() + duration);
+                return `${command.sub === "remove" ? "Removed" : "Added"} <@&${role.id}>.${timed ? ` Expires <t:${Math.floor((Date.now() + duration) / 1000)}:F>.` : ""}`;
+            });
         }
         let body;
         if (command.sub === "rename") { const name = options.name.trim(); if (!name) fail("Choose a role name with visible characters."); body = { name }; }

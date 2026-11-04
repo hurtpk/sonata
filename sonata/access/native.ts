@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { createHash, randomBytes } from "crypto";
 import { app, type IpcMainInvokeEvent, safeStorage, shell } from "electron";
 import { existsSync, readFileSync, renameSync, writeFileSync } from "fs";
 import { join } from "path";
@@ -13,7 +12,6 @@ import { ACCESS_ENABLED, ACCESS_SERVICE_URL, type AccessResult } from "./config"
 
 interface Grant { userId: string; token: string; until: number; admin: boolean; blocked: boolean; }
 const grants = new Map<string, Grant>();
-const pending = new Map<string, { id: string; verifier: string; version: string; }>();
 let loaded = false;
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
 const isId = (value: unknown): value is string => typeof value === "string" && /^\d{17,20}$/.test(value);
@@ -29,7 +27,7 @@ function load() {
     if (!encryptedStorage() || !existsSync(file())) return;
     const parsed: unknown = JSON.parse(safeStorage.decryptString(readFileSync(file())));
     if (!isObject(parsed)) return;
-    for (const [id, value] of Object.entries(parsed)) if (isObject(value) && isId(value.userId) && isToken(value.token) && typeof value.until === "number" && typeof value.admin === "boolean" && typeof value.blocked === "boolean") grants.set(id, { userId: value.userId, token: value.token, until: value.until, admin: value.admin, blocked: value.blocked });
+    for (const [id, value] of Object.entries(parsed)) if (isObject(value) && isId(value.userId) && isToken(value.token) && typeof value.until === "number" && typeof value.admin === "boolean" && typeof value.blocked === "boolean") grants.set(ACCESS_SERVICE_URL === "https://sonatabot.info" && id === `https://sonata.hurts.workers.dev:${value.userId}` ? key(value.userId) : id, { userId: value.userId, token: value.token, until: value.until, admin: value.admin, blocked: value.blocked });
 }
 
 function save() {
@@ -71,39 +69,23 @@ export async function accessCheck(_: IpcMainInvokeEvent, userId: unknown, versio
     }
 }
 
-export async function accessBegin(_: IpcMainInvokeEvent, userId: unknown, version: unknown): Promise<AccessResult> {
+export async function accessBegin(_: IpcMainInvokeEvent, userId: unknown, version: unknown, profile: unknown): Promise<AccessResult> {
     if (!ACCESS_ENABLED) return { status: "disabled" };
-    if (!isId(userId) || !isVersion(version)) return { status: "activation", message: "Open a Discord account before activating Sonata." };
+    if (!isId(userId) || !isVersion(version) || !isObject(profile) || typeof profile.username !== "string" || !profile.username.trim() || profile.username.length > 100 || typeof profile.name !== "string" || !profile.name.trim() || profile.name.length > 100 || (profile.avatar !== "" && (typeof profile.avatar !== "string" || !/^(?:a_)?[a-f0-9]{32}$/i.test(profile.avatar)))) return { status: "activation", message: "Open a Discord account before activating Sonata." };
     try {
-        const verifier = randomBytes(32).toString("hex"), challenge = createHash("sha256").update(verifier).digest("hex");
-        const result = await request("/api/activation/start", { userId, version, challenge });
-        if (!isToken(result.id)) throw new Error("Invalid activation response.");
-        pending.set(userId, { id: result.id, verifier, version });
-        await shell.openExternal(`${ACCESS_SERVICE_URL}/activate?id=${result.id}`);
-        return { status: "waiting", userId };
-    } catch { return { status: "unavailable", userId, message: "Couldn't start activation. Check that the service is available." }; }
-}
-
-export async function accessFinish(_: IpcMainInvokeEvent, userId: unknown): Promise<AccessResult> {
-    if (!isId(userId)) return { status: "activation" };
-    const pair = pending.get(userId);
-    if (!pair) return { status: "activation", userId, message: "Start activation again to get a new sign-in link." };
-    try {
-        const result = await request("/api/activation/finish", { id: pair.id, verifier: pair.verifier });
-        if (result.status === "waiting") return { status: "waiting", userId, message: "Finish signing in in your browser, then press Finish activation." };
         try { load(); } catch { grants.clear(); }
+        const result = await request("/api/activation/direct", { userId, version, username: profile.username, name: profile.name, avatar: profile.avatar });
         if (result.status === "blocked") {
-            pending.delete(userId);
             const old = grants.get(key(userId));
             if (old) { old.blocked = true; old.until = 0; old.admin = false; save(); }
             return { status: "blocked", userId };
         }
         if (result.status !== "allowed" || result.userId !== userId || !isToken(result.token)) throw new Error("Invalid activation response.");
-        const grant: Grant = { token: result.token, userId, until: Date.now() + 86400_000, blocked: false, admin: result.admin === true };
-        grants.set(key(userId), grant); pending.delete(userId);
+        const grant: Grant = { token: result.token, userId, until: Date.now() + 86400_000, blocked: false, admin: false };
+        grants.set(key(userId), grant);
         const persisted = save();
-        return { status: "allowed", userId, until: grant.until, admin: grant.admin, message: persisted ? undefined : "Access is active for this session. Activate again after restarting if encrypted storage is unavailable." };
-    } catch { return { status: "unavailable", userId, message: "Couldn't finish activation. Retry, or start again if the sign-in link expired." }; }
+        return { status: "allowed", userId, until: grant.until, admin: false, message: persisted ? undefined : "Access is active for this session. Activate again after restarting if encrypted storage is unavailable." };
+    } catch { return { status: "unavailable", userId, message: "Couldn't activate Sonata. Check your connection and try again." }; }
 }
 
 export async function accessDisconnect(_: IpcMainInvokeEvent, userId: unknown): Promise<AccessResult> {
@@ -111,7 +93,7 @@ export async function accessDisconnect(_: IpcMainInvokeEvent, userId: unknown): 
     let message: string | undefined;
     try { load(); const grant = grants.get(key(userId)); if (grant) await request("/api/disconnect", {}, grant.token); }
     catch { message = "Disconnected locally. The service couldn't be reached to revoke the old device credential."; }
-    grants.delete(key(userId)); pending.delete(userId); save();
+    grants.delete(key(userId)); save();
     return { status: "activation", userId, message };
 }
 

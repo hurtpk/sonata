@@ -108,7 +108,7 @@ test("Lockdown restores only its unchanged permission bits and keeps unrelated m
 
 test("Interrupted lockdowns retain permission snapshots for a safe recovery", async t => {
     const f = fixture(t), failing = (route, options) => { if (route.endsWith(`/permissions/${GUILD}`)) throw new Error("Discord unavailable"); return f.api(route, options); };
-    const result = await run(f, ",lockdown start all incident", ACTOR, CHANNEL, failing); assert.match(result.embeds[0].title, /needs review/); assert(f.store.restriction(GUILD, GUILD, "lockdown"));
+    const result = await run(f, ",lockdown start all incident", ACTOR, CHANNEL, failing); assert.match(result.content, /^Error code: S\d+$/); assert.match(f.store.get("SELECT detail FROM command_failures ORDER BY id DESC LIMIT 1").detail, /needs review/); assert(f.store.restriction(GUILD, GUILD, "lockdown"));
     await run(f, ",lockdown restore"); assert.equal(f.store.restriction(GUILD, GUILD, "lockdown"), null);
 });
 

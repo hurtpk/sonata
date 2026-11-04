@@ -5,6 +5,6 @@ ENV PATH="/opt/yt-dlp/bin:${PATH}" NODE_ENV=production
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
-COPY index.mjs player.mjs source.mjs effects.mjs video.mjs videoSource.mjs ./
+COPY index.mjs player.mjs source.mjs attachments.mjs effects.mjs video.mjs videoSource.mjs ./
 USER node
 CMD ["node", "index.mjs"]

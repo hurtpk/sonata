@@ -1,9 +1,16 @@
 # Sonata Bot commands
 
-278 command forms under 98 top-level slash commands. Use slash commands or your server/personal prefix (default: comma). <Required> [Optional].
+293 command forms across 98 registered top-level slash commands. Use slash commands or your server/personal prefix (default: comma). <Required> [Optional].
 
 | Command | Description | Base permission |
 | --- | --- | --- |
+| `fm set <username>` | Validate and save your public Last.fm username across Sonata servers; this is not verified ownership. | Everyone |
+| `fm remove` | Remove only your saved Last.fm username. | Everyone |
+| `fm view [member]` | Link a saved Last.fm profile. | Everyone |
+| `fm now [member]` | Show current/last scrobbled track; defaults to yourself. `,fm` and `,lastfm` are shortcuts. | Everyone |
+| `fm recent [member] [page]` | Five recent tracks per page, page 1–100. | Everyone |
+| `fm topartists [period] [member] [page]` | Five top artists and play counts; overall/7day/1month/3month/6month/12month. Prefix alias: `,topartists`. | Everyone |
+| `fm toptracks [period] [member] [page]` | Five top tracks and play counts for the selected period. Prefix alias: `,toptracks`. | Everyone |
 | `prefix view` | Show server and personal prefixes. | Runtime checks |
 | `prefix set <prefix>` | Set this server's prefix. | Runtime checks |
 | `prefix remove` | Reset this server's prefix to a comma. | Runtime checks |
@@ -47,7 +54,7 @@
 | `voicemaster permit <member>` | Allow a member to view and connect. | Runtime checks |
 | `voicemaster reject <member> [reason]` | Block a member and disconnect them from your room. | Runtime checks |
 | `voicemaster reset` | Restore the room's original privacy permissions. | Runtime checks |
-| `play <query>` | Play or queue a track in your voice channel. | Runtime checks |
+| `play [query] [file]` | Play or queue a song name, SoundCloud/YouTube link, or one attached MP3/WAV/MOV/MP4/OGG file. Choose query or file, not both. Uploads: 20 MiB, maximum two hours, must contain audio; videos play audio only. | Runtime checks |
 | `pause` | Pause music in your voice channel. | Runtime checks |
 | `resume` | Resume paused music. | Runtime checks |
 | `skip` | Skip the current track. | Runtime checks |
@@ -288,9 +295,9 @@
 
 - `,stick <text>` / `,stickmessage <text>` or reply to a text message with `,stick`. A message link from the same channel can also be copied. Requires Manage Messages. One persistent sticky per channel; reposts below new human messages without pinging. `/stick set` is the slash equivalent.
 - `,unstick [message link]` / `,unstickmessage [message link]` or `/stick remove` stops the channel sticky. Current sticky links and original source links are accepted.
-- `sonata <video URL>`, `,sonata <video URL>` or `/sonata url:<URL>` uploads a supported public video and credits the sender. TikTok, Instagram, X and YouTube posts are supported when the provider allows retrieval. Recorded MP4 clips are limited to three minutes and 8 MB; private or restricted posts are not bypassed. When direct retrieval is unavailable, Sonata posts a corrected embed link (the same public embed providers used by the plugin) with sender credit.
-- `,settings videoembeds true #channel #another-channel` enables automatic video uploads in several channels. Use `,settings videoembeds true all` for every channel, including new ones, or `false all` to turn it off everywhere. `false #channel` excludes a channel even when all channels are enabled. The dashboard lets you replace the selected channel list or choose All channels. Automatic mode is off by default, handles at most one video per message, and uses the normal command cooldown. Public videos must be playable H.264 MP4 files up to three minutes and 8 MB; failed retrieval shows an error rather than a link-only reply.
-- Video cards show the platform, available views/likes/comments/shares, sender and publication date. TikTok currently supplies likes, comments and shares; unavailable counts are omitted. Sonata shows typing during retrieval and removes the original link only after Discord confirms the upload. Failed uploads, edited messages, attachments and automatic messages with additional text keep their originals.
+- `sonata <video URL>`, `sonta <video URL>`, `@Sonata <video URL>`, `,sonata <video URL>` or `/sonata url:<URL>` uploads a supported public video and credits the sender. TikTok, Instagram, X and YouTube posts are supported when the provider allows retrieval. Recorded H.264 MP4 clips are limited to three minutes and 20 MiB normally, 50 MiB at server boost level 2, or 100 MiB at level 3. X GIFs open as looping images with a Video/GIF toggle. Private or restricted posts are not bypassed. Failed retrieval keeps the original message and shows an error code.
+- `,settings videoembeds true #channel #another-channel` enables automatic video uploads in several channels. Use `,settings videoembeds true all` for every channel, including new ones, or `false all` to turn it off everywhere. `false #channel` excludes a channel even when all channels are enabled. The dashboard lets you replace the selected channel list or choose All channels. Automatic mode is off by default, handles at most one video per message, and uses the normal command cooldown. Automatic mode only handles a link by itself. Links inside ordinary messages are ignored; mention Sonata or put sonata/sonta before the link to request an embed explicitly. Links may omit https://. The same server boost upload limits apply. Failed retrieval shows an error code rather than a link-only reply.
+- Video cards show the platform, available views/likes/comments/shares, sender and publication date. TikTok currently supplies likes, comments and shares; unavailable counts are omitted. Sonata shows typing from initial processing through Discord upload and removes the original link only after Discord confirms the upload. Video requests start promptly, with optional statistics loaded alongside the clip. Up to two videos can be processed at once. Failed uploads, edited messages, attachments and automatic messages with additional text keep their originals.
 
 ### Website tools
 
@@ -312,3 +319,19 @@ Sonata's owner can grant separate permissions for account viewing, account restr
 `eventlog set <type> #channel`, `eventlog off <type>`, and `eventlog view` configure categories independently: `messages` (deleted messages), `joins` (arrivals/departures), `voice`, `channels`, `roles`, `members` and `bans`. The website's Server event logs tool exposes the same choices.
 
 Deleted message contents come from an opt-in memory-only cache of at most 1,000 recent messages across the bot, expiring after thirty minutes; they are not backfilled after restart. Only deletion logs persist their displayed excerpts in the chosen Discord channel. Missing cached content is identified explicitly. Bot messages and the deletion-log channel are excluded from content caching. Channel audit logs include names and channel types. Events identify the responsible actor when supplied by Discord; deletion authors are not treated as deletion actors, voluntary departures are not assumed, and voice-state events do not invent who moved a member. Separate audit entries attribute confirmed moderator deletions, moves and disconnects. Event logs do not increase staff action statistics.
+
+## Temporary roles
+
+`,temprole @member @role 7d event reward` grants or renews a temporary role. Slash equivalent: `/role temp`. Requires Manage Roles and role hierarchy checks. Existing permanent roles are kept. Timers survive restarts and are checked about once per minute. Use `,role add @member @role` to keep a role permanently or `,role remove @member @role` to remove it and cancel its timer. Temporary roles are excluded from departure role recovery. Granting and expiry are recorded as cases.
+
+## Starboard
+
+`,starboard setup #highlights 5` enables normal ⭐ reaction highlights. `,starboard view` shows the configuration and last issue; `,starboard off` pauses it. Slash equivalents: `/settings starboard`, `/settings starboardview`, `/settings starboardoff`. Requires Manage Server. Posts show the author, text, attachment previews and an original-message button. Counts and edits update the existing highlight; dropping below the threshold or deleting the source removes it. Bot messages and starboard messages are excluded. Source and board must have matching channel visibility overwrites; age-restricted content requires an age-restricted board.
+
+## Server bot profiles
+
+Open Dashboard → Settings → Bot profile to change Sonata's nickname, avatar, banner and bio for that server. Requires dashboard access and Manage Server or Administrator. Upload PNG, JPEG or GIF images up to 1 MB each. Leaving the nickname empty uses Sonata's global name; the default image checkboxes remove server image overrides. Custom bio text allows 100 characters. Every saved bio includes the dashboard URL, `/help`, and the server prefix followed by `help`. Changing the server prefix updates its bio immediately; personal prefixes do not change the public bio. Profiles apply only to the selected server.
+
+Last.fm lookups require the private LASTFM_API_KEY host secret. Recent data caches for 30 seconds and profiles/charts for five minutes. Eight-second request timeout; up to 256 KiB per response; provider rate limits back off for 30 seconds. This reads existing Last.fm scrobbles; it does not create scrobbles or play audio.
+
+Server lookups now use `/serverinfo view`, `/serverinfo icon`, `/serverinfo banner` and `/serverinfo boosts` to stay under Discord’s slash-command limit. Existing serverinfo/servericon/serverbanner/boosts prefix commands remain available.

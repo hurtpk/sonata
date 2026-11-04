@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { canManage, embed, fail, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 
 const normalized = name => name.normalize("NFKC").replace(/\p{Cf}/gu, "").toLowerCase();
@@ -42,6 +43,7 @@ export async function nicknamePolicy(context, store) {
 }
 
 export async function nicknameEvent(data, store, api, botId, requestId, perform) {
+    if (!featureEnabled(store.settings(data.guild_id), "security")) return;
     const settings = store.settings(data.guild_id), config = settings.nicknamePolicy;
     if (!config?.enabled || !data.user || data.user.bot) return;
     const [guild, roles, bot, target] = await Promise.all([api(`/guilds/${data.guild_id}`), api(`/guilds/${data.guild_id}/roles`), api(`/guilds/${data.guild_id}/members/${botId}`), api(`/guilds/${data.guild_id}/members/${data.user.id}`, { optional: true })]);

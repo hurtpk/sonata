@@ -43,6 +43,19 @@ test("Dashboard mutations require the same-origin session CSRF token and ignore 
     assert.equal((await f.request("/api/bot/owner", null, { Cookie: cookie })).status, 404);
 });
 
+test("Feature group proxy requires a session and CSRF and forwards the authenticated identity", async t => {
+    const f = await fixture(t), token = random(), csrf = random(), guild = "333333333333333333";
+    assert.equal((await f.request(`/api/bot/features?guild=${guild}`)).status, 401);
+    f.store.run("INSERT INTO bot_sessions VALUES (?,?,?,?,?)", hash(token), USER, "manager", csrf, Date.now() + 3600_000);
+    const Cookie = `sonata_bot=${token}`, input = { guild, group: "music", enabled: false, actor: OWNER };
+    assert.equal((await f.request(`/api/bot/features?guild=${guild}`, null, { Cookie })).status, 200);
+    assert.equal(f.calls.at(-1).actor, USER);
+    assert.equal((await f.request("/api/bot/features", input, { Cookie })).status, 403);
+    assert.equal((await f.request("/api/bot/features", input, { Cookie, Origin: "https://attacker.example", "X-CSRF-Token": csrf })).status, 403);
+    assert.equal((await f.request("/api/bot/features", input, { Cookie, Origin: f.origin, "X-CSRF-Token": csrf })).status, 200);
+    assert.equal(f.calls.at(-1).actor, USER); assert.equal(f.calls.at(-1).path, "features");
+});
+
 test("Owner bot routes require the owner session and never expose service credentials", async t => {
     const f = await fixture(t), ownerToken = random(), botToken = random();
     f.store.run("INSERT INTO sessions VALUES (?,?,?,?,?)", hash(ownerToken), OWNER, "owner", random(), Date.now() + 3600_000);
@@ -50,6 +63,14 @@ test("Owner bot routes require the owner session and never expose service creden
     assert.equal((await f.request("/api/admin/bot", null, { Cookie: `sonata_bot=${botToken}` })).status, 401);
     const response = await f.request("/api/admin/bot", null, { Cookie: `sonata_admin=${ownerToken}` }); assert.equal(response.status, 200); assert.equal(f.calls.at(-1).path, "owner"); assert.equal(f.calls.at(-1).actor, OWNER);
     assert(!JSON.stringify(await response.json()).includes("fake-secret"));
+});
+
+test("Command failure diagnostics require an administrator session and forward search and cursor",async t=>{
+    const f=await fixture(t),token=random();f.store.run('INSERT INTO sessions VALUES (?,?,?,?,?)',hash(token),OWNER,'owner',random(),Date.now()+3600000);
+    assert.equal((await f.request('/api/admin/bot/failures?q=S000123')).status,401);
+    assert.equal((await f.request('/api/admin/bot/failures?q=S000123&before=42',null,{Cookie:`sonata_admin=${token}`})).status,200);
+    assert.equal(f.calls.at(-1).path,'owner/failures?q=S000123&before=42');assert.equal(f.calls.at(-1).actor,OWNER);
+    assert.equal((await f.request('/api/bot/failures')).status,401);
 });
 
 test("Signing out invalidates both currently supplied dashboard cookies", async t => {
@@ -86,4 +107,26 @@ test("Registered user avatars are fetched privately, cached and removed with the
     await f.request(path, null, headers); assert.equal(f.calls.length, 1);
     const unknown = await (await f.request("/api/admin/avatars?ids=333333333333333333", null, headers)).json(); assert.equal(unknown.users.length, 0); assert.equal(f.calls.length, 1);
     f.store.run("DELETE FROM users WHERE id=?", USER); assert.equal(f.store.get("SELECT COUNT(*) AS n FROM user_profiles").n, 0);
+});
+
+
+test("Server profile uploads stay authenticated and bounded, and admin resets require administrator CSRF", async t => {
+    const f = await fixture(t), token = random(), csrf = random(), admin = random(), adminCsrf = random();
+    f.store.run("INSERT INTO bot_sessions VALUES (?,?,?,?,?)", hash(token), USER, "manager", csrf, Date.now() + 3600_000);
+    f.store.run("INSERT INTO sessions VALUES (?,?,?,?,?)", hash(admin), OWNER, "owner", adminCsrf, Date.now() + 3600_000);
+    const headers = { Cookie: "sonata_bot=" + token, Origin: f.origin, "X-CSRF-Token": csrf };
+    const input = { guild: "333333333333333333", nickname: "Helper", bio: "Our server", avatar: "data:image/png;base64," + "A".repeat(24000) };
+    assert.equal((await f.request("/api/bot/profile", input)).status, 401);
+    assert.equal((await f.request("/api/bot/profile", input, { Cookie: headers.Cookie })).status, 403);
+    assert.equal((await f.request("/api/bot/profile", input, headers)).status, 200);
+    assert.equal(f.calls.at(-1).path, "profile"); assert.equal(f.calls.at(-1).actor, USER); assert.equal(f.calls.at(-1).body.avatar.length, input.avatar.length);
+    assert.equal((await f.request("/api/bot/profile", { ...input, avatar: "A".repeat(3 * 1024 * 1024) }, headers)).status, 413);
+    assert.equal((await f.request("/api/bot/owner/profile", { guild: input.guild, action: "reset" }, headers)).status, 404);
+    assert.equal((await f.request("/api/admin/bot/profile?guild=" + input.guild, null, headers)).status, 401);
+    const adminHeaders = { Cookie: "sonata_admin=" + admin, Origin: f.origin, "X-CSRF-Token": adminCsrf };
+    assert.equal((await f.request("/api/admin/bot/profile?guild=" + input.guild, null, adminHeaders)).status, 200);
+    assert.equal(f.calls.at(-1).path, "owner/profile?guild=" + input.guild);
+    assert.equal((await f.request("/api/admin/bot/profile", { guild: input.guild, action: "reset" }, { Cookie: adminHeaders.Cookie })).status, 403);
+    assert.equal((await f.request("/api/admin/bot/profile", { guild: input.guild, action: "reset" }, adminHeaders)).status, 200);
+    assert.equal(f.calls.at(-1).path, "owner/profile"); assert.equal(f.calls.at(-1).actor, OWNER);
 });

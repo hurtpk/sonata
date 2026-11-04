@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { channelPermissions, embed, fail, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { editBits, restoreBits } from "./restrictions.mjs";
 import { voicePanel } from "./controlPanels.mjs";
@@ -108,7 +109,7 @@ export async function voiceRoomEvent(event, data, store, api, botId, cooldowns) 
     }
     if (event !== "VOICE_STATE_UPDATE") return;
     const settings = store.settings(guildId).voicemaster;
-    if (!settings?.enabled || data.channel_id !== settings.lobby || data.user_id === botId) return;
+    if (!featureEnabled(store.settings(guildId), "voice") || !settings?.enabled || data.channel_id !== settings.lobby || data.user_id === botId) return;
     if (store.get("SELECT channel FROM voice_rooms WHERE guild=? AND owner=?", guildId, data.user_id)) return;
     if (store.get("SELECT COUNT(*) AS n FROM voice_rooms WHERE guild=?", guildId).n >= 25) return;
     const key = `room:${guildId}:${data.user_id}`, now = Date.now();

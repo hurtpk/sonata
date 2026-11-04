@@ -2,6 +2,8 @@
 
 This optional Node service plays music for the Cloudflare bot. Cloudflare keeps the bot token, Gateway connection and moderation commands. This service receives only music jobs and temporary Discord voice connection events through a separate authenticated bridge. It has no access to the bot token or owner control endpoints. It uses the current `@discordjs/voice` DAVE implementation and FFmpeg's Opus encoder.
 
+The companion also retrieves public H.264 MP4 videos up to three minutes, with 20/50/100 MiB limits following server boost levels. A ten-second long poll wakes when jobs or voice events arrive, instead of adding a four-second polling delay. Video files use the separately authenticated `/music/video` binary route; metadata is bounded in its header. Optional TikTok statistics load alongside the video with a short deadline. TikTok supports the current fxTikTok route with a second public provider as a fallback. Twitter/X videos and GIFs use direct MP4 media when available, including GIFs whose provider reports zero duration. No bot token is sent to this host. The Worker keeps legacy JSON results for compatibility and processes one video at a time so large uploads remain within memory limits. Large Discord uploads use bounded multipart chunks without another full-file Blob. X GIFs are converted into looping GIF attachments; their button can switch the same message between GIF and original MP4 playback.
+
 ## Run on an Ubuntu server
 
 1. Install Docker and Compose. Copy the files in this directory, excluding `.ssh`, `.env` and `node_modules`, to the server.
@@ -17,3 +19,7 @@ The default allows one concurrent server to play music, suitable for starting on
 YouTube currently requires sign-in from this Oracle address, so use SoundCloud links or song-name searches on this deployment. Providers can restrict individual tracks or hosting addresses. No account cookies, DRM bypass or login-restricted content are supported. Rebuild periodically to update yt-dlp: `sudo docker compose build --no-cache && sudo docker compose up -d`. Check status with `sudo docker compose ps` and logs with `sudo docker compose logs --tail 30`. Logs exclude tokens, voice credentials, user commands and signed audio links.
 
 Keep the private `.env` readable only by the server administrator. Keep the SSH private key on your own computer; this container never needs it. No paid Oracle upgrade is required by this service. Free VM availability and capacity remain controlled by the hosting provider.
+
+Development checks: send all Sonata test messages, media and test reports only to the owner’s explicitly authorized Discord DMs. Never post tests in server channels.
+
+Upload playback: attach exactly one MP3, WAV, MOV, MP4 or OGG file to `,play`, or select `/play file:` with query empty. Files must contain audio, be at most 20 MiB and two hours long, and remain available on Discord. Video containers play audio only. Uploads are inspected with FFprobe; arbitrary external file URLs and other extensions are rejected. SoundCloud HLS playback skips the zero-position input seek that corrupted fragmented AAC streams; later HLS seeks happen after input decoding.

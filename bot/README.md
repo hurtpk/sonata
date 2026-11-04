@@ -81,7 +81,7 @@ Enable `role recovery on` with Manage Server and Manage Roles. Sonata begins rem
 
 ## Server dashboard
 
-Use `,dashboard` or [the server dashboard](https://sonata.hurts.workers.dev). Sign in with Discord; Sonata checks current Manage Server permissions separately for every server and action. The existing [Control Room](https://sonata.hurts.workers.dev/admin) has a **Discord bot** tab for its configured owner, showing every bot installation, member snapshots, server details, connection status and activity totals. Owner overview access alone does not grant permission to change another server or browse its cases and tickets.
+Use `,dashboard` or [the server dashboard](https://sonatabot.info). Sign in with Discord; Sonata checks current Manage Server permissions separately for every server and action. The existing [Control Room](https://sonatabot.info/admin) has a **Discord bot** tab for its configured owner, showing every bot installation, member snapshots, server details, connection status and activity totals. Owner overview access alone does not grant permission to change another server or browse its cases and tickets.
 
 The Cloudflare services communicate through the BOT_SERVICE binding and a separate BOT_DASHBOARD_SECRET. Use the same random key of at least 32 characters in the ignored bot and service .env files, then run `npm run setup -- --upload-dashboard` here and `node upload-secrets.mjs` in service/cloudflare. Apply the new service migrations before deployment. Discord sign-in keeps the existing identify scope and callback; the bot token never goes into the Control Room, browser or client plugin.
 
@@ -100,7 +100,7 @@ The design targets Workers Free. One always-active 128 MiB object uses about 11,
 5. Run `npm run check` and `npm test`. Then run `npm run deploy`. The first deployment stays unconfigured until secrets are saved.
 6. Run `npm run setup -- --upload` to send the three private configuration values into this Worker's Cloudflare secret storage. Values use the tool's standard input and are not printed. This requires authorization to your own Cloudflare account using Wrangler.
 7. Run `npm run setup -- --register` to register the slash commands. Leave `TEST_GUILD_ID` empty for global commands, or use an already-installed test server for guild-only registration.
-8. Open `https://sonata.hurts.workers.dev/invite`, choose your server and approve the required permissions. Approve Administrator for the bot. Move the bot's role above the members it should moderate.
+8. Open `https://sonatabot.info/invite`, choose your server and approve the required permissions. Approve Administrator for the bot. Move the bot's role above the members it should moderate.
 9. Run `npm run setup -- --start`, then `npm run setup -- --status` to check the connection. If Discord reports missing privileged intents, enable them in the portal and run `--start` again.
 10. In your server, use `/settings modlog` to select a staff log channel, `/jailsetup` if you want jail, and `/settings dm` if you want punishment DMs. Test with `/ping` and `,ping` before using moderation actions.
 
@@ -125,3 +125,15 @@ Lock and hide modify the everyone overwrite; explicit role/member allows and adm
 Punishment DMs are off by default. If enabled, the bot reports DM failures separately from successful moderation actions. A later ban with a different reason is kept when an older temporary ban expires. Actions performed by other bots or manually in Discord do not automatically become Sonata cases.
 
 Enabling ban appeals also enables its pre-ban form notices, even when general punishment DMs are off. Appeal approval records an unban case and staff decision while keeping the original ban case and evidence.
+
+## Last.fm
+
+Set the private `LASTFM_API_KEY` host secret to enable public Last.fm listening lookups. No shared secret or user authorization callback is used for this phase. `,fm set <username>` checks and saves your public username across Sonata servers; `,fm remove` unlinks it. This is a username preference, not verified Last.fm ownership. Use `,fm` or `/fm now` for current/last played, `,fm recent [member] [page]`, `,topartists [period] [member] [page]` and `,toptracks [period] [member] [page]`. Slash equivalents live under `/fm`. Periods: overall (default), 7day, 1month, 3month, 6month, 12month. Lists show five results per page, pages 1–100. Recent results cache for 30 seconds; charts/profiles for five minutes. Lookups time out after eight seconds and respect provider rate-limit backoff. No scrobbles or playback are created. API documentation: https://www.last.fm/api/intro .
+
+To stay within Discord's 100-command limit, server lookups use `/serverinfo view`, `/serverinfo icon`, `/serverinfo banner` and `/serverinfo boosts`. The existing `,serverinfo`, `,servericon`, `,serverbanner` and `,boosts` prefix commands still work.
+
+## Dashboard feature groups
+
+Open a server in Dashboard → Features to pause moderation, security/AutoMod, logging, music/Last.fm, voice tools, media, community/support or server tools. Only the Discord server owner and actual administrators can change groups; Manage Server, whitelisting and bot-only permissions alone do not grant this access. The server owner can independently turn off administrator feature management, including for whitelisted administrators. Permissions are checked from Discord again on every request.
+
+Settings and case/evidence data are preserved. Timed bans, jails and roles still expire; cleanup controls remain available. Music off disconnects playback and cancels pending playback requests. Security off pauses Sonata-owned native AutoMod filters; only unchanged filters previously enabled by Sonata are resumed. Pending giveaways pause. Turning a group back on does not set up tools that were never configured.

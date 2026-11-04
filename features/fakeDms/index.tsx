@@ -13,8 +13,9 @@ import { Flex } from "@components/Flex";
 import { classNameFactory } from "@utils/css";
 import { Logger } from "@utils/Logger";
 import { classes } from "@utils/misc";
-import { ModalProps, openModal } from "@utils/modal";
+import { openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
+import type { Message, RenderModalProps as ModalProps } from "@vencord/discord-types";
 import { RelationshipType } from "@vencord/discord-types/enums";
 import { findByCodeLazy, findByPropsLazy, findComponentByCodeLazy, findCssClassesLazy, findStoreLazy } from "@webpack";
 import {
@@ -38,7 +39,6 @@ import {
     UserStore,
     useState,
 } from "@webpack/common";
-import type { Message } from "discord-types/general";
 import { DBSchema, IDBPDatabase, openDB } from "idb";
 
 import { defineFeatureSettings } from "../../featureSettings";
@@ -123,7 +123,7 @@ const relationshipStore = findStoreLazy("RelationshipStore");
 const privateChannelSortStore = findStoreLazy("PrivateChannelSortStore");
 const friendsStore = findStoreLazy("FriendsStore");
 
-let originalGetVoiceChannelId: (() => string | null) | null = null;
+let originalGetVoiceChannelId: typeof SelectedChannelStore.getVoiceChannelId | null = null;
 const VOICE_OVERRIDE_MARK = Symbol("fakedms-voice-override");
 
 const rtcConnectionStore = findStoreLazy("RTCConnectionStore") as unknown as {
@@ -218,11 +218,12 @@ function findFakeVoiceChannelIdForCurrentUser(): string | null {
 function applyVoiceChannelIdOverride(): void {
     const current = SelectedChannelStore.getVoiceChannelId;
     if ((current as unknown as { [VOICE_OVERRIDE_MARK]?: boolean })?.[VOICE_OVERRIDE_MARK]) return;
-    originalGetVoiceChannelId = current.bind(SelectedChannelStore);
+    const getVoiceChannelId = current.bind(SelectedChannelStore);
+    originalGetVoiceChannelId = getVoiceChannelId;
     const wrapped = function () {
-        const real = originalGetVoiceChannelId!();
+        const real = getVoiceChannelId();
         if (real != null) return real;
-        return findFakeVoiceChannelIdForCurrentUser();
+        return findFakeVoiceChannelIdForCurrentUser() ?? undefined;
     };
     (wrapped as unknown as { [VOICE_OVERRIDE_MARK]: boolean })[VOICE_OVERRIDE_MARK] = true;
     SelectedChannelStore.getVoiceChannelId = wrapped as typeof SelectedChannelStore.getVoiceChannelId;
@@ -401,8 +402,8 @@ function isValidDateMs(ms: number): boolean {
     return Number.isFinite(ms) && Math.abs(ms) <= 8.64e15;
 }
 
-function safeIsoTimestamp(raw: string): string {
-    const ms = Date.parse(raw);
+function safeIsoTimestamp(raw: string | Date): string {
+    const ms = raw instanceof Date ? raw.getTime() : Date.parse(raw);
     if (!isValidDateMs(ms)) return new Date().toISOString();
     try {
         return new Date(ms).toISOString();
@@ -440,6 +441,7 @@ function hydratePersistedMessage(p: PersistedFakeMessage): Message {
     const author = storeUser ?? ({
         id: p.authorId,
         username: p.authorUsername ?? p.authorId,
+        globalName: p.authorGlobalName ?? null,
         global_name: p.authorGlobalName ?? null,
         getAvatarURL: () => p.authorAvatarUrl ?? "",
     } as unknown as Message["author"]);
@@ -491,7 +493,7 @@ function serializeMessage(channelId: string, message: Message): PersistedFakeMes
         content: message.content ?? "\u200b",
         authorId,
         authorUsername: (message.author as { username?: string; } | undefined)?.username,
-        authorGlobalName: (message.author as { global_name?: string | null; } | undefined)?.global_name,
+        authorGlobalName: message.author.globalName,
         authorAvatarUrl: (message.author as { getAvatarURL?: (a?: unknown, s?: number) => string; } | undefined)?.getAvatarURL?.(undefined, 32),
         recipientUserId,
     };
@@ -500,7 +502,15 @@ function serializeMessage(channelId: string, message: Message): PersistedFakeMes
         result.attachments = message.attachments as FakeAttachment[];
     }
     if (message.embeds?.length) {
-        result.embeds = message.embeds as FakeEmbed[];
+        result.embeds = message.embeds.map((embed: FakeEmbed | Message["embeds"][number]) => ({
+            ...embed,
+            title: "rawTitle" in embed ? embed.rawTitle : embed.title,
+            description: "rawDescription" in embed ? embed.rawDescription : embed.description,
+            color: typeof embed.color === "string" ? parseInt(embed.color.replace("#", ""), 16) : embed.color,
+            author: embed.author && { ...embed.author, icon_url: "iconURL" in embed.author ? embed.author.iconURL : embed.author.icon_url },
+            footer: embed.footer && { ...embed.footer, icon_url: "iconURL" in embed.footer ? embed.footer.iconURL : embed.footer.icon_url },
+            fields: embed.fields?.map(field => ({ name: "rawName" in field ? field.rawName : field.name, value: "rawValue" in field ? field.rawValue : field.value, inline: field.inline })),
+        }));
     }
     if (message.stickerItems?.length) {
         result.stickerItems = message.stickerItems as FakeSticker[];
@@ -985,7 +995,7 @@ function getMessageIdBigInt(m: { id?: string; } | null | undefined): bigint | nu
     }
 }
 
-function compareMessages(a: { id: string; timestamp?: string; }, b: { id: string; timestamp?: string; }): number {
+function compareMessages(a: { id: string; timestamp?: string | Date; }, b: { id: string; timestamp?: string | Date; }): number {
     const ida = getMessageIdBigInt(a);
     const idb = getMessageIdBigInt(b);
     if (ida !== null && idb !== null) {
@@ -996,7 +1006,7 @@ function compareMessages(a: { id: string; timestamp?: string; }, b: { id: string
     return ta < tb ? -1 : ta > tb ? 1 : 0;
 }
 
-function detectIsDesc<T extends { id: string; timestamp?: string; }>(messages: T[]): boolean {
+function detectIsDesc<T extends { id: string; timestamp?: string | Date; }>(messages: T[]): boolean {
     // Discord message arrays are typically newest-first. Default to that unless we can prove otherwise.
     if (!Array.isArray(messages) || messages.length < 2) return true;
 
@@ -1009,7 +1019,7 @@ function detectIsDesc<T extends { id: string; timestamp?: string; }>(messages: T
     return true;
 }
 
-function mergeMessagesStableInPlace<T extends { id: string; timestamp?: string; }>(messages: T[], fakes: T[]): void {
+function mergeMessagesStableInPlace<T extends { id: string; timestamp?: string | Date; }>(messages: T[], fakes: T[]): void {
     const isDesc = detectIsDesc(messages);
     const fakesSorted = fakes.slice().sort((a, b) => {
         const cmp = compareMessages(a, b);
@@ -1030,7 +1040,7 @@ function mergeMessagesStableInPlace<T extends { id: string; timestamp?: string; 
     }
 }
 
-function mergeMessagesStable<T extends { id: string; timestamp?: string; }>(messages: T[], fakes: T[]): T[] {
+function mergeMessagesStable<T extends { id: string; timestamp?: string | Date; }>(messages: T[], fakes: T[]): T[] {
     if (!Array.isArray(messages) || messages.length === 0) return fakes.slice();
     if (!Array.isArray(fakes) || fakes.length === 0) return messages;
 
@@ -1062,7 +1072,7 @@ function mergeMessagesStable<T extends { id: string; timestamp?: string; }>(mess
 }
 
 type LoadMessagePayload = { channelId: string;[k: string]: unknown; };
-type MessagesArray = Array<{ id: string; timestamp?: string; channel_id?: string;[k: string]: unknown; }>;
+type MessagesArray = Array<{ id: string; timestamp?: string | Date; channel_id?: string;[k: string]: unknown; }>;
 
 function messageTimeMsFromId(id: string): number {
     // Snowflake ms = (id >> 22) + DISCORD_EPOCH
@@ -1136,7 +1146,7 @@ function mergeFakedmsIntoPayloadMessages(messages: MessagesArray, payload: LoadM
 
 /** Merge into fetch response body as backup (in case getter patch runs in different order). */
 async function mergeFakedmsIntoResponse(response: {
-    body?: Array<{ id: string; channel_id?: string; timestamp?: string;[k: string]: unknown; }>;
+    body?: Array<{ id: string; channel_id?: string; timestamp?: string | Date;[k: string]: unknown; }>;
 }): Promise<void> {
     try {
         const mle = (globalThis as typeof window & { Vencord?: { Plugins?: { plugins?: Record<string, { processMessageFetch?: (r: unknown) => Promise<void>; }>; }; }; }).Vencord?.Plugins?.plugins?.MessageLoggerEnhanced;
@@ -1185,8 +1195,8 @@ function applyMessageStorePatch() {
             const newMap = { ...existingMap };
             hydratedFakes.forEach(m => { (newMap as Record<string, Message>)[m.id] = m; });
 
-            (result as Record<string, unknown>)._array = hydratedFakes;
-            (result as Record<string, unknown>)._map = newMap;
+            result._array = hydratedFakes;
+            result._map = newMap;
             return result;
         }
 
@@ -1214,8 +1224,8 @@ function applyMessageStorePatch() {
         }
         allFakes.forEach(m => { (newMap as Record<string, Message>)[m.id] = m; });
 
-        (result as Record<string, unknown>)._array = combined;
-        (result as Record<string, unknown>)._map = newMap;
+        result._array = combined;
+        result._map = newMap;
         return result;
     };
 }
@@ -1623,9 +1633,9 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
     };
 
     const userOptions = useMemo(() => {
-        const meLabel = currentUser.global_name && currentUser.global_name !== currentUser.username
-            ? `${currentUser.global_name} (@${currentUser.username})`
-            : (currentUser.username ?? currentUser.global_name ?? "You");
+        const meLabel = currentUser.globalName && currentUser.globalName !== currentUser.username
+            ? `${currentUser.globalName} (@${currentUser.username})`
+            : (currentUser.username ?? currentUser.globalName ?? "You");
         const options: { label: string; value: string; }[] = [
             { label: `Me (${meLabel})`, value: currentUser.id },
         ];
@@ -1639,7 +1649,7 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                     seen.add(uid);
                     const user = UserStore.getUser(uid);
                     const { nick } = (member as { nick?: string | null; });
-                    const displayName = nick ?? user?.global_name ?? user?.username ?? uid;
+                    const displayName = nick ?? user?.globalName ?? user?.username ?? uid;
                     const username = user?.username ?? uid;
                     const label = displayName !== username ? `${displayName} (@${username})` : (displayName || uid);
                     options.push({ label, value: uid });
@@ -1652,14 +1662,14 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                 if (id === currentUser.id) continue;
                 const user = UserStore.getUser(id);
                 const raw = rawRecipients.find(r => r.id === id);
-                const displayName = user?.global_name ?? user?.username ?? raw?.username ?? id;
+                const displayName = user?.globalName ?? user?.username ?? raw?.username ?? id;
                 const username = user?.username ?? raw?.username ?? id;
                 const label = displayName !== username ? `${displayName} (@${username})` : (displayName || id);
                 options.push({ label, value: id });
             }
         }
         return options;
-    }, [guildId, channel?.recipients, channel?.rawRecipients, currentUser.id, currentUser.username, currentUser.global_name]);
+    }, [guildId, channel?.recipients, channel?.rawRecipients, currentUser.id, currentUser.username, currentUser.globalName]);
 
     const author = useMemo(() => {
         if (userId === currentUser.id) return currentUser;
@@ -1737,7 +1747,7 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
         const embeds: FakeEmbed[] = [];
         const stickerItems: FakeSticker[] = [];
         let msgType = 0;
-        let call: { participants: string[]; endedTimestamp: Date; duration: number } | undefined;
+        let call: { participants: string[]; endedTimestamp: Date; duration: ReturnType<typeof moment.duration> } | undefined;
         if (messageType === "media" && attachmentUrl) {
             attachments.push({
                 id: previewId + "_0",
@@ -1915,7 +1925,7 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
         modalProps.onClose();
     };
 
-    const displayName = author?.global_name ?? author?.username ?? (author as { id?: string; })?.id ?? "Unknown user";
+    const displayName = author?.globalName ?? author?.username ?? (author as { id?: string; })?.id ?? "Unknown user";
     const avatarUrl = author?.getAvatarURL?.(undefined, 32) ?? (author as { getAvatarURL?: () => string; })?.getAvatarURL?.();
 
     const channelRecord = channel ?? null;
@@ -1926,7 +1936,7 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
             actions={messageType !== "livecall" ? [{ text: "Send", variant: "primary", onClick: () => void handleSend(), disabled: !author }] : undefined}>
             <div className={classes("vc-tool-wrap", cl("modal-content"))}>
                 {messageType !== "livecall" && (
-                <Forms.FormSection className={cl("preview-section")}>
+                <section className={cl("preview-section")}>
                     <div className={cl("preview-box")}>
                     <ScrollerThin className={cl("preview-scroller")}>
                         {previewMessage && channelRecord ? (
@@ -1948,11 +1958,11 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                         )}
                     </ScrollerThin>
                     </div>
-                </Forms.FormSection>
+                </section>
                 )}
 
                 {messageType !== "livecall" && (
-                <Forms.FormSection className={cl("form-section")}>
+                <section className={cl("form-section")}>
                     <Forms.FormTitle tag="h5" className={cl("field-label")}>Author</Forms.FormTitle>
                     <SearchableSelect
                         options={userOptions}
@@ -1984,20 +1994,20 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                             placeholder="Or paste user ID"
                         />
                     </div>
-                </Forms.FormSection>
+                </section>
                 )}
 
                 {messageType === "text" && (
-                    <Forms.FormSection className={cl("form-section")}>
+                    <section className={cl("form-section")}>
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Message</Forms.FormTitle>
                         <div className={cl("textarea")}>
                             <TextArea value={content} onChange={setContent} placeholder="Message content..." />
                         </div>
-                    </Forms.FormSection>
+                    </section>
                 )}
 
                 {messageType === "media" && (
-                    <Forms.FormSection className={cl("form-section")}>
+                    <section className={cl("form-section")}>
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Image or video URL</Forms.FormTitle>
                         <TextInput value={attachmentUrl} onChange={handleMediaUrlChange} placeholder="https://..." />
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Filename</Forms.FormTitle>
@@ -2011,11 +2021,11 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                         <div className={cl("textarea")}>
                             <TextArea value={content} onChange={setContent} placeholder="Optional caption..." />
                         </div>
-                    </Forms.FormSection>
+                    </section>
                 )}
 
                 {messageType === "embed" && (
-                    <Forms.FormSection className={cl("form-section")}>
+                    <section className={cl("form-section")}>
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Title</Forms.FormTitle>
                         <TextInput value={embedTitle} onChange={setEmbedTitle} placeholder="Embed title" />
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Description</Forms.FormTitle>
@@ -2026,16 +2036,16 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                         <TextInput value={embedColor} onChange={setEmbedColor} placeholder="#5865F2" />
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Image URL (optional)</Forms.FormTitle>
                         <TextInput value={embedImageUrl} onChange={setEmbedImageUrl} placeholder="https://..." />
-                    </Forms.FormSection>
+                    </section>
                 )}
 
                 {messageType === "sticker" && (
-                    <Forms.FormSection className={cl("form-section")}>
+                    <section className={cl("form-section")}>
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Sticker URL</Forms.FormTitle>
                         <TextInput value={stickerUrl} onChange={setStickerUrl} placeholder="https://..." />
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Name</Forms.FormTitle>
                         <TextInput value={stickerName} onChange={setStickerName} placeholder="Sticker name" />
-                    </Forms.FormSection>
+                    </section>
                 )}
 
                 {messageType === "livecall" && (() => {
@@ -2047,9 +2057,9 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                     const candidateSet = new Set(candidates);
                     const extraJoined = joined.filter(id => !candidateSet.has(id));
                     const userDisplayName = (id: string) => {
-                        if (id === currentUser.id) return currentUser.global_name || currentUser.username || "You";
+                        if (id === currentUser.id) return currentUser.globalName || currentUser.username || "You";
                         const u = UserStore.getUser(id);
-                        return u?.global_name ?? u?.username ?? id;
+                        return u?.globalName ?? u?.username ?? id;
                     };
                     const userAvatar = (id: string) => {
                         const u = UserStore.getUser(id);
@@ -2100,7 +2110,7 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                     };
                     return (
                         <>
-                            <Forms.FormSection className={cl("form-section")}>
+                            <section className={cl("form-section")}>
                                 <div className={cl("livecall-status-card", active && "livecall-status-card-active")}>
                                     <div className={cl("livecall-status-row")}>
                                         <div className={classes(cl("livecall-status-pill"), active && cl("livecall-status-pill-active"))}>
@@ -2126,10 +2136,10 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                                         ? <button className={cl("livecall-action-btn", "livecall-action-btn-end")} onClick={() => endFakeCall(channelId)}>End Call</button>
                                         : <button className={cl("livecall-action-btn", "livecall-action-btn-start")} onClick={() => startFakeCall(channelId)}>Start Call</button>}
                                 </div>
-                            </Forms.FormSection>
+                            </section>
 
                             {active && (
-                                <Forms.FormSection className={cl("form-section")}>
+                                <section className={cl("form-section")}>
                                     <Forms.FormTitle tag="h5" className={cl("field-label")}>DM Members</Forms.FormTitle>
                                     <div className={cl("call-list")}>
                                         {candidates.map(id => renderRow(id))}
@@ -2161,14 +2171,14 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                                             }}
                                         >Add to call</Button>
                                     </Flex>
-                                </Forms.FormSection>
+                                </section>
                             )}
                         </>
                     );
                 })()}
 
                 {messageType === "call" && (
-                    <Forms.FormSection className={cl("form-section")}>
+                    <section className={cl("form-section")}>
                         <Forms.FormTitle tag="h5" className={cl("field-label")}>Status</Forms.FormTitle>
                         <Flex style={{ gap: 8 }} className={cl("flex-row")}>
                             <Button size="small" color={callState === "ended" ? "brand" : "primary"} onClick={() => setCallState("ended")}>Ended</Button>
@@ -2186,11 +2196,11 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                                 </Flex>
                             </>
                         )}
-                    </Forms.FormSection>
+                    </section>
                 )}
 
                 {messageType !== "livecall" && (
-                <Forms.FormSection className={cl("form-section")}>
+                <section className={cl("form-section")}>
                     <Forms.FormTitle tag="h5" className={cl("field-label")}>Timestamp</Forms.FormTitle>
                     <Flex style={{ gap: 8, alignItems: "center" }}>
                         <div style={{ flex: 1 }}>
@@ -2221,7 +2231,7 @@ function FakeMessageModal({ modalProps, channelId }: FakeMessageModalProps) {
                             <Button key={p.label} size="small" onClick={p.fn}>{p.label}</Button>
                         ))}
                     </Flex>
-                </Forms.FormSection>
+                </section>
                 )}
             </div>
         </Window>

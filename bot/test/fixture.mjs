@@ -79,7 +79,7 @@ export function fixture(t) {
             if (method === "DELETE") { rules.splice(rules.indexOf(rule), 1); return null; }
         }
         if (route.startsWith(`/guilds/${GUILD}/members/`)) {
-            const id = route.split("/")[4], member = members.get(id);
+            const id = route.split("/")[4] === "@me" ? BOT : route.split("/")[4], member = members.get(id);
             if (!member && options.optional) return null;
             assert(member, route);
             if (route.includes("/roles/")) {
@@ -116,5 +116,5 @@ export function fixture(t) {
     };
     const command = (content, actor = ACTOR) => ({ ...parsePrefix(content, ","), id: String(++request), actor, guild: GUILD, channel: CHANNEL });
     const execute = content => executeCommand(command(content), store, api, BOT);
-    return { store, db, api, calls, bans, guild, roles, members, channels, messages, postedMessages, rules, voiceStates, emojis, stickers, command, execute, failUnban: count => { unbanFailures = count; } };
+    return { store, storage, db, api, calls, bans, guild, roles, members, channels, messages, postedMessages, rules, voiceStates, emojis, stickers, command, execute, failUnban: count => { unbanFailures = count; } };
 }

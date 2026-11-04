@@ -9,8 +9,9 @@ import "./style.css";
 
 import { classNameFactory } from "@utils/css";
 import { classes, sleep } from "@utils/misc";
-import { ModalProps, openModal } from "@utils/modal";
+import { openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
+import type { RenderModalProps as ModalProps } from "@vencord/discord-types";
 import { findByPropsLazy, findComponentByCodeLazy } from "@webpack";
 import { ChannelStore, FluxDispatcher, GuildMemberStore, IconUtils, MessageStore, ReactDOM, RestAPI, SearchableSelect, SelectedChannelStore, showToast, useEffect, useMemo, UserStore, useState } from "@webpack/common";
 

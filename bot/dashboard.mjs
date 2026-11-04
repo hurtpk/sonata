@@ -4,23 +4,31 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureGroupRequest } from "./featureGroups.mjs";
+import { ownerConsole, requireBotUser } from "./ownerConsole.mjs";
+import { reference } from "./commandReference.mjs";
 import { Buffer } from "node:buffer";
 import { COMMANDS, parseSlash } from "./commands.mjs";
 import { channelPermissions, fail, isId, memberPermissions, PERMS } from "./discord.mjs";
 import { moderationStats } from "./memberTools.mjs";
 import { dashboardAccess, dashboardExtra } from "./dashboardAccess.mjs";
 import { commandInsights } from "./commandInsights.mjs";
+import { commandFailures } from "./commandFailures.mjs";
+import { PROFILE_BODY_LIMIT, readGuildProfile, writeGuildProfile } from "./guildProfile.mjs";
 
 export const DASHBOARD_ACTIONS = {
+    prefix: ["set", "remove", "view"], honeypot: ["add", "remove", "exempt", "exemptions", "list"],
+    welcome: ["add", "remove", "test", "view", "list", "variables"], goodbye: ["add", "remove", "test", "view", "list", "variables"], autorole: ["add", "remove", "list", "enable", "disable"], autonick: ["set", "off", "view"], joinlogs: ["set", "off", "view"], autoresponder: ["add", "update", "remove", "view", "list"],
+    ban: ["run"], tempban: ["run"], unban: ["run"], kick: ["run"], timeout: ["run"], untimeout: ["run"], warn: ["run"], warnings: ["run"], jailsetup: ["run"], jail: ["run"], unjail: ["run"],
     nicknamepolicy: ["setup", "block", "unblock", "exempt", "check", "off", "view"], fakepermissions: ["grant", "revoke", "view"], commandsettings: ["disable", "enable", "view"], commandstats: ["summary", "commands", "failures"],
-    musicsettings: ["djrole", "cleardj", "mode", "votes"], role: ["recovery", "restore"],
-    settings: ["prefix", "modlog", "dm", "videoembeds"], antiraid: ["setup", "off", "clear"], antinuke: ["setup", "off", "trust", "restore"], eventlog: ["set", "off"], escalation: ["set", "remove", "expiry", "exempt"], appeals: ["setup", "off"],
-    verification: ["setup", "panel", "approve", "off"], levels: ["enable", "disable", "reward", "unreward", "reset"], alias: ["set", "remove"], automod: ["wordsadd", "wordsremove", "mentions", "spam", "regexadd", "regexremove", "profileadd", "profileremove", "preview", "exemptrole", "exemptchannel"],
+    musicsettings: ["djrole", "cleardj", "mode", "votes"], role: ["recovery", "restore", "temp"],
+    settings: ["prefix", "modlog", "dm", "message", "videoembeds", "starboard", "starboardoff", "view"], antiraid: ["setup", "off", "clear"], antinuke: ["setup", "off", "trust", "restore"], eventlog: ["set", "off", "view"], escalation: ["set", "remove", "expiry", "exempt"], appeals: ["setup", "off"],
+    verification: ["setup", "panel", "approve", "off"], levels: ["enable", "disable", "reward", "unreward", "reset"], alias: ["set", "remove", "list"], automod: ["wordsadd", "wordsremove", "allowadd", "allowremove", "mentions", "spam", "regexadd", "regexremove", "profileadd", "profileremove", "preview", "exemptrole", "exemptchannel", "config", "words", "list"],
     ticket: ["setup", "panel", "off", "claim", "close", "reopen", "transcript", "archive", "categoryadd", "categoryremove", "priority", "assign", "idle"], lockdown: ["start", "restore"],
 };
-export async function requestJson(request) {
+export async function requestJson(request, limit = 16_384) {
     const chunks = []; let size = 0;
-    if (request.body) for await (const chunk of request.body) { size += chunk.length; if (size > 16_384) fail("This request is too large."); chunks.push(chunk); }
+    if (request.body) for await (const chunk of request.body) { size += chunk.length; if (size > limit) throw Object.assign(new Error("This request is too large."), { status: 413 }); chunks.push(chunk); }
     let value;
     try { value = JSON.parse(Buffer.concat(chunks).toString("utf8")); } catch { fail("Send a valid JSON object."); }
     if (!value || typeof value !== "object" || Array.isArray(value)) fail("Send a JSON object.");
@@ -61,10 +69,35 @@ export async function enforceGuildBlock(bot, id) {
 export async function dashboardRequest(request, bot, execute) {
     const url = new URL(request.url), path = url.pathname.slice(11), actor = request.headers.get("x-sonata-user"), store = bot.store, api = bot.api;
     if (!isId(actor)) throw Object.assign(new Error("Sign in with Discord first."), { status: 401 });
+    if (request.method === "POST" && !path.startsWith("owner")) requireBotUser(store, actor);
     const grants = (request.headers.get("x-sonata-permissions") || "").split(",");
     const owner = String(bot.env.DASHBOARD_OWNER_IDS ?? "779172192461783110").split(",").includes(actor);
-    const scope = path === "owner/users" ? "users" : path === "owner/health" ? "health" : path === "owner/action" ? "serverAccess" : "servers";
+    if (["owner/messages", "owner/userblocks", "owner/operations", "owner/resources", "owner/lookup", "owner/history", "owner/check", "owner/notes"].includes(path)) {
+        if (!owner) throw Object.assign(new Error("Only the Sonata owner can use these tools."), { status: 403 });
+        if (!["GET", "POST"].includes(request.method)) throw Object.assign(new Error("Use GET or POST."), { status: 405 });
+        if (request.method === "POST" && ["owner/lookup", "owner/check"].includes(path)) throw Object.assign(new Error("This tool is read only."), { status: 405 });
+        return ownerConsole(path, request, request.method === "POST" ? await requestJson(request) : Object.fromEntries(url.searchParams), bot, actor);
+    }
+    const scope = path === "owner/users" ? "users" : ["owner/health", "owner/failures"].includes(path) ? "health" : path === "owner/action" || (path === "owner/profile" && request.method === "POST") ? "serverAccess" : "servers";
     if (path.startsWith("owner") && !owner && !grants.includes(scope)) throw Object.assign(new Error("Only the bot owner can access this view."), { status: 403 });
+    if (path === "owner/failures" && request.method === "GET") return commandFailures(store, url.searchParams);
+    if (["profile", "owner/profile"].includes(path) && ["GET", "POST"].includes(request.method)) {
+        const input = request.method === "POST" ? await requestJson(request, path === "profile" ? PROFILE_BODY_LIMIT : 16_384) : { guild: url.searchParams.get("guild") };
+        if (!isId(input.guild) || !store.get("SELECT id FROM bot_guilds WHERE id=? AND active=1", input.guild) || store.get("SELECT id FROM guild_blacklist WHERE id=?", input.guild)) throw Object.assign(new Error("Choose an installed, allowed server."), { status: 404 });
+        let editable = false;
+        if (path === "profile") {
+            const context = await dashboardAccess(api, input.guild, actor, store);
+            editable = !!(memberPermissions(context.actor, context.roles, context.guild) & (PERMS.ADMIN | PERMS.GUILD));
+            if (request.method === "POST") {
+                if (!editable) throw Object.assign(new Error("Manage Server is required to change Sonata's profile."), { status: 403 });
+            }
+        }
+        if (request.method === "POST") {
+            if (path === "owner/profile" && input.action !== "reset") fail("Choose the profile reset action.");
+            await writeGuildProfile(store, api, input.guild, actor, input, path === "owner/profile");
+        }
+        return { profile: { ...await readGuildProfile(store, api, input.guild, bot.session.userId), editable } };
+    }
     if (path === "owner/health" && request.method === "GET") return { status: bot.status(), error: await bot.ctx?.storage.get("fatal") || "", lastDisconnect: await bot.ctx?.storage.get("disconnect") || null, failures: store.all("SELECT name,SUM(n) AS n FROM command_results WHERE outcome IN ('failed','needs_review') AND day>=? GROUP BY name ORDER BY n DESC LIMIT 10", new Date(Date.now()-86400000).toISOString().slice(0,10)), pendingJobs: store.get("SELECT COUNT(*) AS n FROM jobs WHERE state='pending'").n, stickyErrors: store.all("SELECT guild,channel,error FROM sticky_messages WHERE error<>'' LIMIT 10") };
     if (path === "owner/users" && request.method === "GET") {
         const ids = [...new Set((url.searchParams.get("ids") || "").split(","))];
@@ -92,10 +125,11 @@ export async function dashboardRequest(request, bot, execute) {
         await leaveServer(bot, input.guild);
         return { ok: true };
     }
-    if (["access", "designer"].includes(path)) {
+    if (["access", "designer", "features"].includes(path)) {
         const input = request.method === "POST" ? await requestJson(request) : { guild: url.searchParams.get("guild") };
         if (!isId(input.guild) || !store.get("SELECT id FROM bot_guilds WHERE id=? AND active=1", input.guild) || store.get("SELECT id FROM guild_blacklist WHERE id=?", input.guild)) fail("Choose an installed, allowed server.");
         const context = await dashboardAccess(api, input.guild, actor, store);
+        if (path === "features") return featureGroupRequest(request, input, context, bot);
         return dashboardExtra(path, request, input, context, bot);
     }
     if (path === "servers" && request.method === "GET") {
@@ -103,7 +137,7 @@ export async function dashboardRequest(request, bot, execute) {
         for (const server of servers(store)) try { await dashboardAccess(api, server.id, actor, store); allowed.push(server); } catch { continue; }
         return { servers: allowed };
     }
-    if (path === "forms" && request.method === "GET") return { forms: COMMANDS.filter(value => DASHBOARD_ACTIONS[value.name]).map(value => ({ name: value.name, options: value.options.filter(sub => DASHBOARD_ACTIONS[value.name].includes(sub.name)) })) };
+    if (path === "forms" && request.method === "GET") return { forms: dashboardForms() };
     if (["server", "owner/server"].includes(path) && request.method === "GET") {
         const id = url.searchParams.get("guild");
         if (!isId(id) || !store.get("SELECT id FROM bot_guilds WHERE id=? AND active=1", id)) throw Object.assign(new Error("Sonata is not currently in this server."), { status: 404 });
@@ -126,8 +160,13 @@ export async function dashboardRequest(request, bot, execute) {
         if (store.get("SELECT id FROM guild_blacklist WHERE id=?", input.guild)) throw Object.assign(new Error("This server is blacklisted from Sonata Bot."), { status: 403 });
         await dashboardAccess(api, input.guild, actor, store);
         if (!input.options || typeof input.options !== "object" || Array.isArray(input.options)) fail("Choose the action options.");
-        const command = { ...parseSlash({ name: input.name, options: [{ name: input.sub, options: Object.entries(input.options).map(([name, value]) => ({ name, value })) }] }), id: `dashboard:${crypto.randomUUID()}`, guild: input.guild, channel: input.channel, actor };
+        const options = Object.entries(input.options).map(([name, value]) => ({ name, value }));
+        const command = { ...parseSlash({ name: input.name, options: input.sub === "run" ? options : [{ name: input.sub, options }] }), id: `dashboard:${crypto.randomUUID()}`, guild: input.guild, channel: input.channel, actor };
         return { result: await execute(command) };
     }
     throw Object.assign(new Error("This dashboard action was not found."), { status: 404 });
+}
+
+export function dashboardForms() {
+    return COMMANDS.filter(command => DASHBOARD_ACTIONS[command.name]).map(command => ({ name: command.name, options: (command.options[0]?.type === 1 ? command.options : [{ name: "run", description: command.description, options: command.options }]).filter(sub => DASHBOARD_ACTIONS[command.name].includes(sub.name)).map(sub => ({ ...sub, documentation: reference(command, sub.name === "run" ? command : sub) })) }));
 }

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { messageChannel } from "./community.mjs";
 import { canManage, embed, fail, highestRole, isId, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { jailAction } from "./restrictions.mjs";
@@ -71,14 +72,14 @@ export async function protectionEvent(event, data, store, api, botId, perform) {
     const guildId = event === "GUILD_CREATE" ? data.id : data.guild_id;
     const settings = store.settings(guildId), now = Date.now();
     if (event === "GUILD_CREATE") {
-        if (settings.eventlogs?.voice && Array.isArray(data.voice_states)) {
+        if (featureEnabled(settings, "logging") && settings.eventlogs?.voice && Array.isArray(data.voice_states)) {
             store.run("DELETE FROM voice_activity WHERE guild=?", guildId);
             for (const state of data.voice_states) if (state.channel_id) store.run("INSERT OR REPLACE INTO voice_activity VALUES (?,?,?)", guildId, state.user_id, state.channel_id);
         }
         return;
     }
     if (event === "VOICE_STATE_UPDATE") {
-        if (!settings.eventlogs?.voice) return;
+        if (!settings.eventlogs?.voice || !featureEnabled(settings, "logging")) return;
         const previous = store.get("SELECT channel FROM voice_activity WHERE guild=? AND user=?", guildId, data.user_id)?.channel ?? null;
         if (previous === data.channel_id) return;
         if (data.channel_id) store.run("INSERT OR REPLACE INTO voice_activity VALUES (?,?,?)", guildId, data.user_id, data.channel_id);
@@ -87,6 +88,7 @@ export async function protectionEvent(event, data, store, api, botId, perform) {
         return;
     }
     if (event === "GUILD_MEMBER_ADD") {
+        if (!featureEnabled(settings, "security")) return;
         const config = settings.antiraid;
         if (!config?.enabled || data.user.bot || !isId(data.user.id)) return;
         const id = `join:${guildId}:${data.user.id}:${data.joined_at}`;
@@ -108,10 +110,11 @@ export async function protectionEvent(event, data, store, api, botId, perform) {
     }
     if (event !== "GUILD_AUDIT_LOG_ENTRY_CREATE" || !isId(data.id) || now - stamp(data.id) > 300_000 || !store.claim(`audit:${data.id}`)) return;
     const category = auditKinds[data.action_type], destination = settings.eventlogs?.[category];
-    if (destination && ![10,11,12].includes(data.action_type)) {
+    if (featureEnabled(settings, "logging") && destination && ![10,11,12].includes(data.action_type)) {
         const changes = (data.changes ?? []).slice(0, 6).map(value => `${value.key}: ${JSON.stringify(value.old_value ?? "None").slice(0, 100)} → ${JSON.stringify(value.new_value ?? "None").slice(0, 100)}`).join("\n");
         await notify(store, api, guildId, destination, labels[data.action_type], `Actor: ${data.user_id ? `<@${data.user_id}> (${data.user_id})` : "Unavailable"}\nTarget: ${data.target_id || "Unavailable"}\n${changes}${data.reason ? `\nReason: ${data.reason.slice(0, 300)}` : ""}`);
     }
+    if (!featureEnabled(settings, "security")) return;
     const config = settings.antinuke;
     if (!config?.enabled || ![12, 22, 32].includes(data.action_type) || !isId(data.user_id) || data.user_id === botId || config.trusted.includes(data.user_id)) return;
     const guild = await api(`/guilds/${guildId}`);

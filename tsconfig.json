@@ -1,0 +1,17 @@
+{
+    "extends": "../../../tsconfig.json",
+    "compilerOptions": {
+        "allowJs": false,
+        "noEmit": true,
+        "rootDir": "../../..",
+        "typeRoots": ["../../../node_modules/@types"],
+        "skipLibCheck": true
+    },
+    "files": [
+        "../../../src/globals.d.ts",
+        "../../../src/modules.d.ts",
+        "../../../src/nativeModules.d.ts"
+    ],
+    "include": ["**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules", "bot", "service"]
+}

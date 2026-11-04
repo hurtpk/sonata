@@ -8,9 +8,12 @@
         "deploy": "wrangler deploy",
         "migrate": "wrangler d1 migrations apply DB --remote",
         "migrate:local": "wrangler d1 migrations apply DB --local",
-        "check": "wrangler deploy --dry-run --outdir .check",
+        "check": "node ../build-site.mjs && wrangler deploy --dry-run --outdir .check",
         "pretest": "npm run check",
-        "test": "node --test test/*.test.mjs"
+        "test": "node --test test/*.test.mjs",
+        "predeploy": "node ../build-site.mjs"
     },
-    "devDependencies": { "wrangler": "4.154.0" }
+    "devDependencies": {
+        "wrangler": "4.157.0"
+    }
 }

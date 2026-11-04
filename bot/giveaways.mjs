@@ -85,7 +85,7 @@ export async function giveawayEntry(context, store, id, action, message) {
 }
 
 export async function giveawayTimers(store, api) {
-    for (const row of store.all("SELECT * FROM giveaways WHERE state='active' AND due<=? AND locked<? LIMIT 2", Date.now(), Date.now())) {
+    for (const row of store.all("SELECT * FROM giveaways WHERE state='active' AND due<=? AND locked<? AND NOT EXISTS (SELECT 1 FROM settings,json_each(settings.data,'$.disabledFeatures') AS feature WHERE settings.guild=giveaways.guild AND feature.value='community') LIMIT 2", Date.now(), Date.now())) {
         try { await drawGiveaway(row, store, api); }
         catch { const data = JSON.parse(row.data); data.error = "The automatic draw could not complete. Staff can retry with giveaway end."; store.run("UPDATE giveaways SET data=?,due=?,dirty=1 WHERE id=? AND state='active'", JSON.stringify(data), Date.now() + 60_000, row.id); }
     }

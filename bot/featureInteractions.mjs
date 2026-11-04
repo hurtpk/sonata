@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { modlogInteraction } from "./modlogs.mjs";
 import { appealEligible, decideAppeal, submitAppeal } from "./appeals.mjs";
 import { parseSlash } from "./commands.mjs";
@@ -11,6 +12,7 @@ import { fail } from "./discord.mjs";
 import { giveawayEntry } from "./giveaways.mjs";
 import { actorId, consumeForm, openForm } from "./interactionUI.mjs";
 import { commandContext, executeCommand } from "./moderation.mjs";
+import { requireBotUser } from "./ownerConsole.mjs";
 import { ticketCommand } from "./tickets.mjs";
 import { verificationCommand } from "./memberTools.mjs";
 
@@ -18,6 +20,7 @@ const voices = { name: ["Room name", "New room name", "name"], limit: ["Member l
 const parsed = (data, guild, name, sub, options = {}) => ({ ...parseSlash({ name, options: sub ? [{ name: sub, options: Object.entries(options).map(([name, value]) => ({ name, value })) }] : Object.entries(options).map(([name, value]) => ({ name, value })) }), id: data.id, guild, channel: data.channel_id, actor: actorId(data) });
 
 export function featureForm(data, store) {
+    requireBotUser(store, actorId(data));
     if (data.type !== 3) return;
     const id = data.data.custom_id, appeal = /^snappeal:open:(\d{17,20}):(\d{1,10})$/.exec(id);
     if (appeal) { appealEligible(store, appeal[1], Number(appeal[2]), actorId(data)); return openForm(data, store, appeal[1], "appeal", { n: Number(appeal[2]) }, "Appeal your ban", "Why should staff reconsider this ban?"); }
@@ -36,6 +39,7 @@ export function featureForm(data, store) {
 }
 
 export async function featureAction(data, store, api, botId, music) {
+    requireBotUser(store, actorId(data));
     const checked = async command => {
         if (data.guild_id !== command.guild) fail("Use this control in its original server.");
         const context = await commandContext(command, botId, api, store.settings(command.guild));
@@ -51,7 +55,7 @@ export async function featureAction(data, store, api, botId, music) {
     };
     if (data.type === 5) {
         const form = consumeForm(data, store);
-        if (form.kind === "appeal") return submitAppeal(form, store, api);
+        if (form.kind === "appeal") { if (!featureEnabled(store.settings(form.guild), "community")) fail("Community & support is disabled in this server."); return submitAppeal(form, store, api); }
         if (form.kind === "voice") return voiceCommand(form.guild, form.details.room, form.details.action, form.value);
         if (form.kind === "ticket") return ticketCommand(await checked(parsed(data, form.guild, "ticket", form.details.category && form.details.category !== "general" ? "openin" : "open", { topic: form.value, ...(form.details.category && form.details.category !== "general" ? { category: form.details.category } : {}) })), store);
         fail("This form is no longer supported.");

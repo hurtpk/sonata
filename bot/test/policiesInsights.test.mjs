@@ -164,5 +164,5 @@ test("Dashboard exposes nickname, permission, command controls and aggregate ins
     await assert.rejects(dashboardRequest(request("action", ACTOR, action), bot, command => executeCommand(command, f.store, f.api, BOT)), /permissions/);
     await dashboardRequest(request("action", OWNER, action), bot, command => executeCommand(command, f.store, f.api, BOT));
     assert.deepEqual(f.store.settings(GUILD).fakePermissions[USERROLE], ["kick"]);
-    assert.equal(COMMANDS.length, 100); assert(COMMANDS.length <= 100);
+    assert.equal(COMMANDS.length, 101); assert(slashCommands().length <= 100);
 });

@@ -19,8 +19,8 @@ import { extractAndLoadChunksLazy, findByCodeLazy, findComponentByCodeLazy, find
 import { Window } from "../_shared/Window";
 // Fetches activity metadata (e.g. button_urls) when Discord doesn't include it in presence
 const getMetadataFromApi = findByCodeLazy("null/undefined") as ((activity: Activity, userId: string) => Promise<{ button_urls?: string[] } | null>) | undefined;
-import { ModalProps, openModal } from "@utils/modal";
-import type { Activity } from "@vencord/discord-types";
+import { openModal } from "@utils/modal";
+import type { Activity, RenderModalProps as ModalProps } from "@vencord/discord-types";
 import { ApplicationAssetUtils, FluxDispatcher, Menu, React, ScrollerThin, showToast, useEffect, useMemo, useRef, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
@@ -46,7 +46,7 @@ const requireProfilePopout = extractAndLoadChunksLazy(
     ["isNonUserBot()", "renderLoader:"],
     /Promise\.all\((\[[^\]]+?\])\)\.then\(\i\.bind\(\i,(\d+)\)\),webpackId:\d+,renderLoader:\i\.\i\}\);function/
 );
-const PresenceStore = findStoreLazy("PresenceStore") as { getActivities(userId: string): Activity[] };
+const PresenceStore = findStoreLazy("PresenceStore");
 
 const cl = classNameFactory("vc-liverpc-");
 const tl = classNameFactory("vc-tool-");
@@ -196,8 +196,8 @@ function formStateToActivity(state: Record<string, unknown>): Activity | null {
     if (!name) return null;
     const activity: Activity = {
         name,
-        type: Number(state.type) ?? 0,
-        flags: Number(state.flags) ?? 1,
+        type: Number(state.type ?? 0),
+        flags: Number(state.flags ?? 1),
     };
     const appId = String(state.application_id ?? "").trim();
     if (appId) activity.application_id = appId;
@@ -250,7 +250,7 @@ function formStateToActivity(state: Record<string, unknown>): Activity | null {
     const passthroughKeys = ["id", "created_at", "session_id", "sync_id", "platform", "emoji"];
     for (const k of passthroughKeys) {
         const v = (state as Record<string, unknown>)[k];
-        if (v !== undefined && v !== null) (activity as Record<string, unknown>)[k] = v;
+        if (v !== undefined && v !== null) Object.assign(activity, { [k]: v });
     }
     return activity;
 }
@@ -782,7 +782,7 @@ function openLiveRpcEditor(initialActivity?: Activity | null, sourceUserId?: str
     openModal(modalProps => <LiveRpcEditorModal modalProps={modalProps} />);
 }
 
-function buildUserContextMenu(children: React.ReactElement[], props: { user?: { id: string } }) {
+function buildUserContextMenu(children: (React.ReactElement | null)[], props: { user?: { id: string } }) {
     const userId = props?.user?.id;
     if (!userId || userId === UserStore.getCurrentUser()?.id) return;
     const activities = (PresenceStore.getActivities(userId) ?? []).filter(

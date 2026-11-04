@@ -15,9 +15,9 @@ import { hash, random } from "../../protocol.mjs";
 process.env.SONATA_TEST_D1 = "1";
 await import("../../test/service.test.mjs");
 
-async function runtime(t, configured = true, provider = "normal", bridge) {
+async function runtime(t, configured = true, provider = "normal", bridge, publicUrl = "https://sonata.example") {
     const options = convertV4MiniflareOptions({ workers: [{ name: "test", modules: true, scriptPath: fileURLToPath(new URL("../.check/worker.js", import.meta.url)), compatibilityDate: "2026-10-28", compatibilityFlags: ["nodejs_compat"],
-        d1Databases: ["DB"], bindings: configured ? { PUBLIC_URL: "https://sonata.example", DISCORD_CLIENT_ID: "444444444444444444", DISCORD_CLIENT_SECRET: "test-only", ADMIN_USER_IDS: "111111111111111111", ...(bridge ? { BOT_DASHBOARD_SECRET: "fake-private-dashboard-key-at-least-32-characters" } : {}) } : {},
+        d1Databases: ["DB"], bindings: configured ? { PUBLIC_URL: publicUrl, DISCORD_CLIENT_ID: "444444444444444444", DISCORD_CLIENT_SECRET: "test-only", ADMIN_USER_IDS: "111111111111111111", ...(bridge ? { BOT_DASHBOARD_SECRET: "fake-private-dashboard-key-at-least-32-characters" } : {}) } : {},
         serviceBindings: bridge ? { BOT_SERVICE: { node: bridge } } : {},
         outboundService: async request => {
             if ((provider === "tokenRedirect" && request.url.endsWith("/token")) || (provider === "profileRedirect" && request.url.endsWith("/@me"))) return new Response(null, { status: 302, headers: { Location: "https://other.example/" } });
@@ -31,8 +31,9 @@ async function runtime(t, configured = true, provider = "normal", bridge) {
     const worker = new Miniflare(options);
     t.after(() => worker.dispose());
     const db = await worker.getD1Database("DB");
-    const schema = await readFile(new URL("../../migrations/0001_initial.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0002_bot_dashboard.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0003_user_profiles.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0004_admin_grants.sql", import.meta.url), "utf8");
-    for (const sql of schema.split(";").map(sql => sql.trim()).filter(Boolean)) await db.prepare(sql).run();
+    const schema = await readFile(new URL("../../migrations/0001_initial.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0002_bot_dashboard.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0003_user_profiles.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0004_admin_grants.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0005_in_app_activation.sql", import.meta.url), "utf8");
+    const sessionSchema = await readFile(new URL("../../migrations/0006_session_details.sql", import.meta.url), "utf8");
+    for (const sql of (schema + sessionSchema).split(";").map(sql => sql.trim()).filter(Boolean)) await db.prepare(sql).run();
     return { worker, db };
 }
 
@@ -41,7 +42,7 @@ test("Worker serves dashboard assets with security headers and fails closed befo
     const page = await worker.dispatchFetch("https://sonata.example/admin", { redirect: "manual" });
     assert.equal(page.status, 302); assert.equal(page.headers.get("location"), "/");
     assert.doesNotMatch(await page.text(), /Administrator sign-in/);
-    assert.match(page.headers.get("content-security-policy"), /frame-ancestors 'none'/);
+    assert.match(page.headers.get("content-security-policy"), /frame-ancestors 'self'/);
     assert.equal((await worker.dispatchFetch("https://sonata.example/style.css")).status, 200);
     const info = await worker.dispatchFetch("https://sonata.example/api/info");
     assert.deepEqual(await info.json(), { configured: false, demo: false });
@@ -100,16 +101,16 @@ test("Cloudflare dashboard binding forwards only a session-verified actor and ke
     assert.equal((await worker.dispatchFetch('https://sonata.example/api/bot/action',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:'{}'})).status,403);
 });
 
-test("Cloudflare bot sign-in creates a D1 bot session without granting owner access", async t=>{
+test("Cloudflare dashboard sign-in reuses the verified owner session for Admin only", async t=>{
     const {worker,db}=await runtime(t),start=await worker.dispatchFetch('https://sonata.example/auth/start?bot=1',{redirect:'manual'}),url=new URL(start.headers.get('location')),state=url.searchParams.get('state');
     const finish=await worker.dispatchFetch(`https://sonata.example/auth/callback?state=${state}&code=fake-code`,{redirect:'manual',headers:{Cookie:`sonata_oauth=${state}`}});assert.equal(finish.status,302);assert.equal(finish.headers.get('location'),'/');
-    const cookie=finish.headers.get('set-cookie').match(/sonata_bot=([a-f0-9]+)/)[1];assert.equal((await worker.dispatchFetch('https://sonata.example/api/admin/session',{headers:{Cookie:`sonata_bot=${cookie}`}})).status,401);assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM bot_sessions').first()).n,1);assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first()).n,0);
+    const cookie=finish.headers.get('set-cookie').match(/sonata_bot=([a-f0-9]+)/)[1];assert.equal((await worker.dispatchFetch('https://sonata.example/api/admin/session',{headers:{Cookie:`sonata_bot=${cookie}`}})).status,200);assert.equal((await worker.dispatchFetch('https://sonata.example/admin',{redirect:'manual',headers:{Cookie:`sonata_bot=${cookie}`}})).status,200);await db.prepare('UPDATE bot_sessions SET user_id=?').bind('222222222222222222').run();assert.equal((await worker.dispatchFetch('https://sonata.example/api/admin/session',{headers:{Cookie:`sonata_bot=${cookie}`}})).status,401);assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM bot_sessions').first()).n,1);assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM users').first()).n,0);
 });
 
 test("The Sonata hostname forwards only named bot routes and preserves bearer authentication", async t => {
     const calls = [], bridge = async (request, response) => {
         let body = ""; for await (const chunk of request) body += chunk;
-        calls.push({ path: new URL(request.url, "https://bot.internal").pathname, method: request.method, auth: request.headers.authorization, body });
+        calls.push({ path: new URL(request.url, "https://bot.internal").pathname, search:new URL(request.url,"https://bot.internal").search, meta:request.headers["x-sonata-video"], method: request.method, auth: request.headers.authorization, body });
         if (calls.at(-1).path === "/invite") { response.writeHead(302, { Location: "https://discord.com/oauth2/authorize?permissions=8" }); response.end(); return; }
         response.writeHead(request.headers.authorization === "Bearer fake-music-key" ? 200 : 401, { "Content-Type": "application/json" }); response.end(JSON.stringify({ forwarded: true }));
     };
@@ -120,11 +121,14 @@ test("The Sonata hostname forwards only named bot routes and preserves bearer au
     assert.equal((await worker.dispatchFetch(poll, { headers: { Authorization: "Bearer fake-music-key" } })).status, 200);
     const result = await worker.dispatchFetch("https://sonata.example/bot-api/music/result", { method: "POST", headers: { Authorization: "Bearer fake-music-key", "Content-Type": "application/json" }, body: '{"id":"test"}' });
     assert.equal(result.status, 200); assert.equal(calls.at(-1).path, "/music/result"); assert.equal(calls.at(-1).body, '{"id":"test"}');
+    await worker.dispatchFetch(poll+"?wait=1",{headers:{Authorization:"Bearer fake-music-key"}});assert.equal(calls.at(-1).search,"?wait=1");
+    const video=await worker.dispatchFetch("https://sonata.example/bot-api/music/video",{method:"POST",headers:{Authorization:"Bearer fake-music-key","Content-Type":"video/mp4","X-Sonata-Video":"test-metadata"},body:"0000ftyp0000test"});assert.equal(video.status,200);assert.equal(calls.at(-1).path,"/music/video");assert.equal(calls.at(-1).body,"0000ftyp0000test");assert.equal(calls.at(-1).meta,"test-metadata");
     const n = calls.length;
     assert.equal((await worker.dispatchFetch("https://sonata.example/bot-api/dashboard/owner")).status, 404);
     assert.equal((await worker.dispatchFetch("https://sonata.example/bot-api/control/arbitrary", { method: "POST" })).status, 404);
     assert.equal(calls.length, n);
-    const root = await worker.dispatchFetch("https://sonata.example/"); assert.match(await root.text(), /id="bot-workspace"/);
+    const root = await worker.dispatchFetch("https://sonata.example/"); assert.match(await root.text(), /id="view-dashboard"/);
+    const workspace = await worker.dispatchFetch("https://sonata.example/dashboard"); assert.match(await workspace.text(), /id="bot-workspace"/);
 });
 
 
@@ -139,4 +143,20 @@ test("Cloudflare owner departures require the administrator cookie and CSRF befo
     assert.equal(calls.length, 0);
     assert.equal((await action({ Cookie: "sonata_admin=" + token, Origin: "https://sonata.example", "X-CSRF-Token": csrf })).status, 200);
     assert.equal(calls[0].url, "/dashboard/owner/action"); assert.equal(calls[0].actor, "111111111111111111");
+});
+
+
+test("Custom domain redirects the old website and preserves only native activation endpoints", async t => {
+    const { worker } = await runtime(t, true, "normal", undefined, "https://sonatabot.info");
+    const old = "https://sonata.hurts.workers.dev";
+    const page = await worker.dispatchFetch(old + "/admin?view=bot", { redirect: "manual" });
+    assert.equal(page.status, 308); assert.equal(page.headers.get("location"), "https://sonatabot.info/admin?view=bot");
+    const signIn = await worker.dispatchFetch("https://sonatabot.info/auth/start?bot=1", { redirect: "manual" });
+    assert.equal(new URL(signIn.headers.get("location")).searchParams.get("redirect_uri"), "https://sonatabot.info/auth/callback");
+    const data = { userId: "222222222222222222", version: "2026.10.29b", username: "test", name: "Test", avatar: "" };
+    const activate = headers => worker.dispatchFetch(old + "/api/activation/direct", { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(data) });
+    assert.equal((await activate({})).status, 200);
+    assert.equal((await activate({ Origin: "https://attacker.example" })).status, 403);
+    assert.equal((await activate({ Cookie: "sonata_admin=fake" })).status, 403);
+    assert.equal((await worker.dispatchFetch(old + "/api/admin/block", { method: "POST", body: "{}" })).status, 403);
 });

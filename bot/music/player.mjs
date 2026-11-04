@@ -6,7 +6,8 @@
 
 import { spawn } from "node:child_process";
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, entersState, joinVoiceChannel, NoSubscriberBehavior, StreamType, VoiceConnectionStatus } from "@discordjs/voice";
-import { resolveTrack } from "./source.mjs";
+import { resolveAttachment, resolveTrack } from "./source.mjs";
+import { mediaInput } from "./attachments.mjs";
 import { audioFilter, EFFECTS } from "./effects.mjs";
 
 const clock = value => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
@@ -47,10 +48,10 @@ export class VoiceMusic {
     }
     position(room) { return room.current ? room.offset + (room.resource?.playbackDuration ?? 0) / 1000 * (room.rate ?? 1) : 0; }
     async stream(room, track, offset = 0) {
-        if (Date.now() - track.resolved > 15 * 60_000) track = { ...await resolveTrack(track.url), actor: track.actor };
+        if (Date.now() - track.resolved > 15 * 60_000) track = { ...await (track.attachment ? resolveAttachment(track.attachment) : resolveTrack(track.url)), actor: track.actor };
         if (this.rooms.get(room.guild) !== room) throw new Error("The voice connection ended.");
         room.changing = true; room.process?.kill(); room.player.stop(true);
-        const process = spawn("ffmpeg", ["-hide_banner", "-loglevel", "error", "-nostdin", "-protocol_whitelist", "https,tls,tcp,crypto", "-rw_timeout", "15000000", "-ss", String(offset), "-i", track.audio, "-vn", "-af", audioFilter(room.effect ?? "off", room.volume), "-ac", "2", "-ar", "48000", "-c:a", "libopus", "-b:a", "96k", "-f", "ogg", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"], windowsHide: true });
+        const process = spawn("ffmpeg", ["-hide_banner", "-loglevel", "error", "-nostdin", ...mediaInput(track.audio, offset, track.segmented), "-vn", "-af", audioFilter(room.effect ?? "off", room.volume), "-ac", "2", "-ar", "48000", "-c:a", "libopus", "-b:a", "96k", "-f", "ogg", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"], windowsHide: true });
         process.on("error", () => { room.issue = "The server could not start its audio encoder."; });
         room.process = process; room.current = track; room.offset = offset; room.rate = EFFECTS[room.effect ?? "off"].rate; room.issue = ""; room.votes = new Set();
         room.resource = createAudioResource(process.stdout, { inputType: StreamType.OggOpus });
@@ -75,7 +76,8 @@ export class VoiceMusic {
         if (room && room.channel !== job.channel) throw new Error("Join Sonata's current voice channel to control music.");
         if (job.name === "play") {
             if (room?.queue.length >= 50) throw new Error("The queue is full. Remove a track before adding more.");
-            const track = { ...await resolveTrack(o.query), actor: job.actor };
+            if (!!o.file === !!o.query) throw new Error("Choose a song name or link, or attach one MP3, WAV, MOV, MP4 or OGG file.");
+            const track = { ...await (o.file ? resolveAttachment(o.file) : resolveTrack(o.query)), actor: job.actor };
             if (generation !== this.generation || Date.now() >= job.expires) throw new Error("This request expired or the voice service restarted. Try playback again.");
             if (!room) room = await this.open(job);
             if (this.rooms.get(job.guild) !== room) throw new Error("The voice connection ended. Try playback again.");

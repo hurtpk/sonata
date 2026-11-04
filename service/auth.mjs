@@ -25,13 +25,18 @@ async function discordJson(response) {
 export function createAuth(config, store, discordFetch = fetch) {
     const secure = new URL(config.publicUrl).protocol === "https:" ? "; Secure" : "";
     const cookie = (name, value, age) => `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${age}${secure}`;
+    const touch = async (found, kind, request) => {
+        if (!found) return found;
+        await store.run("INSERT INTO session_details VALUES (?,?,?,?,?,?,?) ON CONFLICT(kind,hash) DO UPDATE SET last_seen=excluded.last_seen WHERE session_details.last_seen<?", random(), kind, found.hash, found.user_id, Date.now(), Date.now(), String(request.headers["user-agent"] ?? "").slice(0, 160), Date.now() - 60_000);
+        return found;
+    };
     const session = async request => {
-        const token = cookies(request).sonata_admin;
-        if (!validToken(token)) return null;
-        const found = await store.get("SELECT * FROM sessions WHERE hash=? AND expires>?", hash(token), Date.now());
+        const tokens = cookies(request);
+        let found = validToken(tokens.sonata_bot) ? await touch(await store.get("SELECT * FROM bot_sessions WHERE hash=? AND expires>?", hash(tokens.sonata_bot), Date.now()), "dashboard", request) : null;
+        if (!found && validToken(tokens.sonata_admin)) found = await touch(await store.get("SELECT * FROM sessions WHERE hash=? AND expires>?", hash(tokens.sonata_admin), Date.now()), "admin", request);
         if (!found) return null; const access = await adminAccess(config, store, found.user_id); return access ? { ...found, ...access } : null;
     };
-    const botSession = async request => { const token = cookies(request).sonata_bot; return validToken(token) ? await store.get("SELECT * FROM bot_sessions WHERE hash=? AND expires>?", hash(token), Date.now()) : null; };
+    const botSession = async request => { const token = cookies(request).sonata_bot; return validToken(token) ? await touch(await store.get("SELECT * FROM bot_sessions WHERE hash=? AND expires>?", hash(token), Date.now()), "dashboard", request) : null; };
     const login = async (pairingId, response, bot = false) => {
         if (!config.clientId || !config.clientSecret) throw failure(503, "Configure the Discord application before signing in.");
         if (pairingId && !await store.get("SELECT id FROM pairings WHERE id=? AND expires>?", pairingId, Date.now())) throw failure(400, "This activation link has expired. Start again in Sonata.");
@@ -72,13 +77,15 @@ export function createAuth(config, store, discordFetch = fetch) {
         if (botFlow) {
             const raw = random();
             await store.run("INSERT INTO bot_sessions VALUES (?,?,?,?,?)", hash(raw), user.id, user.username.slice(0, 100), random(), Date.now() + 12 * 3600_000);
-            response.setHeader("Set-Cookie", [cookie("sonata_oauth", "", 0), cookie("sonata_bot", raw, 43200)]);
+            await touch({ hash: hash(raw), user_id: user.id }, "dashboard", request);
+            response.setHeader("Set-Cookie", [cookie("sonata_oauth", "", 0), cookie("sonata_admin", "", 0), cookie("sonata_bot", raw, 43200)]);
             return "/";
         }
         if (!await adminAccess(config, store, user.id)) throw failure(403, "This dashboard is only available to Sonata's configured administrators.");
         const raw = random();
         await store.run("INSERT INTO sessions VALUES (?,?,?,?,?)", hash(raw), user.id, user.username.slice(0, 100), random(), Date.now() + 12 * 3600_000);
-        response.setHeader("Set-Cookie", [cookie("sonata_oauth", "", 0), cookie("sonata_admin", raw, 43200)]);
+        await touch({ hash: hash(raw), user_id: user.id }, "admin", request);
+        response.setHeader("Set-Cookie", [cookie("sonata_oauth", "", 0), cookie("sonata_bot", "", 0), cookie("sonata_admin", raw, 43200)]);
         return "/admin";
     };
     const logout = async (request, response) => {

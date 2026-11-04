@@ -6,7 +6,7 @@
 
 const ownerElement = (tag, text, className) => { const node = document.createElement(tag); if (text != null) node.textContent = text; if (className) node.className = className; return node; };
 const ownerGet = id => document.getElementById(id);
-let botServers = [], botBlacklist = [], ownerBotCsrf = "", ownerServerAction;
+let botServers = [], botBlacklist = [], ownerBotCsrf = "", ownerServerAction, ownerProfileReset = false;
 const actionNames = { leave: "Leave server", blacklist: "Blacklist and leave", unblacklist: "Remove from blacklist" };
 function confirmServerAction(action, guild, name, reason = "") {
     ownerServerAction = { action, guild, reason };
@@ -21,8 +21,9 @@ function ownerCards() {
     for (const server of botServers.filter(value => `${value.name} ${value.id}`.toLowerCase().includes(query))) {
         const card = ownerElement("article", null, "bot-server-card"), icon = ownerElement("div", String(server.name || "S").slice(0, 2).toUpperCase(), "server-avatar");
         if (/^(?:a_)?[a-f0-9]+$/.test(server.icon ?? "")) { const image = ownerElement("img"); image.src = `https://cdn.discordapp.com/icons/${server.id}/${server.icon}.webp?size=128`; image.alt = ""; icon.replaceChildren(image); }
-        const link = ownerElement("a", "View server details ↗"); link.href = `/?owner=1&guild=${server.id}`;
+        const link = ownerElement("a", "View server details ↗"); link.href = `/dashboard?owner=1&guild=${server.id}`;
         const actions = ownerElement("div", null, "owner-server-actions"); actions.append(link);
+        const profile = ownerElement("button", "Bot profile", "quiet owner-profile-view"); profile.type = "button"; profile.addEventListener("click", () => document.dispatchEvent(new CustomEvent("sonata-owner-profile", { detail: { guild: server.id, csrf: ownerBotCsrf, canReset: ownerProfileReset } }))); actions.append(profile);
         for (const action of ["leave", "blacklist"]) { const button = ownerElement("button", actionNames[action], "quiet"); button.type = "button"; button.addEventListener("click", () => confirmServerAction(action, server.id, server.name)); actions.append(button); }
         card.append(icon, ownerElement("h3", server.name || "Server"), ownerElement("p", `${server.member_count == null ? "Members not reported" : `${server.member_count.toLocaleString()} members`} · Boost level ${server.premium_tier ?? 0}`), ownerElement("p", server.id), actions); list.append(card);
     }
@@ -44,6 +45,8 @@ async function loadOwnerBot() {
         const sessionResponse = await fetch("/api/admin/session", { credentials: "same-origin" }), session = await sessionResponse.json();
         if (!sessionResponse.ok) throw new Error(session.error || "Sign in with your Sonata administrator account.");
         ownerBotCsrf = session.csrf;
+        ownerProfileReset = session.owner || session.permissions?.includes("serverAccess");
+        ownerGet("user-blacklist-panel").hidden = !session.owner; if (session.owner) await loadUserBlacklist();
         const response = await fetch("/api/admin/bot", { credentials: "same-origin" }), data = await response.json();
         if (!response.ok) throw new Error(data.error || "Could not load the bot overview.");
         botServers = data.servers; botBlacklist = data.blacklist || []; ownerCards();
@@ -68,4 +71,21 @@ ownerGet("owner-server-action-form").addEventListener("submit", async event => {
         ownerGet("owner-bot-notice").hidden = false;
     } catch (error) { ownerGet("owner-server-action-error").textContent = error.message; ownerGet("owner-server-action-error").hidden = false; }
     finally { ownerGet("owner-server-action-confirm").disabled = false; }
+});
+
+async function userBlockRequest(input) {
+    const response = await fetch("/api/admin/console/userblocks", { method: input ? "POST" : "GET", credentials: "same-origin", headers: input ? {"Content-Type":"application/json","X-CSRF-Token":ownerBotCsrf} : {}, body: input ? JSON.stringify(input) : undefined });
+    const data = await response.json(); if (!response.ok) throw Error(data.error || "User access could not be updated."); return data;
+}
+async function loadUserBlacklist() {
+    const data = await userBlockRequest(), root = ownerGet("user-blacklist-list"); root.replaceChildren(); ownerGet("user-blacklist-empty").hidden = data.users.length > 0;
+    for (const user of data.users) {
+        const row = ownerElement("article", null, "owner-blacklist-row"), detail = ownerElement("div"); detail.append(ownerElement("strong", user.id), ownerElement("p", user.reason || "No private note."), ownerElement("small", "Blocked " + new Date(user.at).toLocaleString()));
+        const button = ownerElement("button", "Allow user", "quiet"); button.type = "button"; button.addEventListener("click", async () => { button.disabled = true; try { await userBlockRequest({ id:user.id,blocked:false,reason:"" }); await loadUserBlacklist(); } catch (error) { ownerGet("owner-bot-error").textContent=error.message; ownerGet("owner-bot-error").hidden=false; } finally { button.disabled=false; } }); row.append(detail,button); root.append(row);
+    }
+}
+ownerGet("user-blacklist-form").addEventListener("submit", async event => {
+    event.preventDefault(); const button = event.currentTarget.querySelector('button[type="submit"]'); button.disabled = true; ownerGet("owner-bot-error").hidden = true;
+    try { await userBlockRequest({id:ownerGet("user-blacklist-id").value.trim(),blocked:ownerGet("user-blacklist-action").value==="block",reason:ownerGet("user-blacklist-reason").value.trim()}); await loadUserBlacklist(); ownerGet("user-blacklist-id").value=""; ownerGet("user-blacklist-reason").value=""; }
+    catch(error){ownerGet("owner-bot-error").textContent=error.message;ownerGet("owner-bot-error").hidden=false;} finally{button.disabled=false;}
 });

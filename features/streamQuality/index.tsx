@@ -11,8 +11,9 @@ import { migrateSettingsFromPlugin } from "@api/Settings";
 import { debounce } from "@shared/debounce";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
-import { ModalProps, openModal } from "@utils/modal";
+import { openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
+import type { RenderModalProps as ModalProps } from "@vencord/discord-types";
 import { findByPropsLazy } from "@webpack";
 import { React, showToast, useState } from "@webpack/common";
 

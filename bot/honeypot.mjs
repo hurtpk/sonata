@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
 import { canManage, channelPermissions, embed, fail, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { messageChannel } from "./community.mjs";
 
@@ -30,6 +31,7 @@ export async function honeypotCommand(context, store) {
 }
 
 export async function honeypotEvent(data, store, api, botId, perform) {
+    if (!featureEnabled(store.settings(data.guild_id), "security")) return;
     if (data.author.bot || data.webhook_id) return;
     const settings = store.settings(data.guild_id), action = settings.honeypots?.[data.channel_id];
     if (!action || !["timeout", "kick", "ban"].includes(action)) return;

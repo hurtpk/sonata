@@ -26,12 +26,18 @@ function configuration(env, requestUrl) {
 export default {
     async fetch(request, env) {
         const config = configuration(env, request.url), url = new URL(request.url);
-        const publicBotRoute = request.method === "GET" && ["/invite", "/commands"].includes(url.pathname);
+        const publicBotRoute = request.method === "GET" && url.pathname === "/invite";
         const bridgePath = url.pathname.slice("/bot-api".length);
-        const botBridge = url.pathname.startsWith("/bot-api/") && ((request.method === "GET" && ["/health", "/control/status", "/music/poll"].includes(bridgePath)) || (request.method === "POST" && ["/control/start", "/control/stop", "/music/voice", "/music/result"].includes(bridgePath)));
+        const botBridge = url.pathname.startsWith("/bot-api/") && ((request.method === "GET" && ["/health", "/control/status", "/music/poll"].includes(bridgePath)) || (request.method === "POST" && ["/control/start", "/control/stop", "/music/voice", "/music/result", "/music/video"].includes(bridgePath)));
         if (publicBotRoute || botBridge) {
             if (!env.BOT_SERVICE) return Response.json({ error: "The bot connection is not configured." }, { status: 503 });
-            return env.BOT_SERVICE.fetch(new Request(`https://bot.internal${publicBotRoute ? url.pathname : bridgePath}`, request));
+            return env.BOT_SERVICE.fetch(new Request(`https://bot.internal${publicBotRoute ? url.pathname : bridgePath}${url.search}`, request));
+        }
+        const legacy = config.publicUrl === "https://sonatabot.info" && url.origin === "https://sonata.hurts.workers.dev";
+        if (legacy && ["GET", "HEAD"].includes(request.method)) return Response.redirect(`${config.publicUrl}${url.pathname}${url.search}`, 308);
+        if (legacy && request.method === "POST" && !request.headers.has("origin") && !request.headers.has("cookie") && ["/api/activation/direct", "/api/activation/start", "/api/activation/finish", "/api/check-in", "/api/disconnect"].includes(url.pathname)) {
+            request = new Request(`${config.publicUrl}${url.pathname}${url.search}`, request);
+            url.host = new URL(config.publicUrl).host;
         }
         if (!config.configured && (url.pathname.startsWith("/auth/") || (url.pathname.startsWith("/api/") && url.pathname !== "/api/info"))) return Response.json({ error: "Finish configuring the Discord application and service URL before signing in." }, { status: 503, headers: { "Cache-Control": "no-store" } });
         if (!config.configured && url.pathname === "/api/info") return Response.json({ configured: false, demo: false }, { headers: { "Cache-Control": "no-store" } });

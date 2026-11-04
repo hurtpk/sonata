@@ -12,11 +12,13 @@ import { MUSIC_COMMANDS, MUSIC_SETTINGS_COMMAND } from "./musicCommands.mjs";
 import { SERVER_COMMANDS } from "./serverCommands.mjs";
 import { DASHBOARD_COMMANDS } from "./dashboardCommands.mjs";
 import { AUTOMOD_OPTIONS } from "./advancedAutomod.mjs";
+import { LASTFM_COMMAND } from "./lastfm.mjs";
 import { delegatedCommand } from "./commandAccess.mjs";
 
 export const COMMANDS = [
     command("stick", "Keep a message below new channel messages", PERMS.MESSAGES, [sub("set", "Set sticky text or copy a message from this channel", [option("message", 3, "Text or message link, or reply to a message", false, { max_length: 1800 })]), sub("remove", "Stop reposting the channel sticky message", [text("message", "Current or original sticky message link", false)])], ["stickmessage", "unstick", "unstickmessage"]),
     command("sonata", "Embed a supported public video with sender credit", 0n, [option("url", 3, "TikTok, Instagram, X or YouTube video URL", true, { max_length: 500 })]),
+    LASTFM_COMMAND,
     ...ADVANCED_COMMANDS,
     ...MUSIC_COMMANDS,
     MUSIC_SETTINGS_COMMAND,
@@ -86,6 +88,7 @@ export const COMMANDS = [
     ...["pin", "unpin"].map(name => command(name, `${name === "pin" ? "Pin" : "Unpin"} a message in this channel`, PERMS.PINS, [option("message", 3, "A message ID or link in this channel"), reason()])),
     command("pins", "Browse this channel's pinned messages", 0n, [option("before", 3, "Show pins before this ISO timestamp", false)]),
     command("role", "Assign roles and manage role appearance", PERMS.ROLES, [
+        sub("temp", "Give a member a role until a chosen time", [member(), role(), duration(), reason()]),
         sub("restore", "Restore basic roles within three hours of departure", [member()]),
         sub("recovery", "Enable or disable future role recovery snapshots", [option("enabled", 5, "Remember role IDs for three-hour staff recovery")]),
         sub("add", "Give a member a role", [member(), role(), reason()]),
@@ -95,7 +98,7 @@ export const COMMANDS = [
         sub("color", "Change a role's colour", [role(), option("color", 3, "A six-digit hex colour, or default")]),
         sub("hoist", "Show a role separately in the member list", [role(), option("enabled", 5, "Show separately")]),
         sub("mentionable", "Allow anyone to mention a role", [role(), option("enabled", 5, "Allow mentions")]),
-    ]),
+    ], ["temprole"]),
     command("voice", "Moderate members in voice channels", 0n, [
         sub("move", "Move a member to another voice channel", [member(), channel([2]), reason()]),
         ...["disconnect", "mute", "unmute", "deafen", "undeafen"].map(name => sub(name, `${name[0].toUpperCase() + name.slice(1)} a member in voice`, [member(), reason()])),
@@ -125,13 +128,16 @@ export const COMMANDS = [
         sub("evidence", "Attach an evidence file to a case", [caseNumber(), option("file", 11, "An image or video file")]),
     ], ["modlogs"]),
     command("settings", "Configure Sonata for this server", PERMS.GUILD, [
+        sub("starboard", "Save messages after enough star reactions", [channel([0, 5]), option("threshold", 4, "Stars needed to feature a message", true, { min_value: 1, max_value: 100 })]),
+        sub("starboardoff", "Pause starboard without deleting featured messages"),
+        sub("starboardview", "Show the starboard channel and threshold"),
         sub("view", "See this server's Sonata settings"),
         sub("videoembeds", "Automatically upload supported videos in selected or all channels", [option("enabled", 5, "Enable automatic video embeds"), channel([0, 5], false), option("all", 5, "Apply to every channel, including new channels", false), option("channels", 3, "Channel mentions or IDs separated by spaces", false, { max_length: 2200 })]),
         sub("prefix", "Set the prefix used for message commands", [option("prefix", 3, "Between one and five characters", true, { min_length: 1, max_length: 5 })]),
         sub("modlog", "Choose the moderation log channel", [option("channel", 7, "Where moderation actions are logged", true, { channel_types: [0, 5] })]),
         sub("dm", "Choose whether punishments send a DM", [option("enabled", 5, "Send the affected user a DM")]),
         sub("message", "Customize a punishment DM", [option("action", 3, "The punishment", true, { choices: ["ban", "tempban", "softban", "kick", "timeout", "warn", "jail", "unjail"].map(value => ({ name: value, value })) }), text("text", "Use {user}, {moderator}, {reason}, {duration}, {case} or {server}")]),
-    ]),
+    ], ["starboard"]),
     command("automod", "Configure Discord's built-in automatic moderation", PERMS.GUILD, [
         ...AUTOMOD_OPTIONS,
         sub("allowadd", "Allow a word in Sonata's word filter", [text("word", "Allowed word or wildcard")]),
@@ -148,7 +154,9 @@ export const COMMANDS = [
     ]),
 ];
 
-export const slashCommands = () => COMMANDS.map(({ permission, aliases, ...value }) => ({ ...value, default_member_permissions: permission && !delegatedCommand(value.name) ? permission.toString() : null, contexts: [0], integration_types: [0] }));
+export const SERVER_INFO_SLASH = { serverinfo: "view", servericon: "icon", serverbanner: "banner", boosts: "boosts" };
+export const slashName = name => SERVER_INFO_SLASH[name] ? "serverinfo " + SERVER_INFO_SLASH[name] : name;
+export const slashCommands = () => COMMANDS.filter(value => !["servericon", "serverbanner", "boosts"].includes(value.name)).map(({ permission, aliases, ...value }) => ({ ...value, ...(value.name === "serverinfo" ? { options: Object.entries(SERVER_INFO_SLASH).map(([name, subName]) => sub(subName, COMMANDS.find(command => command.name === name).description)) } : {}), default_member_permissions: permission && !delegatedCommand(value.name) ? permission.toString() : null, contexts: [0], integration_types: [0] }));
 
 export function parseDuration(value, maximum = 365 * 86400_000) {
     if (typeof value !== "string" || value.length > 40 || !/^(?:\d+(?:\.\d+)?[smhdw])+$/i.test(value)) fail("Use a duration such as 30m, 2h, 7d or 1h30m.");
@@ -175,6 +183,11 @@ function validate(options, definitions) {
 }
 
 export function parseSlash(data, attachments = {}) {
+    if (data.name === "serverinfo" && data.options?.[0]?.name) {
+        const selected = Object.entries(SERVER_INFO_SLASH).find(([, subName]) => subName === data.options[0].name);
+        if (!selected) fail("Choose serverinfo view, icon, banner or boosts.");
+        data = { ...data, name: selected[0], options: data.options[0].options ?? [] };
+    }
     const definition = COMMANDS.find(command => command.name === data.name);
     if (!definition) fail("That command is not available.");
     const group = definition.options[0]?.type === 1;
@@ -192,6 +205,19 @@ export function parsePrefix(content, prefix, attachments = []) {
     if (!word) return null;
     const definition = COMMANDS.find(command => command.name === word || command.aliases.includes(word));
     if (!definition) return null;
+    if (definition.name === "play" && attachments.length > 1) fail("Attach one MP3, WAV, MOV, MP4 or OGG file per play command.");
+    if (definition.name === "fm") {
+        if (["topartists", "toptracks"].includes(word)) tokens.unshift(word);
+        else if (!tokens.length) tokens.push("now");
+        if (["topartists", "toptracks"].includes(tokens[0]) && /^(?:<@!?)?\d{17,20}>?$/.test(tokens[1] || "")) tokens.splice(1, 0, "overall");
+    }
+    if (word === "temprole") tokens.unshift("temp");
+    if (word === "starboard") {
+        const action = tokens.shift()?.toLowerCase() ?? "view";
+        const sub = { setup: "starboard", off: "starboardoff", view: "starboardview" }[action];
+        if (!sub) fail("Use starboard setup <channel> <stars>, starboard off, or starboard view.");
+        tokens.unshift(sub);
+    }
     if (word === "modlogs") { if(tokens.length!==1 || !/^\d{17,20}$/.test(tokens[0])) fail("Use modlogs followed by the victim's Discord ID."); tokens.unshift("history"); }
     else if(definition.name === "case" && /^\d+$/.test(tokens[0] || ""))tokens.unshift("view");
     if (definition.name === "modstats" && /^(?:<@!?)?\d{17,20}>?$/.test(tokens[0] || ""))tokens.unshift("staff");

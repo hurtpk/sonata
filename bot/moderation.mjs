@@ -4,9 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { featureEnabled } from "./featureGroups.mjs";
+import { checkOperations, requireBotUser } from "./ownerConsole.mjs";
+import { lastfmClient, lastfmCommand } from "./lastfm.mjs";
 import { openModlogs } from "./modlogs.mjs";
+import { errorReply, recordCommandFailure } from "./commandFailures.mjs";
 import { caseDetails, saveCaseEvidence, validateEvidence } from "./caseEvidence.mjs";
 import { stickyCommand } from "./sticky.mjs";
+import { starboardCommand } from "./starboard.mjs";
+import { syncProfileBio } from "./guildProfile.mjs";
 import { videoCommand } from "./videoEmbeds.mjs";
 import { EXTRA_COMMANDS, extraCommand } from "./actions.mjs";
 import { COMMANDS, parseDuration } from "./commands.mjs";
@@ -65,13 +71,13 @@ export async function commandContext(command, botId, api, settings = {}) {
 
 export async function caseLog(store, api, guild, n) {
     const row = store.case(guild, n), settings = store.settings(guild);
-    if (!settings.logChannel) return;
+    if (!settings.logChannel || !featureEnabled(settings, "logging")) return;
     await api(`/channels/${settings.logChannel}/messages`, { method: "POST", body: embed(`Case #${n} · ${row.kind}`, `Target: ${caseTarget(row.kind, row.target)}\nModerator: <@${row.actor}>\nStatus: **${row.status}**\nReason: ${row.reason}${row.duration ? `\nDuration: ${Math.round(row.duration / 60_000)} minutes` : ""}${row.detail ? `\n${row.detail}` : ""}`) });
 }
 
 export async function perform(context, store, kind, target, reason, duration, action) {
     const command = context.command, n = store.begin(command, kind, target, reason, duration);
-    const settings = store.settings(command.guild), canAppeal = settings.appeals?.enabled && banKind(kind);
+    const settings = store.settings(command.guild), canAppeal = settings.appeals?.enabled && featureEnabled(settings, "community") && banKind(kind);
     let appealNotice;
     if (canAppeal) try {
         const dm = await context.api("/users/@me/channels", { method: "POST", body: { recipient_id: target } });
@@ -109,7 +115,7 @@ export async function perform(context, store, kind, target, reason, duration, ac
 async function configure(context, store) {
     const { command, api, guild } = context, options = command.options, settings = store.settings(guild.id);
     if (command.sub === "view") return embed("Sonata settings", `Prefix: \`${settings.prefix}\`\nLog channel: ${settings.logChannel ? `<#${settings.logChannel}>` : "Not configured"}\nPunishment DMs: ${settings.dm ? "On" : "Off"}\nJail role: ${settings.jailRole ? `<@&${settings.jailRole}>` : "Not configured"}${settings.automationError ? `\n\nLast member automation issue <t:${Math.floor(settings.automationError.at / 1000)}:R>:\n${settings.automationError.message}` : ""}`);
-    if (command.sub === "prefix") { if (!/^[^\s/@<>`]{1,5}$/.test(options.prefix)) fail("Choose one to five characters without whitespace, mentions, a slash, or backticks."); settings.prefix = options.prefix; }
+    if (command.sub === "prefix") { if (!/^[^\s/@<>`]{1,5}$/.test(options.prefix)) fail("Choose one to five characters without whitespace, mentions, a slash, or backticks."); settings.prefix = options.prefix; await syncProfileBio(store, api, guild.id, settings.prefix); }
     if (command.sub === "videoembeds") {
         const ids = [...new Set([options.channel, ...(options.channels || "").split(/[\s,]+/)].filter(Boolean).map(value => /^(?:<#)?(\d{17,20})>?$/.exec(value)?.[1]))];
         if (ids.some(id => !isId(id)) || ids.length > 100 || (options.all === true && ids.length) || (options.enabled && options.all !== true && !ids.length)) fail("Choose all channels, or up to 100 text channel mentions or IDs.");
@@ -182,27 +188,35 @@ async function automod(context, store) {
     return embed("AutoMod updated", `${saved.name} is ${enabled ? "enabled" : "disabled"}. Discord applies these rules automatically.`);
 }
 
-export async function executeCommand(command, store, api, botId, music) {
-    if (store.get("SELECT id FROM guild_blacklist WHERE id=?", command.guild)) throw Object.assign(new Error("This server is blacklisted from Sonata Bot."), { status: 403, outcome: "denied" });
+export async function executeCommand(command, store, api, botId, music, lastfm) {
+    const original = store, started = Date.now();
+    store = { ...original, saveSettings: (guild, value) => original.saveSettings(guild, value, command.actor, `${command.id.startsWith("dashboard:") ? "Dashboard" : "Command"}: ${command.name}${command.sub ? " " + command.sub : ""}`) };
     if (!store.claim(command.id)) return embed("Already handled", "This command was already handled. Check case history before repeating an action.");
     store.usage(command.guild, command.name);
     const name = [command.name, command.sub].filter(Boolean).join(" ");
     try {
-        const response = await runCommand(command, store, api, botId, music);
-        const row = store.get("SELECT status FROM cases WHERE request=?", command.id);
+        requireBotUser(store, command.actor);
+        if (store.get("SELECT id FROM guild_blacklist WHERE id=?", command.guild)) throw Object.assign(new Error("This server is blacklisted from Sonata Bot."), { status: 403, outcome: "denied" });
+        checkOperations(store, command);
+        const response = await runCommand(command, store, api, botId, music, lastfm);
+        const row = store.get("SELECT n,status,detail FROM cases WHERE request=?", command.id);
         store.outcome(command.guild, name, row?.status === "needs_review" ? "needs_review" : "success");
+        if (row?.status === "needs_review") return errorReply(recordCommandFailure(store, command, { message: `Case #${row.n} needs review: ${row.detail}`, outcome: "needs_review" }));
         return response;
-    } catch (error) { store.outcome(command.guild, name, error.outcome ?? "failed"); throw error; }
+    } catch (error) { store.outcome(command.guild, name, error.outcome ?? "failed"); error.sonataCode = recordCommandFailure(store, command, error); throw error; }
+    finally { store.run("INSERT INTO resource_usage (day,commands,processing_ms) VALUES (?,1,?) ON CONFLICT(day) DO UPDATE SET commands=commands+1,processing_ms=processing_ms+excluded.processing_ms", new Date().toISOString().slice(0, 10), Date.now() - started); }
 }
 
-async function runCommand(command, store, api, botId, music) {
+async function runCommand(command, store, api, botId, music, lastfm) {
     const settings = store.settings(command.guild);
     if (["help", "ping", "dashboard"].includes(command.name)) commandAccess(command, settings, { roles: [] }, []);
-    if (command.name === "dashboard") return embed("Sonata dashboard", "Manage your server, review cases and tickets, and configure Sonata at:\nhttps://sonata.hurts.workers.dev\n\nSign in with Discord. Each server requires your current Manage Server permission.");
+    if (command.name === "dashboard") return embed("Sonata dashboard", "Manage your server, review cases and tickets, and configure Sonata at:\nhttps://sonatabot.info\n\nSign in with Discord. Each server requires your current Manage Server permission.");
     if (command.name === "help") return help(command);
     if (command.name === "ping") return embed("Pong!", `Discord API response: ${Number.isFinite(command.latency?.api) ? `${command.latency.api} ms` : "Not measured yet"}\nGateway heartbeat: ${Number.isFinite(command.latency?.gateway) ? `${command.latency.gateway} ms` : "Waiting for the first heartbeat"}`);
     const context = await commandContext(command, botId, api, settings), { guild, channel } = context, options = command.options, reason = options.reason ?? "No reason supplied.";
+    if (command.name === "fm") return lastfmCommand(context, store, lastfm ?? lastfmClient());
     if (command.name === "stick") return stickyCommand(context, store);
+    if (command.name === "settings" && command.sub.startsWith("starboard")) return starboardCommand(context, store);
     if (command.name === "sonata") return videoCommand(context, music);
     if (["warn","kick","ban"].includes(command.name)) {
         const files=command.evidence || (options.file?[options.file]:[]);
