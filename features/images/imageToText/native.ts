@@ -119,10 +119,24 @@ export async function recognize(path: string, platform: string = process.platfor
     }
 }
 
-export async function recognizeText(_: IpcMainInvokeEvent, url: string): Promise<{ ok: true; text: string; } | { ok: false; error: string; }> {
+export function recognizeText(_: IpcMainInvokeEvent, url: string) {
+    return recognizePng(() => downloadDiscordFile(asPngUrl(url), 25 * 1048576));
+}
+
+export function recognizePdfPage(_: IpcMainInvokeEvent, bytes: Uint8Array) {
+    return recognizePng(async () => {
+        if (!(bytes instanceof Uint8Array) || bytes.byteLength < 33 || bytes.byteLength > 16 * 1048576) throw new Error("This page is too large to scan.");
+        const png = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        if (png.readBigUInt64BE() !== 0x89504e470d0a1a0an || png.toString("ascii", 12, 16) !== "IHDR"
+            || png.readUInt32BE(16) > 1800 || png.readUInt32BE(20) > 1800) throw new Error("Invalid PDF page image.");
+        return png;
+    });
+}
+
+async function recognizePng(read: () => Promise<Uint8Array>): Promise<{ ok: true; text: string; } | { ok: false; error: string; }> {
     const path = join(app.getPath("temp"), `opticord-ocr-${randomUUID()}.png`);
     try {
-        await writeFile(path, await downloadDiscordFile(asPngUrl(url), 25 * 1048576));
+        await writeFile(path, await read());
         const text = (await recognize(path)).replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").trim();
         return { ok: true, text };
     } catch (e: any) {

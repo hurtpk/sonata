@@ -37,8 +37,8 @@ export const settings = defineFeatureSettings("antiquest", {
     },
     noFetch: {
         type: OptionType.BOOLEAN,
-        description: "Stop Discord loading quests at all — nothing quest-related can show up anywhere.",
-        default: true,
+        description: "Block automatic quest requests.",
+        default: false,
         restartNeeded: true,
     },
 });
@@ -57,15 +57,6 @@ export default definePlugin({
             replacement: {
                 match: /(?<=function\(\)\{)(let (\i)=\(0,\i\.\i\)\(\),\i=\(0,\i\.\i\)\(.{0,55}?\);)(?=switch\(\2\.type\)\{case \i\.\i\.QUEST:)/,
                 replace: "return null;$1",
-            },
-        },
-        {
-            // The Quests tab above your DMs.
-            find: '.QUEST_HOME)},"quests")',
-            predicate: () => settings.store.questsTab,
-            replacement: {
-                match: /(?<="family-center"\)(?:&&undefined)?:null,)/,
-                replace: "null&&",
             },
         },
         {

@@ -16,6 +16,7 @@ import { saveFile } from "@utils/web";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { React, showToast, UploadHandler, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "@webpack/common";
 
+import { isFeatureRunning } from "../../../../featureSettings";
 import { openSection, replaceOriginal } from "../../../_shared/Hub";
 import { Window } from "../../../_shared/Window";
 import { Cancel, encode, Encoded, formatBytes } from "../render/export";
@@ -94,7 +95,7 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
     const [prep, setPrep] = useState<{ done: number; total: number; } | null>(null);
     const [thumbs, setThumbs] = useState<string[]>([]);
     const [enc, setEnc] = useState<{ out: Encoded | null; key: string; busy: boolean; progress: number; note?: string; error?: string; }>({ out: null, key: "", busy: false, progress: 0 });
-    const [finishing, setFinishing] = useState<"send" | "save" | null>(null);
+    const [finishing, setFinishing] = useState<"send" | "save" | "convert" | null>(null);
 
     const inputs = useRef(initialInputs);
     const owned = useRef(ownedUrls);
@@ -432,7 +433,7 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
         }
     };
 
-    const finish = async (how: "send" | "save") => {
+    const finish = async (how: "send" | "save" | "convert") => {
         if (finishing) return;
         const channel = getCurrentChannel();
         if (how === "send" && !channel) { showToast("Open a channel to send it to", "failure"); return; }
@@ -444,6 +445,7 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
             const file = new File([out.blob], filename, { type: out.blob.type });
             rememberPrefs(s);
             void addRecent({ name: filename, blob: out.blob, type: out.blob.type, width: out.width, height: out.height, inputs: inputs.current, state: s });
+            if (how === "convert") { openSection("mediaTools", "fileConverter", undefined, { file }); return; }
             if (how === "save") { saveFile(file); return; }
             replaceOriginal(); UploadHandler.promptToUpload([file], channel!, 0);
             if (s.favourite) favouriteWhenSent(channel!.id, filename);
@@ -491,6 +493,7 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
             actions={[
                 { text: finishing === "send" ? "Making it…" : "Send", variant: "primary", onClick: () => void finish("send"), disabled: !src || !!finishing },
                 { text: finishing === "save" ? "Making it…" : "Save", variant: "secondary", onClick: () => void finish("save"), disabled: !src || !!finishing },
+                ...(isFeatureRunning("fileConverter") ? [{ text: "Convert", variant: "secondary" as const, onClick: () => void finish("convert"), disabled: !src || !!finishing }] : []),
             ]}>
             <div className={cl("editor")}>
                 <div className={cl("stage")}>

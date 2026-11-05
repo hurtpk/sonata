@@ -27,6 +27,7 @@ function BackendProvider({ value, children }: { value: Backend; children: React.
 
 type View = "overview" | "messages" | "media" | "people";
 
+const PAGE_SIZE = 75;
 const PREFS_KEY = "vc-mlx-prefs";
 const loadPrefs = (): { view?: View; look?: "cards" | "discord"; newest?: boolean; } => { try { return JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}"); } catch { return {}; } };
 const savePrefs = (p: object) => { try { localStorage.setItem(PREFS_KEY, JSON.stringify({ ...loadPrefs(), ...p })); } catch { } };
@@ -46,6 +47,11 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
     const init = useMemo(() => fromQuery(initialQuery), []);
     const [records, setRecords] = useState<LogRecord[] | null>(null);
     const [failed, setFailed] = useState<string | null>(null);
+    const [result, setResult] = useState<Awaited<ReturnType<Backend["query"]>>>();
+    const [page, setPage] = useState(0);
+    const [reload, setReload] = useState(0);
+    const [searching, setSearching] = useState(false);
+    const [directory, setDirectory] = useState(false);
     const [fresh, setFresh] = useState(0);
     const [scope, setScopeRaw] = useState<Scope>(init.scope);
     const [view, setViewRaw] = useState<View>(prefs.view ?? "messages");
@@ -65,31 +71,68 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
     const searchRef = useRef<HTMLInputElement>(null);
     const bodyRef = useRef<HTMLDivElement>(null);
 
-    const load = () => {
+    const paged = view === "messages";
+    const load = () => { setFresh(0); setReload(n => n + 1); };
+    useEffect(() => {
+        let active = true;
+        void backend.meta().then(value => { if (active) setMetaMap(value); }).catch(() => { });
+        return () => { active = false; };
+    }, [reload]);
+    useEffect(() => {
+        if (paged && !directory && !storageOpen) return;
+        let active = true;
         setFailed(null);
-        Promise.all([backend.load(), backend.meta().catch(() => ({}))]).then(([r, m]) => { setMetaMap(m); setRecords(r); setFresh(0); }).catch(err => setFailed(String(err?.message ?? err)));
-    };
-    useEffect(load, []);
+        void backend.load().then(r => { if (active) setRecords(r); }).catch(reason => {
+            if (active) setFailed(String(reason));
+        });
+        return () => { active = false; };
+    }, [paged, directory, storageOpen, reload]);
+    useEffect(() => { setPage(0); setPicked(new Set()); setLastPick(null); }, [scope, filters, newest]);
+    useEffect(() => {
+        if (!paged) return;
+        const controller = new AbortController();
+        setSearching(true);
+        setFailed(null);
+        void backend.query({ scope, filters, meta, newest, offset: page * PAGE_SIZE, limit: PAGE_SIZE, signal: controller.signal }).then(next => {
+            if (controller.signal.aborted) return;
+            const last = Math.max(0, Math.ceil(next.counts[filters.type] / PAGE_SIZE) - 1);
+            if (page > last) { setPage(last); return; }
+            setResult(next);
+            setSearching(false);
+        }).catch(reason => {
+            if (!controller.signal.aborted) { setFailed(String(reason)); setSearching(false); }
+        });
+        return () => controller.abort();
+    }, [paged, scope, filters, meta, newest, page, reload]);
     useEffect(() => backend.watch?.(() => setFresh(n => n + 1)), []);
     // Typing waits a moment before searching, so big logs stay smooth.
     useEffect(() => { const t = setTimeout(() => setFilters(f => ({ ...f, query: typed })), 200); return () => clearTimeout(t); }, [typed]);
 
     const index: LogIndex | null = useMemo(() => {
-        if (!records) return null;
+        const source = paged ? result?.records : records;
+        if (!source) return null;
+        const ix = buildIndex(source);
+        applyMeta(ix, meta);
+        return ix;
+    }, [records, result, paged, meta]);
+    const directoryIndex = useMemo(() => {
+        if (!records || !directory && !storageOpen) return null;
         const ix = buildIndex(records);
         applyMeta(ix, meta);
         return ix;
-    }, [records]);
+    }, [records, directory, storageOpen, meta]);
     const scoped = useMemo(() => index ? index.entries.filter(e => inScope(e, scope)) : [], [index, scope, metaTick]);
     const filtered = useMemo(() => {
+        if (paged && index && result) return result.records.map(record => index.byId.get(record.message_id)).filter((entry): entry is Entry => !!entry);
         const out = applyFilters(scoped, filters);
         return newest ? out : out.reverse();
-    }, [scoped, filters, newest, metaTick]);
+    }, [scoped, filters, newest, metaTick, paged, index, result]);
     const typeCounts = useMemo(() => {
+        if (paged && result) return result.counts;
         const c = { all: 0, deleted: 0, edited: 0, ghost: 0 };
         for (const e of applyFilters(scoped, { ...filters, type: "all" })) { c.all++; if (e.deleted) c.deleted++; if (e.edited) c.edited++; if (e.ghost) c.ghost++; }
         return c;
-    }, [scoped, filters.period, filters.has, filters.query, metaTick]);
+    }, [scoped, filters.period, filters.has, filters.query, metaTick, paged, result]);
 
     const selected = selectedId && index ? index.byId.get(selectedId) ?? null : null;
 
@@ -120,7 +163,15 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
     const anyFilter = filters.type !== "all" || filters.period !== "all" || filters.has.length > 0 || !!filters.query;
     const clearFilters = () => { setFilters(NO_FILTERS); setTyped(""); };
 
-    const openEntry = (e: Entry) => { setSelectedId(e.id); if (view !== "messages") setView("messages"); };
+    const openEntry = (e: Entry) => {
+        if (view !== "messages") {
+            const query = "message:" + e.id;
+            setTyped(query);
+            setFilters({ ...NO_FILTERS, query });
+            setView("messages");
+        }
+        setSelectedId(e.id);
+    };
 
     const remove = (list: Entry[]) => {
         if (!list.length) return;
@@ -132,6 +183,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                 await backend.remove(list.map(e => e.rec));
                 const gone = new Set(list.map(e => e.id));
                 setRecords(r => r?.filter(x => !gone.has(x.message_id)) ?? r);
+                if (paged) load();
                 setPicked(p => new Set([...p].filter(id => !gone.has(id))));
                 if (selectedId && gone.has(selectedId)) setSelectedId(null);
                 backend.toast(list.length === 1 ? "Log deleted" : `${list.length.toLocaleString()} logs deleted`);
@@ -140,6 +192,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
     const clearAll = () => backend.confirm("Clear every log?", "This removes everything Message Logger has saved — deleted, edited, ghost pings and saved pictures. It can't be undone.", "Clear everything", async () => {
         await backend.clearAll();
         setRecords([]);
+        load();
         setSelectedId(null);
     });
 
@@ -174,8 +227,17 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
         }
     };
 
-    const doExport = (kind: "txt" | "csv" | "json") => {
-        const list = picking && picked.size ? pickedEntries() : filtered;
+    const doExport = async (kind: "txt" | "csv" | "json") => {
+        setExportOpen(false);
+        let list = picking && picked.size ? pickedEntries() : filtered;
+        if (paged && !picked.size && typeCounts[filters.type] > list.length) {
+            try {
+                const all = await backend.query({ scope, filters, meta, newest, offset: 0, limit: Infinity });
+                const ix = buildIndex(all.records);
+                applyMeta(ix, meta);
+                list = all.records.map(record => ix.byId.get(record.message_id)).filter((entry): entry is Entry => !!entry);
+            } catch { backend.toast("Couldn't export these logs", false); return; }
+        }
         const stamp = new Date().toISOString().slice(0, 10);
         const name = `message-logs-${scopeSlug(scope, index)}-${stamp}.${kind}`;
         backend.save(name, kind === "json" ? "application/json" : kind === "csv" ? "text/csv" : "text/plain", kind === "json" ? exportJson(list) : kind === "csv" ? exportCsv(list) : exportText(list));
@@ -205,17 +267,26 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
         else if (ev.key === "Escape" && (selected || exportOpen)) { ev.stopPropagation(); setSelectedId(null); setExportOpen(false); }
     };
 
-    const title = scopeTitle(scope, index);
-    const total = index?.entries.length ?? 0;
+    const sideIndex = directoryIndex ?? index;
+    const title = scopeTitle(scope, sideIndex);
+    const total = paged ? result?.total ?? 0 : index?.entries.length ?? 0;
+    const pageCount = Math.max(1, Math.ceil(typeCounts[filters.type] / PAGE_SIZE));
+    const changePage = (next: number) => {
+        setPage(next);
+        setSelectedId(null);
+        setPicked(new Set());
+        setLastPick(null);
+        bodyRef.current?.scrollTo(0, 0);
+    };
 
     return (
         <Window {...modalProps} size="xxl" title="Message Logs" subtitle="Deleted and edited messages, ghost pings and the pictures in them — saved on this computer">
             <BackendProvider value={backend}>
                 <div className={classes("vc-tool-wrap", cl("root"), selected && cl("root-detail"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined} onKeyDown={onKey} tabIndex={-1}>
-                    {index && <Side index={index} scope={scope} onScope={setScope} total={total} />}
+                    {sideIndex && <Side index={sideIndex} scope={scope} onScope={setScope} total={total} browseAll={paged && !directory ? () => setDirectory(true) : undefined} />}
 
                     <main className={cl("main")}>
-                        {!records && !failed && <div className={classes("vc-tool-empty", cl("center"))}><span className="vc-tool-empty-icon">⏳</span>Opening your logs…</div>}
+                        {!index && !failed && <div className={classes("vc-tool-empty", cl("center"))}><span className="vc-tool-empty-icon">⏳</span>Opening your logs…</div>}
                         {failed && <div className={classes("vc-tool-empty", cl("center"))}><span className="vc-tool-empty-icon">⚠️</span>Couldn't open the logs: {failed}<button type="button" className="vc-tool-btn" onClick={load}>Try again</button></div>}
                         {index && total === 0 && (
                             <div className={classes("vc-tool-empty", cl("center"))}>
@@ -233,7 +304,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                         {title.icon}
                                         <div className={cl("crumb-text")}>
                                             <b>{title.name}</b>
-                                            <span>{scoped.length.toLocaleString()} logged{title.sub ? ` · ${title.sub}` : ""}</span>
+                                            <span>{(paged ? result?.scoped ?? 0 : scoped.length).toLocaleString()} logged{title.sub ? ` · ${title.sub}` : ""}</span>
                                         </div>
                                         {scope.kind !== "all" && <button type="button" className="vc-tool-icon" title="Back to everywhere" onClick={() => setScope({ kind: "all" })}>✕</button>}
                                     </div>
@@ -291,7 +362,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                 {picking && (
                                     <div className={cl("bulk")}>
                                         <b>{picked.size.toLocaleString()} selected</b>
-                                        <button type="button" className="vc-tool-link" onClick={() => setPicked(new Set(filtered.map(e => e.id)))}>Select all {filtered.length.toLocaleString()}</button>
+                                        <button type="button" className="vc-tool-link" onClick={() => setPicked(new Set(filtered.map(e => e.id)))}>{paged ? "Select this page" : "Select all"} {filtered.length.toLocaleString()}</button>
                                         {picked.size > 0 && <button type="button" className="vc-tool-link" onClick={() => setPicked(new Set())}>Clear</button>}
                                         <span className="vc-tool-hint">Shift-click to pick a range</span>
                                         <span className="vc-tool-spacer" />
@@ -301,7 +372,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                 )}
 
                                 <div className={cl("body")} ref={bodyRef}>
-                                    {!filtered.length ? (
+                                    {paged && searching ? <div className="vc-tool-empty" role="status">Searching saved logs…</div> : !filtered.length ? (
                                         <div className="vc-tool-empty">
                                             <span className="vc-tool-empty-icon">🔍</span>
                                             Nothing here matches{anyFilter ? " these filters" : ""}.
@@ -323,6 +394,11 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                 <div className={cl("foot")}>
                                     <span className="vc-tool-hint">{filtered.length.toLocaleString()} of {total.toLocaleString()} logs · <kbd>/</kbd> search · <kbd>J</kbd> <kbd>K</kbd> move · <kbd>Del</kbd> delete log</span>
                                     <span className="vc-tool-spacer" />
+                                    {paged && pageCount > 1 && <>
+                                        <button type="button" className="vc-tool-btn" disabled={searching || page === 0} onClick={() => changePage(page - 1)}>Previous</button>
+                                        <span className="vc-tool-hint">Page {page + 1} of {pageCount}</span>
+                                        <button type="button" className="vc-tool-btn" disabled={searching || page + 1 >= pageCount} onClick={() => changePage(page + 1)}>Next</button>
+                                    </>}
                                     <button type="button" className="vc-tool-btn" onClick={() => setStorageOpen(true)}>🧹 Storage &amp; cleanup</button>
                                     <button type="button" className="vc-tool-btn" onClick={load} title="Load the newest logs">↻ Refresh</button>
                                     <button type="button" className="vc-tool-btn vc-tool-danger" onClick={clearAll}>Clear all logs</button>
@@ -336,7 +412,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                             openMedia={(items, i) => setLightbox({ items, index: i })} onRemove={remove} onMeta={changeMeta} />
                     )}
 
-                    {storageOpen && index && <StoragePanel index={index} onClose={() => setStorageOpen(false)} onCleaned={load} onClearAll={clearAll} />}
+                    {storageOpen && directoryIndex && <StoragePanel index={directoryIndex} onClose={() => setStorageOpen(false)} onCleaned={load} onClearAll={clearAll} />}
 
                     {lightbox && (
                         <Lightbox items={lightbox.items} index={lightbox.index} onIndex={i => setLightbox(l => l && { ...l, index: i })} onClose={() => setLightbox(null)}
@@ -356,14 +432,18 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
     const backend = useBackend();
     const [days, setDays] = useState(backend.cleanupDays());
     const [usage, setUsage] = useState<number | null>(null);
+    const [attachments, setAttachments] = useState<number>();
+    const [preview, setPreview] = useState<{ days: number; count: number; }>();
+    const [previewError, setPreviewError] = useState(false);
     const [ignored, setIgnoredList] = useState(backend.ignored());
     const [watched, setWatchedList] = useState(() => backend.watched?.() ?? []);
     const [busy, setBusy] = useState(false);
-    useEffect(() => { backend.storage?.().then(s => setUsage(s?.usage ?? null)).catch(() => { }); }, []);
+    useEffect(() => {
+        backend.storage?.().then(s => { setUsage(s?.usage ?? null); setAttachments(s?.attachments); }).catch(() => { });
+    }, [index]);
 
     const files = index.entries.reduce((a, e) => a + e.media.filter(m => m.saved).length + e.files.filter(m => m.saved).length, 0);
     const starred = index.entries.filter(e => e.star).length;
-    const wouldGo = (d: number) => d ? index.entries.filter(e => !e.star && e.sent < Date.now() - d * 86400_000).length : 0;
     const oldest = index.entries.reduce((a, e) => Math.min(a, e.sent), Date.now());
 
     return (
@@ -374,7 +454,8 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
                     <button type="button" className="vc-tool-icon" onClick={onClose}>✕</button>
                 </div>
                 <div className="vc-tool-stats">
-                    <div className="vc-tool-stat vc-tool-stat-accent"><span>Space used</span><b>{usage == null ? "…" : fmtBytes(usage) || "0 B"}</b></div>
+                    <div className="vc-tool-stat vc-tool-stat-accent"><span>Browser storage</span><b>{usage == null ? "…" : fmtBytes(usage) || "0 B"}</b></div>
+                    <div className="vc-tool-stat"><span>Cached attachments</span><b>{attachments === undefined ? "Unavailable" : fmtBytes(attachments) || "0 B"}</b></div>
                     <div className="vc-tool-stat"><span>Logs</span><b>{index.entries.length.toLocaleString()}</b></div>
                     <div className="vc-tool-stat"><span>Saved files</span><b>{files.toLocaleString()}</b></div>
                     <div className="vc-tool-stat"><span>★ Starred</span><b>{starred.toLocaleString()}</b></div>
@@ -385,16 +466,25 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
                     <span className="vc-tool-label">Delete logs older than</span>
                     <div className="vc-tool-chips">
                         {DAY_CHOICES.map(([d, label]) => (
-                            <button key={d} type="button" className={classes("vc-tool-chip", days === d && "vc-tool-chip-on")} onClick={() => { setDays(d); backend.setCleanupDays(d); }}>{label}</button>
+                            <button key={d} type="button" className={classes("vc-tool-chip", days === d && "vc-tool-chip-on")} onClick={() => { setDays(d); setPreview(undefined); setPreviewError(false); }}>{label}</button>
                         ))}
                     </div>
-                    <span className="vc-tool-hint">{days ? `Runs on its own every few hours. Right now that would remove ${wouldGo(days).toLocaleString()} log${wouldGo(days) === 1 ? "" : "s"}.` : "Logs are kept until you delete them."}</span>
+                    <span className="vc-tool-hint">{previewError ? "Cleanup preview failed." : preview?.days === days ? preview.count.toLocaleString() + " logs would be removed. Starred logs are kept." : "Preview the selection before deleting. Save the schedule separately to run it automatically."}</span>
                     <div className="vc-tool-footer">
                         <span className="vc-tool-spacer" />
-                        <button type="button" className="vc-tool-btn" disabled={!days || busy || !wouldGo(days)} onClick={async () => {
+                        <button type="button" className="vc-tool-btn" disabled={busy || days === backend.cleanupDays()} onClick={() => { backend.setCleanupDays(days); setPreview(undefined); backend.toast("Cleanup schedule saved"); }}>Save schedule</button>
+                        <button type="button" className="vc-tool-btn" disabled={!days || busy} onClick={async () => {
+                            setBusy(true);
+                            setPreviewError(false);
+                            try { setPreview({ days, count: await backend.previewCleanup(days) }); }
+                            catch { setPreview(undefined); setPreviewError(true); }
+                            finally { setBusy(false); }
+                        }}>Preview cleanup</button>
+                        <button type="button" className="vc-tool-btn" disabled={!days || busy || preview?.days !== days || !preview.count} onClick={async () => {
                             setBusy(true);
                             const n = await backend.cleanupNow(days).catch(() => 0);
                             setBusy(false);
+                            setPreview(undefined);
                             backend.toast(n ? `Deleted ${n.toLocaleString()} old log${n === 1 ? "" : "s"}` : "Nothing old enough to delete");
                             onCleaned();
                         }}>{busy ? "Cleaning…" : "Clean up now"}</button>
@@ -446,7 +536,7 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
 
 /* ── The list down the side: everywhere, DMs, servers › categories › channels ── */
 
-function Side({ index, scope, onScope, total }: { index: LogIndex; scope: Scope; onScope(s: Scope): void; total: number; }) {
+function Side({ index, scope, onScope, total, browseAll }: { index: LogIndex; scope: Scope; onScope(s: Scope): void; total: number; browseAll?(): void; }) {
     const [find, setFind] = useState("");
     const [open, setOpen] = useState<Set<string>>(() => new Set(["dms"]));
     const [allDms, setAllDms] = useState(false);
@@ -472,6 +562,7 @@ function Side({ index, scope, onScope, total }: { index: LogIndex; scope: Scope;
     return (
         <aside className={cl("side")}>
             <input className={classes("vc-tool-input", cl("side-find"))} value={find} onChange={e => setFind(e.currentTarget.value)} placeholder="Find a server, channel or DM" />
+            {browseAll && <button type="button" className="vc-tool-btn" onClick={browseAll}>Browse all places</button>}
             <div className={cl("side-scroll")}>
                 <button type="button" className={classes(cl("node"), is({ kind: "all" }) && cl("node-on"))} onClick={() => onScope({ kind: "all" })}>
                     <span className={cl("node-icon")}>🌐</span><span className={cl("node-name")}>Everywhere</span><i>{total.toLocaleString()}</i>

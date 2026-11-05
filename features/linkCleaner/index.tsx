@@ -17,7 +17,8 @@ import { copyWithToast } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { Menu, showToast } from "@webpack/common";
 
-import { defineFeatureSettings } from "../../featureSettings";
+import { defineFeatureSettings, isFeatureRunning } from "../../featureSettings";
+
 import { cleanText, cleanUrl } from "./clean";
 import { isShortener, startPreview, stopPreview, whereItGoes } from "./preview";
 
@@ -45,7 +46,8 @@ const settings = defineFeatureSettings("linkCleaner", {
     },
 });
 
-function clean(msg: { content: string; }) {
+export function cleanOutgoing(msg: { content: string; }, edit = false) {
+    if (edit && !settings.store.edits) return;
     if (!msg?.content || !/https?:\/\//.test(msg.content)) return;
     const { text, count } = cleanText(msg.content);
     if (!count) return;
@@ -53,10 +55,10 @@ function clean(msg: { content: string; }) {
     if (settings.store.toast) showToast(`Cleaned ${count} link${count === 1 ? "" : "s"} 🧹`, "success");
 }
 
-const LINK = /https?:\/\/[^\s<>()"']+[^\s<>()"'.,;:!?*_~)\]]/g;
+const OUTGOING_LINK = /https?:\/\/[^\s<>()"']+[^\s<>()"'.,;:!?*_~)\]]/g;
 
 const messageMenu: NavContextMenuPatchCallback = (children, { message }: any) => {
-    const links = [...new Set<string>(String(message?.content ?? "").match(LINK) ?? [])];
+    const links = [...new Set<string>(String(message?.content ?? "").match(OUTGOING_LINK) ?? [])];
     const dirty = links.map(l => [l, cleanUrl(l)] as const).filter(([a, b]) => a !== b);
     const short = links.filter(isShortener);
     if (links.length) children.push(
@@ -66,6 +68,11 @@ const messageMenu: NavContextMenuPatchCallback = (children, { message }: any) =>
                 const r = await whereItGoes(l);
                 showToast(r.error ? `Couldn't check it: ${r.error}` : `→ ${r.final}`, r.error ? "failure" : "message");
             }
+        }} />
+    );
+    if (dirty.length && !isFeatureRunning("linkEmbedFixer")) children.push(
+        <Menu.MenuItem id="vc-link-tools-preview" label="Preview outgoing links" action={() => {
+            for (const [, link] of dirty.slice(0, 3)) showToast(link);
         }} />
     );
     if (!dirty.length) return;
@@ -92,13 +99,5 @@ export default definePlugin({
 
     stop() {
         stopPreview();
-    },
-
-    onBeforeMessageSend(_channelId: string, msg: { content: string; }) {
-        clean(msg);
-    },
-
-    onBeforeMessageEdit(_channelId: string, _messageId: string, msg: { content: string; }) {
-        if (settings.store.edits) clean(msg);
     },
 });

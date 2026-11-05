@@ -146,7 +146,6 @@ const LABELS: [RegExp, string][] = [
     [/^Sonata_currency_rates$/, "Currency Converter — exchange rates"],
     [/^Sonata_known_users/, "Sonata Badge — known Sonata users"],
     [/^Sonata_streaks/, "Streaks"],
-    [/^Sonata_gifts_opened$/, "Gift Wrap — opened gifts"],
     [/^Sonata_greeter_log$/, "Channel Greeter — sent log"],
     [/^Sonata_SoundStudio$/, "Sound Studio — your sounds"],
     [/^Sonata_autoVolume/, "Auto Volume — saved volumes"],

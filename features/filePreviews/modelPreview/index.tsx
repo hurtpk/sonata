@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from "@webpack/common";
 import { MODEL_EXT, parseModel } from "./parse";
 import { mountViewer, Viewer } from "./viewer";
 
-const Native = VencordNative?.pluginHelpers?.Sonata as PluginNative<typeof import("../zipPreview/native")> | undefined;
+const Native = VencordNative?.pluginHelpers?.Sonata as PluginNative<typeof import("../filePreviewer/attachmentNative")> | undefined;
 
 const ATTACHMENTS = "https://cdn.discordapp.com/attachments/";
 

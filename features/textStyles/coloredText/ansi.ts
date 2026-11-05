@@ -200,28 +200,35 @@ function hsvHex(h: number, s: number, v: number) {
     return hexOf([f(5) * 255, f(3) * 255, f(1) * 255]);
 }
 
-/**
- * Colours for each character of `chunk`: a rainbow, or a fade from one colour
- * to another. Spaces keep the colour before them, so they cost nothing to send.
- */
-export function effectColours(chunk: string, effect: { kind: "rainbow"; } | { kind: "gradient"; from: string; to: string; }): (string | null)[] {
-    const units = chunk.split(""); // per UTF-16 unit, like the styles
-    const visible = units.filter(c => c.trim()).length;
-    const out: (string | null)[] = [];
-    let n = 0;
-    let prev: string | null = null;
-    for (const ch of units) {
-        if (!ch.trim()) { out.push(prev); continue; }
-        const t = visible > 1 ? n / (visible - 1) : 0;
-        let hex: string;
-        if (effect.kind === "rainbow") hex = hsvHex(t * 300, 0.65, 1);
-        else {
-            const a = rgbOf(effect.from), b = rgbOf(effect.to);
-            hex = hexOf(a.map((v, i) => v + (b[i] - v) * t));
+export type GradientMode = "selection" | "line" | "word";
+export type TextEffect = { kind: "rainbow"; } | { kind: "gradient"; colours: readonly string[]; mode: GradientMode; };
+
+const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+
+export function effectColours(chunk: string, effect: TextEffect): (string | null)[] {
+    const mode = effect.kind === "gradient" ? effect.mode : "selection";
+    const stops = effect.kind === "gradient" ? effect.colours.map(rgbOf) : [];
+    const out: (string | null)[] = Array(chunk.length).fill(null);
+    let offset = 0;
+
+    for (const part of mode === "line" ? chunk.split(/(?<=\n)/) : [chunk]) {
+        const units = mode === "word"
+            ? Array.from(part.matchAll(/\S+/gu), match => ({ index: match.index, segment: match[0] }))
+            : Array.from(graphemes.segment(part)).filter(unit => /\S/u.test(unit.segment));
+        for (const [i, unit] of units.entries()) {
+            const t = units.length > 1 ? i / (units.length - 1) : 0;
+            let colour: string;
+            if (effect.kind === "rainbow") colour = hsvHex(t * 300, 0.65, 1);
+            else {
+                const position = t * (stops.length - 1);
+                const left = Math.min(Math.floor(position), stops.length - 2);
+                const mix = position - left;
+                colour = hexOf(stops[left].map((v, c) => v + (stops[left + 1][c] - v) * mix));
+            }
+            const next = units[i + 1]?.index ?? part.length;
+            out.fill(colour, offset + unit.index, offset + next);
         }
-        out.push(hex);
-        prev = hex;
-        n++;
+        offset += part.length;
     }
     return out;
 }

@@ -23,7 +23,7 @@ function route() {
         if (revision !== routeRevision) return;
         all(".view").forEach(element => { element.hidden = element.id !== `view-${view}`; });
         all("[data-view]").forEach(link => { if (link.dataset.view === view) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current"); });
-        if (view === "commands") renderCommands();
+        if (view === "commands" && state.catalog.length) renderCommands();
         if (view === "dashboard") loadFrame("dashboard");
         if (view === "guides") mountGuides($("#view-guides"));
         if (view === "status") void mountStatus($("#view-status"), () => api("/api/status"));
@@ -124,15 +124,27 @@ window.addEventListener("message", event => {
     if (frame && Number.isFinite(event.data.height)) frame.style.height = Math.max(700, Math.min(20000, event.data.height)) + "px";
 });
 async function start() {
-    try {
+    const catalog = (async () => {
         const response = await fetch("/catalog.json"); if (!response.ok) throw Error("Command reference unavailable");
         state.catalog = await response.json();
         state.forms = [...new Set(state.catalog.filter(command => command.websiteSetup).map(command => command.name.split(" ")[0]))].map(name => ({ name, options: state.catalog.filter(command => command.websiteSetup && command.name.split(" ")[0] === name).map(command => ({ name: command.name.split(" ")[1] ?? "run" })) }));
-        try { const session = await api("/api/bot/session"); state.authenticated = true; state.staff = session.owner; const link = $(".owner-link"); link.hidden = !session.owner; link.textContent = session.sonataOwner ? "Owner" : "Admin"; state.csrf = session.csrf; } catch { $(".owner-link").hidden = true; }
-        if (!location.hash && location.pathname === "/guides") location.hash = "guides";
-        else if (!location.hash && location.pathname === "/status") location.hash = "status";
-        else if (!location.hash && location.pathname === "/commands") location.hash = "commands";
-        route();
-    } catch { $("#command-list").innerHTML = '<p class="empty">The command reference could not load. Refresh to try again.</p>'; notify("Command reference could not load."); }
+        if (activeView === "commands") renderCommands();
+    })().catch(() => {
+        $("#command-list").innerHTML = '<p class="empty">The command reference could not load. Refresh to try again.</p>';
+        if (activeView === "commands") notify("Command reference could not load.");
+    });
+    try {
+        const session = await api("/api/bot/session"), link = $(".owner-link");
+        state.authenticated = true;
+        state.staff = session.owner;
+        link.hidden = !session.owner;
+        link.textContent = session.sonataOwner ? "Owner" : "Admin";
+        state.csrf = session.csrf;
+    } catch { $(".owner-link").hidden = true; }
+    if (!location.hash && location.pathname === "/guides") location.hash = "guides";
+    else if (!location.hash && location.pathname === "/status") location.hash = "status";
+    else if (!location.hash && location.pathname === "/commands") location.hash = "commands";
+    route();
+    await catalog;
 }
 start();

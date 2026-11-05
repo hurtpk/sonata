@@ -38,6 +38,8 @@ export interface Section {
 
 interface GroupInfo { title: string; size: "lg" | "xl" | "xxl"; }
 const GROUPS: Record<string, GroupInfo> = {
+    channelWorkspace: { title: "Channel Workspace", size: "lg" },
+    calculatorTools: { title: "Calculator & Converter", size: "lg" },
     musicAudio: { title: "Music & Audio", size: "lg" },
     mediaTools: { title: "Media Tools", size: "xxl" },
     textStyles: { title: "Text Styles", size: "lg" },
@@ -58,7 +60,7 @@ export function registerSection(group: string, s: Section) {
     sections.set(group, [...list, s]);
 }
 
-const isOn = (feature: string) => (Settings.plugins as any)?.Sonata?.[`on_${feature}`] !== false;
+const isOn = (feature: string) => (Settings.plugins as any)?.Sonata?.[`on_${feature}`] === true;
 export const groupSections = (group: string) => {
     const key = FEATURE_GROUPS[group]?.aliasOf ?? group;
     const members = FEATURE_GROUPS[key]?.members ?? [];

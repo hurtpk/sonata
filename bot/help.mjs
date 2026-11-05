@@ -8,11 +8,11 @@ import { COMMANDS, slashName } from "./commands.mjs";
 import { embed, fail } from "./discord.mjs";
 
 const GROUPS = {
-    general: { label: "General & information", names: ["help", "ping", "choose", "roll", "coinflip", "8ball", "timestamp", "snowflake", "afk", "dashboard", "userinfo", "avatar", "banner", "serverinfo", "membercount", "roleinfo", "roles", "channelinfo", "servericon", "serverbanner", "boosts", "firstmessage"] },
+    general: { label: "General & information", names: ["help", "ping", "choose", "roll", "coinflip", "8ball", "timestamp", "snowflake", "afk", "remind", "dashboard", "userinfo", "avatar", "banner", "serverinfo", "membercount", "roleinfo", "roles", "channelinfo", "servericon", "serverbanner", "boosts", "firstmessage"] },
     moderation: { label: "Moderation & cases", names: ["ban", "tempban", "softban", "banlist", "unban", "kick", "timeout", "untimeout", "nickname", "warn", "warnings", "warnremove", "warnclear", "escalation", "jailsetup", "jail", "unjail", "case", "modstats"] },
     security: { label: "Security & AutoMod", names: ["honeypot", "automod", "antiraid", "antinuke", "lockdown", "nicknamepolicy"] },
     server: { label: "Server management", names: ["role", "settings", "prefix", "eventlog", "alias", "purge", "slowmode", "lock", "unlock", "hide", "unhide", "pin", "unpin", "pins", "channel", "stick", "fakepermissions", "commandsettings", "commandstats"] },
-    community: { label: "Community", names: ["welcome", "goodbye", "autorole", "autonick", "joinlogs", "autoresponder", "tag", "poll", "giveaway", "verification", "levels"] },
+    community: { label: "Community", names: ["welcome", "goodbye", "rolemenu", "autorole", "autonick", "joinlogs", "autoresponder", "tag", "poll", "giveaway", "verification", "levels"] },
     support: { label: "Tickets & appeals", names: ["ticket", "appeals"] },
     media: { label: "Files & expressions", names: ["download", "emoji", "sticker", "sonata"] },
     music: { label: "Music & voice", names: ["fm", "voice", "voicemaster", "play", "pause", "resume", "skip", "stop", "queue", "nowplaying", "volume", "shuffle", "remove", "loop", "seek", "filter", "voteskip", "musicsettings"] },

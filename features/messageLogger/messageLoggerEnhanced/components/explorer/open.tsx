@@ -9,18 +9,18 @@ import { saveFile } from "@utils/web";
 import { Alerts, ChannelStore, closeAllModals, FluxDispatcher, GuildStore, IconUtils, NavigationRouter, openModal, showToast, UserStore } from "@webpack/common";
 
 import { windowAccent } from "../../../../../controller/accent";
-import { db, deleteMessagesBulkIDB, initIDB } from "../../db";
+import { countMessagesIDB, db, deleteMessagesBulkIDB, initIDB } from "../../db";
 import { autoCleanup, clearLogs } from "../../index";
 import { dropMeta, loadMeta, setMeta } from "../../meta";
 import { settings } from "../../settings";
 import { addToXAndRemoveFromOpposite, removeFromX } from "../../utils";
 import { deleteMessageImages } from "../../utils/saveImage";
-import { getImage } from "../../utils/saveImage/ImageManager";
+import { getAttachmentCacheBytes, getImage } from "../../utils/saveImage/ImageManager";
 import { importLogs } from "../../utils/settingsUtils";
 import { setWatched, watchedIds } from "../../watch";
 import { LMessage } from "../LogsModal";
 import { Backend } from "./bits";
-import { Entry, LogRecord, Media } from "./data";
+import { applyMeta, buildIndex, Entry, entryMatches, inScope, LogRecord, Media } from "./data";
 import { Explorer } from "./Explorer";
 
 async function localBlob(att: any): Promise<Blob | null> {
@@ -39,6 +39,40 @@ const backend: Backend = {
         await initIDB();
         return await db.getAll("messages") as LogRecord[];
     },
+    async query({ scope, filters, meta, newest, offset, limit, signal }) {
+        await initIDB();
+        const total = await countMessagesIDB();
+        const ids: { id: string; time: number; }[] = [];
+        const counts = { all: 0, deleted: 0, edited: 0, ghost: 0 };
+        let scoped = 0;
+        const matches = entryMatches({ ...filters, type: "all" });
+        let after: string | undefined;
+        while (!signal?.aborted) {
+            const range = after ? IDBKeyRange.lowerBound(after, true) : undefined;
+            const batch = await db.getAll("messages", range, 200);
+            if (!batch.length) break;
+            after = batch[batch.length - 1].message_id;
+            const index = buildIndex(batch);
+            applyMeta(index, meta);
+            for (const entry of index.entries) {
+                if (!inScope(entry, scope)) continue;
+                scoped++;
+                if (!matches(entry)) continue;
+                counts.all++;
+                if (entry.deleted) counts.deleted++;
+                if (entry.edited) counts.edited++;
+                if (entry.ghost) counts.ghost++;
+                if (filters.type === "deleted" && !entry.deleted || filters.type === "edited" && !entry.edited || filters.type === "ghost" && !entry.ghost) continue;
+                ids.push({ id: entry.id, time: entry.at });
+            }
+        }
+        if (signal?.aborted) return { records: [], total, scoped, counts };
+        ids.sort((a, b) => (newest ? b.time - a.time : a.time - b.time) || a.id.localeCompare(b.id));
+        const selected = ids.slice(offset, offset + limit);
+        const tx = db.transaction("messages", "readonly");
+        const rows = await Promise.all(selected.map(entry => tx.store.get(entry.id)));
+        return { records: rows.filter(row => row !== undefined), total, scoped, counts };
+    },
     async remove(records) {
         await deleteMessagesBulkIDB(records.map(r => r.message_id));
         for (const r of records) await deleteMessageImages(r.message).catch(() => { });
@@ -53,6 +87,7 @@ const backend: Backend = {
     cleanupDays: () => settings.store.autoDeleteDays ?? 0,
     setCleanupDays: days => { settings.store.autoDeleteDays = days; },
     cleanupNow: days => autoCleanup(days),
+    previewCleanup: days => autoCleanup(days, true),
     describe(id) {
         const g: any = GuildStore.getGuild(id);
         if (g) return { name: g.name, kind: "Server", icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.webp?size=64` : null };
@@ -107,8 +142,11 @@ const backend: Backend = {
         };
     },
     storage: async () => {
-        const s = await navigator.storage?.estimate?.();
-        return s ? { usage: s.usage ?? 0, quota: s.quota ?? 0 } : null;
+        const [s, attachments] = await Promise.all([
+            navigator.storage?.estimate?.(),
+            getAttachmentCacheBytes().catch(() => undefined),
+        ]);
+        return { usage: s?.usage ?? 0, quota: s?.quota ?? 0, attachments };
     },
     importOld: () => importLogs(),
     discordView: (e, groupStart) => <LMessage log={{ message: copyOf(e.m) }} isGroupStart={groupStart} reset={() => { }} />,

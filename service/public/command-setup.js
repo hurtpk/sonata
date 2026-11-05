@@ -46,19 +46,36 @@ export function mountCommandSetup(root, forms, server, execute, initial = "alias
     root.querySelector("#setup-search").addEventListener("input", event => { query = event.target.value.toLowerCase(); pick(); }); pick();
 }
 
-let setupRevision = 0;
-document.addEventListener("sonata-server", async event => {
-    const revision = ++setupRevision;
-    const { current, session, selected } = event.detail; const requestedSetup = new URLSearchParams(location.search).get("setup");
+let setupView, mountedView, setupOpened = false;
+document.addEventListener("sonata-server", event => {
+    const { current } = event.detail;
     let button = document.querySelector('[data-tab="commands"]'), panel = document.getElementById("tab-commands");
     if (!button) {
         const nav = document.querySelector('[data-tab="features"]').parentElement;
         button = document.createElement("button"); button.dataset.tab = "commands"; button.textContent = "Command setup"; button.setAttribute("aria-selected", "false"); nav.append(button);
         panel = document.createElement("section"); panel.id = "tab-commands"; panel.hidden = true; document.getElementById("tab-features").parentElement.append(panel);
-        button.addEventListener("click", () => { for (const item of document.querySelectorAll("[data-tab]")) { const active = item === button; item.setAttribute("aria-selected", String(active)); document.getElementById("tab-" + item.dataset.tab).hidden = !active; } });
+        button.addEventListener("click", () => { void openTab("commands"); void renderSetup(panel); });
     }
+    setupView = current;
     button.hidden = !current.manageable;
-    if (!current.manageable) return;
-    const request = async (path, input) => { const response = await fetch("/api/bot/" + path, { method: input ? "POST" : "GET", credentials: "same-origin", headers: input ? { "Content-Type": "application/json", "X-CSRF-Token": session.csrf } : {}, body: input ? JSON.stringify(input) : undefined }); const data = await response.json(); if (!response.ok) throw Error(data.error); return data; };
-    try { const { forms } = await request("forms"); if (revision !== setupRevision) return; mountCommandSetup(panel, forms, current, input => request("action", input), requestedSetup || "alias set"); if (requestedSetup) button.click(); } catch (error) { if (revision === setupRevision) panel.textContent = error.message; }
+    if (!current.manageable) { panel.replaceChildren(); return; }
+    if (!setupOpened && new URLSearchParams(location.search).get("setup")) { setupOpened = true; button.click(); }
+    else if (button.getAttribute("aria-selected") === "true") void renderSetup(panel);
 });
+
+async function renderSetup(panel) {
+    const server = setupView;
+    if (!server?.manageable || mountedView === server) return;
+    mountedView = server;
+    panel.textContent = "Loading command setup…";
+    try {
+        const forms = await loadDashboardForms();
+        if (setupView !== server) return;
+        const initial = new URLSearchParams(location.search).get("setup") || "alias set";
+        mountCommandSetup(panel, forms, server, runDashboardAction, initial);
+    } catch (error) {
+        if (setupView !== server) return;
+        mountedView = undefined;
+        panel.textContent = error.message;
+    }
+}

@@ -19,6 +19,18 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.11.05",
+        date: "November 5, 2026",
+        title: "Simpler features and better file previews",
+        items: [
+            { icon: "📄", text: "File Previews handles ZIP, RAR and 7z in one viewer. PDFs open with thumbnails, remembered pages, zoom, highlighted search matches and local text recognition for scanned pages on supported desktops." },
+            { icon: "🧩", text: "Link Tools, Declutter, Channel Workspace, DM Tools and Calculator & Converter group related settings. Fresh installs start with optional features off. Gift Wrap and Typing Sounds were removed." },
+            { icon: "🛠️", text: "Member Lookup opens private evidence and active timeouts. Export selected records with their evidence. Send an edited clip to GIF Maker or open a finished video or GIF in File Converter." },
+            { icon: "🗂️", text: "Message Logger searches saved history in pages, shows cached attachment storage and previews which logs a cleanup would remove." },
+            { icon: "🎨", text: "Colored Text gradients support up to six colors, can restart each line or color by word, and show the Discord character cost before you apply them. Dock buttons use readable names for plugins and saved feature shortcuts." },
+        ],
+    },
+    {
         version: "2026.11.04",
         date: "November 4, 2026",
         title: "Sonata Bot is here",

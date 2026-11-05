@@ -223,6 +223,7 @@ export interface FeatureDockInfo {
 
 interface FeatureDockProvider {
     list(): FeatureDockInfo[];
+    get(key: string): FeatureDockInfo | undefined;
     /** Left-click: its window, else its options, else the Sonata page. */
     open(key: string, e?: any): void;
     /** Right-click: its options. */
@@ -238,12 +239,19 @@ export function setFeatureDockProvider(provider: FeatureDockProvider | null) {
 export const isFeatureEntry = (name: string) => name.startsWith(FEATURE_PREFIX);
 
 function featureInfo(name: string) {
-    return featureProvider?.list().find(f => FEATURE_PREFIX + f.key === name);
+    return featureProvider?.get(name.slice(FEATURE_PREFIX.length));
 }
 
 /** Display name for a dock entry: the feature's name, or the plugin's. */
 export function dockLabel(name: string): string {
-    return isFeatureEntry(name) ? featureInfo(name)?.name ?? name.slice(FEATURE_PREFIX.length) : name;
+    if (isFeatureEntry(name)) {
+        const info = featureInfo(name);
+        if (info) return info.name;
+        name = name.slice(FEATURE_PREFIX.length);
+    }
+    return name.replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/^[a-z]/, letter => letter.toUpperCase());
 }
 
 export interface DockCandidate {
@@ -261,10 +269,10 @@ const isUserPlugin = (p: Plugin) => !!(PluginMeta as Record<string, { userPlugin
 export function dockCandidate(name: string): DockCandidate {
     if (isFeatureEntry(name)) {
         const f = featureInfo(name);
-        return { value: name, label: f?.name ?? name.slice(FEATURE_PREFIX.length), opens: (f?.opens ?? "page") as Opens, kind: "feature", featureKey: name.slice(FEATURE_PREFIX.length) };
+        return { value: name, label: f?.name ?? dockLabel(name), opens: f?.opens ?? "page", kind: "feature", featureKey: f?.key ?? name.slice(FEATURE_PREFIX.length) };
     }
     const p = findPlugin(name);
-    return { value: name, label: name, opens: (p && getCustomInterface(p) ? "window" : "settings") as Opens, kind: "plugin" };
+    return { value: name, label: dockLabel(name), opens: p && getCustomInterface(p) ? "window" : "settings", kind: "plugin" };
 }
 
 /** Everything that can be added to the dock: Sonata's running features, then your own plugins (not Equicord's built-in ones, or Sonata itself). */
@@ -297,7 +305,7 @@ export function registerCustomDockButton(pluginName: string, iconKey: string): v
     }
     addDockButton(customDockId(pluginName), {
         icon: iconDef.Icon,
-        tooltipText: pluginName,
+        tooltipText: dockLabel(pluginName),
         // Left-click: custom interface, or settings if there isn't one.
         // Right-click: always the settings page.
         onClick: e => openPluginUi(pluginName, e),

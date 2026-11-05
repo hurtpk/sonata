@@ -213,7 +213,6 @@ const ICONS: Entry[] = [
     ["messageTimer", "Message Timer", SONATA, { d: "M12 20H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M17.5 14v2.5l1.5 1", rings: [[17.5, 17, 4.2]] }],
     ["scheduled", "Scheduled Message", SONATA, { d: "M20.5 12A8.5 8.5 0 1 0 12 20.5M12 7v5l3 2M15.5 19h6M19 16l2.5 3-2.5 3" }],
     ["silentTyping", "Silent Typing", SONATA, { d: `${BUBBLE}M3 3l18 18`, dots: [[8.5, 10.5, 1.2], [12, 10.5, 1.2], [15.5, 10.5, 1.2]] }],
-    ["typingSounds", "Typing Sounds", SONATA, { d: "M4 9h11a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM7 15.5h5M19.5 3v7.5l2-1", dots: [[6.5, 12, 0.9], [9.5, 12, 0.9], [12.5, 12, 0.9], [18.2, 10.8, 1.6]] }],
     ["characters", "Characters", SONATA, { d: "M5 20h4v-2.2A7 7 0 1 1 15 17.8V20h4" }],
     ["coloredText", "Colored Text", SONATA, { d: "M6 16 12 3l6 13M8.3 11h7.4", fill: "M4 18.5h16V21H4z" }],
     ["encoder", "Encoder", SONATA, { d: "M7 11h10a1 1 0 0 1 1 1v8H6v-8a1 1 0 0 1 1-1zM9 11V8a3 3 0 0 1 6 0v3M10.5 14.5l-1.5 1.5 1.5 1.5M13.5 14.5l1.5 1.5-1.5 1.5" }],

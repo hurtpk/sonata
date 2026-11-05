@@ -139,7 +139,21 @@ test("Dashboard access is checked against live server permissions and cannot be 
     await assert.rejects(dashboardRequest(request(`server?guild=${GUILD}`, TARGET), bot, execute), /Manage Server/);
     await assert.rejects(dashboardRequest(request("owner", ACTOR), bot, execute), /bot owner/);
     await assert.rejects(dashboardRequest(request("action", TARGET, { guild: GUILD, channel: CHANNEL, actor: OWNER, name: "settings", sub: "prefix", options: { prefix: "!" } }), bot, execute), /Manage Server/);
-    await dashboardRequest(request("action", ACTOR, { guild: GUILD, channel: CHANNEL, name: "settings", sub: "prefix", options: { prefix: "!" } }), bot, execute); assert.equal(f.store.settings(GUILD).prefix, "!");
+    f.calls.length = 0;
+    const action = { guild: GUILD, channel: CHANNEL, name: "settings", sub: "prefix", options: { prefix: "!" } };
+    const saved = await dashboardRequest(request("action", ACTOR, action), bot, execute);
+    assert.equal(saved.settings.prefix, "!");
+    assert.equal(f.store.settings(GUILD).prefix, "!");
+    for (const route of [`/guilds/${GUILD}/roles`, `/guilds/${GUILD}/members/${ACTOR}`]) {
+        assert.equal(f.calls.filter(call => call.route === route).length, 1);
+    }
+    f.members.get(ACTOR).roles = [];
+    await assert.rejects(dashboardRequest(request("action", ACTOR, { ...action, options: { prefix: "?" } }), bot, execute), /Manage Server/);
+    assert.equal(f.store.settings(GUILD).prefix, "!");
+    f.members.delete(ACTOR);
+    f.calls.length = 0;
+    assert.deepEqual((await dashboardRequest(request("servers"), bot, execute)).servers, []);
+    assert.deepEqual(f.calls.map(call => call.route), [`/guilds/${GUILD}/members/${ACTOR}`]);
     await assert.rejects(dashboardRequest(request("action", ACTOR, { guild: GUILD, channel: CHANNEL, name: "ban", sub: "", options: { member: TARGET } }), bot, execute), /available dashboard action/);
 });
 

@@ -55,7 +55,7 @@ export async function imagesToPdf(canvases: HTMLCanvasElement[]): Promise<Blob> 
 
 let pdfjs: any = null;
 
-async function loadPdfjs() {
+export async function loadPdfjs(): Promise<typeof import("pdfjs-dist")> {
     if (pdfjs) return pdfjs;
     const [lib, worker] = await Promise.all([import("pdfjs-dist"), import("pdfjs-dist/build/pdf.worker.mjs")]);
     // pdf.js looks here first for a worker to run in the same page (no separate worker needed).
@@ -67,9 +67,10 @@ async function loadPdfjs() {
 /** The document, and a way to let go of it (pdf.js closes documents through the task that opened them). */
 async function openPdf(file: Blob) {
     const lib = await loadPdfjs();
-    const task = lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false, useSystemFonts: true });
+    const source = { data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false, useSystemFonts: true };
+    const task = lib.getDocument(source);
     const doc = await task.promise;
-    return { doc, close: () => (task.destroy?.() ?? doc.destroy?.())?.catch?.(() => { }) };
+    return { doc, close: () => task.destroy().catch(() => { }) };
 }
 
 const MAX_PAGES = 100;

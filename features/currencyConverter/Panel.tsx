@@ -8,7 +8,7 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, showToast, useEffect, useMemo, useReducer, useState } from "@webpack/common";
+import { showToast, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { Window } from "../_shared/Window";
@@ -111,6 +111,8 @@ function unitRows(catId: string, value: number, from: Unit, all: boolean): Row[]
         return { value: `${formatNumber(v)} ${u.symbol}`, label: u.name, sub: nice ?? undefined, strong: u === from };
     });
 }
+
+import { openSection, registerSection } from "../_shared/Hub";
 
 function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps; initial: string; }) {
     const accent = windowAccent("currencyConverter");
@@ -278,5 +280,10 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
 }
 
 export function openConverter(text = "") {
-    openModal(props => <ConverterModal modalProps={props} initial={text} />);
+    openSection("calculatorTools", "currencyConverter", props => <ConverterModal modalProps={props} initial={text} />);
 }
+
+registerSection("calculatorTools", {
+    id: "currencyConverter", feature: "currencyConverter", name: "Converter", sub: "Units, currencies and time",
+    render: props => <ConverterModal modalProps={props} initial="" />,
+});

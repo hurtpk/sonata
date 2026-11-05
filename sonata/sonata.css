@@ -470,14 +470,6 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-welcome-dots i.on { width: 34px; background: var(--sn-accent); }
 .sonata-welcome-dots i.done { background: color-mix(in srgb, var(--sn-accent) 55%, transparent); }
 .sonata-welcome-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; }
-.sonata-welcome-picks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.sonata-welcome-pick { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 6px; border: 1px solid hsl(0 0% 100% / 0.08); background: hsl(0 0% 100% / 0.03); transition: border-color 0.15s, background 0.15s; }
-.sonata-welcome-pick:hover { background: hsl(0 0% 100% / 0.06); }
-.sonata-welcome-pick:focus-visible { outline: 2px solid var(--sn-accent); }
-.sonata-welcome-pick.on { border-color: var(--sn-accent); background: color-mix(in srgb, var(--sn-accent) 14%, transparent); }
-.sonata-welcome-pick-icon { font-size: 24px; }
-.sonata-welcome-pick-name { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: var(--sn-text); }
-.sonata-welcome-pick-name i { padding: 1px 8px; border-radius: 6px; font-size: 11px; font-style: normal; color: #fff; background: var(--sn-accent); }
 .sonata-welcome-swatches { margin-top: 2px; }
 .sonata-welcome-tips { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; line-height: 1.5; color: var(--sn-muted); }
 .sonata-welcome-tips b { color: var(--sn-text); }
@@ -488,7 +480,6 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-news-list ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
 .sonata-news-list li { display: flex; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--sn-muted); }
 .sonata-news-list li > span { flex: none; width: 22px; text-align: center; }
-@media (width <= 640px) { .sonata-welcome-picks { grid-template-columns: 1fr; } }
 
 /* ─── Disk space & memory ─── */
 .sonata-cache { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 6px; background: hsl(0 0% 100% / 0.03); border: 1px solid hsl(0 0% 100% / 0.06); }

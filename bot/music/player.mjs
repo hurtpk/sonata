@@ -14,7 +14,7 @@ const clock = value => `${Math.floor(value / 60)}:${String(Math.floor(value % 60
 const link = track => `[${track.title.replace(/[\[\]\\]/g, "")}](${track.url})`;
 
 export class VoiceMusic {
-    constructor(send, limit = 1) { this.send = send; this.limit = limit; this.rooms = new Map(); this.generation = 0; }
+    constructor(send, limit = 1, resolve = options => options.file ? resolveAttachment(options.file) : resolveTrack(options.query)) { this.send = send; this.limit = limit; this.resolve = resolve; this.rooms = new Map(); this.generation = 0; }
     event(type, data) {
         const room = this.rooms.get(data.guild_id);
         if (!room?.adapter) return;
@@ -48,7 +48,7 @@ export class VoiceMusic {
     }
     position(room) { return room.current ? room.offset + (room.resource?.playbackDuration ?? 0) / 1000 * (room.rate ?? 1) : 0; }
     async stream(room, track, offset = 0) {
-        if (Date.now() - track.resolved > 15 * 60_000) track = { ...await (track.attachment ? resolveAttachment(track.attachment) : resolveTrack(track.url)), actor: track.actor };
+        if (Date.now() - track.resolved > 15 * 60_000) track = { ...await this.resolve(track.attachment ? { file: track.attachment } : { query: track.url }), actor: track.actor };
         if (this.rooms.get(room.guild) !== room) throw new Error("The voice connection ended.");
         room.changing = true; room.process?.kill(); room.player.stop(true);
         const process = spawn("ffmpeg", ["-hide_banner", "-loglevel", "error", "-nostdin", ...mediaInput(track.audio, offset, track.segmented), "-vn", "-af", audioFilter(room.effect ?? "off", room.volume), "-ac", "2", "-ar", "48000", "-c:a", "libopus", "-b:a", "96k", "-f", "ogg", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"], windowsHide: true });
@@ -77,17 +77,38 @@ export class VoiceMusic {
         if (job.name === "play") {
             if (room?.queue.length >= 50) throw new Error("The queue is full. Remove a track before adding more.");
             if (!!o.file === !!o.query) throw new Error("Choose a song name or link, or attach one MP3, WAV, MOV, MP4 or OGG file.");
-            const track = { ...await (o.file ? resolveAttachment(o.file) : resolveTrack(o.query)), actor: job.actor };
-            if (generation !== this.generation || Date.now() >= job.expires) throw new Error("This request expired or the voice service restarted. Try playback again.");
-            if (!room) room = await this.open(job);
-            if (this.rooms.get(job.guild) !== room) throw new Error("The voice connection ended. Try playback again.");
-            if (room.current) { room.queue.push(track); return { title: "Added to queue", description: `${link(track)} · ${clock(track.duration)}\nUpcoming position: ${room.queue.length}` }; }
-            await this.stream(room, track);
-            return { title: "Now playing", description: `${link(track)} · ${clock(track.duration)}` };
+            const joining = room ? Promise.resolve(room) : this.open(job), opened = room ? null : this.rooms.get(job.guild);
+            try {
+                const [ready, resolved] = await Promise.all([joining, this.resolve(o)]), track = { ...resolved, actor: job.actor };
+                room = ready;
+                if (generation !== this.generation || Date.now() >= job.expires) throw new Error("This request expired or the voice service restarted. Try playback again.");
+                if (this.rooms.get(job.guild) !== room) throw new Error("The voice connection ended. Try playback again.");
+                if (room.current) { room.queue.push(track); return { title: "Added to queue", description: `${link(track)} · ${clock(track.duration)}\nUpcoming position: ${room.queue.length}` }; }
+                await this.stream(room, track);
+                return { title: "Now playing", description: `${link(track)} · ${clock(track.duration)}` };
+            } catch (error) { if (opened) this.close(opened); throw error; }
         }
         if (!room) throw new Error("No music is playing in this server. Use play first.");
         if (job.name === "stop") { this.close(room); return { title: "Music stopped", description: "The queue was cleared and Sonata left voice." }; }
-        if (job.name === "queue") return { title: "Music queue", description: `${room.current ? `Playing: ${link(room.current)}` : "No current track."}\n\n${room.queue.slice(0, 8).map((track, i) => `${i + 1}. ${link(track)}`).join("\n") || "No upcoming tracks."}\n\n${room.queue.length} upcoming · Loop: ${room.loop}${room.issue ? `\n${room.issue}` : ""}`.slice(0, 1800) };
+        if (job.name === "queue") {
+            let note = "";
+            if (job.sub === "move") {
+                if (!room.queue[o.from - 1] || !room.queue[o.to - 1]) throw new Error("Choose two positions in the upcoming queue.");
+                room.queue.splice(o.to - 1, 0, room.queue.splice(o.from - 1, 1)[0]); note = `Moved track ${o.from} to ${o.to}.`;
+            }
+            if (job.sub === "dedupe") {
+                const seen = new Set(), before = room.queue.length;
+                room.queue = room.queue.filter(track => { const url = track.attachment ? new URL(track.url).pathname : track.url; if (seen.has(url)) return false; seen.add(url); return true; });
+                note = `Removed ${before - room.queue.length} duplicate tracks.`;
+            }
+            if (job.sub === "jump") {
+                if (!room.queue[o.position - 1]) throw new Error("Choose a position in the upcoming queue.");
+                room.queue.unshift(room.queue.splice(o.position - 1, 1)[0]); job = { ...job, name: "skip" };
+            } else {
+                const pages = Math.max(1, Math.ceil(room.queue.length / 8)), page = Math.min(pages, o.page ?? (o.to ? Math.ceil(o.to / 8) : 1)), start = (page - 1) * 8;
+                return { title: "Music queue", description: `${note ? note + "\n\n" : ""}${room.current ? `Playing: ${link(room.current)}` : "No current track."}\n\n${room.queue.slice(start, start + 8).map((track, i) => `${start + i + 1}. ${link(track)}`).join("\n") || "No upcoming tracks."}\n\n${room.queue.length} upcoming · Loop: ${room.loop} · Page ${page}/${pages}${room.issue ? `\n${room.issue}` : ""}`.slice(0, 1800), pagination: { page, pages } };
+            }
+        }
         if (job.name === "nowplaying") return { title: "Now playing", description: room.current ? `${link(room.current)}\n${clock(this.position(room))} / ${clock(room.current.duration)} · Volume ${room.volume}% · Effect ${room.effect ?? "off"}\n${room.player.state.status === AudioPlayerStatus.Paused ? "Paused" : "Playing"}${room.issue ? `\n${room.issue}` : ""}` : "No current track." };
         if (job.name === "voteskip") {
             if (!room.current || !Array.isArray(job.listeners) || !job.listeners.includes(job.actor)) throw new Error("Join the current track's voice channel to vote.");

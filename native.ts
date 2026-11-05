@@ -23,11 +23,11 @@ export { fetchCrypto, fetchExchangeRates, fetchStock } from "./features/currency
 export { deleteWebhookMessage, fetchImageBytes, getWebhookMessage, privateRepliesApi, sendWebhook } from "./features/embeds/embedSender/native";
 export { fetchDiscordFile } from "./features/filePreviews/filePreviewer/native";
 export { clearPreviewCache, extractFromArchive, openArchive, openPdfWindow } from "./features/filePreviews/filePreviewer/previewCache";
-export { fetchDiscordAttachment } from "./features/filePreviews/zipPreview/native";
+export { fetchDiscordAttachment } from "./features/filePreviews/filePreviewer/attachmentNative";
 export { gamesDealGame, gamesDealSearch, gamesDealStores, gamesDealTop, gamesEpicFree, gamesFortniteShop, gamesGamePass, gamesMcPlayer, gamesMcServer, gamesMoreFree, gamesTwitchDrops } from "./features/games/native";
 export { rbxAssetFile, rbxAssetInfo, rbxCdnImage, rbxGame, rbxGroup, rbxHistory, rbxInventoryAt, rbxItem, rbxItemHistory, rbxJoin, rbxLimiteds, rbxNameCheck, rbxOutfit, rbxOwnedGames, rbxPlayerHistory, rbxSavedLive, rbxServers, rbxShop, rbxThumbs, rbxUser, rbxUserGroups, rbxWearing } from "./features/games/roblox/native";
 export { steamAchievements, steamAppDetails, steamFriends, steamItems, steamNews, steamNoteImage, steamProfile, steamReviews, steamSearch, steamWishlist } from "./features/games/steam/native";
-export { recognizeText } from "./features/images/imageToText/native";
+export { recognizePdfPage, recognizeText } from "./features/images/imageToText/native";
 export { expandLink } from "./features/linkCleaner/native";
 export { dlCancel, dlCheck, dlInfo, dlOpen, dlPickFolder, dlPlaylist, dlProgress, dlReadFile, dlReveal, dlStart } from "./features/mediaTools/mediaDownloader/native";
 export * from "./features/messageLogger/messageLoggerEnhanced/native";

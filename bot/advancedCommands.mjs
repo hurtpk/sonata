@@ -6,6 +6,7 @@
 
 import { channel, command, member, option, reason, role, sub, text } from "./commandOptions.mjs";
 import { PERMS } from "./discord.mjs";
+import { IMAGE_OPTIONS, STICKER_MAKER } from "./imageEditor.mjs";
 
 export const ADVANCED_COMMANDS = [
     command("prefix", "View or change server and personal command prefixes", 0n, [
@@ -22,13 +23,14 @@ export const ADVANCED_COMMANDS = [
         sub("exempt", "Exempt or unexempt a role", [role(), option("enabled", 5, "Exempt this role")]),
         sub("exemptions", "List honeypot exemptions"),
     ]),
-    command("download", "Download Discord attachments and server expressions", 0n, [
+    command("download", "Download Discord files or edit images and GIFs", 0n, [
+        ...IMAGE_OPTIONS,
         sub("message", "Download an attachment, or reply with download to detect media", [text("message", "A message ID or link"), option("index", 4, "Attachment number", false, { min_value: 1, max_value: 10 })]),
         sub("url", "Download a direct Discord CDN file link", [text("url", "A direct Discord CDN URL")]),
         sub("attachment", "Download a file attached to this command", [option("file", 11, "The file to copy")]),
         sub("emoji", "Download a Unicode or custom emoji image", [text("emoji", "An emoji or custom emoji ID")]),
         sub("sticker", "Download a sticker file", [text("id", "Sticker ID")]),
-    ]),
+    ], ["caption", "togif", "studio"]),
     command("emoji", "Import and manage custom server emojis", 0n, [
         sub("steal", "Copy an emoji, or reply with emoji steal", [text("emoji", "An emoji, custom emoji ID, or reply"), option("name", 3, "Optional new emoji name", false, { max_length: 32 })]),
         sub("add", "Create an emoji from an uploaded image", [option("file", 11, "PNG, GIF or JPEG image up to 256 KiB"), option("name", 3, "Emoji name", true, { max_length: 32 })]),
@@ -38,6 +40,7 @@ export const ADVANCED_COMMANDS = [
         sub("list", "Browse server emojis", [option("page", 4, "Page number", false, { min_value: 1 })]),
     ]),
     command("sticker", "Import and manage server stickers", 0n, [
+        STICKER_MAKER,
         sub("steal", "Copy a PNG, APNG or GIF sticker, or reply with sticker steal", [text("id", "Sticker ID, or reply"), option("name", 3, "Optional new name", false, { max_length: 30 })]),
         sub("add", "Create a sticker from an uploaded image", [option("file", 11, "Sticker image up to 512 KiB"), option("name", 3, "Sticker name", true, { max_length: 30 })]),
         sub("rename", "Rename a server sticker", [text("id", "Sticker ID"), option("name", 3, "New sticker name", true, { max_length: 30 })]),

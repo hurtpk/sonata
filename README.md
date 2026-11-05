@@ -71,12 +71,7 @@ The second line installs a few extra parts that only Sonata needs, into Sonata's
 ## 6. First start
 
 - Sonata is on automatically. Open it with the **♫ button** in the dock under your profile picture.
-- A short **welcome tour** helps you pick a starting set of features:
-  - **Minimal**: a dozen everyday helpers.
-  - **Balanced** (recommended): most of Sonata.
-  - **Everything**: every feature, including the experimental ones.
-- After the starting set, you pick a colour.
-- You can change all of it later, and **Sonata Insights** helps if something isn't working.
+- The welcome tour introduces Sonata. Optional features start off and can be enabled from Features.
 
 ---
 

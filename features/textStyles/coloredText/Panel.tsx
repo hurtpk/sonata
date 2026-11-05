@@ -8,13 +8,13 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { showToast, useRef, useState } from "@webpack/common";
+import { showToast, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
 import { ColorPicker } from "../../_shared/ColorPicker";
 import { openSection, registerSection } from "../../_shared/Hub";
 import { Window } from "../../_shared/Window";
-import { BACKGROUNDS, Colour, cssColour, effectColours, fromAnsi, Mark, PLAIN, runs, Style, Swatch, TEXT_COLORS, toAnsi } from "./ansi";
+import { BACKGROUNDS, Colour, cssColour, effectColours, fromAnsi, type GradientMode, Mark, PLAIN, runs, Style, Swatch, TEXT_COLORS, type TextEffect, toAnsi } from "./ansi";
 
 const cl = classNameFactory("vc-tool-");
 const ct = classNameFactory("vc-ansi-");
@@ -36,6 +36,12 @@ const MARK_BUTTONS: { mark: Mark; label: string; look: React.CSSProperties; }[] 
     { mark: "overline", label: "Overline", look: { textDecoration: "overline" } },
 ];
 
+const GRADIENT_PATTERNS: { mode: GradientMode; label: string; }[] = [
+    { mode: "selection", label: "Across text" },
+    { mode: "line", label: "Restart each line" },
+    { mode: "word", label: "Color by word" },
+];
+
 function ColoredTextModal({ modalProps, initial, target }: { modalProps: RenderModalProps; initial: string; target?: ColoredTarget; }) {
     const LIMIT = target?.limit ?? 2000;
     const accent = windowAccent("coloredText");
@@ -46,15 +52,19 @@ function ColoredTextModal({ modalProps, initial, target }: { modalProps: RenderM
     const [pen, setPen] = useState<Style | null>(null);
     const [ownFg, setOwnFg] = useState("#ff7ac6");
     const [ownBg, setOwnBg] = useState("#3b2a66");
-    const [from, setFrom] = useState("#ff5f9e");
-    const [to, setTo] = useState("#5f8fff");
+    const [stops, setStops] = useState(["#ff5f9e", "#5f8fff"]);
+    const [mode, setMode] = useState<GradientMode>("selection");
+    const [range, setRange] = useState<readonly [number, number]>([0, 0]);
     const area = useRef<HTMLTextAreaElement>(null);
 
     // Exact colours where they fit; close shades from the 256-colour table when that's what fits in a message.
-    const exact = text ? toAnsi(text, styles) : "";
-    const short = exact.length > LIMIT ? toAnsi(text, styles, true) : exact;
-    const output = exact.length > LIMIT && short.length <= LIMIT ? short : exact;
-    const shaded = output !== exact;
+    const encode = (current: Style[]) => {
+        const exact = text ? toAnsi(text, current) : "";
+        const compact = exact.length > LIMIT ? toAnsi(text, current, true) : exact;
+        const shaded = compact !== exact && compact.length <= LIMIT;
+        return { output: shaded ? compact : exact, shaded };
+    };
+    const { output, shaded } = useMemo(() => encode(styles), [text, styles, LIMIT]);
 
     const selection = () => {
         const el = area.current;
@@ -107,16 +117,25 @@ function ColoredTextModal({ modalProps, initial, target }: { modalProps: RenderM
     const setBg = (bg: Colour | null, refocus?: boolean) => apply(s => ({ ...s, bg }), refocus);
     const toggle = (mark: Mark) => apply((s, all) => ({ ...s, [mark]: !all.every(x => x[mark]) }));
 
-    /** Rainbow or a fade across the selection — or across everything when nothing is selected. */
-    const effect = (kind: "rainbow" | "gradient") => {
+    const gradient: TextEffect = { kind: "gradient", colours: stops, mode };
+    const effectStyles = (a: number, b: number, effect: TextEffect) => {
+        const colours = effectColours(text.slice(a, b), effect);
+        return Array.from({ length: text.length }, (_, i) => {
+            const s = styles[i] ?? PLAIN;
+            const fg = colours[i - a];
+            return fg ? { ...s, fg } : s;
+        });
+    };
+    const projected = useMemo(() => {
+        const [a, b] = range[0] < range[1] && range[1] <= text.length ? range : [0, text.length];
+        return encode(effectStyles(a, b, gradient));
+    }, [text, styles, stops, mode, range, LIMIT]);
+
+    const applyEffect = (effect: TextEffect) => {
         let [a, b] = selection();
         if (a === b) [a, b] = [0, text.length];
-        if (a === b) { showToast("Type something first", "message"); return; }
-        const colours = effectColours(text.slice(a, b), kind === "rainbow" ? { kind } : { kind, from, to });
-        setStyles(text.split("").map((_, i) => {
-            const s = styles[i] ?? PLAIN;
-            return i >= a && i < b && colours[i - a] ? { ...s, fg: colours[i - a] } : s;
-        }));
+        if (a === b) return;
+        setStyles(effectStyles(a, b, effect));
         setPen(null);
         requestAnimationFrame(() => { area.current?.focus(); area.current?.setSelectionRange(a, b); });
     };
@@ -163,19 +182,46 @@ function ColoredTextModal({ modalProps, initial, target }: { modalProps: RenderM
                 </div>
                 <div className={classes(cl("row"), ct("effects"))}>
                     <span className={cl("label")}>Effects</span>
-                    <button type="button" className={cl("btn")} onMouseDown={e => e.preventDefault()} onClick={() => effect("rainbow")}><span className={ct("rainbow")}>Rainbow</span></button>
-                    <span className={ct("fade")}>
-                        <ColorPicker className={ct("swatch")} label="Fade from" value={from} onChange={setFrom} />
-                        <span className={ct("fade-line")} style={{ background: `linear-gradient(90deg, ${from}, ${to})` }} />
-                        <ColorPicker className={ct("swatch")} label="Fade to" value={to} onChange={setTo} />
-                    </span>
-                    <button type="button" className={cl("btn")} onMouseDown={e => e.preventDefault()} onClick={() => effect("gradient")}>Fade</button>
+                    <button type="button" className={cl("btn")} disabled={!text} onMouseDown={e => e.preventDefault()} onClick={() => applyEffect({ kind: "rainbow" })}><span className={ct("rainbow")}>Rainbow</span></button>
                     <span className={cl("spacer")} />
                     {pen && <span className={cl("hint")}>Typing in: <Preview text="Aa" styles={[pen, pen]} inline /></span>}
                 </div>
 
+                <div className={ct("gradient")}>
+                    <div className={cl("row")}>
+                        <span className={cl("label")}>Gradient</span>
+                        <div className={ct("fade")}>
+                            {stops.map((value, i) => <span key={i} className={ct("stop")}>
+                                <ColorPicker className={ct("swatch")} label={`Gradient color ${i + 1}`} value={value}
+                                    onChange={next => setStops(current => current.map((color, index) => index === i ? next : color))} />
+                                {stops.length > 2 && <button type="button" className={ct("remove-stop")} aria-label={`Remove gradient color ${i + 1}`}
+                                    onMouseDown={e => e.preventDefault()} onClick={() => setStops(current => current.filter((_, index) => index !== i))}>×</button>}
+                            </span>)}
+                        </div>
+                        <button type="button" className={cl("btn")} disabled={stops.length >= 6} onMouseDown={e => e.preventDefault()}
+                            onClick={() => setStops(current => [...current.slice(0, -1), "#a58cff", current[current.length - 1]])}>Add color</button>
+                        <button type="button" className={cl("btn")} disabled={!text} onMouseDown={e => e.preventDefault()}
+                            onClick={() => applyEffect(gradient)}>Apply gradient</button>
+                    </div>
+                    <div className={ct("fade-line")} style={{ background: `linear-gradient(90deg, ${stops.join(", ")})` }} />
+                    <div className={cl("row")}>
+                        <div className={cl("seg")} role="group" aria-label="Gradient pattern">
+                            {GRADIENT_PATTERNS.map(pattern => <button key={pattern.mode} type="button" aria-pressed={mode === pattern.mode}
+                                className={classes(cl("seg-btn"), mode === pattern.mode && cl("seg-on"))}
+                                onMouseDown={e => e.preventDefault()} onClick={() => setMode(pattern.mode)}>{pattern.label}</button>)}
+                        </div>
+                        <span className={classes(cl("hint"), projected.output.length > LIMIT && cl("error"))}>
+                            {text ? `After applying: ${projected.output.length} / ${LIMIT} characters${projected.shaded ? " with close shades" : ""}`
+                                : "Select text to color it, or apply to the whole message."}
+                        </span>
+                    </div>
+                </div>
+
                 <textarea ref={area} className={classes(cl("area"), cl("mono"))} autoFocus value={text} spellCheck={false}
-                    placeholder="Type your message here…" onChange={e => onChange(e.currentTarget.value)} onPaste={onPaste} />
+                    placeholder="Type your message here…" onChange={e => onChange(e.currentTarget.value)} onPaste={onPaste} onSelect={() => {
+                        const next = selection();
+                        setRange(current => current[0] === next[0] && current[1] === next[1] ? current : next);
+                    }} />
 
                 <div className={cl("label")}>Preview</div>
                 <Preview text={text} styles={styles} />

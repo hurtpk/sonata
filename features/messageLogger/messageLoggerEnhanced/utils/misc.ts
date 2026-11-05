@@ -142,6 +142,7 @@ export function getNative(): PluginNative<typeof import("../native")> {
     if (IS_WEB) {
         const Native = {
             writeLogs: async () => { },
+            messageLogAttachmentBytes: async () => 0,
             getDefaultNativeImageDir: async () => DEFAULT_IMAGE_CACHE_DIR,
             getDefaultNativeDataDir: async () => "",
             getDefaultAttachmentFileExtensions: async () => DEFAULT_ATTACHMENT_FILE_EXTENSIONS,

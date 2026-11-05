@@ -40,6 +40,19 @@ const emojiInfo = value => {
 };
 const stickerUrl = sticker => `https://cdn.discordapp.com/stickers/${sticker.id}.${sticker.format_type === 3 ? "json" : sticker.format_type === 4 ? "gif" : "png"}`;
 
+export function requireStickerCreator({ actor, bot, roles, guild }) {
+    for (const member of [actor, bot]) requirePermission(memberPermissions(member, roles, guild), PERMS.CREATE_EXPRESSIONS);
+}
+
+export async function createGuildSticker({ api, guild, actor }, name, file, description = "Imported with Sonata") {
+    const form = new FormData();
+    form.set("name", name);
+    form.set("description", description);
+    form.set("tags", "🙂");
+    form.set("file", new Blob([file.bytes], { type: file.mime }), file.mime === "image/gif" ? "sticker.gif" : "sticker.png");
+    return api(`/guilds/${guild.id}/stickers`, { method: "POST", form, reason: `Added by ${actor.user.id} using Sonata` });
+}
+
 export async function mediaCommand(context) {
     const { command, api, guild, actor, bot, roles, channel } = context, kind = command.name;
     let o = command.options, sub = command.sub;
@@ -116,9 +129,6 @@ export async function mediaCommand(context) {
     if (!["image/png", "image/gif", "image/jpeg"].includes(file.mime) || (kind === "sticker" && file.mime === "image/jpeg")) fail("Use PNG or GIF for stickers, or PNG, GIF or JPEG for emojis.");
     let saved;
     if (kind === "emoji") saved = await api(`/guilds/${guild.id}/emojis`, { method: "POST", body: { name, image: `data:${file.mime};base64,${file.bytes.toString("base64")}` }, reason: `Imported by ${actor.user.id} using Sonata` });
-    else {
-        const form = new FormData(); form.set("name", name); form.set("description", "Imported with Sonata"); form.set("tags", "🙂"); form.set("file", new Blob([file.bytes], { type: file.mime }), file.mime === "image/gif" ? "sticker.gif" : "sticker.png");
-        saved = await api(`/guilds/${guild.id}/stickers`, { method: "POST", form, reason: `Imported by ${actor.user.id} using Sonata` });
-    }
+    else saved = await createGuildSticker(context, name, file);
     return embed(`${kind === "emoji" ? "Emoji" : "Sticker"} added`, `${saved.name} · ${saved.id}${credit ? `\n${credit}` : ""}`);
 }

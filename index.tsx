@@ -79,10 +79,8 @@ import fakedeafen from "./features/fakedeafen";
 import fakeDms from "./features/fakeDms";
 import filePreviewer from "./features/filePreviews/filePreviewer";
 import modelPreview from "./features/filePreviews/modelPreview";
-import zipPreview from "./features/filePreviews/zipPreview";
 import gameActivityToggle from "./features/gameActivityToggle";
 import games from "./features/games";
-import giftWrap from "./features/giftWrap";
 import imageFilename from "./features/images/imageFilename";
 import imageLink from "./features/images/imageLink";
 import imageToText from "./features/images/imageToText";
@@ -91,8 +89,8 @@ import reverseImageSearch from "./features/images/reverseImageSearch";
 import viewIcons from "./features/images/viewIcons";
 import betterInvites from "./features/invites/betterInvites";
 import inviteManager from "./features/invites/inviteManager";
-import linkCleaner from "./features/linkCleaner";
-import linkEmbedFixer from "./features/linkEmbedFixer";
+import linkCleaner, { cleanOutgoing } from "./features/linkCleaner";
+import linkEmbedFixer, { fixOutgoing } from "./features/linkEmbedFixer";
 import liveRpcEditor from "./features/liveRpcEditor";
 import localNames from "./features/localNames";
 import longMessageCollapser from "./features/longMessageCollapser";
@@ -163,7 +161,6 @@ import tiktokTracker from "./features/tiktokTracker";
 import timezones from "./features/timezones";
 import todoLists from "./features/todoLists";
 import translate from "./features/translate";
-import typingSounds from "./features/typingSounds";
 import videoSpeed from "./features/videoSpeed";
 import voiceDownload from "./features/voiceMessages/voiceDownload";
 import voiceMessages from "./features/voiceMessages/voiceMessages";
@@ -192,7 +189,7 @@ import { addDockButton, dockContextMenus, dockPatch, PINNED_DOCK_ID, removeDockB
 import { startDockColor, stopDockColor } from "./utilities/dockColor";
 import { DOCK_ICON_MAP, SonataIcon } from "./utilities/icons";
 import { startUtilities, stopUtilities } from "./utilities/runtime";
-import { setFeatureDockProvider } from "./utilities/shared";
+import { dockLabel, type FeatureDockInfo, setFeatureDockProvider } from "./utilities/shared";
 import { addOwnedMenuPatch, captureMenuPatches, installSonataMenus, releaseMenuPatches, uninstallSonataMenus } from "./utilities/sonataMenu";
 
 const logger = new Logger(QOL_NAME, "#a6e3a1");
@@ -309,6 +306,10 @@ function renameDoctor() {
     target.renamedDoctor = true;
 }
 
+const hadSonata = [QOL_NAME, "Opticord", ...OLD_NAMES].some(name => Object.keys(PlainSettings.plugins[name] ?? {}).some(key =>
+    key === "migrated" || key === "chatTrayLayoutApplied" || key === "sonataWelcomed" || key.startsWith("on_") || key.startsWith("migrated_")
+));
+
 if (accessAtBoot()) {
     moveFromOpticord();
     importLegacySettings();
@@ -325,7 +326,14 @@ const FEATURES: Record<string, Feature> = {
     noUnblockToJump, onePingPerDM, permissionsViewer, pinDms, readAllNotificationsButton,
     reverseImageSearch, roleColorEverywhere, serverInfo, showHiddenChannels, showTimeoutDuration,
     silentTyping, spotifyCrack, translate, viewIcons, voiceDownload, voiceMessages,
-    betterInvites, declutter, gifMaker, splitLargeMessages, zipPreview,
+    betterInvites, declutter, gifMaker, splitLargeMessages,
+    sameVoiceLabel: {
+        name: "Same Voice Label",
+        description: "Show when someone is in the same voice channel or DM call as you.",
+        patches: sameVoicePatches,
+        useSameVoiceLabel,
+        sameVoiceText,
+    },
     messageCleanerUtil, platformIndicators, relationshipTracker,
     birthdayReminders, multiQuote, messagePreview,
     filePreviewer, imageToText, qrCodes, calculator, scheduledMessages,
@@ -335,8 +343,8 @@ const FEATURES: Record<string, Feature> = {
     streamQuality, liveRpcEditor, inviteManager,
     encoderTools, coloredText, charactersPicker, stealProfile,
     gameActivityToggle, platformSpoofer, showRolesInChat, soundStudio, miniGames,
-    typingSounds, autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
-    smoothChat, currencyConverter, giftWrap, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
+    autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
+    smoothChat, currencyConverter, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
     reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges, localNames, games, packageTracker, weather, showTracker, radio, discordStatus,
     antimod, autoModRegex, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
@@ -360,7 +368,13 @@ const FIRST_BATCH = new Set([
 ]);
 
 /** Features taken out of Sonata; their leftover settings are cleared once. */
-const REMOVED_FEATURES = ["stereo", "voiceChanger"];
+const REMOVED_FEATURES = ["stereo", "voiceChanger", "typingSounds", "giftWrap", "zipPreview"];
+
+const savedSonata = PlainSettings.plugins.Sonata;
+if (savedSonata?.on_zipPreview === true && savedSonata.on_filePreviewer === false) {
+    Settings.plugins.Sonata.filePreviewer_archivesOnly = true;
+    Settings.plugins.Sonata.on_filePreviewer = true;
+}
 
 function clearRemovedFeatures() {
     const target = (Settings.plugins as any)[QOL_NAME];
@@ -394,7 +408,17 @@ function keepSwitchedOffPluginsOff() {
     }
 }
 
-keepSwitchedOffPluginsOff();
+if (accessAtBoot() && savedSonata?.enabled !== false && !savedSonata?.sonataFeatureDefaultsApplied) {
+    if (hadSonata) {
+        keepSwitchedOffPluginsOff();
+        for (const key of Object.keys(FEATURES)) {
+            if (savedSonata?.[`on_${key}`] === undefined) Settings.plugins.Sonata[`on_${key}`] = true;
+        }
+        if (savedSonata?.antiquest_noFetch === undefined) Settings.plugins.Sonata.antiquest_noFetch = true;
+        Settings.plugins.Sonata.sonataWelcomed = true;
+    }
+    Settings.plugins.Sonata.sonataFeatureDefaultsApplied = true;
+}
 
 // Equicord does two things for every plugin it registers that QOL has to do
 // itself for bundled features (they aren't registered plugins):
@@ -521,7 +545,7 @@ function syncTrayButton(key: string) {
 // ─── State ───
 
 function isOn(key: string): boolean {
-    return Settings.plugins[QOL_NAME]?.[onKey(key)] !== false;
+    return Settings.plugins[QOL_NAME]?.[onKey(key)] === true;
 }
 
 /** The standalone built-in version of this feature is running. */
@@ -712,7 +736,7 @@ const isMigrated = (key: string) =>
 function migrateFromBuiltins() {
     const takenOver: string[] = [];
     for (const key of ORDER) {
-        if (isMigrated(key)) continue;
+        if (isMigrated(key) || !isOn(key)) continue;
         const original = FEATURES[key].name;
 
         // Copy every stored value (including private ones not in the
@@ -862,6 +886,7 @@ const qolDef: SettingsDefinition = {
     sonataOccasion: { type: OptionType.STRING, description: "Seasons accent: a season or holiday to always use, or current.", default: "current", hidden: true },
     sonataAnimate: { type: OptionType.BOOLEAN, description: "Sonata's page: the drifting colour wash, turning note and ripples.", default: true, hidden: true },
     sonataInverted: { type: OptionType.BOOLEAN, description: "Invert the background (dark becomes light).", default: false, hidden: true },
+    sonataFeatureDefaultsApplied: { type: OptionType.BOOLEAN, description: "First-run feature defaults have been applied.", default: false, hidden: true },
     sonataWelcomed: { type: OptionType.BOOLEAN, description: "The welcome tour has been shown.", default: false, hidden: true },
     sonataSeenVersion: { type: OptionType.STRING, description: "The newest What's new entry you've seen.", default: "", hidden: true },
     sonataUpdateNotice: { type: OptionType.BOOLEAN, description: "Show a bar at the top of Discord when there's a newer Sonata on GitHub.", default: true, hidden: true },
@@ -924,7 +949,7 @@ for (const key of ORDER) {
     qolDef[onKey(key)] = {
         type: OptionType.BOOLEAN,
         description: `Enable ${displayName(key)}`,
-        default: true,
+        default: false,
         hidden: true,
     };
 
@@ -1090,19 +1115,27 @@ setDoctorProvider({
     hasWindow,
 });
 
-setFeatureDockProvider({
-    // Groups show once (their parts aren't listed separately); dock buttons made for a part before keep working.
-    list: () => CARDS.map(key => isGroup(key) ? {
+function dockFeature(key: string): FeatureDockInfo | undefined {
+    if (isGroup(key)) return {
         key,
         name: cardName(key),
         running: anyRunning(key),
         opens: groupHasWindow(key) ? "window" : membersOf(key).some(hasOptions) ? "options" : "page",
-    } : {
+    };
+    const original = Object.hasOwn(FEATURES, key) ? key : BUILT_IN_OF[key];
+    if (!original || !Object.hasOwn(FEATURES, original)) return;
+    return {
         key,
-        name: displayName(key),
-        running: running.has(key),
-        opens: hasWindow(key) ? "window" : hasOptions(key) ? "options" : "page",
-    }),
+        name: dockLabel(key === original ? FEATURES[key].name : key),
+        running: running.has(original),
+        opens: hasWindow(original) ? "window" : hasOptions(original) ? "options" : "page",
+    };
+}
+
+setFeatureDockProvider({
+    // Groups show once (their parts aren't listed separately); dock buttons made for a part before keep working.
+    list: () => CARDS.map(dockFeature).filter(info => info !== undefined),
+    get: dockFeature,
     open(key, e) {
         key = BUILT_IN_OF[key] ?? key;
         if (isGroup(key)) {
@@ -1111,6 +1144,7 @@ setFeatureDockProvider({
             else openOptions(api, key);
             return;
         }
+        if (!Object.hasOwn(FEATURES, key)) { openPage(); return; }
         if (!running.has(key)) {
             showToast(`${displayName(key)} isn't running — switch it on in Sonata`, "message");
             openPage();
@@ -1141,19 +1175,30 @@ const plugin = definePlugin({
     // API plugins the features need. Names of bundled features are left out:
     // those are satisfied inside QOL (see REQUIRES), and listing them would
     // switch the separate built-in back on.
-    dependencies: [...new Set(["ChatInputButtonAPI", ...ORDER.flatMap(key => [...(FEATURES[key].dependencies ?? []), ...neededApis(FEATURES[key])])])]
+    dependencies: [...new Set(["ChatInputButtonAPI", "MessageEventsAPI", ...ORDER.flatMap(key => [...(FEATURES[key].dependencies ?? []), ...neededApis(FEATURES[key])])])]
         .filter(dep => !ORDER.some(key => FEATURES[key].name === dep)),
 
     patches: [
         ...ORDER.flatMap(key => (FEATURES[key].patches ?? []).map(p => scopePatch(key, p))),
+        {
+            find: 'tutorialId:"direct-messages"',
+            predicate: () => (activeAtBoot("declutter") && settings.store.declutter_removeQuestsAboveDms)
+                || (activeAtBoot("antiquest") && settings.store.antiquest_questsTab),
+            replacement: { match: /\.QUEST_HOME\)\},"quests"\)/, replace: "$&&&undefined" },
+        },
         // The dock under your user panel (Plugin Utilities → Dock).
         dockPatch,
-        // "In same voice" instead of "In voice" for people in your call.
-        ...sameVoicePatches,
     ],
 
-    useSameVoiceLabel,
-    sameVoiceText,
+    onBeforeMessageSend(_channelId, msg) {
+        if (running.has("linkCleaner")) cleanOutgoing(msg);
+        if (running.has("linkEmbedFixer") && msg.content) msg.content = fixOutgoing(msg.content);
+    },
+
+    onBeforeMessageEdit(_channelId, _messageId, msg) {
+        if (running.has("linkCleaner")) cleanOutgoing(msg, true);
+        if (running.has("linkEmbedFixer") && msg.content) msg.content = fixOutgoing(msg.content);
+    },
 
     renderDock,
 
@@ -1225,7 +1270,6 @@ const plugin = definePlugin({
         // A memory reading a minute, for the growth line in Performance → Disk space & memory.
         startMemoryWatch();
         // People who used Sonata before the welcome tour existed don't need it — they get What's new instead.
-        if (!settings.store.sonataWelcomed && Object.keys(PlainSettings.plugins[QOL_NAME] ?? {}).some(k => k.startsWith("on_"))) settings.store.sonataWelcomed = true;
         // The chat bar ♫ that holds every feature's chat bar button.
         // Asked for on 2026-10-11: hide Roblox Tools, File Converter and TikTok Tracker from the chat bar,
         // and keep Message Purger at the far right. Applied once; the ♫ right-click menu changes it after.

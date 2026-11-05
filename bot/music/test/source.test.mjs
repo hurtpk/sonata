@@ -50,3 +50,20 @@ test("Music uploads allow only the five requested extensions, bounded Discord at
     for (const ext of ["mp3", "wav", "mov", "mp4", "ogg"]) assert.equal(musicAttachment({ ...file, filename: "audio." + ext }).size, 1000);
     for (const change of [{filename:"audio.flac"},{filename:"audio.m4a"},{filename:"audio.exe"},{size:MUSIC_FILE_LIMIT+1},{size:0},{url:"http://127.0.0.1/a.mp3"},{url:"https://cdn.discordapp.com.evil.test/attachments/111111111111111111/222222222222222222/a.mp3"},{url:"https://cdn.discordapp.com/avatars/111111111111111111/a.mp3"}]) assert.throws(()=>musicAttachment({...file,...change}));
 });
+
+test("Queue pages keep global positions, and editing preserves other tracks", async () => {
+    const music = new VoiceMusic(async () => {}), player = createAudioPlayer();
+    const track = index => ({ title: "Track " + index, url: "https://soundcloud.com/test/track-" + index, duration: 100 });
+    const room = { guild: "guild", channel: "voice", current: track(0), queue: Array.from({ length: 10 }, (_, index) => track(index + 1)), loop: "off", player };
+    music.rooms.set(room.guild, room);
+    const job = (sub, options = {}) => music.command({ guild: room.guild, channel: room.channel, name: "queue", sub, options });
+    const second = await job("view", { page: 2 });
+    assert.deepEqual(second.pagination, { page: 2, pages: 2 });
+    assert.match(second.description, /9\. \[Track 9\]/); assert.doesNotMatch(second.description, /\[Track 1\]/);
+    await job("move", { from: 9, to: 1 }); assert.equal(room.queue[0].title, "Track 9");
+    room.queue.push(track(9)); await job("dedupe"); assert.equal(room.queue.filter(track => track.title === "Track 9").length, 1);
+    const picked = room.queue[3], kept = room.queue.filter(track => track !== picked);
+    music.stream = async (active, track) => { active.current = track; };
+    await job("jump", { position: 4 }); assert.equal(room.current, picked); assert.deepEqual(room.queue, kept);
+    await assert.rejects(job("move", { from: 50, to: 1 }), /positions/);
+});

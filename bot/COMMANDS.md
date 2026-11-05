@@ -1,6 +1,8 @@
 # Sonata Bot commands
 
-293 command forms across 98 registered top-level slash commands. Use slash commands or your server/personal prefix (default: comma). <Required> [Optional].
+323 command forms across 96 registered top-level slash commands. Use slash commands or your server/personal prefix (default: comma). <Required> [Optional].
+
+The slash forms for pause, resume, seek, volume and shuffle are under `/music`. For example, use `/music volume percent:40` or `,volume 40`.
 
 | Command | Description | Base permission |
 | --- | --- | --- |
@@ -59,7 +61,10 @@
 | `resume` | Resume paused music. | Runtime checks |
 | `skip` | Skip the current track. | Runtime checks |
 | `stop` | Clear the queue and disconnect Sonata. | Runtime checks |
-| `queue` | Show this server's music queue. | Runtime checks |
+| `queue view [page]` | Browse 8 upcoming tracks per page with buttons. Prefix shortcut: `,queue`. | Listeners |
+| `queue move <from> <to>` | Reorder two upcoming positions. | Music policy |
+| `queue dedupe` | Remove repeated upcoming sources. | Music policy |
+| `queue jump <position>` | Play the selected track next, preserving the rest. | Music policy |
 | `nowplaying` | Show the current track and playback position. | Runtime checks |
 | `volume <percent>` | Set music volume from zero to one hundred. | Runtime checks |
 | `shuffle` | Shuffle upcoming tracks. | Runtime checks |
@@ -335,3 +340,14 @@ Open Dashboard → Settings → Bot profile to change Sonata's nickname, avatar,
 Last.fm lookups require the private LASTFM_API_KEY host secret. Recent data caches for 30 seconds and profiles/charts for five minutes. Eight-second request timeout; up to 256 KiB per response; provider rate limits back off for 30 seconds. This reads existing Last.fm scrobbles; it does not create scrobbles or play audio.
 
 Server lookups now use `/serverinfo view`, `/serverinfo icon`, `/serverinfo banner` and `/serverinfo boosts` to stay under Discord’s slash-command limit. Existing serverinfo/servericon/serverbanner/boosts prefix commands remain available.
+
+### New controls
+
+- **Command access:** `commandsettings rule <command> <allow|deny> [role] [channel]`, `commandsettings rules [page]`, `commandsettings unrule <id>`. Choose exactly one role or channel; use a channel mention with prefix commands. Matching denies take priority. Allow rules do not grant permissions.
+- **Role menus:** `rolemenu create <name> <limit>`, `rolemenu add <id> <role> [label]`, `rolemenu remove <id> <role>`, `rolemenu post <id> <channel>`, `rolemenu list`, `rolemenu delete <id>`. Limit 1 makes choices exclusive. Only safe roles can be selected.
+- **Reminders:** `,remind 2h check the application` or `/remind set`. `remind list` sends your list privately; `remind cancel <id>` cancels. DM buttons snooze 10 minutes or 1 hour, or dismiss.
+- **Staff approvals:** `case approvalrule <ban|tempban|kick|timeout> <enabled> [channel]`, `case approvals [page]`, `case approve <id>` and `case reject <id> [reason]`. Manual Sonata punishments can require a second qualified moderator within 30 minutes.
+- **Permission audit:** `role audit [all|roles|channels|changes] [page]` and `role auditbaseline`. Administrator access required. Compares role permissions and channel access against a saved baseline.
+- **Last.fm:** `fm compare <member> [period]`, `fm topalbums [period] [member] [page]`, `fm album <artist> <album> [member]`, `fm whoknows <artist>` and `fm participate <enabled>`. Rankings are opt-in for each server.
+- **Media Studio:** `/download edit` or `,studio` with an upload or reply. Crop, resize, blur, pixelate, add captions or a text watermark, and export PNG or GIF. Undo restores the previous preview. `/download caption` and `,caption your text` open the same editor with captions set. `/download gif` or `,togif` converts an image directly.
+- **Sticker maker:** `/sticker make` or `,sticker make "Sticker name"` with an upload or reply. Preview a square crop or fit, remove a solid background, and export or add to the server. Publishing requires Create Expressions permission and an open slot.

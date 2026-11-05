@@ -16,7 +16,12 @@ export const MUSIC_COMMANDS = [
     command("resume", "Resume paused music", 0n),
     command("skip", "Skip the current track", 0n, [], ["next"]),
     command("stop", "Clear the queue and disconnect Sonata", 0n, [], ["leave", "disconnect"]),
-    command("queue", "Show this server's music queue", 0n, [], ["q"]),
+    command("queue", "Browse and edit this server's music queue", 0n, [
+        sub("view", "Browse upcoming tracks", [option("page", 4, "Queue page", false, { min_value: 1, max_value: 7 })]),
+        sub("move", "Move one upcoming track to another position", [option("from", 4, "Current track position", true, { min_value: 1, max_value: 50 }), option("to", 4, "New track position", true, { min_value: 1, max_value: 50 })]),
+        sub("dedupe", "Remove duplicate tracks from the upcoming queue"),
+        sub("jump", "Play a selected upcoming track next and skip the current track", [option("position", 4, "Upcoming track position", true, { min_value: 1, max_value: 50 })]),
+    ], ["q"]),
     command("nowplaying", "Show the current track and playback position", 0n, [], ["np"]),
     command("volume", "Set music volume from zero to one hundred", 0n, [option("percent", 4, "Volume percentage", true, { min_value: 0, max_value: 100 })]),
     command("shuffle", "Shuffle upcoming tracks", 0n),
@@ -45,6 +50,6 @@ export async function musicCommand(context, broker, store) {
     const current = await api(`/guilds/${guild.id}/voice-states/${bot.user.id}`, { optional: true });
     if (current?.channel_id && current.channel_id !== channel.id) fail("Join Sonata's current voice channel to control its music.");
     const policy = await musicPolicy(context, store, channel);
-    const result = await broker.submit({ id: command.id, guild: guild.id, channel: channel.id, actor: actor.user.id, name: command.name, options: command.options, ...policy });
-    return { ...embed(result.title, result.description), components: command.name === "stop" ? [] : musicPanel(guild.id, channel.id) };
+    const result = await broker.submit({ id: command.id, guild: guild.id, channel: channel.id, actor: actor.user.id, name: command.name, sub: command.sub, options: command.options, ...policy });
+    return { ...embed(result.title, result.description), components: command.name === "stop" ? [] : musicPanel(guild.id, channel.id, result.pagination) };
 }

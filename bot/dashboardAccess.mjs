@@ -7,10 +7,21 @@
 import { channelPermissions, fail, isId, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { expandMessage } from "./community.mjs";
 
-export async function dashboardAccess(api, guild, actor, store) {
-    const [info, roles, member] = await Promise.all([api(`/guilds/${guild}?with_counts=true`), api(`/guilds/${guild}/roles`), api(`/guilds/${guild}/members/${actor}`, { optional: true })]);
-    const policy = store.settings(guild).dashboardAccess ?? { administrators: true, users: [] };
+export function assertDashboardAccess(info, roles, member, actor, settings) {
+    const policy = settings.dashboardAccess ?? { administrators: true, users: [] };
     if (!member || (actor !== info.owner_id && !policy.users.includes(actor) && !(policy.administrators && memberPermissions(member, roles, info) & (PERMS.ADMIN | PERMS.GUILD)))) throw Object.assign(new Error("The server owner must allow your account or enable Administrator / Manage Server access to this dashboard."), { status: 403 });
+    return policy;
+}
+
+export async function dashboardAccess(api, guild, actor, store, { listing = false, counts = false } = {}) {
+    const memberRequest = api(`/guilds/${guild}/members/${actor}`, { optional: true, parallelRead: true });
+    if (listing && !await memberRequest) return null;
+    const [info, roles, member] = await Promise.all([
+        api(`/guilds/${guild}${counts ? "?with_counts=true" : ""}`, { parallelRead: true }),
+        api(`/guilds/${guild}/roles`, { parallelRead: true }),
+        memberRequest,
+    ]);
+    const policy = assertDashboardAccess(info, roles, member, actor, store.settings(guild));
     return { guild: info, roles, actor: member, policy };
 }
 

@@ -20,8 +20,8 @@ export const DASHBOARD_ACTIONS = {
     prefix: ["set", "remove", "view"], honeypot: ["add", "remove", "exempt", "exemptions", "list"],
     welcome: ["add", "remove", "test", "view", "list", "variables"], goodbye: ["add", "remove", "test", "view", "list", "variables"], autorole: ["add", "remove", "list", "enable", "disable"], autonick: ["set", "off", "view"], joinlogs: ["set", "off", "view"], autoresponder: ["add", "update", "remove", "view", "list"],
     ban: ["run"], tempban: ["run"], unban: ["run"], kick: ["run"], timeout: ["run"], untimeout: ["run"], warn: ["run"], warnings: ["run"], jailsetup: ["run"], jail: ["run"], unjail: ["run"],
-    nicknamepolicy: ["setup", "block", "unblock", "exempt", "check", "off", "view"], fakepermissions: ["grant", "revoke", "view"], commandsettings: ["disable", "enable", "view"], commandstats: ["summary", "commands", "failures"],
-    musicsettings: ["djrole", "cleardj", "mode", "votes"], role: ["recovery", "restore", "temp"],
+    nicknamepolicy: ["setup", "block", "unblock", "exempt", "check", "off", "view"], fakepermissions: ["grant", "revoke", "view"], commandsettings: ["disable", "enable", "view", "rule", "unrule", "rules"], commandstats: ["summary", "commands", "failures"],
+    musicsettings: ["djrole", "cleardj", "mode", "votes"], role: ["recovery", "restore", "temp", "audit", "auditbaseline"], rolemenu: ["create", "add", "remove", "post", "list", "delete"], case: ["approvalrule", "approvals", "approve", "reject"],
     settings: ["prefix", "modlog", "dm", "message", "videoembeds", "starboard", "starboardoff", "view"], antiraid: ["setup", "off", "clear"], antinuke: ["setup", "off", "trust", "restore"], eventlog: ["set", "off", "view"], escalation: ["set", "remove", "expiry", "exempt"], appeals: ["setup", "off"],
     verification: ["setup", "panel", "approve", "off"], levels: ["enable", "disable", "reward", "unreward", "reset"], alias: ["set", "remove", "list"], automod: ["wordsadd", "wordsremove", "allowadd", "allowremove", "mentions", "spam", "regexadd", "regexremove", "profileadd", "profileremove", "preview", "exemptrole", "exemptchannel", "config", "words", "list"],
     ticket: ["setup", "panel", "off", "claim", "close", "reopen", "transcript", "archive", "categoryadd", "categoryremove", "priority", "assign", "idle"], lockdown: ["start", "restore"],
@@ -134,7 +134,11 @@ export async function dashboardRequest(request, bot, execute) {
     }
     if (path === "servers" && request.method === "GET") {
         const allowed = [];
-        for (const server of servers(store)) try { await dashboardAccess(api, server.id, actor, store); allowed.push(server); } catch { continue; }
+        const installed = servers(store);
+        for (let index = 0; index < installed.length; index += 3) {
+            const checked = await Promise.allSettled(installed.slice(index, index + 3).map(async server => (await dashboardAccess(api, server.id, actor, store, { listing: true })) && server));
+            for (const check of checked) if (check.status === "fulfilled" && check.value) allowed.push(check.value);
+        }
         return { servers: allowed };
     }
     if (path === "forms" && request.method === "GET") return { forms: dashboardForms() };
@@ -142,10 +146,15 @@ export async function dashboardRequest(request, bot, execute) {
         const id = url.searchParams.get("guild");
         if (!isId(id) || !store.get("SELECT id FROM bot_guilds WHERE id=? AND active=1", id)) throw Object.assign(new Error("Sonata is not currently in this server."), { status: 404 });
         let context;
-        try { context = await dashboardAccess(api, id, actor, store); } catch (error) { if (path !== "owner/server") throw error; }
-        const guild = context?.guild ?? await api(`/guilds/${id}?with_counts=true`), botMember = await api(`/guilds/${id}/members/${bot.session.userId}`), data = { guild, botJoined: botMember.joined_at, manageable: !!context, stats: moderationStats(store, id), insights: commandInsights(store, id), status: bot.status() };
+        try { context = await dashboardAccess(api, id, actor, store, { counts: true }); } catch (error) { if (path !== "owner/server") throw error; }
+        const [guild, botMember, channels] = await Promise.all([
+            context?.guild ?? api(`/guilds/${id}?with_counts=true`, { parallelRead: true }),
+            api(`/guilds/${id}/members/${bot.session.userId}`, { parallelRead: true }),
+            context && api(`/guilds/${id}/channels`, { parallelRead: true }),
+        ]);
+        const data = { guild, botJoined: botMember.joined_at, manageable: !!context, stats: moderationStats(store, id), insights: commandInsights(store, id), status: bot.status() };
         if (context) {
-            const channels = await api(`/guilds/${id}/channels`), permission = memberPermissions(context.actor, context.roles, guild), moderation = !!(permission & (PERMS.ADMIN | PERMS.TIMEOUT | PERMS.BAN));
+            const permission = memberPermissions(context.actor, context.roles, guild), moderation = !!(permission & (PERMS.ADMIN | PERMS.TIMEOUT | PERMS.BAN));
             data.channels = channels.filter(channel => channelPermissions(context.actor, context.roles, guild, channel) & PERMS.VIEW).map(({ id, name, type }) => ({ id, name, type })); data.roles = context.roles.map(({ id, name, position }) => ({ id, name, position })); data.settings = store.settings(id);
             data.serverOwner = actor === guild.owner_id; data.dashboardAccess = data.serverOwner ? context.policy : undefined; data.administrator = !!(permission & PERMS.ADMIN); data.commandNames = COMMANDS.flatMap(value => [value.name, ...value.options.filter(sub => sub.type === 1).map(sub => `${value.name} ${sub.name}`)]);
             data.cases = moderation ? store.all("SELECT * FROM cases WHERE guild=? ORDER BY n DESC LIMIT 30", id) : [];
@@ -158,11 +167,10 @@ export async function dashboardRequest(request, bot, execute) {
         const input = await requestJson(request);
         if (!isId(input.guild) || !isId(input.channel) || !DASHBOARD_ACTIONS[input.name]?.includes(input.sub)) throw Object.assign(new Error("Choose an available dashboard action and server channel."), { status: 400 });
         if (store.get("SELECT id FROM guild_blacklist WHERE id=?", input.guild)) throw Object.assign(new Error("This server is blacklisted from Sonata Bot."), { status: 403 });
-        await dashboardAccess(api, input.guild, actor, store);
         if (!input.options || typeof input.options !== "object" || Array.isArray(input.options)) fail("Choose the action options.");
         const options = Object.entries(input.options).map(([name, value]) => ({ name, value }));
-        const command = { ...parseSlash({ name: input.name, options: input.sub === "run" ? options : [{ name: input.sub, options }] }), id: `dashboard:${crypto.randomUUID()}`, guild: input.guild, channel: input.channel, actor };
-        return { result: await execute(command) };
+        const command = { ...parseSlash({ name: input.name, options: input.sub === "run" ? options : [{ name: input.sub, options }] }), id: `dashboard:${crypto.randomUUID()}`, guild: input.guild, channel: input.channel, actor, dashboard: true };
+        return { result: await execute(command), settings: store.settings(input.guild) };
     }
     throw Object.assign(new Error("This dashboard action was not found."), { status: 404 });
 }

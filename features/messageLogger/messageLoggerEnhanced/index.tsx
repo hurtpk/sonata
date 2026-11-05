@@ -21,7 +21,7 @@ import { openLogModal } from "./components/LogsModal";
 import * as idb from "./db";
 import * as LoggedMessageManager from "./LoggedMessageManager";
 import { addMessage } from "./LoggedMessageManager";
-import { withoutStarred } from "./meta";
+import { loadMeta, withoutStarred } from "./meta";
 import { settings } from "./settings";
 import { FetchMessagesResponse, LoadMessagePayload, LoggedMessage, LoggedMessageJSON, MessageCreatePayload, MessageDeleteBulkPayload, MessageDeletePayload, MessageUpdatePayload } from "./types";
 import { cleanUpCachedMessage, cleanupUserObject, getNative, isGhostPinged, mapTimestamp, messageJsonToMessageClass, reAddDeletedMessages } from "./utils";
@@ -46,10 +46,17 @@ const cacheThing = findByPropsLazy("commit", "getOrCreate");
 let autoCleanupTimer: ReturnType<typeof setTimeout> | undefined;
 
 /** Deletes logs older than the "Delete logs older than" setting (starred ones stay). Returns how many went. */
-export async function autoCleanup(days = settings.store.autoDeleteDays): Promise<number> {
+export async function autoCleanup(days = settings.store.autoDeleteDays, preview = false): Promise<number> {
     if (!days || days <= 0) return 0;
     await idb.initIDB();
     const cutoff = new Date(Date.now() - days * 86400_000).toISOString();
+    if (preview) {
+        const meta = await loadMeta();
+        const cursor = await idb.db.transaction("messages", "readonly").store.index("by_timestamp").openCursor(IDBKeyRange.upperBound(cutoff));
+        let count = 0;
+        if (cursor) for await (const row of cursor) if (!meta[row.primaryKey]?.star) count++;
+        return count;
+    }
     const old = await withoutStarred(await idb.db.getAllFromIndex("messages", "by_timestamp", IDBKeyRange.upperBound(cutoff)));
     if (!old.length) return 0;
     await idb.deleteMessagesBulkIDB(old.map(r => r.message_id));

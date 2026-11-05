@@ -11,12 +11,16 @@ import { giveawayTimers } from "./giveaways.mjs";
 import { ticketTimers } from "./ticketExtras.mjs";
 import { highestRole, PERMS, requirePermission, memberPermissions, fail } from "./discord.mjs";
 import { maintainProfileBio } from "./guildProfile.mjs";
+import { reminderTimers } from "./reminders.mjs";
 
 export async function runDueJobs(store, api, botId) {
     for (const row of store.all("SELECT guild_profiles.guild FROM guild_profiles JOIN bot_guilds ON bot_guilds.id=guild_profiles.guild WHERE bot_guilds.active=1 AND COALESCE(json_extract(guild_profiles.data,'$.error'),'')<>'' LIMIT 1")) await maintainProfileBio(store, api, row.guild);
     store.run("DELETE FROM role_returns WHERE expires<=?", Date.now());
     for (const row of store.all("SELECT guild FROM settings")) expireWarnings(store, row.guild);
     const now = Date.now();
+    store.run("DELETE FROM image_edits WHERE expires<=?", now);
+    store.run("DELETE FROM moderation_approvals WHERE at<?", now - 30 * 86_400_000);
+    await reminderTimers(store, api, now);
     for (const found of store.all("SELECT * FROM jobs WHERE state='pending' AND due<=? ORDER BY due LIMIT 5", now)) {
         const job = store.get("UPDATE jobs SET due=?,tries=tries+1 WHERE id=? AND state='pending' AND due<=? RETURNING *", now + 60_000, found.id, now);
         if (!job) continue;

@@ -10,11 +10,12 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { openModal, showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
-import { getBytes, MediaNative } from "../../_shared/media";
+import { getBytes } from "../../_shared/media";
 import { Window } from "../../_shared/Window";
 import { decodeText, extensionOf, formatSize, LIMITS, PreviewKind, previewKind } from "./formats";
 import { highlight, isCode, languageName, MAX_COLOURED } from "./highlight";
 import { ArchiveView, FontView, VideoView } from "./MediaViews";
+import { openPdfReader } from "./PdfReader";
 import { TableView, TextView } from "./TextViews";
 
 const cl = classNameFactory("vc-fprev-");
@@ -91,10 +92,7 @@ export async function preview(file: FileRef) {
         return;
     }
     if (kind === "pdf") {
-        if (!MediaNative) { window.open(file.url, "_blank", "noopener"); return; }
-        showToast("Opening PDF…", "message");
-        const r = await MediaNative.openPdfWindow(file.url, file.filename);
-        if (!r.ok) showToast(`Couldn't open the PDF: ${r.error}`, "failure");
+        openPdfReader(file);
         return;
     }
     if (kind === "archive" || kind === "font" || kind === "video") {

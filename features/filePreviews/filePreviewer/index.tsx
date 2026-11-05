@@ -19,6 +19,11 @@ import { formatSize, LIMITS, previewKind } from "./formats";
 import { FileRef, preview } from "./Viewer";
 
 export const settings = defineFeatureSettings("filePreviewer", {
+    archivesOnly: {
+        type: OptionType.BOOLEAN,
+        description: "Show previews only for ZIP, RAR and 7z archives.",
+        default: false,
+    },
     showButtons: {
         type: OptionType.BOOLEAN,
         description: "Show Preview buttons under messages with previewable files (right-click → Preview works either way)",
@@ -28,7 +33,10 @@ export const settings = defineFeatureSettings("filePreviewer", {
 
 function previewable(message: Message | undefined): FileRef[] {
     return ((message?.attachments ?? []) as any[])
-        .filter(a => previewKind(a.filename, a.content_type))
+        .filter(a => {
+            const kind = previewKind(a.filename, a.content_type);
+            return kind && (!settings.store.archivesOnly || kind === "archive");
+        })
         .map(a => ({ url: a.url, filename: a.filename, size: a.size ?? 0, contentType: a.content_type }));
 }
 
@@ -77,7 +85,7 @@ const messageMenu: NavContextMenuPatchCallback = (children, { message }) => {
 
 export default definePlugin({
     name: "FilePreviewer",
-    description: "Preview PDFs, spreadsheets, text/code, .rar/.7z archives, fonts and MKV videos right from chat, without downloading them.",
+    description: "Preview PDFs, spreadsheets, text, code, ZIP, RAR and 7z archives, fonts and MKV videos from chat. The PDF reader includes page thumbnails, text search and last-page resume.",
     authors: [{ name: "aiqen", id: 779172192461783110n }],
     settings,
 

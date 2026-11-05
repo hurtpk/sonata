@@ -21,6 +21,33 @@ export interface Group {
 }
 
 export const GROUPS: Record<string, Group> = {
+    linkTools: {
+        name: "Link Tools",
+        description: "Remove tracking from links and make supported links embed in Discord.",
+        members: ["linkCleaner", "linkEmbedFixer"],
+    },
+    distractionControls: {
+        name: "Declutter",
+        description: "Hide Discord promos and distractions or block automatic quest requests.",
+        members: ["declutter", "antiquest"],
+    },
+    channelWorkspace: {
+        name: "Channel Workspace",
+        description: "Keep private channel notes and a local sticky message in one place.",
+        members: ["channelNotes", "stickyMessage"],
+        window: true,
+    },
+    dmTools: {
+        name: "DM Tools",
+        description: "Pin conversations, preview unread messages and limit repeated DM pings.",
+        members: ["pinDms", "messagePreview", "onePingPerDM"],
+    },
+    calculatorTools: {
+        name: "Calculator & Converter",
+        description: "Calculate expressions and convert units, currency or time in one window.",
+        members: ["calculator", "currencyConverter"],
+        window: true,
+    },
     musicAudio: {
         name: "Music & Audio",
         description: "Radio stations, your SoundCloud likes and your own music, the Spotify player above your profile, a better player for audio files in chat, and your own Discord sounds.",
@@ -41,7 +68,7 @@ export const GROUPS: Record<string, Group> = {
     filePreviews: {
         name: "File Previews",
         description: "See inside files sent in chat before you open them: PDFs, documents, code, ZIPs, 3D models and fonts.",
-        members: ["filePreviewer", "zipPreview", "modelPreview"],
+        members: ["filePreviewer", "modelPreview"],
     },
     textStyles: {
         name: "Text Styles",
@@ -113,7 +140,7 @@ export const GROUPS: Record<string, Group> = {
     voiceCalls: {
         name: "Voice & Calls",
         description: "Call timers, automatic volume balance, call history and idle-call settings together.",
-        members: ["callTimer", "autoVolume", "voiceTimeline", "disableCallIdle"],
+        members: ["callTimer", "autoVolume", "voiceTimeline", "disableCallIdle", "sameVoiceLabel"],
         window: true,
     },
     writingAssistant: {

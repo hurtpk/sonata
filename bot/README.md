@@ -4,7 +4,7 @@ An independent Discord moderation bot with the same commands available as slash 
 
 ## Commands
 
-There are 282 command forms under 100 top-level slash commands. Help has eight broad categories and emoji-only back, home and forward buttons. Both arrows browse All commands directly from the overview, without selecting a category. Prefix commands post only their final result or error, without a temporary checking message. `ping` measures a read-only Discord API request for prefix commands or the acknowledgement request for slash commands (including API queue wait), alongside the latest Gateway heartbeat round trip. A new connection shows an unavailable heartbeat value until an acknowledgement arrives.
+There are 323 command forms and 96 top-level slash commands. Help has eight broad categories and emoji-only back, home and forward buttons. Both arrows browse All commands directly from the overview, without selecting a category. Prefix commands post only their final result or error, without a temporary checking message. `ping` measures a read-only Discord API request for prefix commands or the acknowledgement request for slash commands (including API queue wait), alongside the latest Gateway heartbeat round trip. A new connection shows an unavailable heartbeat value until an acknowledgement arrives.
 
 ## Profile
 

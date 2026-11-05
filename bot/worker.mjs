@@ -36,6 +36,8 @@ import { maintainProfileBio } from "./guildProfile.mjs";
 import { videoInvocation, videoModeReply } from "./videoEmbeds.mjs";
 import { errorReply, recordCommandFailure } from "./commandFailures.mjs";
 import { VIDEO_MAX_BYTES, videoLimit } from "./music/videoSource.mjs";
+import { IMAGE_OUTPUT_LIMIT } from "./music/imageSource.mjs";
+import { isImageCommand } from "./imageEditor.mjs";
 import { nicknameEvent } from "./nicknamePolicy.mjs";
 
 export function controlAuthorized(request, secret) {
@@ -130,14 +132,15 @@ export class SonataBot {
                     const meta = request.headers.get("X-Sonata-Video") || "";
                     if (!meta || meta.length > 12_000) return new Response("Invalid video metadata.", { status: 400 });
                     const body = JSON.parse(Buffer.from(meta, "base64").toString("utf8"));
-                    if (this.music.jobs.get(body.id)?.job.kind !== "video") { await request.body?.cancel(); return Response.json({ ok: true }, { headers }); }
+                    const job = this.music.jobs.get(body.id)?.job;
+                    if (!job || !["video", "caption"].includes(job.kind)) { await request.body?.cancel(); return Response.json({ ok: true }, { headers }); }
                     const length = Number(request.headers.get("content-length"));
-                    const limit = Math.min(VIDEO_MAX_BYTES, this.music.jobs.get(body.id).job.limit ?? videoLimit());
+                    const limit = job.kind === "caption" ? IMAGE_OUTPUT_LIMIT : Math.min(VIDEO_MAX_BYTES, job.limit ?? videoLimit());
                     if (length > limit) { await request.body?.cancel(); return new Response("Video exceeds this server's upload limit.", { status: 413 }); }
                     const bytes = Buffer.alloc(length > 0 ? length : limit); let size = 0;
                     if (request.body) for await (const part of request.body) { if (size + part.length > bytes.length) return new Response("Video exceeds the upload limit.", { status: 413 }); bytes.set(part, size); size += part.length; }
                     this.music.complete(body, bytes.subarray(0, size));
-                    this.store.run("INSERT INTO resource_usage (day,video_bytes,videos) VALUES (?,?,1) ON CONFLICT(day) DO UPDATE SET video_bytes=video_bytes+excluded.video_bytes,videos=videos+1", new Date().toISOString().slice(0, 10), size);
+                    if (job.kind === "video") this.store.run("INSERT INTO resource_usage (day,video_bytes,videos) VALUES (?,?,1) ON CONFLICT(day) DO UPDATE SET video_bytes=video_bytes+excluded.video_bytes,videos=videos+1", new Date().toISOString().slice(0, 10), size);
                     return Response.json({ ok: true }, { headers });
                 }
                 let raw = "", size = 0;
@@ -294,7 +297,10 @@ export class SonataBot {
         if (packet.t === "INTERACTION_CREATE" && packet.d.type === 2 && packet.d.guild_id) this.ctx.waitUntil(this.command(packet.d, true));
         if (packet.t === "INTERACTION_CREATE" && [3, 5].includes(packet.d.type)) this.ctx.waitUntil(this.component(packet.d));
         if (packet.t === "MESSAGE_CREATE" && packet.d.guild_id && !packet.d.author.bot && !packet.d.webhook_id && this.queued < 50) this.enqueue(() => memberActivity(packet.d, this.store, this.api, this.session.userId, this.cooldowns));
-        if (packet.t === "GUILD_MEMBER_REMOVE") this.store.run("DELETE FROM afk WHERE guild=? AND user=?", packet.d.guild_id, packet.d.user.id);
+        if (packet.t === "GUILD_MEMBER_REMOVE") {
+            this.store.run("DELETE FROM afk WHERE guild=? AND user=?", packet.d.guild_id, packet.d.user.id);
+            this.store.run("DELETE FROM lastfm_guilds WHERE guild=? AND user=?", packet.d.guild_id, packet.d.user.id);
+        }
         if (["GUILD_CREATE", "GUILD_MEMBER_ADD", "GUILD_AUDIT_LOG_ENTRY_CREATE", "VOICE_STATE_UPDATE"].includes(packet.t)) {
             const guildId = packet.t === "GUILD_CREATE" ? packet.d.id : packet.d.guild_id, settings = this.store.settings(guildId);
             if (this.queued < 100 && ((packet.t === "GUILD_MEMBER_ADD" && settings.antiraid?.enabled) || (packet.t === "GUILD_AUDIT_LOG_ENTRY_CREATE" && (settings.antinuke?.enabled || Object.keys(settings.eventlogs ?? {}).length)) || (["GUILD_CREATE", "VOICE_STATE_UPDATE"].includes(packet.t) && settings.eventlogs?.voice))) this.enqueue(async () => {
@@ -332,26 +338,27 @@ export class SonataBot {
                 form = featureForm(data, this.store);
             } catch (error) { const code = recordCommandFailure(this.store, { id: data.id, guild: data.guild_id, channel: data.channel_id, actor: actorId(data), name: "control", sub: data.data.custom_id?.split(":")[0] }, error); try { await immediate({ type: 4, data: { ...errorReply(code), flags: 64 } }); } catch { return; } return; }
             if (form) { try { await immediate(form); } catch { return; } return; }
-            const player = data.data.custom_id?.startsWith("snmusic:"), logs = data.data.custom_id?.startsWith("snlogs:"), video = data.data.custom_id?.startsWith("snvideo:");
-            try { await immediate(player || logs || video ? { type: 6 } : { type: 5, data: { flags: 64 } }); } catch { return; }
+            const player = data.data.custom_id?.startsWith("snmusic:"), logs = data.data.custom_id?.startsWith("snlogs:"), video = data.data.custom_id?.startsWith("snvideo:"), image = data.data.custom_id?.startsWith("sncaption:"), media = video || image, update = player || logs || media;
+            try { await immediate(update ? { type: 6 } : { type: 5, data: { flags: 64 } }); } catch { return; }
             const run = async () => {
                 let videoClaimed = false;
                 try {
                     requireBotUser(this.store, actorId(data));
-                    if (video && data.guild_id && !featureEnabled(this.store.settings(data.guild_id), "media")) throw new Error("Media is disabled in this server.");
-                    if (video) { if (this.videoRequests) throw new Error("A video is already being processed. Try again shortly."); this.videoRequests++; videoClaimed = true; }
+                    if (media && data.guild_id && !featureEnabled(this.store.settings(data.guild_id), "media")) throw new Error("Media is disabled in this server.");
+                    if (media) { if (this.videoRequests) throw new Error("A media file is already being processed. Try again shortly."); this.videoRequests++; videoClaimed = true; }
                     if (data.guild_id && this.store.get("SELECT id FROM guild_blacklist WHERE id=?", data.guild_id)) throw new Error("This server is blacklisted from Sonata Bot.");
-                    const body = video ? await videoModeReply(data, this.api, this.music, this.session.userId) : await featureAction(data, this.store, this.api, this.session.userId, this.music);
-                    if (video) requireBotUser(this.store, actorId(data));
-                    if (video && data.guild_id && !featureEnabled(this.store.settings(data.guild_id), "media")) throw new Error("Media is disabled in this server.");
+                    const { onDelivered, ...body } = video ? await videoModeReply(data, this.api, this.music, this.session.userId) : await featureAction(data, this.store, this.api, this.session.userId, this.music);
+                    if (media) requireBotUser(this.store, actorId(data));
+                    if (media && data.guild_id && !featureEnabled(this.store.settings(data.guild_id), "media")) throw new Error("Media is disabled in this server.");
                     await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body) });
+                    onDelivered?.();
                 } catch (error) {
                     const code = recordCommandFailure(this.store, { id: data.id, guild: data.guild_id, channel: data.channel_id, actor: actorId(data), name: "control", sub: data.data.custom_id?.split(":")[0] }, error);
-                    const body = { ...errorReply(code), ...(player || logs || video ? { flags: 64 } : {}) };
-                    try { await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}${player || logs || video ? "" : "/messages/@original"}`, { method: player || logs || video ? "POST" : "PATCH", body }); } catch { return; }
+                    const body = { ...errorReply(code), ...(update ? { flags: 64 } : {}) };
+                    try { await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}${update ? "" : "/messages/@original"}`, { method: update ? "POST" : "PATCH", body }); } catch { return; }
                 } finally { if (videoClaimed) this.videoRequests--; }
             };
-            if (player || video) this.ctx.waitUntil(run()); else this.enqueue(run);
+            if (player || media) this.ctx.waitUntil(run()); else this.enqueue(run);
             return;
         }
         if (!isId(data.guild_id)) return;
@@ -398,10 +405,11 @@ export class SonataBot {
         }
         this.cooldowns.set(key, previous && previous.until > now ? { until: previous.until, n: previous.n + 1 } : { until: now + 10_000, n: 1 });
         for (const [key, value] of this.cooldowns) if (value.until < now) this.cooldowns.delete(key);
+        const image = isImageCommand(parsed);
         let apiLatency;
         try {
             const responseStarted = Date.now();
-            if (slash) await this.responses(`/interactions/${data.id}/${data.token}/callback`, { method: "POST", body: { type: 5, data: { flags: 64 } } });
+            if (slash) await this.responses(`/interactions/${data.id}/${data.token}/callback`, { method: "POST", body: { type: 5, data: { flags: image ? 0 : 64 } } });
             else if (parsed?.name === "ping") await this.responses("/users/@me");
             if (slash || parsed?.name === "ping") apiLatency = Date.now() - responseStarted;
         } catch (error) { recordCommandFailure(this.store, failureCommand, error); return; }
@@ -413,15 +421,15 @@ export class SonataBot {
         }
         const command = { ...parsed, id: data.id, prefix: !slash, evidence: !slash && ["warn","kick","ban"].includes(parsed.name) ? data.attachments : undefined, reply: !slash ? data.message_reference : undefined, actor, guild: data.guild_id, channel: data.channel_id, latency: { api: apiLatency, gateway: this.gatewayLatency } };
         const run = async () => {
-            const video = command.name === "sonata";
-            if (video && this.videoRequests) { const code = recordCommandFailure(this.store, command, { message: "A video is already being processed. Try again shortly.", outcome: "busy" }); await respond(errorReply(code)).catch(() => false); return; }
-            if (video) this.videoRequests++;
+            const media = command.name === "sonata" || image;
+            if (media && this.videoRequests) { const code = recordCommandFailure(this.store, command, { message: "A media file is already being processed. Try again shortly.", outcome: "busy" }); await respond(errorReply(code)).catch(() => false); return; }
+            if (media) this.videoRequests++;
             const typing = () => this.typing(`/channels/${data.channel_id}/typing`, { method: "POST" }).catch(() => false);
             let typingTimer;
             try {
-                if (video && !slash) { await typing(); typingTimer = setInterval(typing, 7000); }
+                if (media && !slash) { await typing(); typingTimer = setInterval(typing, 7000); }
                 let response;
-                try { response = await this.execute(command); if (video) requireBotUser(this.store, actor); if (video && !featureEnabled(this.store.settings(command.guild), "media")) throw new Error("Media is disabled in this server."); }
+                try { response = await this.execute(command); if (media) requireBotUser(this.store, actor); if (media && !featureEnabled(this.store.settings(command.guild), "media")) throw new Error("Media is disabled in this server."); }
                 catch (error) { response = error.publicNotice ? { content: `Temporarily unavailable. ${error.publicNotice}`, allowed_mentions: { parse: [] } } : errorReply(error.sonataCode || recordCommandFailure(this.store, command, error)); }
                 try {
                     const { silent, ...payload } = response;
@@ -439,9 +447,9 @@ export class SonataBot {
                         }
                     }
                 } catch (error) { recordCommandFailure(this.store, command, { message: `Response delivery failed: ${error.message}`, outcome: "delivery_failed" }); return; }
-            } finally { clearInterval(typingTimer); if (video) this.videoRequests--; }
+            } finally { clearInterval(typingTimer); if (media) this.videoRequests--; }
         };
-        if (MUSIC_NAMES.includes(command.name) || command.name === "sonata") this.ctx.waitUntil(run());
+        if (MUSIC_NAMES.includes(command.name) || command.name === "sonata" || image) this.ctx.waitUntil(run());
         else this.enqueue(run);
     }
 }

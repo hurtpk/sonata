@@ -15,8 +15,11 @@ export const DASHBOARD_COMMANDS = [
         ...["grant", "revoke"].map(name => sub(name, `${name === "grant" ? "Grant" : "Revoke"} bot-only role access`, [role(), option("permission", 3, "Bot-only permission", true, { choices: Object.keys(DELEGATED_COMMANDS).map(value => ({ name: value, value })) })])),
         sub("view", "List bot-only role permissions", [option("role", 8, "Inspect one role", false)]),
     ], ["fakeperms"]),
-    command("commandsettings", "Enable or disable commands in this server", PERMS.GUILD, [
+    command("commandsettings", "Enable, disable or restrict commands in this server", PERMS.GUILD, [
         ...["disable", "enable"].map(name => sub(name, `${name === "disable" ? "Disable" : "Enable"} a command or subcommand`, [option("command", 3, "Command, or command and subcommand", true, { max_length: 64 })])), sub("view", "List disabled commands"),
+        sub("rule", "Set a role or channel access rule for a command", [option("command", 3, "Command or quoted command and subcommand", true, { max_length: 64 }), option("mode", 3, "Allow or deny", true, { choices: ["allow", "deny"].map(value => ({ name: value, value })) }), option("role", 8, "Role to match, or choose a channel instead", false), channel([0, 5, 10, 11, 12, 15, 16], false)]),
+        sub("unrule", "Remove a role or channel rule by ID", [option("id", 3, "Rule ID shown by commandsettings rules", true, { max_length: 8 })]),
+        sub("rules", "Browse role and channel command rules", [number("page", "Rules page", 1, 5, false)]),
     ]),
     command("commandstats", "View popular commands, failures and usage totals", PERMS.GUILD, [
         ...["summary", "commands", "failures"].map(name => sub(name, { summary: "Show command result totals", commands: "Show the most used commands", failures: "Show commands with the most issues" }[name], [number("days", "Past calendar days, default thirty", 1, 90, false)])),

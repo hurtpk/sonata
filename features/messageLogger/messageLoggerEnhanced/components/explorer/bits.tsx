@@ -7,13 +7,14 @@
 import { classNameFactory } from "@utils/css";
 import { Parser, React, useEffect, useState } from "@webpack/common";
 
-import { Entry, fmtBytes, LogRecord, Media } from "./data";
+import { Entry, Filters, fmtBytes, LogRecord, Media, MetaMap, Scope, TypeFilter } from "./data";
 
 export const cl = classNameFactory("vc-mlx-");
 
 /** What the window needs from Message Logger. Kept apart so the window itself has no database code. */
 export interface Backend {
     load(): Promise<LogRecord[]>;
+    query(options: { scope: Scope; filters: Filters; meta: MetaMap; newest: boolean; offset: number; limit: number; signal?: AbortSignal; }): Promise<{ records: LogRecord[]; total: number; scoped: number; counts: Record<TypeFilter, number>; }>;
     remove(records: LogRecord[]): Promise<void>;
     clearAll(): Promise<void>;
     /** A saved picture's local copy. revoke() frees it when the picture leaves the screen. */
@@ -28,7 +29,7 @@ export interface Backend {
     toast(text: string, ok?: boolean): void;
     /** Calls back whenever a message is deleted or edited while the window is open. */
     watch?(cb: () => void): () => void;
-    storage?(): Promise<{ usage: number; quota: number; } | null>;
+    storage?(): Promise<{ usage: number; quota: number; attachments?: number; } | null>;
     importOld?(): Promise<void>;
     /** Your stars and notes. */
     meta(): Promise<Record<string, { star?: boolean; note?: string; }>>;
@@ -43,6 +44,7 @@ export interface Backend {
     setCleanupDays(days: number): void;
     /** Deletes logs older than this many days, except starred ones. Returns how many. */
     cleanupNow(days: number): Promise<number>;
+    previewCleanup(days: number): Promise<number>;
     /** Names for an ID on the ignore list. */
     describe(id: string): { name: string; kind: string; icon?: string | null; };
     /** Discord's own message look, for the "Discord" view. */

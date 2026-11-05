@@ -32,7 +32,7 @@ export async function musicPolicy(context, store, channel) {
     const { guild, command, actor, roles, api } = context, config = store.settings(guild.id).music ?? {}, privileged = !!(memberPermissions(actor, roles, guild) & (PERMS.ADMIN | PERMS.GUILD | PERMS.MOVE)) || !!(config.role && actor.roles.includes(config.role));
     const vote = command.name === "voteskip" || (command.name === "skip" && config.mode === "dj" && !privileged);
     if (!vote) {
-        if (config.mode === "dj" && !privileged && !["play", "queue", "nowplaying"].includes(command.name)) fail("Playback controls require the configured DJ role or staff permissions. Use voteskip to vote for a skip.");
+        if (config.mode === "dj" && !privileged && !["play", "nowplaying"].includes(command.name) && !(command.name === "queue" && command.sub === "view")) fail("Playback controls require the configured DJ role or staff permissions. Use voteskip to vote for a skip.");
         return {};
     }
     if (!store.get("SELECT guild FROM music_audience_ready WHERE guild=?", guild.id)) fail("Discord's current listener list is not ready yet. Try again shortly.");

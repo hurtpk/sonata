@@ -18,10 +18,10 @@ import { Window } from "../_shared/Window";
 import { openMemberLogs } from "../memberLogs";
 import { openModeration, registerModerationPart } from "../serverTools/Moderation";
 
-export function ActiveTimeoutsWindow({ modalProps, initialGuildId }: { modalProps: RenderModalProps; initialGuildId?: string; }) {
+export function ActiveTimeoutsWindow({ modalProps, initialGuildId, userId }: { modalProps: RenderModalProps; initialGuildId?: string; userId?: string; }) {
     const guilds = useStateFromStores([GuildStore, PermissionStore], () => Object.values(GuildStore.getGuilds()).filter(guild => PermissionStore.can(PermissionsBits.MODERATE_MEMBERS, guild)).sort((a, b) => a.name.localeCompare(b.name)), [], lodash.isEqual);
     const [guildId, setGuildId] = useState(initialGuildId ?? SelectedGuildStore.getGuildId() ?? guilds[0]?.id ?? "");
-    const [query, setQuery] = useState("");
+    const [query, setQuery] = useState(userId ?? "");
     const now = useFixedTimer({ initialTime: 0 });
     const canView = useStateFromStores([PermissionStore, GuildStore], () => !!GuildStore.getGuild(guildId) && PermissionStore.can(PermissionsBits.MODERATE_MEMBERS, GuildStore.getGuild(guildId)), [guildId]);
     const members = useStateFromStores([GuildMemberStore, UserStore], () => canView ? GuildMemberStore.getMembers(guildId).filter(member => {
@@ -45,7 +45,7 @@ export function ActiveTimeoutsWindow({ modalProps, initialGuildId }: { modalProp
     </Window>;
 }
 
-export const openActiveTimeouts = (guildId?: string) => openModeration("activeTimeouts", props => <ActiveTimeoutsWindow modalProps={props} initialGuildId={guildId} />);
+export const openActiveTimeouts = (guildId?: string, userId?: string) => openModeration("activeTimeouts", props => <ActiveTimeoutsWindow modalProps={props} initialGuildId={guildId} userId={userId} />);
 registerModerationPart("activeTimeouts", props => <ActiveTimeoutsWindow modalProps={props} />);
 export default definePlugin({
     name: "ActiveTimeouts", description: "Review active timeouts in Discord's loaded member data, search members and see remaining times in servers you moderate.", authors: [Devs.Ven],

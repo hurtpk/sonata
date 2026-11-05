@@ -48,6 +48,15 @@ const idbSavedImages = new Map<string, IDBSavedImage>();
     }
 })();
 
+export async function getAttachmentCacheBytes() {
+    let bytes = IS_WEB ? 0 : await Native.messageLogAttachmentBytes();
+    for (const key of await keys(ImageStore)) {
+        const data = await get<Uint8Array>(key, ImageStore);
+        bytes += data?.byteLength ?? 0;
+    }
+    return bytes;
+}
+
 export async function getImage(attachmentId: string, fileExt?: string | null): Promise<any> {
     // for people who have access to native api but some images are still in idb
     // also for people who dont have native api

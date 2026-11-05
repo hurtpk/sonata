@@ -7,12 +7,14 @@
 import "../_shared/tool.css";
 import "./styles.css";
 
+import type { RenderModalProps } from "@vencord/discord-types";
 import definePlugin, { OptionType } from "@utils/types";
 
 import { defineFeatureSettings } from "../../featureSettings";
 import type { AngleMode, Rounding } from "./engine";
 import { loadHistory } from "./history";
-import { CalcPrefs, openCalculator } from "./Panel";
+import { openSection, registerSection } from "../_shared/Hub";
+import { CalcModal, CalcPrefs } from "./Panel";
 
 export const settings = defineFeatureSettings("calculator", {
     angleMode: {
@@ -42,13 +44,13 @@ export const settings = defineFeatureSettings("calculator", {
 
 const KEYS: Record<keyof CalcPrefs, string> = { angle: "angleMode", rounding: "rounding", fraction: "showFractions", bases: "showBases" };
 
-const open = () => {
+const render = (props: RenderModalProps) => {
     const s = settings.store as any;
-    openCalculator(
-        { angle: (s.angleMode as AngleMode) ?? "deg", rounding: (s.rounding as Rounding) ?? "auto", fraction: !!s.showFractions, bases: !!s.showBases },
-        p => { for (const [k, v] of Object.entries(p)) s[KEYS[k as keyof CalcPrefs]] = v; },
-    );
+    return <CalcModal modalProps={props} prefs={{ angle: (s.angleMode as AngleMode) ?? "deg", rounding: (s.rounding as Rounding) ?? "auto", fraction: !!s.showFractions, bases: !!s.showBases }}
+        setPrefs={p => { for (const [k, v] of Object.entries(p)) s[KEYS[k as keyof CalcPrefs]] = v; }} />;
 };
+
+registerSection("calculatorTools", { id: "calculator", feature: "calculator", name: "Calculator", sub: "Expressions and formulas", render });
 
 export default definePlugin({
     name: "Calculator",
@@ -57,7 +59,7 @@ export default definePlugin({
     settings,
 
     // Its own window — add it to the dock from Plugin Utilities → Dock.
-    openSettingsModal: open,
+    openSettingsModal: () => openSection("calculatorTools", "calculator"),
 
     start() {
         loadHistory();

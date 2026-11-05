@@ -8,7 +8,7 @@ import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { openModal, showToast, useMemo, useRef, useState } from "@webpack/common";
+import { showToast, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { Window } from "../_shared/Window";
@@ -43,7 +43,7 @@ const ROUNDINGS: [Rounding, string][] = [["auto", "Auto"], ["0", "0"], ["2", "0.
 
 export interface CalcPrefs { angle: AngleMode; rounding: Rounding; fraction: boolean; bases: boolean; }
 
-function CalcModal({ modalProps, prefs: initial, setPrefs: save }: { modalProps: RenderModalProps; prefs: CalcPrefs; setPrefs(p: Partial<CalcPrefs>): void; }) {
+export function CalcModal({ modalProps, prefs: initial, setPrefs: save }: { modalProps: RenderModalProps; prefs: CalcPrefs; setPrefs(p: Partial<CalcPrefs>): void; }) {
     const [tab, setTab] = useState<Tab>("calc");
     // Kept here too, so a change shows straight away (and is saved for next time).
     const [prefs, setPrefsState] = useState(initial);
@@ -222,8 +222,4 @@ function CalcTab({ prefs, setPrefs }: { prefs: CalcPrefs; setPrefs(p: Partial<Ca
                 </div>
         </>
     );
-}
-
-export function openCalculator(prefs: CalcPrefs, setPrefs: (p: Partial<CalcPrefs>) => void) {
-    openModal(props => <CalcModal modalProps={props} prefs={prefs} setPrefs={setPrefs} />);
 }

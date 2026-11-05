@@ -16,6 +16,7 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { ChannelStore, DraftType, React, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { isFeatureRunning } from "../../../featureSettings";
 import { openSection, registerSection, replaceOriginal } from "../../_shared/Hub";
 import { Window } from "../../_shared/Window";
 import { realDuration } from "../fileConverter/Trimmer";
@@ -902,7 +903,7 @@ const EXPORT_PRESETS: { id: string; label: string; hint: string; set: Partial<Pr
     { id: "insta", label: "Instagram post", hint: "4:5 · 1080p", set: { frame: "4:5", fill: "blur", maxHeight: 1080, size: "smaller" } },
 ];
 
-function ExportPanel({ p, change }: PanelProps) {
+function ExportPanel({ p, change, sel }: PanelProps) {
     const [busy, setBusy] = useState<{ text: string; progress?: number; } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [done, setDone] = useState<(Exported & { url: string; }) | null>(null);
@@ -915,12 +916,17 @@ function ExportPanel({ p, change }: PanelProps) {
     const [asGif, setAsGif] = useState(false);
     const [gif, setGif] = useState<GifOptions>({ width: 480, fps: 15, fit10: true });
 
-    const run = async () => {
+    const run = async (openGifMaker = false) => {
         setError(null);
         if (done) { URL.revokeObjectURL(done.url); setDone(null); }
         setBusy({ text: "Starting…" });
         try {
-            const r = await exportVideo(p, (text, progress) => setBusy({ text, progress }), asGif ? gif : undefined);
+            const project = openGifMaker && sel ? keepOnly(p, ...sel) : p;
+            const r = await exportVideo(project, (text, progress) => setBusy({ text, progress }), asGif && !openGifMaker ? gif : undefined);
+            if (openGifMaker) {
+                openSection("mediaTools", "gifMaker", undefined, { file: new File([r.blob], r.name, { type: "video/mp4" }) });
+                return;
+            }
             setDone({ ...r, url: URL.createObjectURL(r.blob) });
         } catch (e) {
             setError(e instanceof Error && e.message ? e.message : "It stopped");
@@ -1000,8 +1006,9 @@ function ExportPanel({ p, change }: PanelProps) {
                     <button type="button" className={cl("btn")} onClick={() => stopExport()}>Stop</button>
                 </div>
             ) : (
-                <button type="button" className={classes(cl("btn"), cl("primary"), ve("export"))} onClick={run}>{asGif ? "⬇ Make GIF" : "⬇ Export video"}</button>
+                <button type="button" className={classes(cl("btn"), cl("primary"), ve("export"))} onClick={() => void run()}>{asGif ? "⬇ Make GIF" : "⬇ Export video"}</button>
             )}
+            {!busy && isFeatureRunning("gifMaker") && <button type="button" className={cl("btn")} onClick={() => void run(true)}>{sel ? "Open selection in GIF Maker" : "Open video in GIF Maker"}</button>}
             {error && <div className={cl("error")}>{error}</div>}
             {done && (
                 <div className={ve("done")}>
@@ -1011,6 +1018,7 @@ function ExportPanel({ p, change }: PanelProps) {
                     <div className={ve("row")}>
                         <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={send}>Send in chat</button>
                         <button type="button" className={cl("btn")} onClick={() => saveFile(file())}>Save</button>
+                        {isFeatureRunning("fileConverter") && <button type="button" className={cl("btn")} onClick={() => openSection("mediaTools", "fileConverter", undefined, { file: file() })}>Convert</button>}
                     </div>
                 </div>
             )}

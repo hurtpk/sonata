@@ -6,7 +6,7 @@
 
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parsePrefix, parseSlash } from "../commands.mjs";
+import { parsePrefix, parseSlash, slashCommands, slashName } from "../commands.mjs";
 import { musicCommand } from "../musicCommands.mjs";
 import { MusicBridge } from "../musicBridge.mjs";
 import { commandContext } from "../moderation.mjs";
@@ -36,6 +36,20 @@ test("Music options agree between prefixes and slash commands and reject invalid
     assert.throws(() => parsePrefix(",volume 101", ","), /valid percent/);
     assert.throws(() => parsePrefix(",loop forever", ","), /valid mode/);
     assert.throws(() => parsePrefix(",seek -1", ","), /valid seconds/);
+    const registered = slashCommands();
+    const group = registered.find(command => command.name === "music");
+    assert.deepEqual(group.options.map(action => action.name), ["pause", "resume", "seek", "volume", "shuffle"]);
+    for (const [action, option, amount] of [["pause"], ["resume"], ["seek", "seconds", 90], ["volume", "percent", 40], ["shuffle"]]) {
+        assert.ok(!registered.some(command => command.name === action));
+        assert.equal(slashName(action), `music ${action}`);
+        const values = option ? [{ name: option, type: 4, value: amount }] : [];
+        const nested = parseSlash({ name: "music", options: [{ name: action, type: 1, options: values }] });
+        assert.deepEqual(nested, parsePrefix(`,${action}${option ? ` ${amount}` : ""}`, ","));
+        assert.deepEqual(nested, parseSlash({ name: action, options: values }));
+    }
+    for (const name of ["play", "skip", "stop"]) assert.ok(registered.some(command => command.name === name));
+    assert.throws(() => parseSlash({ name: "music", options: [{ name: "stop", type: 1 }] }), /Choose music/);
+    assert.throws(() => parseSlash({ name: "music", options: [{ name: "volume", options: [{ name: "percent", value: 101 }] }] }), /valid percent/);
 });
 
 test("Music bridge permits only its leased channel and opcode, drains once, and completes confirmed requests", async () => {

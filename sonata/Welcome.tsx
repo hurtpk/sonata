@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// The first time someone opens Sonata: a short tour that picks a starting
-// set of features (so they don't get everything at once) and a look. Plus
+// The first time someone opens Sonata: a short tour and a choice of accent. Plus
 // "What's new" for when Sonata gets updated.
 
 import { classes } from "@utils/misc";
@@ -14,46 +13,10 @@ import { React, useState } from "@webpack/common";
 import type { QolApi } from "../controller/ControlCenter";
 import { ChangeEntry } from "./changelog";
 
-/** Everyday features that are light and useful to almost everyone. */
-const MINIMAL = [
-    "imageZoom", "viewIcons", "permissionsViewer", "voiceDownload", "translate", "readAllNotificationsButton",
-    "linkCleaner", "videoSpeed", "waveformPlayer", "spotifyControls", "brokenPatchFinder", "crashHandler",
-];
-
-/** Minimal, plus the fun and handy things — but none of the sneaky or experimental ones. */
-const BALANCED = [
-    ...MINIMAL,
-    "gifMaker", "screenshotStyler", "messageLogger", "pinDms", "callTimer", "betterInvites", "fancyText", "charactersPicker",
-    "calculator", "qrCodes", "imageToText", "filePreviewer", "zipPreview", "birthdayReminders", "onThisDay", "scheduledMessages",
-    "multiQuote", "messagePreview", "longMessageCollapser", "linkEmbedFixer", "smoothChat", "currencyConverter", "stickyMessage",
-    "splitView", "modelPreview", "streaks", "sonataBadge", "shareSetup", "mutualGroupDMs", "serverInfo", "roleColorEverywhere",
-    "showRolesInChat", "autoVolume", "soundStudio", "asciiArt", "giftWrap", "miniGames", "calendar", "inviteManager",
-    "embedCopier", "declutter", "imageLink", "imageFilename", "reverseImageSearch", "expressionStealer", "voiceMessages",
-    "splitLargeMessages", "onePingPerDM", "noUnblockToJump", "disableCallIdle", "showTimeoutDuration", "platformIndicators",
-];
-
-type Pick = "minimal" | "balanced" | "everything" | "keep";
-
-const PICKS: { id: Pick; icon: string; name: string; blurb: string; }[] = [
-    { id: "minimal", icon: "🌱", name: "Minimal", blurb: "A dozen everyday helpers — zoom, translate, clean links, the Spotify player. Light and simple." },
-    { id: "balanced", icon: "⚖️", name: "Balanced", blurb: "Most of Sonata: GIF Maker, screenshots, message logger, pins, tools and fun extras. Recommended." },
-    { id: "everything", icon: "🚀", name: "Everything", blurb: "Every feature on, including the experimental ones. You can switch any of them off later." },
-    { id: "keep", icon: "✋", name: "Keep what I have", blurb: "Don't change anything — I'll pick features myself." },
-];
-
 export function Welcome({ api, store, accents, onDone }: { api: QolApi; store: any; accents: { name: string; hex: string; }[]; onDone(): void; }) {
     const [step, setStep] = useState(0);
-    const [pick, setPick] = useState<Pick>("balanced");
-
-    const applyPick = () => {
-        if (pick === "keep") return;
-        const wanted = new Set(pick === "everything" ? api.keys : pick === "minimal" ? MINIMAL : BALANCED);
-        api.setManyOn(api.keys.filter(k => wanted.has(k) && !api.isOn(k)), true);
-        api.setManyOn(api.keys.filter(k => !wanted.has(k) && api.isOn(k)), false);
-    };
     const finish = () => { store.sonataWelcomed = true; onDone(); };
     const pending = api.pendingCount();
-    const count = pick === "everything" ? api.keys.length : pick === "minimal" ? MINIMAL.filter(k => api.keys.includes(k)).length : BALANCED.filter(k => api.keys.includes(k)).length;
 
     return (
         <div className="sonata-welcome" role="dialog" aria-label="Welcome to Sonata">
@@ -75,20 +38,11 @@ export function Welcome({ api, store, accents, onDone }: { api: QolApi; store: a
 
                 {step === 1 && (
                     <>
-                        <h2>Pick a <em>starting set</em></h2>
-                        <p>Turning everything on at once can be a lot. Start with a set — you can switch any feature on or off from the Features list.</p>
-                        <div className="sonata-welcome-picks">
-                            {PICKS.map(p => (
-                                <button key={p.id} type="button" className={classes("sonata-welcome-pick", pick === p.id && "on")} onClick={() => setPick(p.id)}>
-                                    <span className="sonata-welcome-pick-icon">{p.icon}</span>
-                                    <span className="sonata-welcome-pick-name">{p.name}{p.id === "balanced" && <i>Recommended</i>}</span>
-                                    <span className="sonata-welcome-small">{p.blurb}</span>
-                                </button>
-                            ))}
-                        </div>
+                        <h2>Choose your <em>features</em></h2>
+                        <p>Optional features start off. Turn on the ones you want from the Features page.</p>
                         <div className="sonata-welcome-actions">
                             <button type="button" className="sonata-btn" onClick={() => setStep(0)}>← Back</button>
-                            <button type="button" className="sonata-btn sonata-btn-light" onClick={() => { applyPick(); setStep(2); }}>{pick === "keep" ? "Next →" : `Use ${count} features →`}</button>
+                            <button type="button" className="sonata-btn sonata-btn-light" onClick={() => setStep(2)}>Next →</button>
                         </div>
                     </>
                 )}

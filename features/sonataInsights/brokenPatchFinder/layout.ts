@@ -38,7 +38,6 @@ export const CHECKS: LayoutCheck[] = [
     { id: "perf-shadows", what: "Performance → Flatter look", names: ["popout_", "menu_"], inUse: () => sonata("perfNoShadows") },
     { id: "wave", what: "Audio Waveform Player (hiding Discord's own player)", names: ["wrapperAudio_"], inUse: () => featureOn("waveformPlayer") },
     { id: "sticky", what: "Sticky Message (finding the chat box)", names: ["chatContent", "channelTextArea"], inUse: () => featureOn("stickyMessage") },
-    { id: "typing", what: "Typing Sounds (finding the chat box)", names: ["channelTextArea"], inUse: () => featureOn("typingSounds") },
     { id: "currency", what: "Currency Converter (hover to show)", names: ["message_"], inUse: () => featureOn("currencyConverter") },
     { id: "calltimer", what: "Call Timer (its place in the voice panel)", names: ["rtcConnectionStatus"], inUse: () => featureOn("callTimer") },
     { id: "spotify", what: "Spotify Controls (the seek bar's look)", names: ["barFill", "grabber"], inUse: () => featureOn("spotifyControls") },

@@ -5,7 +5,9 @@
  */
 
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, NavigationRouter, openModal, useEffect, useRef, useState } from "@webpack/common";
+import { openSection, registerSection } from "../_shared/Hub";
+
+import { ChannelStore, NavigationRouter, SelectedChannelStore, useEffect, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { Window } from "../_shared/Window";
@@ -106,5 +108,13 @@ function NotesModal({ modalProps, channelId, guildId, startKey }: { modalProps: 
 }
 
 export function openNotes(o: { channelId?: string; guildId?: string; startKey?: string; } = {}) {
-    openModal(props => <NotesModal modalProps={props} {...o} />);
+    openSection("channelWorkspace", "channelNotes", props => <NotesModal modalProps={props} {...o} />);
 }
+
+registerSection("channelWorkspace", {
+    id: "channelNotes", feature: "channelNotes", name: "Notes", sub: "Private notes for this chat",
+    render: props => {
+        const channelId = SelectedChannelStore.getChannelId();
+        return <NotesModal modalProps={props} channelId={channelId} guildId={ChannelStore.getChannel(channelId)?.guild_id} />;
+    },
+});

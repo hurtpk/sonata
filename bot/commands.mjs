@@ -14,11 +14,17 @@ import { DASHBOARD_COMMANDS } from "./dashboardCommands.mjs";
 import { AUTOMOD_OPTIONS } from "./advancedAutomod.mjs";
 import { LASTFM_COMMAND } from "./lastfm.mjs";
 import { delegatedCommand } from "./commandAccess.mjs";
+import { ROLEMENU_COMMAND } from "./roleMenus.mjs";
+import { REMIND_COMMAND } from "./reminders.mjs";
+import { APPROVAL_OPTIONS } from "./approvals.mjs";
+import { PERMISSION_AUDIT_OPTIONS } from "./permissionAudit.mjs";
 
 export const COMMANDS = [
     command("stick", "Keep a message below new channel messages", PERMS.MESSAGES, [sub("set", "Set sticky text or copy a message from this channel", [option("message", 3, "Text or message link, or reply to a message", false, { max_length: 1800 })]), sub("remove", "Stop reposting the channel sticky message", [text("message", "Current or original sticky message link", false)])], ["stickmessage", "unstick", "unstickmessage"]),
     command("sonata", "Embed a supported public video with sender credit", 0n, [option("url", 3, "TikTok, Instagram, X or YouTube video URL", true, { max_length: 500 })]),
     LASTFM_COMMAND,
+    ROLEMENU_COMMAND,
+    REMIND_COMMAND,
     ...ADVANCED_COMMANDS,
     ...MUSIC_COMMANDS,
     MUSIC_SETTINGS_COMMAND,
@@ -88,6 +94,7 @@ export const COMMANDS = [
     ...["pin", "unpin"].map(name => command(name, `${name === "pin" ? "Pin" : "Unpin"} a message in this channel`, PERMS.PINS, [option("message", 3, "A message ID or link in this channel"), reason()])),
     command("pins", "Browse this channel's pinned messages", 0n, [option("before", 3, "Show pins before this ISO timestamp", false)]),
     command("role", "Assign roles and manage role appearance", PERMS.ROLES, [
+        ...PERMISSION_AUDIT_OPTIONS,
         sub("temp", "Give a member a role until a chosen time", [member(), role(), duration(), reason()]),
         sub("restore", "Restore basic roles within three hours of departure", [member()]),
         sub("recovery", "Enable or disable future role recovery snapshots", [option("enabled", 5, "Remember role IDs for three-hour staff recovery")]),
@@ -119,6 +126,7 @@ export const COMMANDS = [
     command("jail", "Restrict a member to the jail channel", PERMS.TIMEOUT | PERMS.ROLES, [member(), option("duration", 3, "Optional duration, such as 2h or 7d", false), reason()]),
     command("unjail", "Release a member and restore their saved roles", PERMS.TIMEOUT | PERMS.ROLES, [member(), reason()]),
     command("case", "View and maintain server moderation records", PERMS.TIMEOUT, [
+        ...APPROVAL_OPTIONS,
         sub("export", "Download up to one hundred member cases and their notes", [member(), option("format", 3, "Report format", false, { choices: ["json", "csv", "text"].map(value => ({ name: value, value })) }), option("before", 4, "Export case numbers below this number", false, { min_value: 1 })]),
         sub("list", "Browse this server's recent cases", [option("before", 4, "Show cases before this case number", false, { min_value: 1 })]),
         sub("view", "View one case", [caseNumber()]),
@@ -155,8 +163,24 @@ export const COMMANDS = [
 ];
 
 export const SERVER_INFO_SLASH = { serverinfo: "view", servericon: "icon", serverbanner: "banner", boosts: "boosts" };
-export const slashName = name => SERVER_INFO_SLASH[name] ? "serverinfo " + SERVER_INFO_SLASH[name] : name;
-export const slashCommands = () => COMMANDS.filter(value => !["servericon", "serverbanner", "boosts"].includes(value.name)).map(({ permission, aliases, ...value }) => ({ ...value, ...(value.name === "serverinfo" ? { options: Object.entries(SERVER_INFO_SLASH).map(([name, subName]) => sub(subName, COMMANDS.find(command => command.name === name).description)) } : {}), default_member_permissions: permission && !delegatedCommand(value.name) ? permission.toString() : null, contexts: [0], integration_types: [0] }));
+const MUSIC_SLASH = ["pause", "resume", "seek", "volume", "shuffle"];
+export const slashName = name => Object.hasOwn(SERVER_INFO_SLASH, name) ? "serverinfo " + SERVER_INFO_SLASH[name]
+    : MUSIC_SLASH.includes(name) ? "music " + name : name;
+
+export function slashCommands() {
+    const standalone = COMMANDS.filter(({ name }) => !MUSIC_SLASH.includes(name) && !["servericon", "serverbanner", "boosts"].includes(name));
+    const music = command("music", "Adjust playback in your voice channel", 0n, MUSIC_SLASH.map(name => {
+        const action = MUSIC_COMMANDS.find(value => value.name === name);
+        return sub(name, action.description, action.options);
+    }));
+    return [...standalone, music].map(({ permission, aliases, ...value }) => ({
+        ...value,
+        ...(value.name === "serverinfo" ? { options: Object.entries(SERVER_INFO_SLASH).map(([name, subName]) => sub(subName, COMMANDS.find(command => command.name === name).description)) } : {}),
+        default_member_permissions: permission && !delegatedCommand(value.name) ? permission.toString() : null,
+        contexts: [0],
+        integration_types: [0],
+    }));
+}
 
 export function parseDuration(value, maximum = 365 * 86400_000) {
     if (typeof value !== "string" || value.length > 40 || !/^(?:\d+(?:\.\d+)?[smhdw])+$/i.test(value)) fail("Use a duration such as 30m, 2h, 7d or 1h30m.");
@@ -183,6 +207,11 @@ function validate(options, definitions) {
 }
 
 export function parseSlash(data, attachments = {}) {
+    if (data.name === "music") {
+        const action = data.options?.[0];
+        if (!MUSIC_SLASH.includes(action?.name)) fail("Choose music pause, resume, seek, volume or shuffle.");
+        data = { ...data, name: action.name, options: action.options ?? [] };
+    }
     if (data.name === "serverinfo" && data.options?.[0]?.name) {
         const selected = Object.entries(SERVER_INFO_SLASH).find(([, subName]) => subName === data.options[0].name);
         if (!selected) fail("Choose serverinfo view, icon, banner or boosts.");
@@ -227,16 +256,26 @@ export function parsePrefix(content, prefix, attachments = []) {
     if (definition.name === "commandstats" && !tokens.length) tokens.push("summary");
     if (["commandsettings", "fakepermissions", "nicknamepolicy"].includes(definition.name) && !tokens.length) tokens.push("view");
     if (definition.name === "musicsettings" && !tokens.length) tokens.push("view");
+    if (definition.name === "queue" && (!tokens.length || /^\d+$/.test(tokens[0]))) tokens.unshift("view");
+    if (definition.name === "remind" && !tokens.length) tokens.push("list");
+    else if (definition.name === "remind" && !["set", "list", "cancel"].includes(tokens[0])) tokens.unshift("set");
     if (definition.name === "prefix" && !tokens.length) tokens.push("view");
     if (["emoji", "sticker", "honeypot"].includes(definition.name) && !tokens.length) tokens.push("list");
     if (definition.name === "voicemaster" && !tokens.length) tokens.push("room");
-    if (definition.name === "download" && !tokens.length) tokens.push("message");
+    if (word === "download" && !tokens.length) tokens.push("message");
+    if (word === "caption") tokens.unshift("caption");
+    if (word === "togif") tokens.unshift("gif");
+    if (word === "studio") tokens.unshift("edit");
     const group = definition.options[0]?.type === 1;
     if (definition.name === "stick") tokens.unshift(["unstick", "unstickmessage"].includes(word) ? "remove" : ["set", "remove"].includes(tokens[0]) ? tokens.shift() : "set");
     const subName = group ? tokens.shift()?.toLowerCase() : "";
     const selected = group ? definition.options.find(option => option.name === subName) : definition;
     if (!selected) throw Object.assign(new Error(`Use ${prefix}help to see this command's subcommands.`), { commandName: definition.name });
     const values = {};
+    if (word === "caption") {
+        try { return { definition, name: definition.name, sub: subName, options: validate({ caption: tokens.join(" "), image: attachments[0] }, selected.options) }; }
+        catch (error) { throw Object.assign(error, { commandName: definition.name }); }
+    }
     if (definition.name === "settings" && subName === "videoembeds") {
         values.enabled = tokens.shift();
         if (tokens.length === 1 && tokens[0].toLowerCase() === "all") values.all = true;
@@ -247,7 +286,7 @@ export function parsePrefix(content, prefix, attachments = []) {
     for (let i = 0; i < selected.options.length; i++) {
         const option = selected.options[i];
         if (option.type === 11) values[option.name] = attachments[0];
-        else if ([6, 7, 8].includes(option.type) && !option.required && tokens[0] && !/^(?:<@!?|<@&|<#)?\d{17,20}>?$/.test(tokens[0])) values[option.name] = undefined;
+        else if ([6, 7, 8].includes(option.type) && !option.required && tokens[0] && (!/^(?:<@!?|<@&|<#)?\d{17,20}>?$/.test(tokens[0]) || option.type === 8 && tokens[0].startsWith("<#"))) values[option.name] = undefined;
         else if (option.name === "duration" && !option.required && tokens[0] && !/^(?:\d+(?:\.\d+)?[smhdw])+$/i.test(tokens[0])) values[option.name] = undefined;
         else values[option.name] = option.type === 3 && selected.options.slice(i+1).every(option=>option.type===11) ? tokens.splice(0).join(" ") || undefined : tokens.shift();
     }

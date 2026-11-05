@@ -37,13 +37,29 @@ export function replyPayload(body) {
 }
 
 export function discordApi(token, transport = fetch) {
-    let tail = Promise.resolve();
+    const queues = Array.from({ length: 6 }, () => Promise.resolve());
+    const cooldowns = new Map();
+    let globalReady = 0;
     return (route, options = {}) => {
         if (!/^\/(?:guilds|channels|users|applications|interactions|webhooks|stickers)\//.test(route) || route.includes("..") || route.length > 500) fail("Invalid Discord API route.");
+        const method = options.method ?? "GET";
+        const path = route.split("?")[0];
+        const member = /^\/guilds\/(\d+)\/members\/\d+$/.exec(path);
+        let lane = 0;
+        if (options.parallelRead && method === "GET") {
+            if (member) lane = 1 + Number(member[1].at(-1)) % 2;
+            else if (/^\/guilds\/\d+$/.test(path)) lane = 3;
+            else if (/^\/guilds\/\d+\/roles$/.test(path)) lane = 4;
+            else if (/^\/guilds\/\d+\/channels$|^\/channels\/\d+$/.test(path)) lane = 5;
+        }
+        const scope = member ? `/guilds/${member[1]}/members/:id` : path;
         const job = async () => {
             for (let attempt = 0; attempt < 3; attempt++) {
+                const delay = Math.max(globalReady, method === "GET" ? cooldowns.get(scope) ?? 0 : 0) - Date.now();
+                if (delay > 10_000) throw Object.assign(new Error("Discord is rate limiting this action. Try again shortly."), { status: 429 });
+                if (delay > 0) await wait(delay);
                 let response;
-                try { response = await transport(`https://discord.com/api/v10${route}`, { method: options.method ?? "GET", redirect: "manual", signal: AbortSignal.timeout(options.stream ? 120_000 : options.form ? 30_000 : 12_000), headers: { Authorization: `Bot ${token}`, ...(options.stream ? { "Content-Type": options.contentType, "Content-Length": String(options.length) } : !options.form ? { "Content-Type": "application/json" } : {}), ...(options.reason ? { "X-Audit-Log-Reason": encodeURIComponent(options.reason.slice(0, 500)) } : {}) }, body: options.stream ?? options.form ?? (options.body === undefined ? undefined : JSON.stringify(options.body)), ...(options.stream ? { duplex: "half" } : {}) }); }
+                try { response = await transport(`https://discord.com/api/v10${route}`, { method, redirect: "manual", signal: AbortSignal.timeout(options.stream ? 120_000 : options.form ? 30_000 : 12_000), headers: { Authorization: `Bot ${token}`, ...(options.stream ? { "Content-Type": options.contentType, "Content-Length": String(options.length) } : !options.form ? { "Content-Type": "application/json" } : {}), ...(options.reason ? { "X-Audit-Log-Reason": encodeURIComponent(options.reason.slice(0, 500)) } : {}) }, body: options.stream ?? options.form ?? (options.body === undefined ? undefined : JSON.stringify(options.body)), ...(options.stream ? { duplex: "half" } : {}) }); }
                 catch { fail("Discord could not be reached. Check the case status before repeating an action."); }
                 let length = 0, text = "";
                 const decoder = new TextDecoder();
@@ -51,14 +67,27 @@ export function discordApi(token, transport = fetch) {
                 text += decoder.decode();
                 let data = null;
                 try { if (text) data = JSON.parse(text); } catch { fail("Discord returned an unreadable response."); }
-                if (response.status === 429 && !options.stream && typeof data?.retry_after === "number" && data.retry_after <= 10 && attempt < 2) { await wait(Math.max(100, data.retry_after * 1000)); continue; }
+                const reset = Number(response.headers.get("X-RateLimit-Reset-After"));
+                if (lane && response.headers.get("X-RateLimit-Remaining") === "0" && reset > 0 && Number.isFinite(reset)) {
+                    if (cooldowns.size >= 256) cooldowns.delete(cooldowns.keys().next().value);
+                    cooldowns.set(scope, Date.now() + Math.ceil(reset * 1000));
+                }
+                if (response.status === 429) {
+                    const retry = Number(response.headers.get("Retry-After") ?? data?.retry_after);
+                    if (Number.isFinite(retry) && retry >= 0) {
+                        const pause = Math.max(100, Math.ceil(retry * 1000));
+                        if (data?.global === true || response.headers.get("X-RateLimit-Global") === "true") globalReady = Math.max(globalReady, Date.now() + pause);
+                        else if (lane) cooldowns.set(scope, Date.now() + pause);
+                        if (!options.stream && retry <= 10 && attempt < 2) { if (!lane && globalReady <= Date.now()) await wait(pause); continue; }
+                    }
+                }
                 if (response.status === 404 && options.optional) return null;
                 if (!response.ok) throw Object.assign(new Error(response.status === 403 ? "Discord refused this action. Check the bot's permissions and role position." : response.status === 429 ? "Discord is rate limiting this action. Try again shortly." : `Discord rejected the action (${response.status}${Number.isInteger(data?.code) ? `, code ${data.code}` : ""}).`), { status: response.status });
                 return data;
             }
         };
-        const result = tail.then(job);
-        tail = result.catch(() => null);
+        const result = queues[lane].then(job);
+        queues[lane] = result.catch(() => null);
         return result;
     };
 }

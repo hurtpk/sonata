@@ -12,13 +12,24 @@
 // It floats over the chat (following the chat box), so Discord's own layout
 // is never touched.
 
+import "../_shared/tool.css";
 import "./styles.css";
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { useSettings } from "@api/Settings";
 import { DataStore } from "@api/index";
 import ErrorBoundary from "@components/ErrorBoundary";
-import definePlugin from "@utils/types";
+import definePlugin, { OptionType } from "@utils/types";
 import { createRoot, Menu, NavigationRouter, Parser, SelectedChannelStore, useEffect, useRef, useState, useStateFromStores } from "@webpack/common";
+
+import { defineFeatureSettings } from "../../featureSettings";
+import { openSection, registerSection } from "../_shared/Hub";
+import { Window } from "../_shared/Window";
+
+const COMPOSER_SETTING: ["plugins.Sonata.stickyMessage_showAboveComposer"] = ["plugins.Sonata.stickyMessage_showAboveComposer"];
+const settings = defineFeatureSettings("stickyMessage", {
+    showAboveComposer: { type: OptionType.BOOLEAN, default: true, description: "Show the stuck message above the composer." },
+});
 
 interface Sticky { id: string; channelId: string; guildId?: string; author: string; avatar?: string; content: string; image?: string; at: number; /** Unsticks itself at this time. */ until?: number; }
 
@@ -85,6 +96,7 @@ const messageMenu: NavContextMenuPatchCallback = (children, { message, channel }
 };
 
 function StickyCard() {
+    const showAbove = useSettings(COMPOSER_SETTING).plugins.Sonata.stickyMessage_showAboveComposer !== false;
     const channelId = useStateFromStores([SelectedChannelStore], () => SelectedChannelStore.getChannelId());
     const [, bump] = useState(0);
     const [collapsed, setCollapsed] = useState(false);
@@ -97,7 +109,7 @@ function StickyCard() {
         return () => void listeners.delete(l);
     }, []);
 
-    const hasSticky = !!(channelId && stickies[channelId]);
+    const hasSticky = !!(showAbove && channelId && stickies[channelId]);
 
     // Count down (and unstick when time's up) only while something here has a time limit.
     const timed = hasSticky && stickies[channelId!].until != null;
@@ -140,7 +152,7 @@ function StickyCard() {
     }, [hasSticky, channelId]);
 
     const s = channelId ? stickies[channelId] : undefined;
-    if (!s) return <div ref={ref} />;
+    if (!s || !showAbove) return <div ref={ref} />;
 
     return (
         <div ref={ref} className={`vc-sticky${collapsed ? " vc-sticky-collapsed" : ""}`}>
@@ -171,11 +183,41 @@ let host: HTMLDivElement | null = null;
 let root: { render(n: React.ReactNode): void; unmount(): void; } | null = null;
 const SafeCard = ErrorBoundary.wrap(StickyCard, { noop: true });
 
+registerSection("channelWorkspace", {
+    id: "stickyMessage", feature: "stickyMessage", name: "Sticky message", sub: "A message kept for this chat",
+    render: props => <StickyPanel modalProps={props} />,
+});
+
+function StickyPanel({ modalProps }: { modalProps: import("@vencord/discord-types").RenderModalProps; }) {
+    const channel = useStateFromStores([SelectedChannelStore], () => SelectedChannelStore.getChannelId());
+    const [, refresh] = useState(0);
+    useEffect(() => {
+        const update = () => refresh(n => n + 1);
+        listeners.add(update);
+        const timer = setInterval(sweep, 30_000);
+        return () => { listeners.delete(update); clearInterval(timer); };
+    }, []);
+    const message = stickies[channel];
+    return <Window {...modalProps} title="Sticky message" size="lg">
+        <div className="vc-tool-wrap">
+            {message ? <>
+                <b>{message.author}</b>
+                <p>{message.content || "Image attachment"}</p>
+                {message.until && <p>{timeLeft(message.until)}</p>}
+                <button type="button" className="vc-tool-btn" onClick={() => { modalProps.onClose(); NavigationRouter.transitionTo("/channels/" + (message.guildId ?? "@me") + "/" + channel + "/" + message.id); }}>Jump to message</button>
+                <button type="button" className="vc-tool-btn" onClick={() => unstick(channel)}>Unstick</button>
+            </> : <p>Right-click a message in this chat to stick it here.</p>}
+        </div>
+    </Window>;
+}
+
 export default definePlugin({
     name: "StickyMessage",
     description: "Right-click any message → \"Stick to bottom\" to keep it just above the chat box in that channel while you scroll — for instructions, a recipe or game rules. One per channel, only for you.",
     authors: [{ name: "aiqen", id: 779172192461783110n }],
 
+    settings,
+    openSettingsModal: () => openSection("channelWorkspace", "stickyMessage"),
     contextMenus: { message: messageMenu },
 
     async start() {

@@ -25,8 +25,8 @@ test("Prefix and slash commands share validated names, options and aliases", () 
     assert.equal(parsePrefix("hello", ","), null);
     assert.throws(() => parsePrefix(",purge 101", ","));
     assert.throws(() => parsePrefix(",ban nope", ","));
-    assert.equal(slashCommands().length, COMMANDS.length - 3);
-    assert.equal(new Set(slashCommands().map(command => command.name)).size, COMMANDS.length - 3);
+    assert.equal(slashCommands().length, COMMANDS.length - 7);
+    assert.equal(new Set(slashCommands().map(command => command.name)).size, slashCommands().length);
 });
 
 test("Durations reject invalid, overflowing and excessive values", () => {

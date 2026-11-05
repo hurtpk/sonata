@@ -16,9 +16,12 @@ import { classes } from "@utils/misc";
 import type { Channel, Guild, GuildMember, Role, User } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, closeAllModals, FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, PermissionsBits, PresenceStore, RelationshipStore, SelectedChannelStore, SortedGuildStore, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
+import { ChannelStore, closeAllModals, FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, PermissionsBits, PermissionStore, PresenceStore, RelationshipStore, SelectedChannelStore, SortedGuildStore, useEffect, useMemo, UserStore, UserUtils, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../../controller/accent";
+import { isFeatureRunning } from "../../../../featureSettings";
+import { openActiveTimeouts } from "../../../activeTimeouts";
+import { openMemberLogs } from "../../../memberLogs";
 import { ToolHero } from "../../../_shared/ToolHero";
 import { Window } from "../../../_shared/Window";
 import { openInsights } from "../../Insights";
@@ -440,6 +443,10 @@ function Result({ guild, found, onClose }: { guild: Guild; found: Found; onClose
                 <div className="vc-permlookup-actions">
                     <button type="button" className="vc-tool-btn" onClick={() => { onClose(); openUserProfile(user.id); }}>Profile</button>
                     <button type="button" className="vc-tool-btn" onClick={() => copyWithToast(user.id)}>Copy ID</button>
+                    {isFeatureRunning("activeTimeouts") && PermissionStore.can(PermissionsBits.MODERATE_MEMBERS, guild) &&
+                        <button type="button" className="vc-tool-btn" onClick={() => openActiveTimeouts(guild.id, user.id)}>Active timeouts</button>}
+                    {isFeatureRunning("memberLogs") &&
+                        <button type="button" className="vc-tool-btn" onClick={() => openMemberLogs(user.id, guild.id, true)}>Private evidence</button>}
                     <button type="button" className="vc-tool-btn" onClick={() => { closeAllModals(); insertTextIntoChatInputBox(`<@${user.id}> `); }}>Mention</button>
                 </div>
             </section>

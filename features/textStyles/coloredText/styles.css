@@ -49,9 +49,14 @@
 .vc-ansi-own-dot { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.3); }
 .vc-ansi-effects { align-items: center; gap: 8px; }
 .vc-ansi-effects .vc-tool-label { width: 52px; }
-.vc-ansi-fade { display: inline-flex; align-items: center; gap: 6px; }
+.vc-ansi-gradient { display: grid; gap: 9px; padding: 10px 12px; border: 1px solid var(--sw-line, var(--tl-line)); border-radius: calc(8px * var(--sw-r, 1)); }
+.vc-ansi-gradient .vc-tool-row { flex-wrap: wrap; }
+.vc-ansi-fade { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.vc-ansi-stop { display: inline-flex; align-items: center; gap: 3px; }
+.vc-ansi-remove-stop { padding: 2px 4px; border-radius: 4px; color: var(--text-muted); cursor: pointer; }
+.vc-ansi-remove-stop:hover { color: var(--text-default, var(--text-normal)); background: var(--background-modifier-hover); }
 .vc-ansi-fade .vc-ansi-swatch { border-radius: 50%; }
-.vc-ansi-fade-line { width: 54px; height: 6px; border-radius: 8px; }
+.vc-ansi-fade-line { height: 6px; border-radius: 8px; }
 .vc-ansi-rainbow { background-image: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bff95, #6bc5ff, #c56bff); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 800; }
 .vc-ansi-fade .vc-ansi-swatch { background: var(--cp-color); }
 .vc-ansi-bar .vc-ansi-none { background: linear-gradient(135deg, transparent 44%, #f23f43 44%, #f23f43 56%, transparent 56%), hsl(0 0% 100% / 0.04); }

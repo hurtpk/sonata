@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Part of Sonata itself (not a switchable feature): where Discord says someone
+// Where Discord says someone
 // is "In voice" (member list, DMs, profiles, friends list), it says
 // "In same voice" — or "In same call" for a DM call — when they're in the
 // voice channel you're in.

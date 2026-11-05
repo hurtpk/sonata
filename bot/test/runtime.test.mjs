@@ -259,6 +259,42 @@ test("Gateway GIF buttons edit the same message between GIF and MP4 using fresh 
     }
 });
 
+test("Gateway caption upload opens an owner-only editor and updates the original attachment", async t => {
+    const f = await runtime(t), headers = { Authorization: `Bearer ${MUSIC_SECRET}` };
+    const source = `https://cdn.discordapp.com/attachments/${CHANNEL}/${TARGET}/picture.png`;
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jO1sAAAAASUVORK5CYII=", "base64");
+    const gif = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
+    async function complete(format) {
+        let job;
+        await until(async () => {
+            job = (await (await f.mf.dispatchFetch("https://sonata.example/music/poll", { headers })).json()).jobs[0];
+            return !!job;
+        });
+        assert.equal(job.kind, "caption"); assert.equal(job.source, source);
+        assert.equal(job.style.top, "A better caption"); assert.equal(job.style.format, format);
+        const metadata = Buffer.from(JSON.stringify({ id: job.id, title: "Image ready", description: "", format })).toString("base64");
+        const response = await f.mf.dispatchFetch("https://sonata.example/music/video", { method: "POST", headers: { ...headers, "X-Sonata-Video": metadata }, body: format === "gif" ? gif : png });
+        assert.equal(response.status, 200);
+    }
+    await f.request("/control/start", "POST"); await until(async () => (await f.status()).connected);
+    f.send("MESSAGE_CREATE", { id: "100000000000009500", guild_id: GUILD, channel_id: CHANNEL, author: { id: ACTOR }, content: ",caption A better caption", attachments: [{ id: TARGET, url: source, filename: "picture.png", size: png.length }] });
+    await complete("png");
+    const posted = () => f.apiCalls.find(call => call.file?.name === "sonata-caption.png" && call.response);
+    await until(posted);
+    const initial = posted(), message = { id: initial.response.id, author: { id: APP }, ...initial.body };
+    const custom_id = message.components[1].components.find(component => component.label === "Make GIF").custom_id;
+    const click = (id, actor, token) => f.send("INTERACTION_CREATE", { id, type: 3, guild_id: GUILD, channel_id: CHANNEL, member: { user: { id: actor } }, token, message, data: { custom_id, component_type: 2 } });
+    click("100000000000009501", TARGET, "caption-other");
+    await until(() => f.apiCalls.some(call => call.path.includes("caption-other") && call.body?.flags === 64));
+    assert.ok(!f.apiCalls.some(call => call.path.includes("caption-other") && call.method === "PATCH"));
+    click("100000000000009502", ACTOR, "caption-owner");
+    await complete("gif");
+    const edited = () => f.apiCalls.find(call => call.path.includes("caption-owner") && call.method === "PATCH" && call.file);
+    await until(edited);
+    assert.equal(edited().file.name, "sonata-caption.gif");
+    assert.equal(edited().body.attachments.length, 1);
+});
+
 test("Cloudflare Gateway identifies, responds to prefix and slash commands, and resumes", async t => {
     const f = await runtime(t);
     assert.equal((await f.request("/control/start", "POST")).status, 200);
@@ -419,7 +455,7 @@ test("Dashboard bridge rejects other service keys and trusts only its verified a
     assert.equal((await f.mf.dispatchFetch("https://sonata.example/dashboard/owner",{headers})).status,401);
     assert.equal((await f.mf.dispatchFetch("https://sonata.example/dashboard/owner",{headers:{...headers,"X-Sonata-User":ACTOR}})).status,403);
     const response=await f.mf.dispatchFetch("https://sonata.example/dashboard/owner",{headers:{...headers,"X-Sonata-User":"779172192461783110"}});
-    assert.equal(response.status,200); const value=await response.json(); assert.deepEqual(value.servers,[]); assert.equal(value.commands,101); assert(!JSON.stringify(value).includes("fake-test-token"));
+    assert.equal(response.status,200); const value=await response.json(); assert.deepEqual(value.servers,[]); assert.equal(value.commands,103); assert(!JSON.stringify(value).includes("fake-test-token"));
     assert.equal((await f.mf.dispatchFetch("https://sonata.example/control/start",{method:"POST",headers})).status,401);
 });
 

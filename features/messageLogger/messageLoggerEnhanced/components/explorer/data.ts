@@ -371,9 +371,13 @@ function matchTerm(e: Entry, t: Term): boolean {
 export const quickDelete = (e: Entry) => e.gone != null && e.gone - e.sent < 60_000;
 
 export function applyFilters(list: Entry[], f: Filters, now = Date.now()): Entry[] {
+    return list.filter(entryMatches(f, now));
+}
+
+export function entryMatches(f: Filters, now = Date.now()) {
     const terms = parseQuery(f.query.trim());
     const since = f.period === "day" ? now - DAY : f.period === "week" ? now - 7 * DAY : f.period === "month" ? now - 30 * DAY : 0;
-    return list.filter(e => {
+    return (e: Entry) => {
         if (f.type === "deleted" && !e.deleted) return false;
         if (f.type === "edited" && !e.edited) return false;
         if (f.type === "ghost" && !e.ghost) return false;
@@ -389,7 +393,7 @@ export function applyFilters(list: Entry[], f: Filters, now = Date.now()): Entry
         }
         for (const t of terms) if (matchTerm(e, t) === t.negate) return false;
         return true;
-    });
+    };
 }
 
 /* ── Words that changed between two versions ───────────────────────── */

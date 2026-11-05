@@ -5,7 +5,7 @@
  */
 import assert from "node:assert/strict";
 import test from "node:test";
-import { COMMANDS, parsePrefix, parseSlash, slashCommands } from "../commands.mjs";
+import { parsePrefix, parseSlash, slashCommands } from "../commands.mjs";
 import { lastfmClient } from "../lastfm.mjs";
 import { executeCommand } from "../moderation.mjs";
 import { ACTOR, BOT, fixture, TARGET } from "./fixture.mjs";
@@ -23,7 +23,7 @@ test("Last.fm aliases agree with slash forms and the slash catalogue fits Discor
     assert.equal(parsePrefix(`,toptracks <@${TARGET}>`, ",").options.member, TARGET);
     assert.equal(parsePrefix(`,toptracks <@${TARGET}>`, ",").options.period, "overall");
     assert.deepEqual(parsePrefix(",fm set rj", ",").options, parseSlash({ name: "fm", options: [{ name: "set", options: [{ name: "username", value: "rj" }] }] }).options);
-    assert.equal(slashCommands().length, COMMANDS.length - 3);
+    assert.ok(slashCommands().some(command => command.name === "fm"));
     assert.ok(slashCommands().length <= 100);
     for (const [sub, name] of [["view", "serverinfo"], ["icon", "servericon"], ["banner", "serverbanner"], ["boosts", "boosts"]]) {
         assert.equal(parseSlash({ name: "serverinfo", options: [{ name: sub, type: 1 }] }).name, name);

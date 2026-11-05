@@ -12,6 +12,7 @@ type Result<T> = { ok: true; data: T; } | { ok: false; error: string; };
 interface MediaNativeApi {
     fetchDiscordFile(url: string, maxBytes: number): Promise<Result<Uint8Array>>;
     openPdfWindow(url: string, title: string): Promise<Result<null>>;
+    recognizePdfPage(bytes: Uint8Array): Promise<{ ok: true; text: string; } | { ok: false; error: string; }>;
     recognizeText(url: string): Promise<{ ok: true; text: string; } | { ok: false; error: string; }>;
     openArchive(url: string, filename: string): Promise<{ ok: true; id: string; listing: string; } | { ok: false; error: string; }>;
     extractFromArchive(id: string, entry: string): Promise<Result<Uint8Array>>;

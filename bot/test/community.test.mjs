@@ -16,8 +16,8 @@ import { ACTOR, BOT, CHANNEL, fixture, GUILD, MODROLE, TARGET, USERROLE } from "
 const posts = f => f.calls.filter(call => call.method === "POST" && call.route.endsWith("/messages"));
 const joined = f => ({ guild_id: GUILD, user: { ...f.members.get(TARGET).user, username: "New member" } });
 
-test("The catalogue contains 293 runnable forms and new prefix/slash options agree", () => {
-    assert.equal(COMMANDS.reduce((n, command) => n + (command.options[0]?.type === 1 ? command.options.length : 1), 0), 293);
+test("The catalogue contains 323 runnable forms and new prefix/slash options agree", () => {
+    assert.equal(COMMANDS.reduce((n, command) => n + (command.options[0]?.type === 1 ? command.options.length : 1), 0), 323);
     const prefix = parsePrefix(',welcome add <#888888888888888888> Welcome {username}', ",");
     const slash = parseSlash({ name: "welcome", options: [{ name: "add", options: [{ name: "channel", value: CHANNEL }, { name: "message", value: "Welcome {username}" }] }] });
     assert.deepEqual(prefix.options, slash.options);

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { lstat, readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { DATA_DIR } from "@main/utils/constants";
@@ -50,6 +50,15 @@ export async function init(_event: IpcMainInvokeEvent) {
     }
 }
 
+export async function messageLogAttachmentBytes(_event: IpcMainInvokeEvent) {
+    let bytes = 0;
+    for (const file of new Set(nativeSavedImages.values())) {
+        const stat = await lstat(file).catch(() => null);
+        if (stat?.isFile()) bytes += stat.size;
+    }
+    return bytes;
+}
+
 export async function getImageNative(_event: IpcMainInvokeEvent, attachmentId: string): Promise<Uint8Array | Buffer | null> {
     const imagePath = nativeSavedImages.get(attachmentId);
     if (!imagePath) return null;
@@ -82,6 +91,7 @@ export async function deleteFileNative(_event: IpcMainInvokeEvent, attachmentId:
     if (!imagePath) return;
 
     await unlink(imagePath);
+    nativeSavedImages.delete(attachmentId);
 }
 
 export async function writeLogs(_event: IpcMainInvokeEvent, contents: string) {

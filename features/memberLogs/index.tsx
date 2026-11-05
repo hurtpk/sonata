@@ -13,6 +13,8 @@ import { chooseFile, saveFile } from "@utils/web";
 import type { RenderModalProps, User } from "@vencord/discord-types";
 import { GuildStore, IconUtils, MaskedLink, Menu, TextArea, TextInput, useEffect, UserStore,useState } from "@webpack/common";
 
+import { strToU8, zip } from "fflate";
+
 import { Window } from "../_shared/Window";
 import { openModeration, registerModerationPart } from "../serverTools/Moderation";
 import { Evidence, loadMemberLogs, MemberLog, readEvidence, saveMemberLog } from "./store";
@@ -41,11 +43,11 @@ function EvidenceView({ evidence }: { evidence: Evidence; }) {
     </div>;
 }
 
-function LogRecord({ entry, edit }: { entry: MemberLog; edit(): void; }) {
+function LogRecord({ entry, edit, selected, select }: { entry: MemberLog; edit(): void; selected: boolean; select(): void; }) {
     const user = UserStore.getUser(entry.userId);
     const [showEvidence, setShowEvidence] = useState(false);
     return <article className="vc-tool-section">
-        <div className="vc-tool-row"><b>{entry.title}</b><span className="vc-tool-spacer" /><span className="vc-tool-hint">{entry.status} · {new Date(entry.created).toLocaleString()}</span></div>
+        <div className="vc-tool-row"><label><input type="checkbox" checked={selected} onChange={select} aria-label={"Select " + entry.title + " for export"} /> {entry.title}</label><span className="vc-tool-spacer" /><span className="vc-tool-hint">{entry.status} · {new Date(entry.created).toLocaleString()}</span></div>
         <div className="vc-tool-row">{user && <img className="vc-memberlogs-avatar" src={IconUtils.getUserAvatarURL(user, false, 64)} alt="" width={36} height={36} />}<b>{entry.username ?? user?.username ?? entry.userId}</b><span className="vc-tool-hint">{entry.userId} · {GuildStore.getGuild(entry.guildId)?.name ?? "Personal record"}</span></div>
         <p className="vc-memberlogs-notes">{entry.notes}</p>
         {entry.links.map((link, index) => <MaskedLink key={`${index}:${link}`} href={link}>Evidence link {index + 1}</MaskedLink>)}
@@ -54,10 +56,11 @@ function LogRecord({ entry, edit }: { entry: MemberLog; edit(): void; }) {
     </article>;
 }
 
-export function MemberLogsWindow({ modalProps, userId, guildId }: { modalProps: RenderModalProps; userId?: string; guildId?: string; }) {
+export function MemberLogsWindow({ modalProps, userId, guildId, browse = false }: { modalProps: RenderModalProps; userId?: string; guildId?: string; browse?: boolean; }) {
     const [records, setRecords] = useState<MemberLog[]>([]);
-    const [query, setQuery] = useState("");
-    const [editor, setEditor] = useState<MemberLog | null>(() => userId ? fresh(userId, guildId ?? "") : null);
+    const [query, setQuery] = useState(browse ? userId ?? "" : "");
+    const [selected, setSelected] = useState<string[]>([]);
+    const [editor, setEditor] = useState<MemberLog | null>(() => userId && !browse ? fresh(userId, guildId ?? "") : null);
     const [files, setFiles] = useState<File[]>([]);
     const [links, setLinks] = useState("");
     const [busy, setBusy] = useState(false);
@@ -84,8 +87,35 @@ export function MemberLogsWindow({ modalProps, userId, guildId }: { modalProps: 
         } catch { setError("Couldn't save the record and evidence. Your local storage may be full. Keep the original files and try again."); }
         finally { setBusy(false); }
     };
+    const exportSelected = async () => {
+        setBusy(true);
+        setError("");
+        try {
+            const entries = records.filter(record => selected.includes(record.id));
+            const files: Record<string, Uint8Array> = {};
+            let size = 0;
+            const manifest: (Omit<MemberLog, "evidence"> & { evidence: (Evidence & { path?: string; missing?: boolean; })[]; })[] = [];
+            for (const [index, entry] of entries.entries()) {
+                const evidence: (Evidence & { path?: string; missing?: boolean; })[] = [];
+                for (const [number, item] of entry.evidence.entries()) {
+                    const blob = await readEvidence(item.id);
+                    if (!blob) { evidence.push({ ...item, missing: true }); continue; }
+                    size += blob.size;
+                    if (size > 75 * 1024 * 1024) throw new Error("Select fewer records. One export can contain up to 75 MB of evidence.");
+                    const path = "evidence/" + (index + 1) + "/" + (number + 1) + "-" + item.name.replace(/[^a-z0-9_. -]/gi, "_").slice(0, 120);
+                    files[path] = new Uint8Array(await blob.arrayBuffer());
+                    evidence.push({ ...item, path });
+                }
+                manifest.push({ ...entry, evidence });
+            }
+            files["member-logs.json"] = strToU8(JSON.stringify(manifest, null, 2));
+            const result = await new Promise<Uint8Array>((resolve, reject) => zip(files, { level: 0 }, (error, data) => error ? reject(error) : resolve(data)));
+            saveFile(new File([new Uint8Array(result)], "sonata-member-logs.zip", { type: "application/zip" }));
+        } catch (reason) { setError(reason instanceof Error ? reason.message : "Couldn't export your records."); }
+        finally { setBusy(false); }
+    };
     const search = query.trim().toLowerCase();
-    const shown = records.filter(entry => `${entry.userId} ${entry.username ?? ""} ${UserStore.getUser(entry.userId)?.username ?? ""} ${entry.title} ${entry.notes} ${entry.status} ${GuildStore.getGuild(entry.guildId)?.name ?? ""}`.toLowerCase().includes(search));
+    const shown = records.filter(entry => (!browse || !guildId || entry.guildId === guildId) && `${entry.userId} ${entry.username ?? ""} ${UserStore.getUser(entry.userId)?.username ?? ""} ${entry.title} ${entry.notes} ${entry.status} ${GuildStore.getGuild(entry.guildId)?.name ?? ""}`.toLowerCase().includes(search));
     return <Window {...modalProps} size="lg" title="Personal Member Logs" subtitle="Private records and saved evidence for ban appeals">
         <div className="vc-tool-wrap">
             <p className="vc-tool-hint">Only you can see these records. Selected files are copied into local storage for this Discord account; they are not uploaded to Discord. Keep a backup of important evidence before clearing Discord or Sonata data.</p>
@@ -100,9 +130,9 @@ export function MemberLogsWindow({ modalProps, userId, guildId }: { modalProps: 
                 <span className="vc-tool-hint">You can also drop files here. {editor.evidence.length} file{editor.evidence.length === 1 ? "" : "s"} already saved.</span>
                 {files.map((file, index) => <div className="vc-tool-row" key={`${index}:${file.name}`}><span>{file.name} · {(file.size / 1048576).toFixed(1)} MB</span><Button size="small" variant="secondary" disabled={busy} onClick={() => setFiles(current => current.filter((_, at) => at !== index))}>Remove</Button></div>)}
                 <div className="vc-tool-row"><Button disabled={busy} onClick={() => void save()}>{busy ? "Saving record and files…" : "Save personal record"}</Button><Button variant="secondary" disabled={busy} onClick={() => { setEditor(null); setFiles([]); setLinks(""); }}>Cancel</Button></div>
-            </section> : <div className="vc-tool-row"><TextInput value={query} onChange={setQuery} placeholder="Search members, notes, servers or appeal status" aria-label="Search member logs" /><Button onClick={() => { setEditor(fresh("", "")); setFiles([]); setLinks(""); }}>New member log</Button></div>}
+            </section> : <div className="vc-tool-row"><TextInput value={query} onChange={setQuery} placeholder="Search members, notes, servers or appeal status" aria-label="Search member logs" /><Button onClick={() => { setEditor(fresh(browse ? userId ?? "" : "", browse ? guildId ?? "" : "")); setFiles([]); setLinks(""); }}>New member log</Button>{selected.length > 0 && <Button variant="secondary" disabled={busy} onClick={() => void exportSelected()}>Export {selected.length} selected</Button>}</div>}
             {!shown.length && !editor && <div className="vc-tool-empty">{records.length ? "No records match your search." : "Right-click a member, open Sonata, then choose Personal Member Log."}</div>}
-            {!editor && shown.map(entry => <LogRecord key={`${entry.id}:${entry.updated}`} entry={entry} edit={() => { setEditor(entry); setFiles([]); setLinks(entry.links.join("\n")); }} />)}
+            {!editor && shown.map(entry => <LogRecord key={`${entry.id}:${entry.updated}`} entry={entry} selected={selected.includes(entry.id)} select={() => setSelected(ids => ids.includes(entry.id) ? ids.filter(id => id !== entry.id) : [...ids, entry.id])} edit={() => { setEditor(entry); setFiles([]); setLinks(entry.links.join("\n")); }} />)}
         </div>
     </Window>;
 }
@@ -111,7 +141,7 @@ function fresh(userId: string, guildId: string): MemberLog {
     return { id: crypto.randomUUID(), userId, guildId, title: "", notes: "", status: "Note", links: [], evidence: [], created: Date.now(), updated: Date.now() };
 }
 
-export const openMemberLogs = (userId?: string, guildId?: string) => openModeration("memberLogs", props => <MemberLogsWindow modalProps={props} userId={userId} guildId={guildId} />);
+export const openMemberLogs = (userId?: string, guildId?: string, browse = false) => openModeration("memberLogs", props => <MemberLogsWindow modalProps={props} userId={userId} guildId={guildId} browse={browse} />);
 registerModerationPart("memberLogs", props => <MemberLogsWindow modalProps={props} />);
 export default definePlugin({
     name: "MemberLogs", description: "Keep private member records with your own saved image and video evidence for later ban appeals. Files stay on this computer.", authors: [Devs.Ven],

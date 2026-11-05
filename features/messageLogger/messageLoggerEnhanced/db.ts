@@ -167,6 +167,19 @@ export async function getOlderThanTimestampForGuildsIDB(timestamp: string, curre
     });
 }
 
+export async function searchMessagesByStatusIDB(newest: boolean, limit: number, status: DBMessageStatus, matches: (record: DBMessageRecord) => boolean) {
+    const tx = db.transaction("messages", "readonly");
+    const cursor = await tx.store.index("by_status").openCursor(IDBKeyRange.only(status), newest ? "prev" : "next");
+    const records: DBMessageRecord[] = [];
+    let total = 0;
+    if (cursor) for await (const row of cursor) {
+        if (!matches(row.value)) continue;
+        total++;
+        if (records.length < limit) records.push(row.value);
+    }
+    return { messages: await cacheRecords(records), total };
+}
+
 export async function getDateStortedMessagesByStatusIDB(newest: boolean, limit: number, status: DBMessageStatus) {
     const tx = db.transaction("messages", "readonly");
     const { store } = tx;
