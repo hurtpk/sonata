@@ -19,6 +19,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.11.06b",
+        date: "November 6, 2026",
+        title: "Auto Tools",
+        items: [
+            { icon: "⏱️", text: "Auto Tools brings Auto Greeter and Auto Sender into one window. Auto Greeter uses Discord-style server and category pickers. Auto Sender supports intervals in seconds, minutes or hours, an optional send limit, and editing or pausing saved schedules." },
+        ],
+    },
+    {
         version: "2026.11.06",
         date: "November 6, 2026",
         title: "Word Purge for server moderation",

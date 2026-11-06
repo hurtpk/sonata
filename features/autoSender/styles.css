@@ -1,0 +1,94 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-auto-sender {
+    display: grid;
+    gap: 14px;
+}
+
+.vc-auto-sender h3,
+.vc-auto-sender p {
+    margin: 0;
+}
+
+.vc-auto-sender-editor,
+.vc-auto-sender-schedule {
+    display: grid;
+    gap: 14px;
+}
+
+.vc-auto-sender-heading,
+.vc-auto-sender-destination,
+.vc-auto-sender-footer,
+.vc-auto-sender-interval {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.vc-auto-sender-heading p,
+.vc-auto-sender-destination span,
+.vc-auto-sender-footer > span {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.vc-auto-sender-heading > span {
+    padding: 4px 8px;
+    border: 1px solid var(--tl-line);
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.vc-auto-sender-destination {
+    padding: 10px 12px;
+    border: 1px solid var(--tl-line);
+    border-radius: 6px;
+}
+
+.vc-auto-sender-destination > div,
+.vc-auto-sender-field {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.vc-auto-sender-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 12px;
+}
+
+.vc-auto-sender-interval > :first-child {
+    flex: 1 1 64px;
+    min-width: 0;
+}
+
+.vc-auto-sender-segments {
+    display: inline-flex;
+    justify-self: start;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid var(--tl-line);
+    border-radius: 6px;
+}
+
+.vc-auto-sender-segments button[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--tl-accent, var(--brand-500)) 20%, transparent);
+    color: var(--text-normal);
+}
+
+.vc-auto-sender .vc-tool-area {
+    resize: none;
+}
+
+.vc-auto-sender-message {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

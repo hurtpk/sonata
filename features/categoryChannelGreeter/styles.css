@@ -70,7 +70,7 @@
 
 /* Messages. */
 .vc-cg-msg { position: relative; }
-.vc-cg-msg textarea { padding-right: 34px; resize: vertical; }
+.vc-cg-msg textarea { padding-right: 34px; resize: none; }
 .vc-cg-msg-on textarea { border-color: hsl(from var(--tl-accent) h s l / 0.6); }
 .vc-cg-x { all: unset; cursor: pointer; position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: calc(6px * var(--sw-r, 1)); font-size: 12px; color: var(--text-muted); }
 .vc-cg-x:hover { color: #f23f43; background: rgb(242 63 67 / 0.12); }

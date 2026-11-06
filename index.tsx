@@ -57,6 +57,7 @@ import themeStudio from "./features/appearance/themeStudio";
 import autoCorrect from "./features/autoCorrect";
 import autoModRegex from "./features/autoModRegex";
 import autoReact from "./features/autoReact";
+import autoSender from "./features/autoSender";
 import autoVolume from "./features/autoVolume";
 import birthdayReminders from "./features/birthdayReminders";
 import botManager from "./features/botManager";
@@ -347,7 +348,7 @@ const FEATURES: Record<string, Feature> = {
     autoVolume, streaks, videoSpeed, waveformPlayer, sonataBadge, shareSetup, linkCleaner, asciiArt, autoCorrect, commandShortcuts, scamShield, personTags, readAloud, wallet,
     smoothChat, currencyConverter, whisper, mediaDownloader, stickyMessage, modelPreview, splitView,
     reminders, todoLists, fontSwapper, fileConverter, videoEditor, tiktokTracker, quickText, channelNotes, themeStudio, botManager, antiquest, customBadges, localNames, games, packageTracker, weather, showTracker, radio, discordStatus,
-    antimod, autoModRegex, autoReact, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
+    antimod, autoModRegex, autoReact, autoSender, categoryChannelGreeter, embedSender, exploiterReport, fakeDms, fakedeafen, messageTimer, statusAvatar, stealth, voiceTimeline,
 };
 
 /**

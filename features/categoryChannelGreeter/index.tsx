@@ -111,7 +111,7 @@ const channelOf = (event: any): { id: string; parent_id?: string | null; } | nul
     event?.channel?.id ? event.channel : event?.id && "parent_id" in event ? event : null;
 
 export default definePlugin({
-    name: "CategoryChannelGreeter",
+    name: "AutoGreeter",
     description: "When a new channel appears in a category you choose, waits for a member or bot you pick (or anyone) to post, then replies with one of your greetings — several greeters at once, with variables, a delay, and a log of what it sent.",
     authors: [{ name: "aiqen", id: 779172192461783110n }],
     settings,

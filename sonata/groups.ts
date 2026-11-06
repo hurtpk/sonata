@@ -21,6 +21,12 @@ export interface Group {
 }
 
 export const GROUPS: Record<string, Group> = {
+    autoTools: {
+        name: "Auto Tools",
+        description: "Greet new channels and send recurring messages on a schedule.",
+        members: ["categoryChannelGreeter", "autoSender"],
+        window: true,
+    },
     linkTools: {
         name: "Link Tools",
         description: "Remove tracking from links and make supported links embed in Discord.",

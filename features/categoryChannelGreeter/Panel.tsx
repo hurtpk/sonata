@@ -11,11 +11,12 @@
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
-import { ChannelStore, GuildMemberStore, GuildStore, NavigationRouter, openModal, SortedGuildStore, useEffect, useMemo, useReducer, UserStore, useState } from "@webpack/common";
+import { ChannelStore, GuildMemberStore, GuildStore, NavigationRouter, Select, SortedGuildStore, useEffect, useMemo, useReducer, UserStore, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
+import { openSection, registerSection } from "../_shared/Hub";
 import { cancelWatch, getRules, saveRules, settings } from "./index";
 import { clearLog, newRule, onGreeterChange, previewOf, Rule, sentLog, Trigger, VARIABLES, watching } from "./rules";
 
@@ -113,20 +114,23 @@ function Editor({ rule, update, remove }: { rule: Rule; update(p: Partial<Rule>)
             <section className={cl("card")}>
                 <span className={cl("label")}>1 · Where</span>
                 <div className={cg("grid2")}>
-                    <label className={cg("field")}>
+                    <div className={cg("field")}>
                         <span className={cl("hint")}>Server</span>
-                        <select className={cl("input")} value={rule.guildId} onChange={e => update({ guildId: e.currentTarget.value, categoryId: "", triggerUserId: "" })}>
-                            <option value="">Choose a server…</option>
-                            {guilds.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                        </select>
-                    </label>
-                    <label className={cg("field")}>
+                        <Select placeholder="Choose a server…" options={guilds.map(guild => ({ value: guild.id, label: guild.name }))}
+                            isSelected={id => id === rule.guildId} serialize={String} closeOnSelect maxVisibleItems={8}
+                            clearable={!!rule.guildId} clear={() => update({ guildId: "", categoryId: "", triggerUserId: "" })}
+                            select={guildId => {
+                                if (guildId !== rule.guildId) update({ guildId, categoryId: "", triggerUserId: "" });
+                            }} />
+                    </div>
+                    <div className={cg("field")}>
                         <span className={cl("hint")}>Category new channels appear in</span>
-                        <select className={cl("input")} value={rule.categoryId} disabled={!rule.guildId} onChange={e => update({ categoryId: e.currentTarget.value })}>
-                            <option value="">{rule.guildId ? categories.length ? "Choose a category…" : "No categories here" : "Pick a server first"}</option>
-                            {categories.map(c => <option key={c.id} value={c.id}>📁 {c.name}</option>)}
-                        </select>
-                    </label>
+                        <Select placeholder={rule.guildId ? categories.length ? "Choose a category…" : "No categories here" : "Pick a server first"}
+                            options={categories.map(category => ({ value: category.id, label: category.name }))}
+                            isDisabled={!categories.length} isSelected={id => id === rule.categoryId}
+                            clearable={!!rule.categoryId} clear={() => update({ categoryId: "" })}
+                            serialize={String} closeOnSelect maxVisibleItems={8} select={categoryId => update({ categoryId })} />
+                    </div>
                 </div>
             </section>
 
@@ -237,7 +241,7 @@ function GreeterModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const add = () => { const r = newRule(rules.length + 1); saveRules([...rules, r]); setSelected(r.id); };
 
     return (
-        <Window {...modalProps} size="lg" title="Channel Greeter" subtitle="Greets new channels in a category — like tickets — the moment someone posts">
+        <Window {...modalProps} size="lg" title="Auto Greeter" subtitle="Greet new channels in selected categories">
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={s.active ? "👋" : "⏸️"} kicker={s.active ? "Greeting" : "Paused"}
                     title={s.active ? `${rules.filter(r => r.on).length} of ${rules.length} greeter${rules.length === 1 ? "" : "s"} running` : "Nothing will be sent"}
@@ -277,5 +281,6 @@ function GreeterModal({ modalProps }: { modalProps: RenderModalProps; }) {
 }
 
 export function openGreeter() {
-    openModal(props => <GreeterModal modalProps={props} />);
+    openSection("autoTools", "autoGreeter");
 }
+registerSection("autoTools", { id: "autoGreeter", feature: "categoryChannelGreeter", icon: "greeter", name: "Auto Greeter", sub: "Greetings for new channels", render: props => <GreeterModal modalProps={props} /> });

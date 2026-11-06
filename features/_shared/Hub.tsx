@@ -38,6 +38,7 @@ export interface Section {
 
 interface GroupInfo { title: string; size: "lg" | "xl" | "xxl"; }
 const GROUPS: Record<string, GroupInfo> = {
+    autoTools: { title: "Auto Tools", size: "xl" },
     channelWorkspace: { title: "Channel Workspace", size: "lg" },
     calculatorTools: { title: "Calculator & Converter", size: "lg" },
     musicAudio: { title: "Music & Audio", size: "lg" },
