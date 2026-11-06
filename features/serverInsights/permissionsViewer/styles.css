@@ -148,6 +148,9 @@
 /* Comparing two roles */
 .vc-permviewer-cmp-pick { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .vc-permviewer-cmp-pick .vc-permviewer-rp { flex: 1; max-width: 300px; }
+.vc-permviewer-cmp-pickers { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.vc-permviewer-cmp-pickers .vc-permviewer-rp { flex: 1 1 160px; min-width: 0; }
+.vc-permviewer-cmp-pickers .vc-permviewer-rp-list { max-height: min(220px, 26vh); }
 .vc-permviewer-cmp { display: flex; flex-direction: column; gap: 10px; }
 .vc-permviewer-cmp-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .vc-permviewer-cmp-summary > div { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: calc(10px * var(--sw-r, 1)); background: var(--sw-card, hsl(0 0% 0% / 0.2)); font-size: 13px; color: var(--text-muted); }

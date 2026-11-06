@@ -16,6 +16,7 @@ import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { newReminder, remindersRunning } from "../reminders";
 import { addItem, addLines, asText, clearDone, getList, getLists, Item, loadTodos, moveItem, onTodoChange, removeItem, renameItem, toggleItem } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const td = classNameFactory("vc-todo-");
@@ -70,7 +71,7 @@ function ItemRow({ channelId, item, index, dragging, setDragging }: { channelId:
             )}
             <span className={td("tools")}>
                 {jump && <button type="button" title={`Go to ${item.link!.author ? `${item.link!.author}'s ` : "the "}message`} onClick={jump}>↗</button>}
-                {remindersRunning() && !item.done && <button type="button" title="Remind me about this" onClick={() => newReminder(item.text, item.link ? { channelId, messageId: item.link.messageId, author: item.link.author } : undefined)}>⏰</button>}
+                {remindersRunning() && !item.done && <button type="button" title="Remind me about this" onClick={() => newReminder(item.text, item.link ? { channelId, messageId: item.link.messageId, author: item.link.author } : undefined)}><SonataGlyph name="alarm" /></button>}
                 <button type="button" title="Edit" onClick={() => { setText(item.text); setEditing(true); }}>✎</button>
                 <button type="button" title="Delete" onClick={() => removeItem(channelId, item.id)}>✕</button>
             </span>
@@ -129,7 +130,7 @@ function ListView({ channelId }: { channelId: string; }) {
 
 function AllLists({ onPick }: { onPick(channelId: string): void; }) {
     const lists = Object.values(useTodos()).filter(l => l.items.length);
-    if (!lists.length) return <div className={cl("empty")}><span className={cl("empty-icon")}>📝</span>No lists anywhere yet. Open any chat and add things — each chat has its own list.</div>;
+    if (!lists.length) return <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="fileText" /></span>No lists anywhere yet. Open any chat and add things — each chat has its own list.</div>;
     return (
         <div className={td("all")}>
             {lists.sort((a, b) => b.items.filter(i => !i.done).length - a.items.filter(i => !i.done).length).map(l => {

@@ -109,7 +109,7 @@ function HubWindow({ modalProps, group, start, input: startInput, first }: { mod
         };
         live[group] = go;
         // Closing the window forgets which attachment it was opened from, so a later send never removes one.
-        return () => { if (live[group] === go) delete live[group]; original = null; };
+        return () => { if (live[group] === go) delete live[group]; if (group === "mediaTools") original = null; };
     }, []);
     // A part that closes itself and opens another part (GIF Maker's start page opening the editor)
     // switches in place: the close waits a moment, and opening the next part cancels it.

@@ -8,6 +8,7 @@ import { React, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { Avatar, Badges, cl, classes, Content, Thumb, useBackend } from "./bits";
 import { Entry, fmtDay, fmtDuration, fmtTime, fmtWhen, Media, Scope, whereText } from "./data";
+import { SonataGlyph } from "../../../../../utilities/icons";
 
 const PAGE = 60;
 
@@ -106,7 +107,7 @@ function Card({ e, on, picking, picked, onClick, onPick, onScope, openMedia, onS
                 <button type="button" className={cl("where")} onClick={ev => { ev.stopPropagation(); onScope({ kind: "channel", id: e.channelId }); }} title="Show only this place">
                     {whereText(e.place)}
                 </button>
-                {e.reply && <div className={cl("reply")}>↪ <b>{e.reply.name}</b> {e.reply.content.slice(0, 140) || "a message"}</div>}
+                {e.reply && <div className={cl("reply")}><SonataGlyph name="reply" /> <b>{e.reply.name}</b> {e.reply.content.slice(0, 140) || "a message"}</div>}
                 {e.edited && first.content !== e.m.content && <Content text={first.content} entry={e} className={cl("old")} />}
                 <Content text={e.m.content ?? ""} entry={e} />
                 {e.media.length > 0 && (
@@ -118,8 +119,8 @@ function Card({ e, on, picking, picked, onClick, onPick, onScope, openMedia, onS
                     </div>
                 )}
                 {e.files.length > 0 && <div className={cl("files")}>{e.files.slice(0, 3).map(f => <Thumb key={f.key} media={f} />)}</div>}
-                {e.embeds.length > 0 && <div className={cl("embed")}>🔗 <b>{e.embeds[0].title ?? ""}</b> {e.embeds[0].description?.slice(0, 120) ?? ""}</div>}
-                {e.note && <div className={cl("note")}>📝 {e.note}</div>}
+                {e.embeds.length > 0 && <div className={cl("embed")}><SonataGlyph name="link" /> <b>{e.embeds[0].title ?? ""}</b> {e.embeds[0].description?.slice(0, 120) ?? ""}</div>}
+                {e.note && <div className={cl("note")}><SonataGlyph name="fileText" /> {e.note}</div>}
                 <div className={cl("card-foot")}>{footLine(e)}</div>
             </div>
         </div>

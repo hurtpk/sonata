@@ -13,11 +13,12 @@ import { classes } from "@utils/misc";
 import { useEffect, useRef, useState } from "@webpack/common";
 
 import type { QolApi } from "../controller/ControlCenter";
+import { DOCK_ICON_MAP, SonataGlyph } from "../utilities/icons";
 
 export interface Profile { id: string; name: string; icon: string; on: string[]; off: string[]; at: number; }
 
-const ICONS = ["🏫", "🎮", "📺", "🌙", "💼", "🎧", "🧪", "⭐"];
-const SUGGESTED: [string, string][] = [["🏫", "School"], ["🎮", "Gaming"], ["📺", "Streaming"], ["🌙", "Night"]];
+const ICONS = ["graduation", "controller", "tv", "moon", "briefcase", "headphones", "flask", "star"];
+const SUGGESTED: [string, string][] = [["graduation", "School"], ["controller", "Gaming"], ["tv", "Streaming"], ["moon", "Night"]];
 
 export function loadProfiles(raw: string | undefined): Profile[] {
     try {
@@ -89,7 +90,7 @@ export function ProfilesButton({ api, raw, write }: { api: QolApi; raw: string |
     return (
         <div className="sonata-profiles" ref={box}>
             <button type="button" className={classes("sonata-updates", open && "sonata-profiles-open")} title="Save sets of features and switch between them" onClick={() => setOpen(o => !o)} aria-expanded={open}>
-                <span aria-hidden>{active?.icon ?? "🗂️"}</span>
+                <span aria-hidden><SonataGlyph name={active?.icon ?? "🗂️"} /></span>
                 {active ? active.name : "Profiles"}
             </button>
             {open && (
@@ -102,7 +103,7 @@ export function ProfilesButton({ api, raw, write }: { api: QolApi; raw: string |
                     {undo && (
                         <div className="sonata-profiles-undo">
                             Switched to {undo.name}.
-                            <button type="button" className="sonata-link" onClick={undoSwitch}>↩ Undo</button>
+                            <button type="button" className="sonata-link" onClick={undoSwitch}><SonataGlyph name="undo" /> Undo</button>
                         </div>
                     )}
 
@@ -115,7 +116,7 @@ export function ProfilesButton({ api, raw, write }: { api: QolApi; raw: string |
                                     <li key={p.id} className={classes("sonata-profiles-row", isActive && "sonata-profiles-row-on")}>
                                         <button type="button" className="sonata-profiles-use" disabled={isActive} onClick={() => switchTo(p)}
                                             title={isActive ? "This is what's on now" : `Turns on ${c.turnOn.length}, turns off ${c.turnOff.length}`}>
-                                            <span className="sonata-profiles-icon">{p.icon}</span>
+                                            <span className="sonata-profiles-icon"><SonataGlyph name={p.icon} /></span>
                                             <span className="sonata-profiles-name">
                                                 <b>{p.name}</b>
                                                 <small>{isActive ? "Active now" : `${p.on.length} on · ${n} change${n === 1 ? "" : "s"}`}</small>
@@ -135,7 +136,7 @@ export function ProfilesButton({ api, raw, write }: { api: QolApi; raw: string |
                         <div className="sonata-profiles-new">
                             <div className="sonata-profiles-icons">
                                 {ICONS.map(i => (
-                                    <button key={i} type="button" className={classes("sonata-profiles-icon-pick", naming.icon === i && "sonata-profiles-icon-on")} onClick={() => setNaming({ ...naming, icon: i })}>{i}</button>
+                                    <button key={i} type="button" className={classes("sonata-profiles-icon-pick", naming.icon === i && "sonata-profiles-icon-on")} onClick={() => setNaming({ ...naming, icon: i })} aria-label={DOCK_ICON_MAP[i].label}><SonataGlyph name={i} /></button>
                                 ))}
                             </div>
                             <input autoFocus className="sonata-profiles-input" maxLength={32} placeholder="Name, like Gaming" value={naming.name}
@@ -151,7 +152,7 @@ export function ProfilesButton({ api, raw, write }: { api: QolApi; raw: string |
                             {!profiles.length && (
                                 <div className="sonata-profiles-suggest">
                                     {SUGGESTED.map(([icon, name]) => (
-                                        <button key={name} type="button" className="sonata-chip" onClick={() => setNaming({ name, icon })}>{icon} {name}</button>
+                                        <button key={name} type="button" className="sonata-chip" onClick={() => setNaming({ name, icon })}><SonataGlyph name={icon} /> {name}</button>
                                     ))}
                                 </div>
                             )}

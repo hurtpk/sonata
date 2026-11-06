@@ -18,6 +18,7 @@ import { bsState, encodeFleet, randomFleet, wdState } from "./duelRules";
 import { boardOutcome, C4, c4Drop, emptyBoard, encodeGame, Game, GAME_NAMES, GameMessage, hangmanState, isDuel, isFinished, MAX_WRONG, newId, parseGame, resolveGame, turnOf } from "./games";
 import { CheckersBoard, DotsBoard, moreCanPlay, moreStatus, RpsBoard, UltimateBoard } from "./MoreBoards";
 import { isMore } from "./moreGames";
+import { SonataGlyph } from "../../utilities/icons";
 
 const mg = classNameFactory("vc-mg-");
 
@@ -105,7 +106,7 @@ export function GameAccessory({ message }: { message: any; }) {
     const seen = useGameMessages(channelId, message, here?.v === 2 ? here.id : null);
     if (!here) return null;
 
-    if (here.v === 1) return <Note>🎮 A game from an older Sonata (one message per move). Start a new one from the 🎮 button to play.</Note>;
+    if (here.v === 1) return <Note><SonataGlyph name="controller" /> A game from an older Sonata (one message per move). Start a new one from the <SonataGlyph name="controller" /> button to play.</Note>;
 
     const thisOne = seen.find(m => m.id === message.id);
     const res = resolveGame(seen.filter(m => m.game.v === 2 && m.game.id === here.id), here.x);
@@ -117,7 +118,7 @@ export function GameAccessory({ message }: { message: any; }) {
     if (!res.other && pointed && pointed.game.id !== here.id && pointed.changed > thisOne.changed) {
         return (
             <Note>
-                🎮 This {GAME_NAMES[here.kind]} game is over — a new one started.{" "}
+                <SonataGlyph name="controller" /> This {GAME_NAMES[here.kind]} game is over — a new one started.{" "}
                 <button type="button" className={mg("link")} onClick={() => jump(pointed.id)}>Go to it</button>
             </Note>
         );
@@ -127,14 +128,14 @@ export function GameAccessory({ message }: { message: any; }) {
     if (res.current.id !== message.id) {
         return (
             <Note>
-                🎮 {GAME_NAMES[here.kind]} — the game continues on {nameOf(res.current.author)}'s message.{" "}
+                <SonataGlyph name="controller" /> {GAME_NAMES[here.kind]} — the game continues on {nameOf(res.current.author)}'s message.{" "}
                 <button type="button" className={mg("link")} onClick={() => jump(res.current.id)}>Go to it</button>
             </Note>
         );
     }
 
     if (!res.ok) {
-        return <div className={classes(mg("card"), mg("card-bad"))}>🎮 This move doesn't count — it wasn't that player's turn, or the board doesn't match the other player's message.</div>;
+        return <div className={classes(mg("card"), mg("card-bad"))}><SonataGlyph name="controller" /> This move doesn't count — it wasn't that player's turn, or the board doesn't match the other player's message.</div>;
     }
 
     const g = res.current.game;

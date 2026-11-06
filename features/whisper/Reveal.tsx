@@ -22,6 +22,7 @@ import { remember } from "./historyStore";
 import { addPair, loadKeys, myIdentity, offeredTo, pairWith, savePassword, useKeys } from "./keys";
 import { choiceFrom, keyring, lockIcon, lockLabel } from "./locks";
 import { openWhisper } from "./Panel";
+import { SonataGlyph } from "../../utilities/icons";
 
 const URL_RE = /https?:\/\/[^\s<>()]+/g;
 const IMAGE_RE = /\.(png|jpe?g|gif|webp|avif)(\?|$)/i;
@@ -46,7 +47,7 @@ function Previews({ text }: { text: string; }) {
                     <a key={url} className={classes("vc-whisper-pic", yt && "vc-whisper-yt")} href={url} target="_blank" rel="noreferrer" title={url}>
                         <img src={img} alt="" onError={() => setBroken(b => new Set(b).add(url))} />
                     </a>
-                ) : <a key={url} className="vc-whisper-link" href={url} target="_blank" rel="noreferrer" title={url}>🔗 {host}</a>;
+                ) : <a key={url} className="vc-whisper-link" href={url} target="_blank" rel="noreferrer" title={url}><SonataGlyph name="link" /> {host}</a>;
             })}
         </div>
     );
@@ -67,15 +68,15 @@ function OpenedSecret({ o, message }: { o: Opened; message: any; }) {
         openWhisper({ start: choiceFrom(o.lock) });
     };
 
-    if (expired) return <div className="vc-whisper-box"><span className="vc-whisper-tag">{lockIcon(o.lock)} Whisper</span><span className="vc-whisper-locked">⌛ This whisper has expired.</span></div>;
+    if (expired) return <div className="vc-whisper-box"><span className="vc-whisper-tag">{lockIcon(o.lock)} Whisper</span><span className="vc-whisper-locked"><SonataGlyph name="hourglass" /> This whisper has expired.</span></div>;
 
     return (
         <div className="vc-whisper-box vc-whisper-box-open">
             <div className="vc-whisper-top">
                 <span className="vc-whisper-tag" title={label}>{lockIcon(o.lock)} Whisper · {label}</span>
-                {o.expiresAt && <span className="vc-whisper-locked">⌛ until {new Date(o.expiresAt).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}</span>}
+                {o.expiresAt && <span className="vc-whisper-locked"><SonataGlyph name="hourglass" /> until {new Date(o.expiresAt).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}</span>}
                 <span className="vc-whisper-grow" />
-                {shown && <button type="button" className="vc-whisper-mini" title="Reply with a whisper, locked the same way" onClick={reply}>↩ Reply</button>}
+                {shown && <button type="button" className="vc-whisper-mini" title="Reply with a whisper, locked the same way" onClick={reply}><SonataGlyph name="undo" /> Reply</button>}
             </div>
             <button type="button" className={classes("vc-whisper-text", !shown && "vc-whisper-hidden")} onClick={show} title={shown ? "Hide it again" : "Tap to read"}>
                 {Parser.parse(o.text, true, { channelId: message.channel_id, messageId: message.id, allowLinks: true })}
@@ -95,7 +96,7 @@ function PasswordBox({ message, onOpen }: { message: any; onOpen(r: Read): void;
     };
     return (
         <div className="vc-whisper-box">
-            <span className="vc-whisper-tag">🔑 Whisper</span>
+            <span className="vc-whisper-tag"><SonataGlyph name="key" /> Whisper</span>
             <span className="vc-whisper-locked">This one needs a password.</span>
             <input className="vc-whisper-input" value={typed} placeholder="Password" onChange={e => { setTyped(e.currentTarget.value); setWrong(false); }} onKeyDown={e => { if (e.key === "Enter" && typed) void tryIt(); }} />
             <button type="button" className="vc-whisper-btn" disabled={!typed} onClick={() => void tryIt()}>Open</button>
@@ -121,7 +122,7 @@ function PairRequest({ message, pub }: { message: any; pub: Uint8Array; }) {
     };
     return (
         <div className="vc-whisper-box">
-            <span className="vc-whisper-tag">🤝 Pair request</span>
+            <span className="vc-whisper-tag"><SonataGlyph name="personAdd" /> Pair request</span>
             {existing
                 ? <span className="vc-whisper-locked">✓ You're paired with {existing.name} · safety code {existing.code}</span>
                 : <>
@@ -144,7 +145,7 @@ function PairReply({ message, pub }: { message: any; pub: Uint8Array; }) {
     if (!pair) return null;
     return (
         <div className="vc-whisper-box">
-            <span className="vc-whisper-tag">🤝 Paired</span>
+            <span className="vc-whisper-tag"><SonataGlyph name="personAdd" /> Paired</span>
             <span className="vc-whisper-locked">You and {pair.name} can now whisper privately. Safety code {pair.code} — it should match on their side.</span>
         </div>
     );
@@ -165,7 +166,7 @@ export function WhisperReveal({ message }: { message: any; }) {
 
     if (result.type === "pair-request") {
         if (result.to === me()) return <PairRequest message={message} pub={result.pub} />;
-        if (fromMe) return <div className="vc-whisper-box"><span className="vc-whisper-tag">🤝 Pair request</span><span className="vc-whisper-locked">Sent — once they accept, you're paired.</span></div>;
+        if (fromMe) return <div className="vc-whisper-box"><span className="vc-whisper-tag"><SonataGlyph name="personAdd" /> Pair request</span><span className="vc-whisper-locked">Sent — once they accept, you're paired.</span></div>;
         return null;
     }
     if (result.type === "pair-reply") return result.to === me() ? <PairReply message={message} pub={result.pub} /> : null;
@@ -177,6 +178,6 @@ export function WhisperReveal({ message }: { message: any; }) {
         return <>{mine.map((o, i) => <OpenedSecret key={i} o={o} message={message} />)}</>;
     }
     if (result.needsPassword) return <PasswordBox message={message} onOpen={setResult} />;
-    if (result.forSomeoneElse) return <div className="vc-whisper-box vc-whisper-box-quiet"><span className="vc-whisper-tag">🤝 Whisper</span><span className="vc-whisper-locked">A private whisper between other people.</span></div>;
+    if (result.forSomeoneElse) return <div className="vc-whisper-box vc-whisper-box-quiet"><span className="vc-whisper-tag"><SonataGlyph name="personAdd" /> Whisper</span><span className="vc-whisper-locked">A private whisper between other people.</span></div>;
     return null;
 }

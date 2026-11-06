@@ -20,6 +20,7 @@ import { GuildChannelStore, GuildStore, IconUtils, openModal, PermissionsBits, P
 
 import { windowAccent } from "../../../controller/accent";
 import { Window } from "../../_shared/Window";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const wp = classNameFactory("vc-whp-");
@@ -210,7 +211,7 @@ function PickerModal({ modalProps, onPick }: { modalProps: RenderModalProps; onP
                                 <div className={wp("list")}>
                                     {channels.map(c => (
                                         <button key={c.id} type="button" className={classes(wp("item"), c.id === channelId && wp("item-on"))} onClick={() => setChannelId(c.id)}>
-                                            <span className={wp("hash")}>{c.type === ANNOUNCEMENT ? "📣" : "#"}</span>
+                                            <span className={wp("hash")}>{c.type === ANNOUNCEMENT ? <SonataGlyph name="megaphone" /> : "#"}</span>
                                             <span className={wp("item-name")}>{c.name}</span>
                                         </button>
                                     ))}

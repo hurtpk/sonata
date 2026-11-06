@@ -15,6 +15,7 @@ import { showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { doctor, DoctorFeature } from "../../../sonata/doctorBridge";
 import { lastUsed, loadUsage, trackingSince } from "../../../sonata/usage";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const UNDO_KEY = "Sonata_speedUpUndo";
 const DAY = 86400_000;
@@ -71,7 +72,7 @@ export function SpeedUp({ cls, onChange }: { cls(name: string): string; onChange
     return (
         <div className={cls("speed")}>
             <div className={cls("row")}>
-                <span className={cls("item-name")}>⚡ Speed up Discord</span>
+                <span className={cls("item-name")}><SonataGlyph name="bolt" /> Speed up Discord</span>
                 <span className={cls("muted")}>{list.length} features on, heaviest first</span>
                 <span className={cls("spacer")} />
                 {undo.length > 0 && <button type="button" className={cls("btn")} title={undo.join(", ")} onClick={turnBackOn}>↺ Turn the {undo.length} back on</button>}

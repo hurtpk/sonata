@@ -12,6 +12,7 @@ import { classes } from "@utils/misc";
 import { useEffect, useState } from "@webpack/common";
 
 import { ago, date, fetchHistory, fetchRef, parseLookup, RbxGame, RbxHistory, short, sources } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const KEY = "vc-rbx-compare";
@@ -111,7 +112,7 @@ export function Compare({ add }: { add?: string; }) {
             {err && <span className="vc-tool-error">{err}</span>}
             {!ids.length ? (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">⚖️</span>
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="sliders" /></span>
                     Put up to {MAX} games side by side.
                     <span className="vc-tool-hint">Yours against the competition: players, visits, likes, favourites, how often they update. Game cards also have a Compare button.</span>
                 </div>
@@ -127,9 +128,9 @@ export function Compare({ add }: { add?: string; }) {
                                         <th key={id}>
                                             <div className={rb("cmp-head")}>
                                                 <button type="button" className={rb("cmp-x")} title="Remove" onClick={() => setIds(ids.filter(x => x !== id))}>✕</button>
-                                                {!g ? <span className={rb("spin")} /> : typeof g === "string" ? <span className={rb("muted")}>⚠️ {g}</span> : (
+                                                {!g ? <span className={rb("spin")} /> : typeof g === "string" ? <span className={rb("muted")}><SonataGlyph name="warning" /> {g}</span> : (
                                                     <>
-                                                        {g.icon ? <img src={g.icon} alt="" /> : <span className={rb("img-none")}>🧱</span>}
+                                                        {g.icon ? <img src={g.icon} alt="" /> : <span className={rb("img-none")}><SonataGlyph name="blockTile" /></span>}
                                                         <b title={g.name}>{g.name}</b>
                                                         <small>by {g.creator}</small>
                                                     </>

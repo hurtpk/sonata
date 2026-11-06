@@ -19,6 +19,7 @@ import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { activity, allowAlways, inCall, LogEntry, onBalancerChange, peopleNow, PersonState, release, resetEveryone, unmuteNow } from "./balancer";
 import { settings } from "./index";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const av = classNameFactory("vc-avb-");
@@ -98,7 +99,7 @@ function MutedCard({ p, now }: { p: PersonState; now: number; }) {
         <div className={av("muted")}>
             <Avatar src={avatar} />
             <div className={av("who")}>
-                <span className={av("name")}>🔇 {name}</span>
+                <span className={av("name")}><SonataGlyph name="volumeMute" /> {name}</span>
                 <span className={av("sub")}>
                     <b className={av("why")}>{m.why[0].toUpperCase() + m.why.slice(1)}</b> · at {time(m.at)} · loudest {loudWord(m.peak).toLowerCase()} ({dB(m.peak)}){m.usual != null ? `, around ${dB(m.usual)}` : ""}
                 </span>
@@ -133,7 +134,7 @@ function LogRow({ e, live }: { e: LogEntry; live?: PersonState; }) {
     else detail = e.kind === "leave" ? "didn't talk" : live ? "hasn't talked yet" : "";
     return (
         <div className={classes(av("log"), av(`log-${e.kind}`))}>
-            <span className={av("log-icon")}>{icon}</span>
+            <span className={av("log-icon")}><SonataGlyph name={icon} /></span>
             <Avatar src={e.avatar} />
             <div className={av("who")}>
                 <span className={av("log-line")}><b>{e.name}</b> {text}</span>
@@ -170,7 +171,7 @@ function AutoVolumeModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         numbers={[{ value: muted.length, label: "muted" }]} />
                 )}
                 {!channelId ? (
-                    <div className={av("empty")}>🎧 Join a voice channel or call — everyone in it shows up here, with how loud they are.</div>
+                    <div className={av("empty")}><SonataGlyph name="headphones" /> Join a voice channel or call — everyone in it shows up here, with how loud they are.</div>
                 ) : (
                     <>
                         {muted.length > 0 && (

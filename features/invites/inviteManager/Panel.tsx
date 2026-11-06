@@ -17,6 +17,7 @@ import { Window } from "../../_shared/Window";
 import { canRevoke, collectInvites, Progress, revokeInvite } from "./fetch";
 import { applyView, expiringSoon, Filter, InviteRow, isStale, neverExpires, OLD_AFTER_DAYS, relative, Sort, usesText } from "./invites";
 import { forgetInvite, setLabel, useInviteStore } from "./store";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-invm-");
 
@@ -68,7 +69,7 @@ function Row({ r, label, onRevoked }: { r: InviteRow; label: string; onRevoked(c
 
     let expiry: React.ReactNode;
     if (r.gone) expiry = <span className={classes(cl("badge"), cl("badge-gone"))}>No longer works</span>;
-    else if (neverExpires(r)) expiry = <span className={classes(cl("badge"), stale ? cl("badge-stale") : cl("badge-never"))} title={stale ? `Never expires, and it's been around over ${OLD_AFTER_DAYS} days` : "Never expires"}>{stale ? "⚠ Never expires" : "Never expires"}</span>;
+    else if (neverExpires(r)) expiry = <span className={classes(cl("badge"), stale ? cl("badge-stale") : cl("badge-never"))} title={stale ? `Never expires, and it's been around over ${OLD_AFTER_DAYS} days` : "Never expires"}>{stale ? <><SonataGlyph name="warning" />{" Never expires"}</> : "Never expires"}</span>;
     else if (r.expiresAt) expiry = <span className={classes(cl("expiry"), expiringSoon(r) && cl("expiry-soon"))} title={new Date(r.expiresAt).toLocaleString()}>Expires {relative(r.expiresAt)}</span>;
     else expiry = <span className={cl("muted")}>Expiry unknown</span>;
 
@@ -181,7 +182,7 @@ function InviteModal({ modalProps, everyoneDefault, setEveryoneDefault }: { moda
                     {shown.map(r => <Row key={r.code} r={r} label={store.labels[r.code] ?? ""} onRevoked={dropRow} />)}
                     {!progress && data && shown.length === 0 && (
                         <div className={cl("empty")}>
-                            <span className="vc-tool-empty-icon">{rows.length === 0 ? "🔗" : "🔍"}</span>
+                            <span className="vc-tool-empty-icon">{rows.length === 0 ? <SonataGlyph name="link" /> : <SonataGlyph name="search" />}</span>
                             {rows.length === 0
                                 ? "No invites found. Discord only shows a server's invites to people with Manage Server (or Manage Channels for a channel) — invites you create from now on are remembered here wherever you make them."
                                 : "Nothing matches."}

@@ -28,6 +28,7 @@ import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { resetLanguageDefaults, settings } from "./settings";
 import { getLanguages } from "./utils";
+import { SonataGlyph } from "../../utilities/icons";
 
 type LangKey = "receivedInput" | "receivedOutput" | "sentInput" | "sentOutput";
 
@@ -69,14 +70,14 @@ export function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) 
     const deepl = s.service === "deepl" || s.service === "deepl-pro";
 
     return (
-        <Window {...rootProps} size="lg" title="Translate" subtitle="Translate messages you get, and what you send — with the 🌐 button in the chat bar">
+        <Window {...rootProps} size="lg" title="Translate" subtitle="Translate messages you get, and what you send — with the Translate button in the chat bar">
             <div className="vc-tool-wrap vc-trans-window" style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="🌐" kicker={`Using ${SERVICES.find(x => x.id === s.service)?.name ?? "Google Translate"}`}
                     title={<>{name(s.receivedInput)} <span className="vc-trans-hero-arrow">→</span> {name(s.receivedOutput)}</>}
                     sub={<>What you send: {name(s.sentInput)} → {name(s.sentOutput)}</>}
                     numbers={[{ value: s.autoTranslate ? "On" : "Off", label: "auto-translate" }]} />
                 <section className="vc-tool-section">
-                    <h3 className="vc-tool-section-title">🔌 Translation service</h3>
+                    <h3 className="vc-tool-section-title"><SonataGlyph name="plug" /> Translation service</h3>
                     <div className="vc-tool-tiles">
                         {SERVICES.map(x => (
                             <button key={x.id} type="button" className={classes("vc-tool-tile", s.service === x.id && "vc-tool-tile-on")}
@@ -101,7 +102,7 @@ export function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) 
 
                 <div className="vc-trans-sides">
                 <section className="vc-tool-section">
-                    <h3 className="vc-tool-section-title">📥 Messages you get</h3>
+                    <h3 className="vc-tool-section-title"><SonataGlyph name="download" /> Messages you get</h3>
                     <div className="vc-trans-pair">
                         <LanguageSelect settingsKey="receivedInput" includeAuto />
                         <span className="vc-trans-arrow" aria-hidden>→</span>
@@ -110,7 +111,7 @@ export function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) 
                 </section>
 
                 <section className="vc-tool-section">
-                    <h3 className="vc-tool-section-title">📤 Messages you send</h3>
+                    <h3 className="vc-tool-section-title"><SonataGlyph name="upload" /> Messages you send</h3>
                     <div className="vc-trans-pair">
                         <LanguageSelect settingsKey="sentInput" includeAuto />
                         <span className="vc-trans-arrow" aria-hidden>→</span>
@@ -118,7 +119,7 @@ export function TranslateModal({ rootProps }: { rootProps: RenderModalProps; }) 
                     </div>
                     <label className="vc-tool-check"><input type="checkbox" checked={!!s.autoTranslate} onChange={e => settings.store.autoTranslate = e.currentTarget.checked} /> Translate everything I send automatically</label>
                     <label className="vc-tool-check"><input type="checkbox" checked={s.showAutoTranslateTooltip !== false} onChange={e => settings.store.showAutoTranslateTooltip = e.currentTarget.checked} /> Show a note on the button when a message was translated</label>
-                    <span className="vc-tool-hint">Shift+click or right-click the 🌐 button to switch automatic translation on or off quickly.</span>
+                    <span className="vc-tool-hint">Shift+click or right-click the <SonataGlyph name="globe" /> button to switch automatic translation on or off quickly.</span>
                 </section>
                 </div>
 

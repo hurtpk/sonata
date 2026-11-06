@@ -13,6 +13,7 @@ import { showToast, useEffect, useMemo, useState } from "@webpack/common";
 
 import { rb } from "./Card";
 import { fetchRef, fetchServers, joinServer, parseLookup, RbxGame, RbxServer, serverLink, short } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 type Order = "Desc" | "Asc";
 
@@ -35,12 +36,12 @@ function GameHead({ placeId }: { placeId: string; }) {
     if (!g) return <div className={rb("loading")}><span className={rb("spin")} /> Finding the game…</div>;
     return (
         <div className={rb("head")}>
-            {g.icon ? <img className={rb("icon")} src={g.icon} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}>🧱</span>}
+            {g.icon ? <img className={rb("icon")} src={g.icon} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}><SonataGlyph name="blockTile" /></span>}
             <div className={rb("who")}>
                 <b>{g.name}</b>
                 <span><span className={rb("live")}>{short(g.playing)} playing</span> · {g.maxPlayers || "?"} per server · by {g.creator}</span>
             </div>
-            <button type="button" className="vc-tool-btn" onClick={() => join(g.placeId)}>▶ Play</button>
+            <button type="button" className="vc-tool-btn" onClick={() => join(g.placeId)}><SonataGlyph name="play" /> Play</button>
         </div>
     );
 }
@@ -57,11 +58,11 @@ function ServerRow({ placeId, s }: { placeId: string; s: RbxServer; }) {
             </div>
             {s.faces.length > 0 && <div className={rb("faces")}>{s.faces.map(f => <img key={f} src={f} alt="" />)}</div>}
             <div className={rb("server-meta")}>
-                {s.ping != null && <span className={classes(rb("ping"), s.ping < 100 ? rb("up") : s.ping < 200 ? rb("flat") : rb("down"))} title="The server's average ping">📶 {s.ping} ms</span>}
+                {s.ping != null && <span className={classes(rb("ping"), s.ping < 100 ? rb("up") : s.ping < 200 ? rb("flat") : rb("down"))} title="The server's average ping"><SonataGlyph name="signal" /> {s.ping} ms</span>}
                 {s.fps != null && <span title="How smoothly the server is running (60 is perfect)">{s.fps} fps</span>}
             </div>
             <span className={rb("spacer")} />
-            <button type="button" className="vc-tool-icon" title="Copy a link to this server — anyone who clicks it lands here" onClick={() => copyWithToast(serverLink(placeId, s.id), "Server link copied")}>🔗</button>
+            <button type="button" className="vc-tool-icon" title="Copy a link to this server — anyone who clicks it lands here" onClick={() => copyWithToast(serverLink(placeId, s.id), "Server link copied")}><SonataGlyph name="link" /></button>
             <button type="button" className="vc-tool-btn vc-tool-primary" disabled={free <= 0} onClick={() => join(placeId, s)}>Join</button>
         </div>
     );
@@ -110,7 +111,7 @@ export function Servers({ initial }: { initial?: string; }) {
             {err && <span className="vc-tool-error">{err}</span>}
             {!placeId ? (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">🖥️</span>
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="monitor" /></span>
                     Find a server to join in any Roblox game.
                     <span className="vc-tool-hint">Pick the fullest or emptiest, make sure there's room for your friends, skip laggy ones, and share a link that drops people into the same server.</span>
                 </div>

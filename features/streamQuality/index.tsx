@@ -20,6 +20,7 @@ import { React, showToast, useState } from "@webpack/common";
 import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { Window } from "../_shared/Window";
+import { SonataGlyph } from "../../utilities/icons";
 
 const MediaEngineStore = findByPropsLazy("getMediaEngine");
 const cl = classNameFactory("vc-sq-");
@@ -300,7 +301,7 @@ function QualityTab({ refresh }: { refresh: () => void; }) {
             <Status on={!!settings.store.active} onText="Quality overrides are on" offText="Quality overrides are off" onToggle={() => { settings.store.active = !settings.store.active; refresh(); }} />
 
             <section className={tl("section")}>
-                <h3 className={tl("section-title")}>🎥 Your stream</h3>
+                <h3 className={tl("section-title")}><SonataGlyph name="film" /> Your stream</h3>
                 <span className={tl("label")}>Resolution</span>
                 <div className={tl("chips")}>
                     {RES.map(([v, l]) => <button key={v} type="button" className={classes(tl("chip"), (settings.store.resolution || "0") === v && tl("chip-on"))} onClick={() => set("resolution", v)}>{l}</button>)}
@@ -318,7 +319,7 @@ function QualityTab({ refresh }: { refresh: () => void; }) {
             </section>
 
             <section className={tl("section")}>
-                <h3 className={tl("section-title")}>🏷️ Quality badge others see</h3>
+                <h3 className={tl("section-title")}><SonataGlyph name="tag" /> Quality badge others see</h3>
                 <div className={tl("grid2")}>
                     <Num label="Show resolution as" value={settings.store.spoofResolution} placeholder="0 = off" onChange={v => set("spoofResolution", v)} unit="p" />
                     <Num label="Show FPS as" value={settings.store.spoofFps} placeholder="0 = off" onChange={v => set("spoofFps", v)} unit="fps" />
@@ -336,7 +337,7 @@ function PreviewTab({ onPickFile, refresh }: { onPickFile: () => void; refresh: 
         <>
             <Status on={!!enabled} onText="Your own preview picture is on" offText="Using your real stream preview" onToggle={() => { settings.store.streamPreview = !settings.store.streamPreview; refresh(); }} />
             <section className={tl("section")}>
-                <h3 className={tl("section-title")}>🖼️ Preview picture</h3>
+                <h3 className={tl("section-title")}><SonataGlyph name="image" /> Preview picture</h3>
                 {preview ? (
                     <>
                         <div className={classes(tl("stage"), cl("preview"))}><img src={preview} alt="Stream preview" /></div>
@@ -348,7 +349,7 @@ function PreviewTab({ onPickFile, refresh }: { onPickFile: () => void; refresh: 
                     </>
                 ) : (
                     <button type="button" className={classes(tl("empty"), cl("drop"))} onClick={onPickFile}>
-                        <span className={tl("empty-icon")}>🖼️</span>
+                        <span className={tl("empty-icon")}><SonataGlyph name="image" /></span>
                         <b>Choose a picture</b>
                         <span>Cropped to 16:9 · {PREVIEW_OUT_W}×{PREVIEW_OUT_H} · up to {MAX_PREVIEW_KB} KB</span>
                     </button>

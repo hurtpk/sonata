@@ -19,6 +19,7 @@ import { isShortener, whereItGoes } from "../linkCleaner/preview";
 import { linksIn, siteOf, Verdict } from "./scam";
 import { logEvent, Outcome, placeOf, verdictEntry } from "./scamLog";
 import { Window } from "./Window";
+import { SonataGlyph } from "../../utilities/icons";
 
 export interface GuardConfig {
     check(raw: string, shown: string, context: string): Verdict;
@@ -150,7 +151,7 @@ export function makeGuard(cfg: GuardConfig) {
         const also = all.filter(v => v !== worst).flatMap(v => v.reasons.slice(0, 1));
         return (
             <div className={classes("vc-scam", scam ? "vc-scam-bad" : "vc-scam-warn")} role="alert">
-                <span className="vc-scam-icon">{scam ? "🚨" : "⚠️"}</span>
+                <span className="vc-scam-icon">{scam ? <SonataGlyph name="shieldAlert" /> : <SonataGlyph name="warning" />}</span>
                 <div className="vc-scam-text">
                     <b>{label}{all.length > 1 ? ` (${all.length} warnings)` : ""}</b>
                     <span>{worst.reasons[0] ?? cfg.fallback}</span>

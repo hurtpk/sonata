@@ -20,6 +20,7 @@ import { openGame } from "./GamePage";
 import type { SteamFriend, SteamNews, SteamSearchHit } from "./native";
 import { NoteBlock, parseNotes } from "./notes";
 import { clearFeed, FeedItem, FeedKind, game, games, isWatched, markSeen, setProfile, unseen, unwatch, updateGame, useSteam, watch, Watched } from "./store";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const sw = classNameFactory("vc-steam-");
@@ -60,7 +61,7 @@ function useStatus() {
 function Cover({ src, appid, className }: { src?: string; appid: number; className?: string; }) {
     const [broken, setBroken] = useState(false);
     const url = src ?? headerOf(appid);
-    return broken ? <span className={classes(className, sw("cover-none"))} aria-hidden>🎮</span> : <img className={className} src={url} alt="" onError={() => setBroken(true)} />;
+    return broken ? <span className={classes(className, sw("cover-none"))} aria-hidden><SonataGlyph name="controller" /></span> : <img className={className} src={url} alt="" onError={() => setBroken(true)} />;
 }
 
 /* ── Patch notes reader ── */
@@ -91,13 +92,13 @@ function Thumb({ src }: { src?: string; }) {
 function NoteImage({ src, href }: { src: string; href?: string; }) {
     const url = usePicture(src);
     const [broken, setBroken] = useState(false);
-    if (broken || url === null) return href ? <button type="button" className={sw("media-link")} onClick={() => open(href)}>🔗 Open link</button> : null;
+    if (broken || url === null) return href ? <button type="button" className={sw("media-link")} onClick={() => open(href)}><SonataGlyph name="link" /> Open link</button> : null;
     if (url === undefined) return <figure className={sw("media")}><span className={sw("media-wait")}>Loading picture…</span></figure>;
     return (
         <figure className={sw("media")}>
             <img className={sw("media-img")} src={url} alt="" loading="lazy" title="Click to see it bigger" onError={() => setBroken(true)}
                 onClick={() => openImageModal({ url })} />
-            {href && <button type="button" className={sw("media-link")} onClick={() => open(href)}>🔗 Open link</button>}
+            {href && <button type="button" className={sw("media-link")} onClick={() => open(href)}><SonataGlyph name="link" /> Open link</button>}
         </figure>
     );
 }
@@ -120,7 +121,7 @@ function NoteVideo({ id }: { id: string; }) {
         <figure className={sw("media")}>
             <button type="button" className={sw("yt")} title="Watch on YouTube" onClick={() => open(`https://www.youtube.com/watch?v=${id}`)}>
                 <img className={sw("media-img")} src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" loading="lazy" />
-                <span className={sw("yt-play")} aria-hidden>▶</span>
+                <span className={sw("yt-play")} aria-hidden><SonataGlyph name="play" /></span>
                 <span className={sw("yt-label")}>Watch on YouTube</span>
             </button>
         </figure>
@@ -129,7 +130,7 @@ function NoteVideo({ id }: { id: string; }) {
 
 function NewsBody({ text }: { text: string; }) {
     const blocks = useMemo(() => parseNotes(text), [text]);
-    if (!blocks.length) return <div className={cl("empty")}><span className={cl("empty-icon")}>📄</span>Nothing to show here — open it on Steam to see it.</div>;
+    if (!blocks.length) return <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="fileText" /></span>Nothing to show here — open it on Steam to see it.</div>;
     return (
         <div className={sw("notes")}>
             {blocks.map((b, i) => b.kind === "h" ? <h4 key={i}>{b.text}</h4>
@@ -164,11 +165,11 @@ function NewsModal({ modalProps, appid, gid }: { modalProps: RenderModalProps; a
     return (
         <Window {...modalProps} size="xl" title={g?.name ?? "Steam news"} subtitle="Updates and announcements from the developer">
             <div className={classes("vc-tool-wrap", sw("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                {error ? <div className={cl("error")}>{error}</div> : !news ? <div className={cl("empty")}><span className={cl("empty-icon")}>⏳</span>Loading…</div> : !item ? (
-                    <div className={cl("empty")}><span className={cl("empty-icon")}>📭</span>No announcements yet.</div>
+                {error ? <div className={cl("error")}>{error}</div> : !news ? <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="hourglass" /></span>Loading…</div> : !item ? (
+                    <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="inbox" /></span>No announcements yet.</div>
                 ) : (
                     <>
-                        <ToolHero icon={<Cover src={g?.header} appid={appid} className={sw("hero-cover")} />} kicker={`${isUpdate(item) ? "🛠️ Update" : "📰 News"} · ${day(item.date)}`} title={item.title}
+                        <ToolHero icon={<Cover src={g?.header} appid={appid} className={sw("hero-cover")} />} kicker={`${isUpdate(item) ? "Update" : "News"} · ${day(item.date)}`} title={item.title}
                             sub={g?.name}>
                             <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={() => open(item.url)}>Open on Steam</button>
                         </ToolHero>
@@ -177,7 +178,7 @@ function NewsModal({ modalProps, appid, gid }: { modalProps: RenderModalProps; a
                                 {news.map(n => (
                                     <button key={n.gid} type="button" className={classes(sw("reader-item"), n.gid === item.gid && sw("reader-on"))} onClick={() => setPick(n.gid)}>
                                         <Thumb src={firstPicture(n)} />
-                                        <b>{isUpdate(n) ? "🛠️" : "📰"} {n.title}</b>
+                                        <b>{isUpdate(n) ? <SonataGlyph name="wrench" /> : <SonataGlyph name="fileText" />} {n.title}</b>
                                         <span>{ago(n.date)}</span>
                                     </button>
                                 ))}
@@ -219,7 +220,7 @@ function AddBar() {
     return (
         <div className={sw("add")}>
             <div className={sw("add-bar")}>
-                <span className={sw("add-icon")} aria-hidden>🔎</span>
+                <span className={sw("add-icon")} aria-hidden><SonataGlyph name="search" /></span>
                 <input className={classes(cl("input"), sw("add-input"))} value={q} placeholder="Search Steam, or paste a store link…" onChange={e => setQ(e.currentTarget.value)} />
                 {direct && <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={() => { add(Number(direct)); setQ(""); }}>＋ Watch #{direct}</button>}
             </div>
@@ -251,7 +252,7 @@ function TargetInput({ g }: { g: Watched; }) {
     };
     return (
         <label className={classes(sw("target"), g.targetHit && sw("target-hit"))}>
-            <span>🎯 {g.targetHit ? "Price reached!" : "Tell me under"}</span>
+            <span><SonataGlyph name="target" /> {g.targetHit ? "Price reached!" : "Tell me under"}</span>
             <input className={classes(cl("input"), sw("target-input"))} inputMode="decimal" value={v} placeholder="Any price"
                 onChange={e => setV(e.currentTarget.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }} />
         </label>
@@ -283,17 +284,17 @@ function GameCard({ g }: { g: Watched; }) {
                             : <span className={sw("price-none")}>{soon ? (g.release?.date ? `Out ${day(g.release.date)}` : g.release?.text ?? "Coming soon") : g.lastCheck ? "No price" : "Checking…"}</span>}
                 </div>
                 <div className={sw("meta")}>
-                    {sale && p!.ends && <span className={sw("chip-hot")}>⏳ ends {day(p!.ends)}</span>}
-                    {soon && p && g.release?.date && <span className={sw("chip")}>📅 {day(g.release.date)}</span>}
+                    {sale && p!.ends && <span className={sw("chip-hot")}><SonataGlyph name="hourglass" /> ends {day(p!.ends)}</span>}
+                    {soon && p && g.release?.date && <span className={sw("chip")}><SonataGlyph name="event" /> {day(g.release.date)}</span>}
                     {g.release?.early && !soon && <span className={sw("chip")}>Early Access</span>}
-                    {g.review && <span className={sw("chip")} title={`${g.review.pct}% of ${g.review.count.toLocaleString()} reviews are positive`}>👍 {g.review.label}</span>}
+                    {g.review && <span className={sw("chip")} title={`${g.review.pct}% of ${g.review.count.toLocaleString()} reviews are positive`}><SonataGlyph name="thumbsUp" /> {g.review.label}</span>}
                 </div>
                 {g.lastNews && (
                     <button type="button" className={sw("news")} onClick={() => openNews(g.appid, g.lastNews!.gid)} title="Read it">
-                        <span>{g.lastNews.update ? "🛠️" : "📰"}</span><span className={sw("news-title")}>{g.lastNews.title}</span><small>{ago(g.lastNews.date)}</small>
+                        <span>{g.lastNews.update ? <SonataGlyph name="wrench" /> : <SonataGlyph name="fileText" />}</span><span className={sw("news-title")}>{g.lastNews.title}</span><small>{ago(g.lastNews.date)}</small>
                     </button>
                 )}
-                {g.error && <span className={sw("error")}>⚠ {g.error}</span>}
+                {g.error && <span className={sw("error")}><SonataGlyph name="warning" /> {g.error}</span>}
                 <div className={sw("foot")}>
                     <TargetInput g={g} />
                     {sure
@@ -327,7 +328,7 @@ function WatchTab({ list }: { list: Watched[]; }) {
             {list.length ? (
                 <div className={sw("grid")}>{sorted.map(g => <GameCard key={g.appid} g={g} />)}</div>
             ) : (
-                <div className={cl("empty")}><span className={cl("empty-icon")}>🎮</span>No games yet. Search above, paste a store link, or link your Steam profile to add your wishlist.</div>
+                <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="controller" /></span>No games yet. Search above, paste a store link, or link your Steam profile to add your wishlist.</div>
             )}
         </>
     );
@@ -370,7 +371,7 @@ function ActivityTab({ items }: { items: FeedItem[]; }) {
                     {shown.map(i => (
                         <button key={i.id} type="button" className={sw("event")} style={{ "--k": KIND[i.kind].color } as React.CSSProperties}
                             onClick={() => i.newsGid ? openNews(i.appid, i.newsGid) : openGame(i.appid)}>
-                            <span className={sw("event-icon")} aria-hidden>{KIND[i.kind].icon}</span>
+                            <span className={sw("event-icon")} aria-hidden><SonataGlyph name={KIND[i.kind].icon} /></span>
                             <Cover src={game(i.appid)?.header} appid={i.appid} className={sw("event-cover")} />
                             <span className={sw("event-text")}>
                                 <b>{i.title.replace(/^\S+\s/, "")}</b>
@@ -381,7 +382,7 @@ function ActivityTab({ items }: { items: FeedItem[]; }) {
                     ))}
                 </div>
             ) : (
-                <div className={cl("empty")}><span className={cl("empty-icon")}>🔔</span>{items.length ? "Nothing of that kind yet." : "Sales, updates, releases and free games for what you watch show up here."}</div>
+                <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="bell" /></span>{items.length ? "Nothing of that kind yet." : "Sales, updates, releases and free games for what you watch show up here."}</div>
             )}
         </>
     );
@@ -421,7 +422,7 @@ function ProfileTab() {
     if (!p) {
         return (
             <div className={sw("link-card")}>
-                <span className={sw("link-icon")} aria-hidden>🔗</span>
+                <span className={sw("link-icon")} aria-hidden><SonataGlyph name="link" /></span>
                 <b>Link your Steam profile</b>
                 <span className={cl("hint")}>See your profile here, watch the games you've been playing, and add your whole wishlist in one click. Only public info is read — no login, no password.</span>
                 <div className={sw("link-bar")}>
@@ -446,9 +447,9 @@ function ProfileTab() {
                     <span className={sw("profile-state")}>{p.stateMessage.replace(/\n/g, " · ") || state}</span>
                     <b className={sw("profile-name")}>{p.name}</b>
                     <span className={sw("profile-meta")}>
-                        {p.memberSince && <span>🗓️ Since {p.memberSince}</span>}
-                        {p.location && <span>📍 {p.location}</span>}
-                        {!isPublic && <span>🔒 Profile isn't public</span>}
+                        {p.memberSince && <span><SonataGlyph name="event" /> Since {p.memberSince}</span>}
+                        {p.location && <span><SonataGlyph name="location" /> {p.location}</span>}
+                        {!isPublic && <span><SonataGlyph name="lock" /> Profile isn't public</span>}
                     </span>
                     {p.summary && <span className={sw("profile-summary")}>{p.summary}</span>}
                 </div>
@@ -456,7 +457,7 @@ function ProfileTab() {
             </div>
 
             <div className={sw("row")}>
-                <button type="button" className={classes(cl("btn"), cl("primary"))} disabled={!!busy} onClick={() => void importWishlist()}>{busy === "wish" ? "Adding your wishlist…" : "❤️ Watch my wishlist"}</button>
+                <button type="button" className={classes(cl("btn"), cl("primary"))} disabled={!!busy} onClick={() => void importWishlist()}>{busy === "wish" ? "Adding your wishlist…" : <><SonataGlyph name="heart" />{" Watch my wishlist"}</>}</button>
                 <button type="button" className={cl("btn")} disabled={!!busy} onClick={() => void link(p.input)}>{busy === "link" ? "Refreshing…" : "↻ Refresh"}</button>
                 <button type="button" className={cl("btn")} onClick={() => open(p.url)}>Open on Steam</button>
                 <span className={cl("spacer")} />
@@ -478,7 +479,7 @@ function ProfileTab() {
                                     <Cover appid={r.appid} className={sw("recent-cover")} />
                                     <button type="button" className={sw("recent-text")} title="See the game and your achievements" onClick={() => openGame(r.appid)}>
                                         <b>{r.name}</b>
-                                        <small>{[r.hours, r.last].filter(Boolean).join(" · ")} · 🏆</small>
+                                        <small>{[r.hours, r.last].filter(Boolean).join(" · ")} · <SonataGlyph name="trophy" /></small>
                                     </button>
                                     <button type="button" className={classes(cl("btn"), !on && cl("primary"))} disabled={on}
                                         onClick={() => { if (watch(r.appid, r.name)) void checkGames([r.appid]); }}>{on ? "✓ Watching" : "＋ Watch"}</button>
@@ -516,7 +517,7 @@ function FriendCard({ f }: { f: SteamFriend; }) {
             <img className={sw("friend-avatar")} src={f.avatar} alt="" loading="lazy" />
             <span className={sw("friend-text")}>
                 <b title={f.name}>{f.name}</b>
-                <small>{f.state === "in-game" ? <>🎮 {f.game}</> : STATE[f.state]}</small>
+                <small>{f.state === "in-game" ? <><SonataGlyph name="controller" /> {f.game}</> : STATE[f.state]}</small>
             </span>
             <span className={sw("friend-acts")}>
                 {f.game && (
@@ -551,7 +552,7 @@ function FriendsTab({ goProfile }: { goProfile(): void; }) {
     if (!p) {
         return (
             <div className={sw("link-card")}>
-                <span className={sw("link-icon")} aria-hidden>👥</span>
+                <span className={sw("link-icon")} aria-hidden><SonataGlyph name="people" /></span>
                 <b>See your Steam friends</b>
                 <span className={cl("hint")}>Link your Steam profile first — then you'll see who's online and what everyone's playing.</span>
                 <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={goProfile}>Link my Steam profile</button>
@@ -583,9 +584,9 @@ function FriendsTab({ goProfile }: { goProfile(): void; }) {
             {error && <div className={cl("error")}>{error}</div>}
 
             {data?.private ? (
-                <div className={cl("empty")}><span className={cl("empty-icon")}>🔒</span>Your friends list is private, so Steam doesn't show it. In Steam: your profile → Edit Profile → Privacy Settings → set Friends List to Public.</div>
+                <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="lock" /></span>Your friends list is private, so Steam doesn't show it. In Steam: your profile → Edit Profile → Privacy Settings → set Friends List to Public.</div>
             ) : !data ? (
-                <div className={cl("empty")}><span className={cl("empty-icon")}>⏳</span>Loading your friends…</div>
+                <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="hourglass" /></span>Loading your friends…</div>
             ) : (
                 <>
                     {all.length > 8 && <input className={cl("input")} value={q} placeholder={`Search ${all.length} friends or games…`} onChange={e => setQ(e.currentTarget.value)} />}
@@ -595,22 +596,22 @@ function FriendsTab({ goProfile }: { goProfile(): void; }) {
                             <div className={cl("chips")}>
                                 {popular.map(([name, n]) => (
                                     <button key={name} type="button" className={cl("chip")} title={`Watch ${name}`} onClick={() => void watchByName(name)}>
-                                        🎮 {name} <span className={sw("count")}>{n}</span>
+                                        <SonataGlyph name="controller" /> {name} <span className={sw("count")}>{n}</span>
                                     </button>
                                 ))}
                             </div>
                         </div>
                     )}
                     <div className={sw("friends")}>
-                        {playing.length > 0 && <><span className={classes(cl("label"), sw("group"))}>🎮 Playing · {playing.length}</span><div className={sw("friend-grid")}>{playing.map(f => <FriendCard key={f.steamid} f={f} />)}</div></>}
-                        {online.length > 0 && <><span className={classes(cl("label"), sw("group"))}>🟢 Online · {online.length}</span><div className={sw("friend-grid")}>{online.map(f => <FriendCard key={f.steamid} f={f} />)}</div></>}
+                        {playing.length > 0 && <><span className={classes(cl("label"), sw("group"))}><SonataGlyph name="controller" /> Playing · {playing.length}</span><div className={sw("friend-grid")}>{playing.map(f => <FriendCard key={f.steamid} f={f} />)}</div></>}
+                        {online.length > 0 && <><span className={classes(cl("label"), sw("group"))}><SonataGlyph name="statusOnline" /> Online · {online.length}</span><div className={sw("friend-grid")}>{online.map(f => <FriendCard key={f.steamid} f={f} />)}</div></>}
                         {offline.length > 0 && (
                             <>
                                 <button type="button" className={classes(cl("label"), sw("group"), sw("group-toggle"))} onClick={() => setShowOffline(v => !v)}>{showOffline ? "▾" : "▸"} Offline · {offline.length}</button>
                                 {(showOffline || !!needle) && <div className={sw("friend-grid")}>{offline.map(f => <FriendCard key={f.steamid} f={f} />)}</div>}
                             </>
                         )}
-                        {!playing.length && !online.length && !offline.length && <div className={cl("empty")}><span className={cl("empty-icon")}>🔍</span>{all.length ? "Nobody matches that." : "No friends on this profile yet."}</div>}
+                        {!playing.length && !online.length && !offline.length && <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="search" /></span>{all.length ? "Nobody matches that." : "No friends on this profile yet."}</div>}
                     </div>
                 </>
             )}
@@ -652,7 +653,7 @@ export function SteamSection({ start }: { start?: string; }) {
                 <ToolHero icon={best ? <Cover src={best.header} appid={best.appid} className={sw("hero-cover")} /> : "🎮"}
                     kicker={st.running ? "Checking Steam…" : best ? "Best deal right now" : "Steam"}
                     title={best ? `${best.name} · −${best.price!.pct}%` : list.length ? `Watching ${list.length} game${list.length === 1 ? "" : "s"}` : "Watch your first game"}
-                    sub={st.error ? `⚠ ${st.error}` : best ? `${best.price!.formatted}${best.price!.formattedInitial ? ` (was ${best.price!.formattedInitial})` : ""}${best.price!.ends ? ` · ends ${day(best.price!.ends)}` : ""}`
+                    sub={st.error ? st.error : best ? `${best.price!.formatted}${best.price!.formattedInitial ? ` (was ${best.price!.formattedInitial})` : ""}${best.price!.ends ? ` · ends ${day(best.price!.ends)}` : ""}`
                         : list.length ? `${st.lastRun ? `Checked ${ago(st.lastRun)}` : "Not checked yet"}${st.nextRun ? ` · next check ${until(st.nextRun)}` : ""}` : "You'll get a pop-up when it goes on sale, updates, releases or turns free."}
                     numbers={[{ value: onSale.length, label: "on sale" }, { value: week.filter(f => f.kind === "update").length, label: "updates this week" }]}>
                     <button type="button" className={cl("btn")} disabled={st.running || !list.length} onClick={() => void runCheck()}>{st.running ? "Checking…" : "↻ Check now"}</button>

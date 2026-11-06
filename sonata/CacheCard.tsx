@@ -8,6 +8,7 @@
 // on disk (with a clean button), how much memory it's using, automatic
 // cleaning, a history, and what Sonata's own features have saved.
 
+import { SonataGlyph } from "../utilities/icons";
 import { copyWithToast } from "@utils/discord";
 import { classes } from "@utils/misc";
 import { React, showToast, useEffect, useState } from "@webpack/common";
@@ -206,7 +207,7 @@ function Memory() {
                 <span className="sonata-field-hint">
                     {growth == null
                         ? "Measuring how it changes — a reading every minute. Check back in a few minutes."
-                        : `Last ${minutes} min: window ${growth >= 0 ? "+" : ""}${growth} MB/hour${growth > 150 ? " — still climbing; something is holding on to memory." : growth > 40 ? " — creeping up slowly." : " — steady. 👍"}`}
+                        : `Last ${minutes} min: window ${growth >= 0 ? "+" : ""}${growth} MB/hour${growth > 150 ? " — still climbing; something is holding on to memory." : growth > 40 ? " — creeping up slowly." : " — steady."}`}
                     <span className="sonata-cache-legend"><i className="w" /> window <i className="j" /> JavaScript</span>
                 </span>
             </div>
@@ -353,7 +354,7 @@ export function CacheCard({ store }: { store: any; }) {
             <div className="sonata-field-actions">
                 <button type="button" className="sonata-btn" disabled={busy} onClick={refresh}>Refresh</button>
                 <button type="button" className="sonata-btn sonata-btn-light" disabled={busy || !sizes || !chosen} onClick={() => void clear()}>
-                    {busy ? "Cleaning…" : `🧹 Clean up ${sizes ? formatBytes(chosen) : ""}`}
+                    {busy ? "Cleaning…" : <><SonataGlyph name="broom" /> Clean up {sizes ? formatBytes(chosen) : ""}</>}
                 </button>
                 {freed != null && <span className="sonata-field-hint">Freed {formatBytes(freed)}.</span>}
             </div>

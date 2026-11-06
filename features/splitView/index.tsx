@@ -18,6 +18,7 @@ import { sendMessage } from "@utils/discord";
 import { classes } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { ChannelStore, createRoot, GuildStore, Menu, MessageActions, MessageStore, NavigationRouter, Parser, showToast, useEffect, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
+import { SonataGlyph } from "../../utilities/icons";
 
 const KEY = "Sonata_split_view";
 interface State { channelId: string | null; width: number; }
@@ -70,8 +71,8 @@ function Message({ m, grouped, channelId }: { m: any; grouped: boolean; channelI
                 )}
                 {m.content && <div className="vc-split-text">{Parser.parse(m.content, true, { channelId, messageId: m.id, allowLinks: true })}</div>}
                 {images.slice(0, 4).map((a: any) => <img key={a.id} className="vc-split-image" src={a.proxy_url ?? a.url} alt={a.filename} loading="lazy" />)}
-                {files.map((a: any) => <a key={a.id} className="vc-split-file" href={a.url} target="_blank" rel="noreferrer">📎 {a.filename}</a>)}
-                {!m.content && !m.attachments?.length && m.embeds?.length > 0 && <div className="vc-split-embed">🔗 {m.embeds[0].title ?? m.embeds[0].url ?? "Embed"}</div>}
+                {files.map((a: any) => <a key={a.id} className="vc-split-file" href={a.url} target="_blank" rel="noreferrer"><SonataGlyph name="paperclip" /> {a.filename}</a>)}
+                {!m.content && !m.attachments?.length && m.embeds?.length > 0 && <div className="vc-split-embed"><SonataGlyph name="link" /> {m.embeds[0].title ?? m.embeds[0].url ?? "Embed"}</div>}
             </div>
         </div>
     );

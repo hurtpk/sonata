@@ -21,6 +21,7 @@ import { clearHistory, forget, useHistory } from "./historyStore";
 import { myIdentity, noteOffer, offeredTo, removePair, removePassword, renamePassword, savePassword, useKeys } from "./keys";
 import { Choice, choiceKey, sealOf } from "./locks";
 import { settings } from "./settings";
+import { SonataGlyph } from "../../utilities/icons";
 
 const COVERS = ["lol same", "ok sounds good", "haha yeah", "wait really", "nice 👍", "true true", "fr", "omg", "sounds good to me", "lmao"];
 const coverPick = () => COVERS[Math.floor(Math.random() * COVERS.length)];
@@ -138,7 +139,7 @@ function WriteTab({ start, close }: { start?: Choice; close(): void; }) {
                 <span className="vc-tool-label">The cover — what everyone else sees</span>
                 <div className="vc-tool-row">
                     <input className="vc-tool-input vc-tool-grow" value={cover} maxLength={200} onChange={e => setCover(e.currentTarget.value)} />
-                    <button type="button" className="vc-tool-btn" title="Another cover" onClick={() => setCover(coverPick())}>🎲</button>
+                    <button type="button" className="vc-tool-btn" title="Another cover" onClick={() => setCover(coverPick())}><SonataGlyph name="dice" /></button>
                 </div>
             </label>
 
@@ -177,7 +178,7 @@ function HistoryTab({ close }: { close(): void; }) {
     const list = useHistory();
     const [shown, setShown] = useState<Set<string>>(new Set());
     const [sure, setSure] = useState(false);
-    if (!list.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon">📜</span>Whispers you open show up here, so you can find them again.</div>;
+    if (!list.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="rules" /></span>Whispers you open show up here, so you can find them again.</div>;
     return (
         <>
             <div className="vc-whisper-history">
@@ -191,7 +192,7 @@ function HistoryTab({ close }: { close(): void; }) {
                                 <span>{placeOf(s.channelId, s.guildId)} · {when(s.at)} · {s.lock}</span>
                             </div>
                             {expired
-                                ? <div className="vc-whisper-seen-text vc-whisper-expired">⌛ Expired</div>
+                                ? <div className="vc-whisper-seen-text vc-whisper-expired"><SonataGlyph name="hourglass" /> Expired</div>
                                 : <button type="button" className={classes("vc-whisper-seen-text", !shown.has(k) && "vc-whisper-hidden")} onClick={() => setShown(v => { const n = new Set(v); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{s.text}</button>}
                             <div className="vc-tool-row">
                                 <button type="button" className="vc-tool-link" onClick={() => { close(); NavigationRouter.transitionTo(`/channels/${s.guildId ?? "@me"}/${s.channelId}/${s.messageId}`); }}>Jump to it</button>
@@ -241,7 +242,7 @@ function KeysTab({ close }: { close(): void; }) {
                 <span className="vc-tool-label">Paired friends — private whispers with no password</span>
                 {pairs.length ? pairs.map(p => (
                     <div key={p.userId} className="vc-whisper-keyrow">
-                        <span className="vc-whisper-keyname">🤝 {p.name}</span>
+                        <span className="vc-whisper-keyname"><SonataGlyph name="personAdd" /> {p.name}</span>
                         <span className="vc-tool-hint" title="Check the same code shows on their side — then nobody swapped the keys in between">Safety code {p.code}</span>
                         <span className="vc-tool-spacer" />
                         {sure === `f:${p.userId}`
@@ -251,7 +252,7 @@ function KeysTab({ close }: { close(): void; }) {
                 )) : <span className="vc-tool-hint">Nobody yet. Open a DM with a friend who has Sonata and press the button below.</span>}
                 <div className="vc-tool-row">
                     <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!dm || !!paired} onClick={() => void pair()}>
-                        {!dm ? "🤝 Open a DM to pair" : paired ? `✓ Paired with ${dm.name}` : `🤝 Pair with ${dm.name}`}
+                        {!dm ? <><SonataGlyph name="personAdd" />{" Open a DM to pair"}</> : paired ? `✓ Paired with ${dm.name}` : `🤝 Pair with ${dm.name}`}
                     </button>
                     {dm && !paired && offeredTo(dm.id) && <span className="vc-tool-hint">Request sent — waiting for them to accept.</span>}
                 </div>
@@ -263,7 +264,7 @@ function KeysTab({ close }: { close(): void; }) {
                     <div key={b.password} className="vc-whisper-keyrow">
                         {renaming === b.password
                             ? <input className="vc-tool-input" autoFocus defaultValue={b.name} onBlur={e => { void renamePassword(b.password, e.currentTarget.value); setRenaming(null); }} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }} />
-                            : <button type="button" className="vc-whisper-keyname" title="Rename" onClick={() => setRenaming(b.password)}>🔑 {b.name}</button>}
+                            : <button type="button" className="vc-whisper-keyname" title="Rename" onClick={() => setRenaming(b.password)}><SonataGlyph name="key" /> {b.name}</button>}
                         <button type="button" className="vc-whisper-pw" onClick={() => setRevealed(revealed === b.password ? null : b.password)}>{revealed === b.password ? b.password : "••••••"}</button>
                         <span className="vc-tool-spacer" />
                         {sure === `p:${b.password}`
@@ -286,7 +287,7 @@ function KeysTab({ close }: { close(): void; }) {
                     <select className="vc-tool-select" value={s.quickLock} onChange={e => { settings.store.quickLock = e.currentTarget.value; }}>
                         <option value="auto">Your paired friend in their DM, otherwise anyone with Sonata</option>
                         <option value="sonata">Anyone with Sonata</option>
-                        {book.map(b => <option key={b.name} value={`p:${b.name}`}>🔑 {b.name}</option>)}
+                        {book.map(b => <option key={b.name} value={`p:${b.name}`}>{b.name}</option>)}
                     </select>
                 </div>
             </section>

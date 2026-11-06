@@ -18,6 +18,7 @@ import { FormGroup, FormRow, Toggle } from "../_shared/WindowParts";
 import { openModeration, registerModerationPart } from "../serverTools/Moderation";
 import { generate, MAX_LEN, type Opts } from "./regex";
 import { readOpts, writeOpt } from "./settings";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-amr-");
 const tl = classNameFactory("vc-tool-");
@@ -74,7 +75,7 @@ function AutoModModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         {skipped.length > 0 && <div className={tl("error")}>Over {MAX_LEN} characters even with everything off (line {skipped.join(", ")}). Add those as plain keywords instead.</div>}
 
                         {total === 0 && (
-                            <div className={tl("empty")}><span className={tl("empty-icon")}>🧩</span>Your patterns show up here.</div>
+                            <div className={tl("empty")}><span className={tl("empty-icon")}><SonataGlyph name="puzzle" /></span>Your patterns show up here.</div>
                         )}
 
                         {rules.map((rule, i) => (

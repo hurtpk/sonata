@@ -8,6 +8,7 @@ import { React, useEffect, useMemo, useState } from "@webpack/common";
 
 import { Avatar, cl, classes, useBackend } from "./bits";
 import { Entry, fmtBytes, fmtDay, fmtDuration, fmtWhen, Scope, whereText } from "./data";
+import { SonataGlyph, SonataLabel } from "../../../../../utilities/icons";
 
 const DAY = 86_400_000;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -64,13 +65,13 @@ export function OverviewView({ list, onScope, onOpen, onQuery }: Props) {
         <div className={cl("overview")}>
             <div className="vc-tool-stats">
                 <div className="vc-tool-stat vc-tool-stat-accent"><span>Logged</span><b>{list.length.toLocaleString()}</b></div>
-                <div className="vc-tool-stat"><span>🗑️ Deleted</span><b>{s.deleted.toLocaleString()}</b></div>
-                <div className="vc-tool-stat"><span>✏️ Edited</span><b>{s.edited.toLocaleString()}</b></div>
-                <div className="vc-tool-stat"><span>👻 Ghost pings</span><b>{s.ghost.toLocaleString()}</b></div>
-                <div className="vc-tool-stat"><span>🖼️ Pictures &amp; files</span><b>{s.media.toLocaleString()}<small className={cl("stat-sub")}> {s.saved} saved</small></b></div>
-                <div className="vc-tool-stat"><span>👥 People</span><b>{s.people.toLocaleString()}</b></div>
-                <div className="vc-tool-stat"><span>📍 Places</span><b>{s.places.toLocaleString()}</b></div>
-                <div className="vc-tool-stat"><span>⚡ Gone in a minute</span><b>{s.quick.toLocaleString()}</b></div>
+                <div className="vc-tool-stat"><span><SonataGlyph name="trash" /> Deleted</span><b>{s.deleted.toLocaleString()}</b></div>
+                <div className="vc-tool-stat"><span><SonataGlyph name="pencil" /> Edited</span><b>{s.edited.toLocaleString()}</b></div>
+                <div className="vc-tool-stat"><span><SonataGlyph name="ghost" /> Ghost pings</span><b>{s.ghost.toLocaleString()}</b></div>
+                <div className="vc-tool-stat"><span><SonataGlyph name="image" /> Pictures &amp; files</span><b>{s.media.toLocaleString()}<small className={cl("stat-sub")}> {s.saved} saved</small></b></div>
+                <div className="vc-tool-stat"><span><SonataGlyph name="people" /> People</span><b>{s.people.toLocaleString()}</b></div>
+                <div className="vc-tool-stat"><span><SonataGlyph name="location" /> Places</span><b>{s.places.toLocaleString()}</b></div>
+                <div className="vc-tool-stat"><span><SonataGlyph name="bolt" /> Gone in a minute</span><b>{s.quick.toLocaleString()}</b></div>
             </div>
 
             <section className="vc-tool-section">
@@ -137,7 +138,7 @@ export function OverviewView({ list, onScope, onOpen, onQuery }: Props) {
                     <span className="vc-tool-label">Most logged places</span>
                     {s.topPlaces.map(({ e, n }) => (
                         <button key={e.channelId} type="button" className={cl("rank")} onClick={() => onScope({ kind: "channel", id: e.channelId })}>
-                            <span className={cl("rank-icon")}>{e.place.guildId ? "#" : e.place.kind === "group" ? "👥" : "✉️"}</span>
+                            <span className={cl("rank-icon")}>{e.place.guildId ? "#" : e.place.kind === "group" ? <SonataGlyph name="people" /> : <SonataGlyph name="mail" />}</span>
                             <span className={cl("rank-name")} title={whereText(e.place)}>{e.place.guildId ? `${e.place.channelName} · ${e.place.guildName}` : e.place.channelName}</span>
                             <span className={cl("rank-bar")}><i style={{ width: `${(n / placesMax) * 100}%` }} /></span>
                             <b>{n}</b>
@@ -158,12 +159,12 @@ export function OverviewView({ list, onScope, onOpen, onQuery }: Props) {
 function MiniList({ title, list, onOpen, note }: { title: string; list: Entry[]; onOpen(e: Entry): void; note(e: Entry): string; }) {
     return (
         <section className="vc-tool-section">
-            <span className="vc-tool-label">{title}</span>
+            <span className="vc-tool-label"><SonataLabel label={title} /></span>
             {!list.length ? <span className="vc-tool-hint">Nothing yet.</span> : list.map(e => (
                 <button key={e.id} type="button" className={classes("vc-tool-item", cl("mini"))} onClick={() => onOpen(e)}>
                     <Avatar src={e.author.avatar} size={26} />
                     <span className="vc-tool-item-main">
-                        <span className="vc-tool-item-title"><b>{e.author.name}</b> {e.m.content?.slice(0, 80) || (e.media.length ? "🖼️ a picture" : "…")}</span>
+                        <span className="vc-tool-item-title"><b>{e.author.name}</b> {e.m.content?.slice(0, 80) || (e.media.length ? <><SonataGlyph name="image" /> a picture</> : "…")}</span>
                         <span className="vc-tool-item-sub">{note(e)}</span>
                     </span>
                 </button>

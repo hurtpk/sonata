@@ -1,21 +1,32 @@
+.sonata, .vc-sw, .vc-sw-styled {
+    --sonata-ui-font: "Sonata Space", "Segoe UI", Arial, sans-serif;
+    --sonata-display-font: "Sonata Bodoni", Georgia, serif;
+    --sonata-canvas: #0b0b0d;
+    --sonata-surface: #151519;
+    --sonata-ink: #f5f0e9;
+    --sonata-muted: #a7a4ad;
+    --sonata-line: #2a292f;
+    --sonata-glow: radial-gradient(ellipse 110% 80% at 64% 76%, #2e49f31c, #253ad10a 48%, transparent 100%);
+}
+
 
 /* ── Colours and corners ── */
 
 .vc-sw, .vc-sw-styled {
     --sw-r: 1;
-    --sw-win: #111112;
-    --sw-card: #19191b;
-    --sw-inner: #202022;
-    --sw-chip: #252527;
-    --sw-hover: #252527;
+    --sw-win: var(--sonata-canvas);
+    --sw-card: var(--sonata-surface);
+    --sw-inner: #19191f;
+    --sw-chip: #1d1c24;
+    --sw-hover: #22212a;
     --sw-hi: #2a2a2a;
-    --sw-sel: #302326;
+    --sw-sel: color-mix(in srgb, var(--sw-accent) 13%, var(--sw-card));
     --sw-seg: #2a2a2a;
-    --sw-line: #303032;
+    --sw-line: var(--sonata-line);
     --sw-line2: #454144;
-    --sw-text: #f1efed;
-    --sw-soft: #a7a1a2;
-    --sw-muted: #a7a1a2;
+    --sw-text: var(--sonata-ink);
+    --sw-soft: var(--sonata-muted);
+    --sw-muted: var(--sonata-muted);
     --sw-faint: #817b7e;
     --sw-accent: var(--vc-tool-accent, var(--brand-500));
     /* What accent-filled things (picked buttons, chips, tabs) are painted with: the accent, or a
@@ -23,11 +34,11 @@
     --sw-accent-fill: var(--sw-accent);
     --sw-on: #ffffff;
     --sw-mono: var(--font-code, ui-monospace, Consolas, monospace);
-    --sw-rw: 8px;
-    --sw-rc: 8px;
+    --sw-rw: 12px;
+    --sw-rc: 9px;
     --sw-rb: 6px;
     --sw-rs: 6px;
-    --sw-rp: 6px;
+    --sw-rp: 8px;
 
     /* The kit's own names, so everything inside follows. */
     --tl-accent: var(--sw-accent);
@@ -87,10 +98,10 @@
     min-height: 0;
     overflow: hidden;
     border-radius: var(--sw-rw);
-    background: var(--sw-win);
+    background: var(--sonata-glow), var(--sw-win);
     border: 1px solid var(--sw-line);
     color: var(--sw-text);
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: var(--sonata-ui-font);
     font-size: 14px;
     line-height: 1.4;
     box-shadow: 0 24px 64px hsl(0 0% 0% / 0.5);
@@ -115,11 +126,14 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 54px;
-    padding: 0 12px 0 18px;
+    min-height: 62px;
+    padding: 8px 14px 8px 20px;
 }
 
 .vc-sw-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -131,7 +145,10 @@
 }
 
 .vc-sw-dash { color: var(--sw-faint); }
-.vc-sw-here { color: var(--sw-text); }
+.vc-sw-wordmark { display: inline-flex; flex: none; align-items: center; gap: 6px; color: var(--sw-text); font: 600 26px/1 var(--sonata-display-font); letter-spacing: -.055em; -webkit-text-stroke: .008em currentColor; }
+.vc-sw-wordmark i { margin-left: -5px; font-style: normal; }
+.vc-sw-wordmark :is(svg, i) { color: var(--sw-accent); }
+.vc-sw-here { color: var(--sw-text); overflow: hidden; text-overflow: ellipsis; }
 .vc-sw-tools { display: flex; align-items: center; gap: 8px; }
 
 /* A search box for the top bar. */
@@ -533,3 +550,22 @@
 
 /* A window drawn as another window's tab (Server Insights): its insides sit straight in the outer body. */
 .vc-sw-embedded { display: contents; }
+
+.vc-sw :is(button, input, textarea, select), .sonata :is(button, input, textarea, select) { font-family: inherit; }
+.sonata .sonata-brand { font-family: var(--sn-display); }
+.vc-sw :is(.vc-sw-tab, .vc-tool-hero-kicker) { font: 650 10.5px var(--sonata-ui-font); letter-spacing: .1em; text-transform: uppercase; }
+.vc-sw .vc-tool-hero-kicker { color: var(--sw-accent); }
+.vc-sw .vc-tool-hero-text { min-width: min(160px, 100%); }
+.vc-sw .vc-tool-hero-text > b { font: 600 clamp(25px, 3vw, 36px)/1.07 var(--sonata-display-font); letter-spacing: -.035em; -webkit-text-stroke: .008em currentColor; color: var(--sw-text); overflow-wrap: anywhere; }
+.vc-sw .vc-tool-btn { border-radius: 999px; }
+.vc-sw .vc-tool-primary, .vc-sw .vc-tool-primary:hover:not(:disabled) { background: linear-gradient(108deg, #f5f0e9, color-mix(in srgb, var(--sw-accent) 48%, #f5f0e9)); color: #191416; }
+.sonata, .vc-sw { color-scheme: dark; }
+:where(.sonata, .vc-sw) :is(input, textarea, select):focus-visible { outline-color: var(--sonata-focus, #ffad91); }
+.sonata { --sonata-focus: var(--sn-accent); }
+.vc-sw { --sonata-focus: var(--sw-accent); }
+@media (max-width: 600px) {
+    .vc-sw-layer { padding: 12px; }
+    .vc-sw-sided { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    .vc-sw-side { flex-direction: row; align-items: stretch; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--sw-line); }
+    .vc-sw-side > * { flex: 0 0 auto; }
+}

@@ -21,6 +21,7 @@ import { type CaptionMode, type CropShape, DEFAULT_FILL, type EditState, type St
 import { loadImage } from "../utils/media";
 import { Btn, cl, FillPicker, FontPicker, Range, Row, Section, Seg, Toggle } from "./controls";
 import { FrameEditor } from "./timeline";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 export type Tool = "none" | "zoom" | "path";
 
@@ -85,7 +86,7 @@ export function TimePanel(p: PanelProps) {
                     <Section title="Loop finder">
                         <span className={cl("hint")}>Finds the two moments in the trimmed part that match best, and trims between them so the end flows back into the start.</span>
                         <Row>
-                            <Btn primary disabled={finding != null} onClick={loop}>{finding != null ? `Looking… ${Math.round(finding * 100)}%` : "✨ Find the cleanest loop"}</Btn>
+                            <Btn primary disabled={finding != null} onClick={loop}>{finding != null ? `Looking… ${Math.round(finding * 100)}%` : <><SonataGlyph name="sparkles" />{" Find the cleanest loop"}</>}</Btn>
                             {(s.trimStart > 0 || s.trimEnd > 0) && <Btn onClick={() => set({ trimStart: 0, trimEnd: 0 })}>Reset trim</Btn>}
                         </Row>
                     </Section>
@@ -210,7 +211,7 @@ export function CropPanel({ s, set, src }: PanelProps) {
                         <input type="number" min={32} max={1024} value={s.width} onChange={e => set({ width: Number(e.currentTarget.value) || 32 })}
                             onBlur={e => set({ width: Math.max(32, Math.min(1024, Number(e.currentTarget.value) || 256)) })} />
                     </label>
-                    <button type="button" className={cl("lock", s.lockAspect && "lock-on")} title={s.lockAspect ? "Keeping the shape" : "Free size"} onClick={() => set({ lockAspect: !s.lockAspect })}>{s.lockAspect ? "🔒" : "🔓"}</button>
+                    <button type="button" className={cl("lock", s.lockAspect && "lock-on")} title={s.lockAspect ? "Keeping the shape" : "Free size"} onClick={() => set({ lockAspect: !s.lockAspect })}>{s.lockAspect ? <SonataGlyph name="lock" /> : <SonataGlyph name="unlock" />}</button>
                     <label className={cl("field")}>
                         <span>Height</span>
                         <input type="number" min={32} max={1024} value={s.height} disabled={s.lockAspect} onChange={e => set({ height: Number(e.currentTarget.value) || 32 })}
@@ -362,7 +363,7 @@ export function EffectsPanel({ s, set, tool, setTool }: PanelProps) {
                         <Range label="Strength" value={Math.round(s.zoomStrength * 100)} min={5} max={100} onChange={v => set({ zoomStrength: v / 100 })} format={v => `${v}%`} />
                         {s.zoom === "punch" && <Range label="At" value={Math.round(s.zoomAt * 100)} min={0} max={95} onChange={v => set({ zoomAt: v / 100 })} format={v => `${v}%`} />}
                         <Row>
-                            <Btn on={tool === "zoom"} onClick={() => setTool(tool === "zoom" ? "none" : "zoom")}>🎯 {tool === "zoom" ? "Click the picture…" : "Pick the zoom point"}</Btn>
+                            <Btn on={tool === "zoom"} onClick={() => setTool(tool === "zoom" ? "none" : "zoom")}><SonataGlyph name="target" /> {tool === "zoom" ? "Click the picture…" : "Pick the zoom point"}</Btn>
                             <span className={cl("hint")}>{pct(s.zoomX)}, {pct(s.zoomY)}</span>
                         </Row>
                     </>
@@ -447,7 +448,7 @@ export function StickersPanel({ s, set, selSticker, setSelSticker, tool, setTool
                             ]} />
                             {sticker.motion === "path" && (
                                 <Row>
-                                    <Btn on={tool === "path"} onClick={() => setTool(tool === "path" ? "none" : "path")}>✏️ {tool === "path" ? "Draw on the picture…" : "Draw the path"}</Btn>
+                                    <Btn on={tool === "path"} onClick={() => setTool(tool === "path" ? "none" : "path")}><SonataGlyph name="pencil" /> {tool === "path" ? "Draw on the picture…" : "Draw the path"}</Btn>
                                     {sticker.path.length > 1 && <Btn small onClick={() => update(sticker.id, { path: [] })}>Clear path</Btn>}
                                 </Row>
                             )}
@@ -489,8 +490,8 @@ export function OutputPanel({ s, set, src, applyStyle }: PanelProps) {
             </Section>
             <Section title="Make it an emoji or sticker">
                 <Row>
-                    <Btn onClick={() => asSquare(128, 256 * 1024)}>😀 Emoji size (128px)</Btn>
-                    <Btn onClick={() => asSquare(320, 500 * 1024)}>🏷️ Sticker size (320px)</Btn>
+                    <Btn onClick={() => asSquare(128, 256 * 1024)}><SonataGlyph name="smile" /> Emoji size (128px)</Btn>
+                    <Btn onClick={() => asSquare(320, 500 * 1024)}><SonataGlyph name="tag" /> Sticker size (320px)</Btn>
                 </Row>
                 <span className={cl("hint")}>Square, and small enough to upload as a server emoji or sticker.</span>
             </Section>

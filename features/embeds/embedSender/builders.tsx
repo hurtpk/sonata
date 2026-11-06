@@ -13,6 +13,7 @@ import { ChannelStore, GuildChannelStore, useEffect, useMemo, useRef, useState }
 
 import { callNative } from "../../_shared/native";
 import { fetchRef, findLinks, RbxGame } from "../../games/roblox/data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 type Toast = (kind: "success" | "error", msg: string) => void;
 
@@ -66,7 +67,7 @@ export function ColorFromImage({ sources, onPick, toast }: { sources: { label: s
     };
     return (
         <div className="vc-es-chips">
-            <span className="vc-es-chips-label">🎨 From picture:</span>
+            <span className="vc-es-chips-label"><SonataGlyph name="palette" /> From picture:</span>
             {usable.map(s => <button key={s.label} type="button" className="vc-es-chip" disabled={busy} onClick={() => pick(s)}>{s.label}</button>)}
         </div>
     );
@@ -92,7 +93,7 @@ export const LINE_MARK = "---";
 export function DividerChips({ onInsert, line }: { onInsert(text: string): void; line?: boolean; }) {
     return (
         <div className="vc-es-chips">
-            <span className="vc-es-chips-label">➖ Dividers:</span>
+            <span className="vc-es-chips-label"><SonataGlyph name="list" /> Dividers:</span>
             {line !== undefined && (
                 <button type="button" className="vc-es-chip vc-es-chip-line" disabled={!line}
                     title={line ? "A real separator line, like Discord's own (shown as --- here)" : "Only in the Container layout — classic embeds can't show a real line"}
@@ -162,7 +163,7 @@ export function BannerMaker({ initial, onUse, onClose }: { initial: Partial<Bann
     };
     return (
         <div className="vc-es-builder">
-            <div className="vc-es-builder-head"><b>🖼️ Banner maker</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
+            <div className="vc-es-builder-head"><b><SonataGlyph name="image" /> Banner maker</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
             <canvas ref={canvas} className="vc-es-banner-canvas" />
             <div className="vc-es-builder-grid">
                 <input className="vc-tool-input" placeholder="Title" value={o.title} maxLength={60} onChange={e => set("title")(e.currentTarget.value)} />
@@ -214,7 +215,7 @@ export function RulesBuilder({ onUse, onClose }: { onUse(r: RulesResult): void; 
     const okUrl = !agreeUrl.trim() || /^https:\/\/(?:\w+\.)?discord(?:app)?\.com\/channels\/|^https?:\/\//.test(agreeUrl.trim());
     return (
         <div className="vc-es-builder">
-            <div className="vc-es-builder-head"><b>📜 Rules builder</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
+            <div className="vc-es-builder-head"><b><SonataGlyph name="rules" /> Rules builder</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
             <input className="vc-tool-input" value={title} onChange={e => setTitle(e.currentTarget.value)} placeholder="Title" />
             <input className="vc-tool-input" value={intro} onChange={e => setIntro(e.currentTarget.value)} placeholder="A line before the rules (optional)" />
             <textarea className="vc-tool-input" style={{ minHeight: 120 }} value={text} onChange={e => setText(e.currentTarget.value)} placeholder="One rule per line. Add “ - more detail” after a rule to explain it." />
@@ -336,7 +337,7 @@ export function NavHubBuilder({ guildId, onUse, onClose }: { guildId: string | n
     const selectValue = (t: string) => !t || t.startsWith("<id:") || channels.some(c => c.id === t) ? t : "link";
     return (
         <div className="vc-es-builder">
-            <div className="vc-es-builder-head"><b>🧭 Navigation hub</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
+            <div className="vc-es-builder-head"><b><SonataGlyph name="compass" /> Navigation hub</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
             <input className="vc-tool-input" value={title} onChange={e => setTitle(e.currentTarget.value)} placeholder="Title" />
             <input className="vc-tool-input" value={intro} onChange={e => setIntro(e.currentTarget.value)} placeholder="A line before the list (optional)" />
             {rows.map((r, i) => (
@@ -432,7 +433,7 @@ export function RobloxGameBuilder({ onUse, onClose }: { onUse(r: GameResult): vo
 
     return (
         <div className="vc-es-builder">
-            <div className="vc-es-builder-head"><b>🎮 Roblox game</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
+            <div className="vc-es-builder-head"><b><SonataGlyph name="controller" /> Roblox game</b><span className="vc-tool-spacer" /><button type="button" className="vc-tool-icon" onClick={onClose}>✕</button></div>
             <input className="vc-tool-input" autoFocus value={link} onChange={e => setLink(e.currentTarget.value)} placeholder="Paste a Roblox game link — roblox.com/games/…" />
             {state.loading && <span className="vc-tool-hint">Looking up the game…</span>}
             {state.error && <span className="vc-tool-hint" style={{ color: "#f23f43" }}>{state.error}</span>}
@@ -445,7 +446,7 @@ export function RobloxGameBuilder({ onUse, onClose }: { onUse(r: GameResult): vo
                     <div className="vc-es-builder-grid">
                         <label className="vc-tool-check"><input type="checkbox" checked={stats} onChange={e => setStats(e.currentTarget.checked)} /> Players, visits, likes…</label>
                         <label className="vc-tool-check"><input type="checkbox" checked={about} onChange={e => setAbout(e.currentTarget.checked)} /> Its description</label>
-                        <label className="vc-tool-check"><input type="checkbox" checked={play} onChange={e => setPlay(e.currentTarget.checked)} /> A ▶ Play button</label>
+                        <label className="vc-tool-check"><input type="checkbox" checked={play} onChange={e => setPlay(e.currentTarget.checked)} /> A <SonataGlyph name="play" /> Play button</label>
                         <span className="vc-tool-chips">
                             <button type="button" className={classes("vc-tool-chip", picture === "big" && "vc-tool-chip-on")} onClick={() => setPicture("big")}>Big picture</button>
                             <button type="button" className={classes("vc-tool-chip", picture === "small" && "vc-tool-chip-on")} onClick={() => setPicture("small")}>Small icon</button>

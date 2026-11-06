@@ -16,6 +16,7 @@ import { Window } from "../_shared/Window";
 import { windowAccent } from "./accent";
 import { avatarOf, byLabel, describe, friendshipDetails, nameOf } from "./describe";
 import { clearLog, LogEntry, useLog } from "./tracker";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-rtl-");
 
@@ -199,7 +200,7 @@ function LogModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     <div className={cl("list")}>
                         {days.length === 0 ? (
                             <div className={cl("empty")}>
-                                <span className={cl("empty-icon")}>{log.length === 0 ? "💞" : "🔍"}</span>
+                                <span className={cl("empty-icon")}>{log.length === 0 ? <SonataGlyph name="heart" /> : <SonataGlyph name="search" />}</span>
                                 {log.length === 0
                                     ? "Nothing logged yet. Friend changes, requests and group chat or server removals will show up here as they happen."
                                     : "Nothing matches these filters."}

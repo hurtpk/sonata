@@ -16,6 +16,7 @@ import { Window } from "../_shared/Window";
 import { sendOne } from "./scheduler";
 import * as Q from "./store";
 import { TargetChip, TargetPicker } from "./TargetPicker";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-schedmsg-");
 const MAX_LENGTH = 2000;
@@ -246,7 +247,7 @@ function ListPanel({ now, onEdit, onReuse }: { now: number; onEdit(item: Q.Sched
             <div className={cl("list-body")}>
                 {tab === "upcoming" ? (
                     pending.length + missed.length === 0 ? (
-                        <div className={cl("empty")}><span className={cl("empty-icon")}>🕑</span>Nothing scheduled yet. Write a message and pick a time.</div>
+                        <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="clock" /></span>Nothing scheduled yet. Write a message and pick a time.</div>
                     ) : (
                         <>
                             {missed.map(item => (
@@ -266,7 +267,7 @@ function ListPanel({ now, onEdit, onReuse }: { now: number; onEdit(item: Q.Sched
                         </>
                     )
                 ) : hist.length === 0 ? (
-                    <div className={cl("empty")}><span className={cl("empty-icon")}>📬</span>Sent and failed messages show up here.</div>
+                    <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="mail" /></span>Sent and failed messages show up here.</div>
                 ) : hist.map(item => (
                     <ItemCard key={item.id} item={item} now={now} tone={item.status === "sent" ? "sent" : "failed"}>
                         <button type="button" className={classes(cl("btn"), cl("btn-small"))} onClick={() => onReuse(item)}>Schedule again</button>

@@ -19,6 +19,7 @@ import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-autoreact-");
 const tl = classNameFactory("vc-tool-");
@@ -409,8 +410,7 @@ function AutoReactPanel({ modalProps }: { modalProps?: ModalProps; }) {
     };
 
     const accent = windowAccent("autoReact");
-    const firstEmoji = (mode === "cycle" ? splitList(emojiList)[0] : emoji) ?? "";
-    const heroIcon = mode === "random" ? "🎲" : firstEmoji && !firstEmoji.startsWith(":") ? firstEmoji : "✨";
+    const heroIcon = mode === "random" ? "dice" : "addReaction";
     const removeEmoji = (i: number) => { const list = splitList(emojiList); list.splice(i, 1); setEmojiList(list.join(", ")); };
 
     const content = (
@@ -424,7 +424,7 @@ function AutoReactPanel({ modalProps }: { modalProps?: ModalProps; }) {
             </ToolHero>
 
             <section className={tl("section")}>
-                <h3 className={tl("section-title")}>👥 Whose messages</h3>
+                <h3 className={tl("section-title")}><SonataGlyph name="people" /> Whose messages</h3>
                 {userIds.length > 0 ? (
                     <div className={tl("chips")}>
                         {userIds.map(uid => {
@@ -462,7 +462,7 @@ function AutoReactPanel({ modalProps }: { modalProps?: ModalProps; }) {
             </section>
 
             <section className={tl("section")}>
-                <h3 className={tl("section-title")}>😀 Which reaction</h3>
+                <h3 className={tl("section-title")}><SonataGlyph name="smile" /> Which reaction</h3>
                 <div className={tl("tiles")}>
                     {MODES.map(m => (
                         <button key={m.id} type="button" className={classes(tl("tile"), mode === m.id && tl("tile-on"))} onClick={() => setMode(m.id)}>
@@ -492,7 +492,7 @@ function AutoReactPanel({ modalProps }: { modalProps?: ModalProps; }) {
 
             <section className={tl("section")}>
                 <div className={tl("head")}>
-                    <h3 className={tl("section-title")} style={{ flex: 1 }}>⏱️ Wait before reacting</h3>
+                    <h3 className={tl("section-title")} style={{ flex: 1 }}><SonataGlyph name="stopwatch" /> Wait before reacting</h3>
                     <b className={cl("value")}>{delay.toFixed(2)} s</b>
                 </div>
                 <input type="range" className={tl("range")} min={0} max={5} step={0.05} value={delay} onChange={e => setDelay(Number(e.currentTarget.value))} />
@@ -500,7 +500,7 @@ function AutoReactPanel({ modalProps }: { modalProps?: ModalProps; }) {
             </section>
 
             <section className={tl("section")}>
-                <h3 className={tl("section-title")}>⚙️ Options</h3>
+                <h3 className={tl("section-title")}><SonataGlyph name="gear" /> Options</h3>
                 <label className={tl("check")}><input type="checkbox" checked={currentChannelOnly} onChange={e => setCurrentChannelOnly(e.currentTarget.checked)} /> Only in the channel I'm looking at</label>
                 <label className={tl("check")}><input type="checkbox" checked={ignoreBots} onChange={e => setIgnoreBots(e.currentTarget.checked)} /> Skip messages from bots</label>
                 <div className={tl("footer")}>

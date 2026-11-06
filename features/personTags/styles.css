@@ -4,12 +4,14 @@
 .vc-ptag-in-list { margin-left: 4px; }
 .vc-ptag {
     --ptag: #5865f2;
-    display: inline-flex; align-items: center; height: 16px; padding: 0 6px; border-radius: calc(8px * var(--sw-r, 1));
-    font: 600 10.5px/1 var(--font-primary); letter-spacing: 0.01em; white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis;
+    position: relative; display: inline-flex; align-items: center; height: 16px; padding: 0 6px; border-radius: calc(8px * var(--sw-r, 1));
+    font: 600 10.5px/1 var(--font-primary); letter-spacing: 0.01em; white-space: nowrap; max-width: 110px;
     color: color-mix(in srgb, var(--ptag) 70%, white);
     background: color-mix(in srgb, var(--ptag) 18%, transparent);
     border: 1px solid var(--sw-line, color-mix(in srgb, var(--ptag) 45%, transparent));
 }
+.vc-ptag-text { position: relative; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.vc-ptag .vc-namefx-sparkles { inset: -4px -3px; }
 .vc-ptag-in-list .vc-ptag { height: 15px; font-size: 10px; max-width: 80px; }
 .vc-ptag-more { --ptag: #99aab5; }
 
@@ -38,9 +40,47 @@
     background: var(--ptag-bg) padding-box, var(--ptag-line) border-box;
 }
 
+.vc-ptag.vc-namefx-flow {
+    background-size: 300% 100%;
+    animation: vc-namefx-flow 7s linear infinite;
+}
+
+.vc-ptag.vc-namefx-glow {
+    box-shadow: var(--sw-noglow, 0 0 7px color-mix(in srgb, var(--namefx-b) 60%, transparent));
+    animation: vc-namefx-glow 3.6s ease-in-out infinite;
+}
+
+.vc-ptag.vc-namefx-glow.vc-namefx-flow { animation: vc-namefx-flow 7s linear infinite, vc-namefx-glow 3.6s ease-in-out infinite; }
+
+.vc-ptag.vc-namefx-shine::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(105deg, transparent 38%, hsl(0 0% 100% / 0.32) 50%, transparent 62%) 130% 0 / 250% 100% no-repeat;
+    animation: vc-namefx-shine 4.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.vc-ptag.vc-namefx-underline::after {
+    content: "";
+    position: absolute;
+    inset: auto 12% -3px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--namefx-a) 30%, var(--namefx-b) 70%, transparent);
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vc-ptag:is(.vc-namefx-flow, .vc-namefx-glow), .vc-ptag.vc-namefx-shine::before { animation: none !important; }
+}
+
 /* Picking a look */
 .vc-ptag-look { display: flex; flex-direction: column; gap: 8px; }
 .vc-ptag-look-tabs { align-self: flex-start; }
+.vc-ptag-effects { border-top: 1px solid var(--tl-line); padding-top: 7px; }
+.vc-ptag-effects summary { cursor: pointer; color: var(--text-default, var(--text-normal)); font-size: 13px; font-weight: 600; }
+.vc-ptag-effects .vc-namefx-picker, .vc-ptag-effects .vc-tool-link { margin-top: 8px; }
 .vc-ptag-solid { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .vc-ptag-solid .vc-ptag-colors { display: grid; grid-template-columns: repeat(12, 20px); gap: 8px; padding: 4px; }
 .vc-ptag-custom-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; color: var(--text-muted); font-family: var(--font-code, monospace); }

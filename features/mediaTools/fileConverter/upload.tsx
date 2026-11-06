@@ -15,9 +15,9 @@ import { ChannelStore, DraftType, GuildStore, openModal, SelectedChannelStore, U
 
 import { windowAccent } from "../../../controller/accent";
 import { Window } from "../../_shared/Window";
-import { shrinkToFit } from "./convert";
 import { kindOf, MB, sizeText } from "./formats";
-import { openFileConverter } from "./Panel";
+import { openFileConverter } from "./index";
+import { SonataGlyph } from "../../../utilities/icons";
 
 /** The biggest file you can send here: your Nitro, or the server's boosts, whichever is more. */
 export function uploadLimit(channel?: Channel | null): number {
@@ -48,6 +48,8 @@ function ShrinkPrompt({ modalProps, files, channel, limit }: { modalProps: any; 
         setError(null);
         const out: File[] = files.filter(f => f.size <= limit);
         try {
+            setBusy("Preparing converter…");
+            const { shrinkToFit } = await import("./convert");
             for (const [i, f] of shrinkable.entries()) {
                 const r = await shrinkToFit(f, limit - 96 * 1024, (text, p) => { setBusy(`${f.name}${shrinkable.length > 1 ? ` (${i + 1} of ${shrinkable.length})` : ""} — ${text}`); setProgress(p); });
                 if (r.blob.size > limit) throw new Error(`Couldn't get ${f.name} small enough`);
@@ -66,7 +68,7 @@ function ShrinkPrompt({ modalProps, files, channel, limit }: { modalProps: any; 
                 <div className="vc-tool-list">
                     {files.map((f, i) => (
                         <div key={i} className="vc-tool-item">
-                            <span style={{ fontSize: 20 }}>{f.size > limit ? (canShrink(f) ? "🗜️" : "⛔") : "✅"}</span>
+                            <span style={{ fontSize: 20 }}>{f.size > limit ? <SonataGlyph name={canShrink(f) ? "fileZip" : "block"} /> : <SonataGlyph name="checkCircle" />}</span>
                             <span className="vc-tool-item-main">
                                 <span className="vc-tool-item-title">{f.name}</span>
                                 <span className="vc-tool-item-sub">{sizeText(f.size)}{f.size > limit ? (canShrink(f) ? " — can be shrunk to fit" : " — this kind of file can't be shrunk") : " — fine"}</span>

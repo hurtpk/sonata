@@ -13,6 +13,7 @@ import { classes } from "@utils/misc";
 import { showToast, useState } from "@webpack/common";
 
 import { sources } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const CREDENTIALS = "https://create.roblox.com/dashboard/credentials?activeTab=ApiKeysTab";
@@ -35,7 +36,7 @@ export function ApiKeyBox({ blocked, onSaved }: { blocked: boolean; onSaved(): v
     if (!open) {
         return (
             <div className={classes(rb("key-line"), blocked && !has && rb("key-line-warn"))}>
-                <span>🔑 {has ? "Your Roblox API key is set — newer items download in full." : blocked ? "Roblox wants an account for this one. Add a Roblox API key to get the full files." : "Newer items need a Roblox API key to download in full."}</span>
+                <span><SonataGlyph name="key" /> {has ? "Your Roblox API key is set — newer items download in full." : blocked ? "Roblox wants an account for this one. Add a Roblox API key to get the full files." : "Newer items need a Roblox API key to download in full."}</span>
                 <span className={rb("spacer")} />
                 <button type="button" className={rb("link")} onClick={() => setOpen(true)}>{has ? "Change" : "Set it up"}</button>
                 {has && <button type="button" className={rb("link")} onClick={() => { sources.saveApiKey(""); showToast("Removed your API key", "message"); onSaved(); }}>Remove</button>}
@@ -46,7 +47,7 @@ export function ApiKeyBox({ blocked, onSaved }: { blocked: boolean; onSaved(): v
     return (
         <div className={rb("key")}>
             <div className={rb("key-head")}>
-                <b>🔑 Get newer items in full</b>
+                <b><SonataGlyph name="key" /> Get newer items in full</b>
                 <span className={rb("spacer")} />
                 <button type="button" className="vc-tool-icon" title="Close" onClick={() => setOpen(false)}>✕</button>
             </div>
@@ -63,7 +64,7 @@ export function ApiKeyBox({ blocked, onSaved }: { blocked: boolean; onSaved(): v
             <div className={rb("bar")}>
                 <input className="vc-tool-input" type={show ? "text" : "password"} value={key} placeholder="Paste your API key here" autoComplete="off" spellCheck={false}
                     onChange={e => setKey(e.currentTarget.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} />
-                <button type="button" className="vc-tool-btn" onClick={() => setShow(s => !s)} title={show ? "Hide it" : "Show it"}>{show ? "🙈" : "👁"}</button>
+                <button type="button" className="vc-tool-btn" onClick={() => setShow(s => !s)} title={show ? "Hide it" : "Show it"}>{show ? <SonataGlyph name="eyeOff" /> : <SonataGlyph name="eye" />}</button>
                 <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!key.trim()} onClick={save}>Save key</button>
             </div>
             <span className="vc-tool-hint">Never paste your .ROBLOSECURITY cookie anywhere — it gives full control of your account. An API key like this can't.</span>

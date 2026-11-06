@@ -18,6 +18,7 @@ import { logEvent, verdictEntry } from "../../_shared/scamLog";
 import { Window } from "../../_shared/Window";
 import { whereItGoes } from "../../linkCleaner/preview";
 import { fileWarning, GENERAL_TALK, isIpLogger } from "./checks";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const ALL: Brand[] = [DISCORD, STEAM, EPIC, PAYPAL, ROBLOX];
 
@@ -50,7 +51,7 @@ function Result({ c }: { c: Checked; }) {
     return (
         <div className={classes("vc-shield-result", `vc-shield-${look.cls}`)}>
             <div className="vc-shield-result-head">
-                <span className="vc-shield-result-icon">{look.icon}</span>
+                <span className="vc-shield-result-icon"><SonataGlyph name={look.icon} /></span>
                 <div>
                     <b>{look.title}</b>
                     <span className="vc-shield-url">{c.raw}</span>

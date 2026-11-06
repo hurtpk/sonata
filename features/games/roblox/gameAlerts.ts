@@ -9,6 +9,8 @@
 // minutes. The first look only notes where each game stands, so turning it
 // on doesn't flood you; mute any game with its bell in the Saved sidebar.
 
+import { scheduleBackgroundCheck } from "../../../sonata/performance";
+
 import { DataStore } from "@api/index";
 import { showNotification } from "@api/Notifications";
 
@@ -85,13 +87,12 @@ export async function checkGames() {
     save();
 }
 
-let timer: ReturnType<typeof setInterval> | null = null;
+let cancelSchedule: (() => void) | undefined;
 let unsub: (() => void) | null = null;
 export function startGameAlerts() {
     stopGameAlerts();
     void load().then(() => listeners.forEach(l => l()));
-    timer = setInterval(() => void checkGames().catch(() => { }), 10 * 60_000);
-    setTimeout(() => void checkGames().catch(() => { }), 60_000);
+    cancelSchedule = scheduleBackgroundCheck(() => void checkGames().catch(() => { }), 10 * 60_000, 30 * 60_000, 60_000);
     // A newly saved game gets its starting point straight away (only when the list of games changes —
     // the same signal also fires when live numbers refresh).
     let ids = "";
@@ -104,8 +105,8 @@ export function startGameAlerts() {
     });
 }
 export function stopGameAlerts() {
-    if (timer) clearInterval(timer);
-    timer = null;
+    cancelSchedule?.();
+    cancelSchedule = undefined;
     unsub?.();
     unsub = null;
 }

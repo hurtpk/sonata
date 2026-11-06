@@ -19,17 +19,18 @@ import { GuildRoleStore, Menu, React, useEffect, useState } from "@webpack/commo
 import { isFeatureRunning } from "../../featureSettings";
 import { openSection } from "../_shared/Hub";
 import { embeddedContext, Window } from "../_shared/Window";
+import { RoleComparison } from "./permissionsViewer/components/Compare";
 import { MemberLookupModal } from "./permissionsViewer/components/MemberLookup";
 import { RolesAndUsersPermissions } from "./permissionsViewer/components/RolesAndUsersPermissions";
 import { loadGetGuildPermissionSpecMap } from "./permissionsViewer/utils";
 import { GuildInfoModal } from "./serverInfo/GuildInfoModal";
 
-export type InsightsTab = "overview" | "roles" | "members";
+export type InsightsTab = "overview" | "roles" | "compare" | "members";
 export interface InsightsOpts { query?: string; roleId?: string; }
 
 const tabsNow = (): [InsightsTab, string][] => [
     ...(isFeatureRunning("serverInfo") ? [["overview", "Overview"] as [InsightsTab, string]] : []),
-    ...(isFeatureRunning("permissionsViewer") ? [["roles", "Roles & permissions"], ["members", "Members"]] as [InsightsTab, string][] : []),
+    ...(isFeatureRunning("permissionsViewer") ? [["roles", "Roles & permissions"], ["compare", "Compare roles"], ["members", "Members"]] as [InsightsTab, string][] : []),
 ];
 
 /** The open window: opening Insights again switches it rather than stacking another. */
@@ -55,7 +56,7 @@ export function InsightsWindow({ modalProps, guild, start, startOpts, tools }: {
     return (
         <Window {...modalProps} size="xl" title="Server Insights" subtitle={guild.name} tools={tools}
             tabs={tabs.length > 1 ? tabs : undefined} tab={tab} onTab={id => { setTab(id as InsightsTab); setOpts({}); }}
-            status={[guild.name, tab === "overview" ? "About this server" : tab === "roles" ? "Pick a role to see what it can do and who has it" : "Look someone up by ID, @mention or username"]}>
+            status={[guild.name, tab === "overview" ? "About this server" : tab === "roles" ? "Pick a role to see what it can do and who has it" : tab === "compare" ? "Compare two roles side by side" : "Look someone up by ID, @mention or username"]}>
             <Embedded value>
                 <ErrorBoundary key={`${tab}:${n}`} message="This tab hit a problem — try another one, or reopen Server Insights.">
                     {!tabs.length && <div className="vc-tool-empty">Switch on Server Info or Permissions Viewer in Server Insights' options.</div>}
@@ -63,6 +64,7 @@ export function InsightsWindow({ modalProps, guild, start, startOpts, tools }: {
                     {tab === "roles" && (specsReady
                         ? <RolesAndUsersPermissions permissions={roles()} guild={guild} header={guild.name} modalProps={modalProps} selectId={opts.roleId} />
                         : <div className="vc-tool-empty">Loading the server's roles…</div>)}
+                    {tab === "compare" && (specsReady ? <RoleComparison guild={guild} /> : <div className="vc-tool-empty">Loading permissions…</div>)}
                     {tab === "members" && <MemberLookupModal modalProps={modalProps} initialGuildId={guild.id} initialQuery={opts.query} />}
                 </ErrorBoundary>
             </Embedded>

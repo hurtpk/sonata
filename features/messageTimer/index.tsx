@@ -21,6 +21,7 @@ import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-msgtimer-");
 const tl = classNameFactory("vc-tool-");
@@ -311,7 +312,7 @@ function TimerSettingsModal({ modalProps }: { modalProps: { onClose(): void; tra
                 </ToolHero>
 
                 <section className={tl("section")}>
-                    <h3 className={tl("section-title")}>⏱️ Delete after</h3>
+                    <h3 className={tl("section-title")}><SonataGlyph name="stopwatch" /> Delete after</h3>
                     <div className={tl("chips")}>
                         {PRESETS.map(p => (
                             <button key={p.label} type="button" className={classes(tl("chip"), lifespan === p.ms && tl("chip-on"))} onClick={() => applyLifespan(p.ms)}>{p.label}</button>

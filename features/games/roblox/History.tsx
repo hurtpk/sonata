@@ -12,6 +12,7 @@ import { classes } from "@utils/misc";
 import { useEffect, useMemo, useState } from "@webpack/common";
 
 import { fetchHistory, RbxHistory, RbxPeak, short, sources } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const DAY = 86400;
@@ -175,10 +176,10 @@ export function GameHistory({ placeId }: { placeId: string; }) {
     }, [placeId]);
 
     if (!sources.rolimons) return null;
-    if (state.error) return <span className={rb("muted")}>📈 Couldn't get the history: {state.error}</span>;
+    if (state.error) return <span className={rb("muted")}><SonataGlyph name="trendingUp" /> Couldn't get the history: {state.error}</span>;
     if (!state.h) return <div className={rb("loading")}><span className={rb("spin")} /> Getting the history from Rolimons…</div>;
     const { h } = state;
-    if (!h.tracked) return <span className={rb("muted")}>📈 Rolimons doesn't track this game yet, so there's no history or peaks for it.</span>;
+    if (!h.tracked) return <span className={rb("muted")}><SonataGlyph name="trendingUp" /> Rolimons doesn't track this game yet, so there's no history or peaks for it.</span>;
 
     return (
         <div className={rb("history")}>

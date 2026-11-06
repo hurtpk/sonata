@@ -9,8 +9,10 @@
 
 import { useEffect, useState } from "@webpack/common";
 
+import { type EffectId, normalizeEffects } from "../_shared/NameEffects";
+
 /** How a tag looks: one colour, or a gradient (its first colour is used for the dot and the border). */
-export interface Look { color: string; gradient?: string[]; }
+export interface Look { color: string; gradient?: string[]; effects?: EffectId[]; }
 export interface Tag extends Look { id: string; name: string; }
 export interface TagData {
     tags: Tag[];
@@ -57,17 +59,17 @@ function lightness(hex: string) {
 }
 const mix = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`;
 /** The CSS a tag chip needs for its look. */
-export function lookStyle(look: Look): Record<string, string> {
-    const stops = look.gradient?.length ? look.gradient : null;
-    return stops && stops.length > 1
-        ? {
-            "--ptag": stops[0],
-            "--ptag-bg": `linear-gradient(90deg, ${stops.map(c => mix(c, 62)).join(", ")})`,
-            "--ptag-line": `linear-gradient(90deg, ${stops.join(", ")})`,
-            // Dark writing on light gradients (Peach, Ice…), so it stays readable.
-            "--ptag-text": stops.reduce((a, c) => a + lightness(c), 0) / stops.length > 0.62 ? "#1e1f22" : "#fff",
-        }
-        : { "--ptag": look.color };
+export function lookStyle(look: Look, flowing = false): Record<string, string> {
+    const stops = look.gradient;
+    if (!stops || stops.length < 2) return { "--ptag": look.color };
+    const fill = flowing ? [...stops, ...stops.slice(0, -1).reverse()] : stops;
+    return {
+        "--ptag": stops[0],
+        "--ptag-bg": `linear-gradient(90deg, ${fill.map(c => mix(c, 62)).join(", ")})`,
+        "--ptag-line": `linear-gradient(90deg, ${fill.join(", ")})`,
+        // Dark writing on light gradients (Peach, Ice…), so it stays readable.
+        "--ptag-text": stops.reduce((a, c) => a + lightness(c), 0) / stops.length > 0.62 ? "#1e1f22" : "#fff",
+    };
 }
 export const isGradient = (look: Look) => (look.gradient?.length ?? 0) > 1;
 export const sameLook = (a: Look, b: Look) => isGradient(a) || isGradient(b)
@@ -101,6 +103,8 @@ export const peopleWith = (tagId: string) => Object.entries(data.people).filter(
 
 export function createTag(name: string, look: Look = { color: COLORS[(data.tags.length * 5) % COLORS.length] }): Tag {
     const tag: Tag = { id: Math.random().toString(36).slice(2, 9), name: name.trim().slice(0, 24) || "Tag", color: look.color, ...(isGradient(look) ? { gradient: look.gradient } : {}) };
+    const effects = normalizeEffects(look.effects);
+    if (effects.length) tag.effects = effects;
     data.tags = [...data.tags, tag];
     save();
     return tag;
@@ -111,6 +115,9 @@ export function updateTag(id: string, patch: Partial<Omit<Tag, "id">>) {
         if (t.id !== id) return t;
         const next: Tag = { ...t, ...patch, name: (patch.name ?? t.name).slice(0, 24) };
         if (!isGradient(next)) delete next.gradient;
+        const effects = normalizeEffects(next.effects);
+        if (effects.length) next.effects = effects;
+        else delete next.effects;
         return next;
     });
     save();

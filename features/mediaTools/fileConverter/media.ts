@@ -7,7 +7,7 @@
 // Audio, video and animated images, through ffmpeg.wasm — the same ffmpeg
 // Equicord's own Clip Upload uses, run in a worker on this computer. It's
 // fetched (about 31 MB, from jsDelivr) the first time it's needed, then the
-// browser keeps it; it's shut down again after a minute and a half of
+// browser keeps it; it's shut down again after 30 seconds of
 // nothing to do, so it doesn't sit in memory.
 
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
@@ -18,10 +18,7 @@ import workerJs from "file://../../../../../../node_modules/@ffmpeg/ffmpeg/dist/
 import { extOf } from "./formats";
 
 const CORE = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm";
-const IDLE_MS = 90_000;
-
-/** ffmpeg's worker, its two helper files folded in (a worker made from a blob can't import its neighbours). */
-const WORKER_SOURCE = [constJs, errorsJs, workerJs].map(s => s.replace(/^import [^;]+;\s*$/gm, "").replace(/^export\s+/gm, "")).join("\n");
+const IDLE_MS = 30_000;
 
 let ff: FFmpeg | null = null;
 let loading: Promise<FFmpeg> | null = null;
@@ -38,7 +35,8 @@ async function load(status: Status): Promise<FFmpeg> {
         status("Getting the converter ready — about 31 MB the first time, then it's instant…");
         const { FFmpeg } = await import("@ffmpeg/ffmpeg");
         const instance = new FFmpeg();
-        const url = URL.createObjectURL(new Blob([WORKER_SOURCE], { type: "text/javascript" }));
+        const workerSource = [constJs, errorsJs, workerJs].map(source => source.replace(/^import [^;]+;\s*$/gm, "").replace(/^export\s+/gm, "")).join("\n");
+        const url = URL.createObjectURL(new Blob([workerSource], { type: "text/javascript" }));
         try {
             await instance.load({ coreURL: `${CORE}/ffmpeg-core.js`, wasmURL: `${CORE}/ffmpeg-core.wasm`, classWorkerURL: url });
             instance.on("log", ({ message }) => { log.push(message); if (log.length > 400) log.splice(0, 200); });
@@ -117,17 +115,22 @@ export function runFfmpeg(input: Blob, inputName: string, build: (inName: string
  * A whole job with ffmpeg — several files, several runs (the Video Editor uses
  * this). Waits its turn like every other conversion; `run` gets ffmpeg itself,
  * why the last run failed, and the log so far (handing it over clears it). Files it writes should be deleted
- * by `run`. Stopping it early: `shutdown()`.
+ * by `run`. The optional signal cancels this job without interrupting other queued conversions.
  */
-export function withFfmpeg<T>(run: (f: FFmpeg, why: () => string, takeLog: () => string[]) => Promise<T>, status: Status): Promise<T> {
+export function withFfmpeg<T>(run: (f: FFmpeg, why: () => string, takeLog: () => string[]) => Promise<T>, status: Status, signal?: AbortSignal): Promise<T> {
     const job = queue.then(async () => {
+        signal?.throwIfAborted();
         if (idle) clearTimeout(idle);
         const f = await load(status);
+        const cancel = () => { if (ff === f) shutdown(); };
         log.length = 0;
         try {
+            if (signal?.aborted) { cancel(); signal.throwIfAborted(); }
+            signal?.addEventListener("abort", cancel, { once: true });
             return await run(f, () => explain(log), () => log.splice(0));
         } finally {
-            stopSoon();
+            signal?.removeEventListener("abort", cancel);
+            if (ff === f) stopSoon();
         }
     });
     queue = job.catch(() => { });

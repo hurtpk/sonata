@@ -13,6 +13,7 @@ import { windowAccent } from "../../controller/accent";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { describe, loadRecent, loadShortcuts, runCommand, saveShortcuts, Shortcut, textOf, Used } from ".";
+import { SonataGlyph } from "../../utilities/icons";
 
 const ago = (t: number) => {
     const m = Math.round((Date.now() - t) / 60000);
@@ -51,17 +52,17 @@ function ShortcutsModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const move = (i: number, d: number) => { const n = [...list]; [n[i], n[i + d]] = [n[i + d], n[i]]; write(n); };
 
     return (
-        <Window {...modalProps} size="lg" title="Command shortcuts" subtitle="Bot commands you use a lot, one click away — from the ⚡ button in the chat bar">
+        <Window {...modalProps} size="lg" title="Command shortcuts" subtitle="Bot commands you use a lot, one click away — from the Command Shortcuts button in the chat bar">
             <div className={classes("vc-tool-wrap", "vc-cmdsc-wrap")} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon="⚡" kicker="Command shortcuts" title={list.length ? `${list.length} shortcut${list.length === 1 ? "" : "s"}` : "No shortcuts yet"}
-                    sub="Bot commands you use a lot, one click away from the ⚡ button in the chat bar." />
+                    sub="Bot commands you use a lot, one click away from the Command Shortcuts button in the chat bar." />
                 <span className="vc-tool-label">Your shortcuts</span>
                 {list.length ? list.map((s, i) => (
                     <div key={s.id} className="vc-cmdsc-row">
                         <div className="vc-cmdsc-main">
                             {editing === s.id
                                 ? <input className="vc-tool-input" autoFocus maxLength={40} value={s.label} onChange={e => write(list.map(x => x.id === s.id ? { ...x, label: e.currentTarget.value } : x))} />
-                                : <b>⚡ {s.label}</b>}
+                                : <b><SonataGlyph name="bolt" /> {s.label}</b>}
                             <code>{describe(s.command, s.values)}</code>
                             <small>Saved from {serverName(s.guildId)}</small>
                             {editing === s.id && <ValueEditor s={s} onChange={next => write(list.map(x => x.id === s.id ? next : x))} />}

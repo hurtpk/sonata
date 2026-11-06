@@ -15,6 +15,7 @@ import { useEffect, useState } from "@webpack/common";
 
 import { callNative } from "../../_shared/native";
 import { cardActions } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 
@@ -167,7 +168,7 @@ function Many() {
                                 <span>{r ? ICON[r.state] : "…"}</span>
                                 <b>{n}</b>
                                 <span className="vc-tool-hint">{r ? r.message : "Checking…"}</span>
-                                {r?.state === "free" && <button type="button" className="vc-tool-icon" title="Copy" onClick={() => copyWithToast(n, `Copied ${n}`)}>📋</button>}
+                                {r?.state === "free" && <button type="button" className="vc-tool-icon" title="Copy" onClick={() => copyWithToast(n, `Copied ${n}`)}><SonataGlyph name="clipboard" /></button>}
                             </div>
                         );
                     })}
@@ -183,7 +184,7 @@ export function Names() {
         <div className={rb("names")}>
             <div className={rb("outfit-head")}>
                 <div>
-                    <b>🏷️ Username checker</b>
+                    <b><SonataGlyph name="tag" /> Username checker</b>
                     <span>See if a Roblox username is free — straight from Roblox's own sign-up check.</span>
                 </div>
             </div>

@@ -21,12 +21,13 @@ import { OwnedGames } from "./OwnedGames";
 import { FullProfile, uniqueNames } from "./Profile";
 import { GameShop } from "./Shop";
 import { isWatched, onPeopleChange, unwatchPerson, watchPerson } from "./watchlist";
+import { SonataGlyph } from "../../../utilities/icons";
 
 export const rb = classNameFactory("vc-rbx-");
 
 function Img({ src, className, alt = "" }: { src?: string; className: string; alt?: string; }) {
     const [bad, setBad] = useState(false);
-    if (!src || bad) return <span className={classes(className, rb("img-none"))}>🧱</span>;
+    if (!src || bad) return <span className={classes(className, rb("img-none"))}><SonataGlyph name="blockTile" /></span>;
     return <img className={className} src={src} alt={alt} loading="lazy" onError={() => setBad(true)} />;
 }
 
@@ -43,7 +44,7 @@ function UserCard({ u, full }: { u: RbxUser; full?: boolean; }) {
             <div className={rb("head")}>
                 <Img src={u.avatar} className={rb("avatar")} />
                 <div className={rb("who")}>
-                    <b>{u.displayName}{u.verified && <span className={rb("tick")} title="Verified">✔</span>}{u.banned && <span className={rb("banned")}>Banned</span>}</b>
+                    <b>{u.displayName}{u.verified && <span className={rb("tick")} title="Verified"><SonataGlyph name="checkCircle" /></span>}{u.banned && <span className={rb("banned")}>Banned</span>}</b>
                     <span>@{u.name} · <i className={classes(rb("dot"), rb(`dot-${u.presence}`))} />{PRESENCE[u.presence] ?? "Offline"}{u.presence === 0 && u.lastOnline ? ` · last online ${ago(u.lastOnline)}` : ""}</span>
                 </div>
             </div>
@@ -100,14 +101,14 @@ function GroupCard({ g, full }: { g: RbxGroup; full?: boolean; }) {
             <div className={rb("head")}>
                 <Img src={g.icon} className={rb("icon")} />
                 <div className={rb("who")}>
-                    <b>{g.name}{g.verified && <span className={rb("tick")}>✔</span>}</b>
+                    <b>{g.name}{g.verified && <span className={rb("tick")}><SonataGlyph name="checkCircle" /></span>}</b>
                     <span>{g.owner ? `Owned by @${g.owner}` : "No owner"} · {g.open ? "Anyone can join" : "Join by request"}</span>
                 </div>
             </div>
             <div className={rb("stats")}>
                 <Stat label="Members" value={g.members.toLocaleString()} />
             </div>
-            {g.shout && <div className={rb("shout")}><span>📣 {g.shout.poster} · {ago(g.shout.updated)}</span>{g.shout.body}</div>}
+            {g.shout && <div className={rb("shout")}><span><SonataGlyph name="megaphone" /> {g.shout.poster} · {ago(g.shout.updated)}</span>{g.shout.body}</div>}
             {full && g.description && <div className={rb("bio")}>{g.description.slice(0, 600)}</div>}
             {full && <OwnedGames kind="group" id={g.id} name={g.name} />}
         </>
@@ -167,11 +168,11 @@ function MeButton({ u }: { u: RbxUser; }) {
     const [, bump] = useReducer((n: number) => n + 1, 0);
     const [busy, setBusy] = useState(false);
     useEffect(() => onMeChange(bump), []);
-    if (isMe(u.id)) return <span className={classes(rb("link"), rb("me-on"))} title="This is your account — it's always watched">👤 You</span>;
+    if (isMe(u.id)) return <span className={classes(rb("link"), rb("me-on"))} title="This is your account — it's always watched"><SonataGlyph name="profile" /> You</span>;
     return (
         <button type="button" className={rb("link")} disabled={busy} title="Set as your account: always watched, and at the top of the sidebar"
             onClick={async () => { setBusy(true); const e = await setMe(u.id); setBusy(false); showToast(e ?? `Set ${u.displayName} as your account`, e ? "failure" : "success"); }}>
-            👤 This is me
+            <SonataGlyph name="profile" /> This is me
         </button>
     );
 }
@@ -180,7 +181,7 @@ function WatchButton({ u }: { u: RbxUser; }) {
     const [, bump] = useReducer((n: number) => n + 1, 0);
     const [busy, setBusy] = useState(false);
     useEffect(() => { const a = onPeopleChange(bump), b = onMeChange(bump); return () => { a(); b(); }; }, []);
-    if (isMe(u.id)) return <span className={rb("link")} title="Your own account is always watched">👁 Always watching</span>;
+    if (isMe(u.id)) return <span className={rb("link")} title="Your own account is always watched"><SonataGlyph name="eye" /> Always watching</span>;
     const on = isWatched(u.id);
     const toggle = async () => {
         if (on) { unwatchPerson(u.id); showToast(`Stopped watching ${u.displayName}`, "message"); return; }
@@ -189,7 +190,7 @@ function WatchButton({ u }: { u: RbxUser; }) {
         setBusy(false);
         showToast(e ?? `Watching ${u.displayName} — you'll hear about name, bio and avatar changes`, e ? "failure" : "success");
     };
-    return <button type="button" className={rb("link")} disabled={busy} onClick={toggle} title="Get told when they change their name, bio or avatar">{on ? "👁 Watching" : "👁 Watch"}</button>;
+    return <button type="button" className={rb("link")} disabled={busy} onClick={toggle} title="Get told when they change their name, bio or avatar">{on ? <><SonataGlyph name="eye" />{" Watching"}</> : <><SonataGlyph name="eye" />{" Watch"}</>}</button>;
 }
 
 /** A card for a link, fetched when it appears. */
@@ -209,18 +210,18 @@ export function RefCard({ refx, full, onOpen, onInfo }: { refx: RbxRef; full?: b
     return (
         <div className={classes(rb("card"), full && rb("card-full"), state.info && rb(`card-${state.info.kind}`))}>
             {!state.info && !state.error && <div className={rb("loading")}><span className={rb("spin")} /> Asking Roblox…</div>}
-            {state.error && <div className={rb("muted")}>🧱 {state.error}</div>}
+            {state.error && <div className={rb("muted")}><SonataGlyph name="blockTile" /> {state.error}</div>}
             {state.info && <InfoCard info={state.info} full={full} />}
             <div className={rb("foot")}>
                 <span className={rb("brand")}>Roblox</span>
                 <span className={rb("spacer")} />
                 <button type="button" className={rb("link")} onClick={() => setTick(t => t + 1)} title="Get the latest numbers">↻</button>
-                {state.info?.kind === "game" && <button type="button" className={rb("link")} onClick={() => play(state.info as RbxGame)}>▶ Play</button>}
+                {state.info?.kind === "game" && <button type="button" className={rb("link")} onClick={() => play(state.info as RbxGame)}><SonataGlyph name="play" /> Play</button>}
                 {state.info?.kind === "game" && <button type="button" className={rb("link")} onClick={() => cardActions.servers((state.info as RbxGame).placeId)}>Servers</button>}
                 {state.info?.kind === "game" && <button type="button" className={rb("link")} onClick={() => cardActions.compare((state.info as RbxGame).placeId)}>Compare</button>}
                 {state.info?.kind === "user" && <WatchButton u={state.info} />}
                 {state.info?.kind === "user" && full && <MeButton u={state.info} />}
-                {state.info?.kind === "item" && !state.info.bundle && <button type="button" className={rb("link")} title="Get its 3D model, textures and other files" onClick={() => cardActions.assets((state.info as RbxItem).id)}>📦 Files</button>}
+                {state.info?.kind === "item" && !state.info.bundle && <button type="button" className={rb("link")} title="Get its 3D model, textures and other files" onClick={() => cardActions.assets((state.info as RbxItem).id)}><SonataGlyph name="package" /> Files</button>}
                 {state.info && <SaveButton info={state.info} />}
                 {onOpen && <button type="button" className={rb("link")} onClick={onOpen}>More</button>}
                 <a className={rb("link")} href={urlFor(refx)} target="_blank" rel="noreferrer">Open on Roblox ↗</a>

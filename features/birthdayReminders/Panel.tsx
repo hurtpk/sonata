@@ -18,6 +18,7 @@ import { Window } from "../_shared/Window";
 import { openScheduler } from "../scheduledMessages/Panel";
 import { Birthday, colorOf, daysInMonth, daysUntil, formatDate, MONTH_COLORS, MONTHS, nextOccurrence, sortByUpcoming, turning } from "./dates";
 import { patchBirthday, removeBirthday, setBirthday, useBirthdays } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-bday-");
 const SNOWFLAKE = /^\d{17,20}$/;
@@ -188,7 +189,7 @@ function Editor({ initial, onDone }: { initial: Birthday | null; onDone(): void;
             </div>
             {person && until != null && (
                 <div className={cl("editor-preview")}>
-                    🎂 {MONTHS[month - 1]} {day} — {until === 0 ? "that's today!" : until === 1 ? "tomorrow" : `in ${until} days`}
+                    <SonataGlyph name="cake" /> {MONTHS[month - 1]} {day} — {until === 0 ? "that's today!" : until === 1 ? "tomorrow" : `in ${until} days`}
                     {yearNum && yearOk ? ` · turns ${nextOccurrence({ month, day }).getFullYear() - yearNum}` : ""}
                 </div>
             )}
@@ -248,16 +249,16 @@ function Card({ b, onEdit, hour }: { b: Birthday; onEdit(): void; hour: number; 
                     <span>{formatDate(b)}{age ? ` · ${days === 0 ? "turning" : "turns"} ${age}` : ""}</span>
                 </div>
                 <div className={cl("countdown")}>
-                    {days === 0 ? <span className={cl("today-badge")}>🎂 Today!</span> : <><b>{days}</b><span>{days === 1 ? "day" : "days"}</span></>}
+                    {days === 0 ? <span className={cl("today-badge")}><SonataGlyph name="cake" /> Today!</span> : <><b>{days}</b><span>{days === 1 ? "day" : "days"}</span></>}
                 </div>
             </div>
             <div className={cl("card-row")}>
-                {days === 0 && <button type="button" className="vc-tool-chip" onClick={() => playEffect("confetti")}>🎉 Celebrate</button>}
-                {!me && <button type="button" className="vc-tool-chip" onClick={() => openPrivateChannel(b.userId)}>💬 Message</button>}
-                {queue && days > 0 && <button type="button" className="vc-tool-chip" title="Queue a birthday message with Scheduled Messages" onClick={() => void queueFor(b, hour, queue)}>⏰ Queue a message</button>}
+                {days === 0 && <button type="button" className="vc-tool-chip" onClick={() => playEffect("confetti")}><SonataGlyph name="party" /> Celebrate</button>}
+                {!me && <button type="button" className="vc-tool-chip" onClick={() => openPrivateChannel(b.userId)}><SonataGlyph name="message" /> Message</button>}
+                {queue && days > 0 && <button type="button" className="vc-tool-chip" title="Queue a birthday message with Scheduled Messages" onClick={() => void queueFor(b, hour, queue)}><SonataGlyph name="alarm" /> Queue a message</button>}
                 <span className="vc-tool-spacer" />
                 {days > 0 && <span className={cl("when")}>{whenText(days)}</span>}
-                <button type="button" className={classes(cl("btn"), cl("paint"), painting && cl("paint-on"))} title="Change their colour" onClick={() => setPainting(v => !v)}><i style={{ background: color }} />🎨</button>
+                <button type="button" className={classes(cl("btn"), cl("paint"), painting && cl("paint-on"))} title="Change their colour" onClick={() => setPainting(v => !v)}><i style={{ background: color }} /><SonataGlyph name="palette" /></button>
                 <button type="button" className={cl("btn")} onClick={onEdit}>Edit</button>
                 {sure ? (
                     <span className={cl("sure")}>
@@ -287,14 +288,14 @@ function Hero({ list, onAdd, onAddMine, hasMine }: { list: Birthday[]; onAdd(): 
                 <>
                     <span className={classes(cl("ring"), cl("ring-glow"), cl("hero-ring"))}><Avatar b={star} size={64} className={cl("hero-avatar")} /></span>
                     <div className={cl("hero-text")}>
-                        <span className={cl("hero-label")}>{today.length ? "🎂 Birthday today" : "Next birthday"}</span>
+                        <span className={cl("hero-label")}>{today.length ? <><SonataGlyph name="cake" />{" Birthday today"}</> : "Next birthday"}</span>
                         <b>{today.length ? today.map(b => isMe(b.userId) ? "You!" : b.name).join(", ") : next!.name}</b>
                         <span>{today.length ? (today.some(b => isMe(b.userId)) ? "Happy birthday! 🎉" : "Send them something nice 🎉") : `${formatDate(next!)}${turning(next!) ? ` · turns ${turning(next!)}` : ""}`}</span>
                     </div>
                     {!today.length && next && (
                         <div className={cl("hero-count")}><b>{daysUntil(next)}</b><span>{daysUntil(next) === 1 ? "day to go" : "days to go"}</span></div>
                     )}
-                    {today.length > 0 && <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => playEffect("confetti")}>🎉 Celebrate</button>}
+                    {today.length > 0 && <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => playEffect("confetti")}><SonataGlyph name="party" /> Celebrate</button>}
                 </>
             ) : (
                 <div className={cl("hero-text")}>

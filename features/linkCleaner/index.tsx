@@ -52,7 +52,7 @@ export function cleanOutgoing(msg: { content: string; }, edit = false) {
     const { text, count } = cleanText(msg.content);
     if (!count) return;
     msg.content = text;
-    if (settings.store.toast) showToast(`Cleaned ${count} link${count === 1 ? "" : "s"} 🧹`, "success");
+    if (settings.store.toast) showToast(`Cleaned ${count} link${count === 1 ? "" : "s"}`, "success");
 }
 
 const OUTGOING_LINK = /https?:\/\/[^\s<>()"']+[^\s<>()"'.,;:!?*_~)\]]/g;

@@ -15,8 +15,8 @@ import { FluxDispatcher } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../../featureSettings";
 import { openSection, registerSection, setOriginal } from "../../_shared/Hub";
-import { openStyler, StylerModal } from "./Panel";
-import { DEFAULT_OPTIONS, StyleOptions } from "./render";
+import { lazyWindow } from "../../_shared/Window";
+import type { StyleOptions } from "./render";
 
 export const settings = defineFeatureSettings("screenshotStyler", {
     onPaste: {
@@ -32,16 +32,14 @@ export const settings = defineFeatureSettings("screenshotStyler", {
     },
 });
 
-function lastOptions(): StyleOptions {
-    try { return { ...DEFAULT_OPTIONS, ...JSON.parse(settings.store.options || "{}") }; } catch { return DEFAULT_OPTIONS; }
-}
+const StylerModal = lazyWindow("Screenshot Styler", () => import("./Panel").then(m => m.StylerWindow));
 
 const saveOptions = (o: StyleOptions) => { settings.store.options = JSON.stringify(o); };
-const open = (image: Blob | null = null) => openStyler(image, lastOptions(), saveOptions);
+const open = (image: Blob | null = null) => openSection("mediaTools", "screenshotStyler", image ? props => <StylerModal modalProps={props} initial={image} rawOptions={settings.store.options} saveOptions={saveOptions} /> : undefined);
 // Media Tools' window: a picture you're editing goes straight in.
 registerSection("mediaTools", {
     id: "screenshotStyler", feature: "screenshotStyler", name: "Screenshot Styler", sub: "Frames, backgrounds and shadows",
-    render: (p, input) => <StylerModal modalProps={p} initial={input?.file?.type.startsWith("image/") ? input.file : null} startOptions={lastOptions()} saveOptions={saveOptions} />,
+    render: (p, input) => <StylerModal modalProps={p} initial={input?.file?.type.startsWith("image/") ? input.file : null} rawOptions={settings.store.options} saveOptions={saveOptions} />,
 });
 
 export function StylerIcon({ height = 20, width = 20, className }: IconProps) {

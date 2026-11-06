@@ -13,6 +13,7 @@ import { showToast, useEffect, useReducer, useState } from "@webpack/common";
 import { getLive, onSavedChange, refreshLive } from "./bookmarks";
 import { PRESENCE, short } from "./data";
 import { change, clearMe, getMe, loadMe, onMeChange, setMe } from "./me";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 
@@ -63,7 +64,7 @@ export function MyAccount({ current, onOpen }: { current: boolean; onOpen(id: st
     if (!me) {
         return (
             <button type="button" className={rb("me-empty")} onClick={() => setEditing(true)}>
-                <span>👤</span>
+                <span><SonataGlyph name="profile" /></span>
                 <b>Set your account</b>
                 <small>Keep yourself one click away, always watched for changes.</small>
             </button>
@@ -76,7 +77,7 @@ export function MyAccount({ current, onOpen }: { current: boolean; onOpen(id: st
     return (
         <div className={classes(rb("me"), current && rb("side-row-on"))} role="button" tabIndex={0} title="Open your profile"
             onClick={() => onOpen(me.id)} onKeyDown={e => { if (e.key === "Enter") onOpen(me.id); }}>
-            {me.avatar ? <img className={rb("me-avatar")} src={me.avatar} alt="" /> : <span className={classes(rb("me-avatar"), rb("img-none"))}>👤</span>}
+            {me.avatar ? <img className={rb("me-avatar")} src={me.avatar} alt="" /> : <span className={classes(rb("me-avatar"), rb("img-none"))}><SonataGlyph name="profile" /></span>}
             <span className={rb("side-text")}>
                 <b>{me.displayName} <i className={rb("me-tag")}>You</i></b>
                 <span>

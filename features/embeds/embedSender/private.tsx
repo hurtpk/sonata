@@ -17,6 +17,7 @@ import { ChannelStore, SelectedChannelStore, useEffect, useState } from "@webpac
 import workerCode from "file://./worker/sonata-private-replies.js";
 
 import { callNative } from "../../_shared/native";
+import { SonataGlyph } from "../../../utilities/icons";
 
 export { workerCode };
 
@@ -170,8 +171,8 @@ export function PrivateRepliesSetup({ toast, onWebhook }: { toast(kind: "success
             <div className={classes("vc-es-private-status", ready ? "vc-es-ok" : "vc-es-warn")}>
                 {busy ? "Checking…" : ready
                     ? <>✓ Connected to <b>{status!.app?.name ?? "your bot"}</b>{endpointSet ? "" : " — but Discord doesn't know your Worker's address yet (step 5)"}</>
-                    : status?.error ? <>⚠ {status.error}</>
-                        : status?.missing?.length ? <>⚠ Your Worker still needs: {status.missing.join(", ")}</>
+                    : status?.error ? <><SonataGlyph name="warning" /> {status.error}</>
+                        : status?.missing?.length ? <><SonataGlyph name="warning" /> Your Worker still needs: {status.missing.join(", ")}</>
                             : <>Not set up yet — it takes about 15 minutes, once.</>}
                 <span className="vc-tool-spacer" />
                 <button type="button" className="vc-tool-btn" onClick={() => setGuide(g => !g)}>{guide ? "Hide the guide" : "Show the guide"}</button>
@@ -217,13 +218,13 @@ export function PrivateRepliesSetup({ toast, onWebhook }: { toast(kind: "success
                 <input className="vc-tool-input" placeholder="https://your-worker.you.workers.dev" value={url} onChange={e => setUrl(e.target.value)} />
                 <div style={{ display: "flex", gap: 8 }}>
                     <input className="vc-tool-input" style={{ flex: 1 }} type={show ? "text" : "password"} autoComplete="off" spellCheck={false} placeholder="Your SONATA_SECRET" value={secret} onChange={e => setSecret(e.target.value)} />
-                    <button type="button" className="vc-tool-btn" onClick={() => setShow(s => !s)}>{show ? "🙈" : "👁"}</button>
+                    <button type="button" className="vc-tool-btn" onClick={() => setShow(s => !s)}>{show ? <SonataGlyph name="eyeOff" /> : <SonataGlyph name="eye" />}</button>
                     <button type="button" className="vc-tool-btn vc-tool-primary" disabled={busy || !url.trim() || !secret.trim()} onClick={save}>Save &amp; check</button>
                 </div>
                 {ready && (
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <button type="button" className="vc-tool-btn" disabled={busy} onClick={makeHook}>
-                            🪝 Make a bot webhook here{channel?.name ? ` (#${channel.name})` : ""}
+                            <SonataGlyph name="webhook" /> Make a bot webhook here{channel?.name ? ` (#${channel.name})` : ""}
                         </button>
                         {invite && <a className="vc-tool-btn" href={invite} target="_blank" rel="noreferrer">Invite the bot</a>}
                     </div>

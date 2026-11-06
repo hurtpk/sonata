@@ -14,12 +14,14 @@ import "./tool.css";
 import "./window.css";
 
 import { useSettings } from "@api/Settings";
+import ErrorBoundary from "@components/ErrorBoundary";
 import { classes } from "@utils/misc";
 import type { ModalAction, RenderModalProps } from "@vencord/discord-types";
 import { React } from "@webpack/common";
-import type { CSSProperties, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 
 import { windowAccent } from "../../controller/accent";
+import { SonataIcon, SonataLabel } from "../../utilities/icons";
 import { hubContext } from "./Hub";
 
 export type WindowSize = "sm" | "md" | "lg" | "xl" | "xxl" | (string & {});
@@ -96,6 +98,18 @@ export function Window(props: WindowProps) {
     return hub ? <Frame {...props} title={hub.title} size={hub.size} side={hub.rail ?? props.side} still={hub.still} /> : <Frame {...props} />;
 }
 
+export function lazyWindow<T extends { modalProps: RenderModalProps; }>(title: string, load: () => Promise<ComponentType<T>>) {
+    let Panel: React.LazyExoticComponent<ComponentType<T>>;
+    return (props: T) => {
+        Panel ??= React.lazy(() => load().then(component => ({ default: component })));
+        return <ErrorBoundary fallback={() => <Window {...props.modalProps} title={title}><p className="vc-tool-hint">Could not open {title}.</p></Window>}>
+            <React.Suspense fallback={<Window {...props.modalProps} title={title}><p className="vc-tool-hint" role="status">Loading {title}…</p></Window>}>
+                <Panel {...props} />
+            </React.Suspense>
+        </ErrorBoundary>;
+    };
+}
+
 function Frame({ transitionState, onClose, size = "md", title, subtitle, children, className, tools, tabs, tab, onTab, status, statusRight, flush, side, actions, actionBarInput, role = "dialog", still }: WindowProps & { still?: boolean; }) {
     const style = useWindowStyle();
     const accent = windowAccent();
@@ -115,7 +129,9 @@ function Frame({ transitionState, onClose, size = "md", title, subtitle, childre
             >
                 <header className="vc-sw-top">
                     <div className="vc-sw-name" title={typeof subtitle === "string" ? subtitle : undefined}>
-                        sonata <span className="vc-sw-dash">/</span> <span className="vc-sw-here">{title}</span>
+                        <span className="vc-sw-wordmark" aria-hidden><SonataIcon width={17} height={17} />sonata<i>.</i></span>
+                        <span className="vc-sw-dash" aria-hidden>/</span>
+                        <span className="vc-sw-here">{title}</span>
                     </div>
                     {tools && <div className="vc-sw-tools">{tools}</div>}
                     <button type="button" className="vc-sw-close" aria-label="Close" onClick={onClose}>
@@ -125,7 +141,7 @@ function Frame({ transitionState, onClose, size = "md", title, subtitle, childre
                 {tabs && tabs.length > 0 && (
                     <nav className="vc-sw-tabs" role="tablist">
                         {tabs.map(([id, label]) => (
-                            <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("vc-sw-tab", tab === id && "vc-sw-tab-on")} onClick={() => onTab?.(id)}>{label}</button>
+                            <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("vc-sw-tab", tab === id && "vc-sw-tab-on")} onClick={() => onTab?.(id)}>{typeof label === "string" ? <SonataLabel label={label} /> : label}</button>
                         ))}
                     </nav>
                 )}

@@ -13,6 +13,7 @@ import { classes } from "@utils/misc";
 import { ChannelStore, createRoot, NavigationRouter, useEffect, useReducer, useState } from "@webpack/common";
 
 import { COLORS, completeReminder, Reminder, snoozeReminder, whenText } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const ringing = new Map<string, Reminder>();
 const listeners = new Set<() => void>();
@@ -105,7 +106,7 @@ function Card({ r }: { r: Reminder; }) {
 
     return (
         <div className={classes("vc-rem-banner", `vc-rem-${r.color}`, leaving && "vc-rem-leaving")} style={{ "--rem": c.hex } as React.CSSProperties} role="alert">
-            <span className="vc-rem-bell" aria-hidden>⏰</span>
+            <span className="vc-rem-bell" aria-hidden><SonataGlyph name="alarm" /></span>
             <div className="vc-rem-body">
                 <div className="vc-rem-text">{r.text || "Reminder"}</div>
                 <div className="vc-rem-meta">

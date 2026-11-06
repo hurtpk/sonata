@@ -15,6 +15,7 @@ import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { playSound } from "./Banner";
 import { addReminder, COLOR_IDS, ColorId, COLORS, getReminders, loadReminders, onRemindersChange, quickTimes, Reminder, removeReminder, Repeat, REPEATS, toLocalInput, updateReminder, whenText } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const rm = classNameFactory("vc-remw-");
@@ -48,7 +49,7 @@ function Editor({ draft, defaultColor, editing, onDone }: { draft: Draft; defaul
         <div className={classes(cl("card"), rm("editor"))} style={{ "--rem": COLORS[color].hex } as React.CSSProperties}>
             <input className={cl("input")} autoFocus placeholder={link ? "What about this message? (optional)" : "Remind me to…"} value={text} maxLength={200}
                 onChange={e => setText(e.currentTarget.value)} onKeyDown={e => { if (e.key === "Enter") save(); }} />
-            {link && <span className={cl("hint")}>🔗 Linked to {link.author ? `${link.author}'s` : "a"} message — the reminder can take you straight to it.</span>}
+            {link && <span className={cl("hint")}><SonataGlyph name="link" /> Linked to {link.author ? `${link.author}'s` : "a"} message — the reminder can take you straight to it.</span>}
 
             <span className={cl("label")}>When</span>
             <div className={rm("chips")}>
@@ -90,13 +91,13 @@ function Row({ r, onEdit }: { r: Reminder; onEdit(): void; }) {
     const [sure, setSure] = useState(false);
     return (
         <div className={classes(rm("row"), late && rm("row-late"))} style={{ "--rem": c.hex } as React.CSSProperties}>
-            <span className={rm("bell")} aria-hidden>{late ? "🔔" : "⏰"}</span>
+            <span className={rm("bell")} aria-hidden>{late ? <SonataGlyph name="bell" /> : <SonataGlyph name="alarm" />}</span>
             <button type="button" className={rm("row-main")} onClick={onEdit} title="Edit">
                 <span className={rm("row-text")}>{r.text || (r.link ? "That message" : "Reminder")}</span>
                 <span className={rm("row-when")}>
                     <span className={rm("pill")}>{late ? "Due now" : whenText(r.at)}</span>
-                    {r.repeat !== "none" && <span>🔁 {REPEATS.find(x => x.id === r.repeat)?.name}</span>}
-                    {r.link && <span>🔗 linked message</span>}
+                    {r.repeat !== "none" && <span><SonataGlyph name="repeat" /> {REPEATS.find(x => x.id === r.repeat)?.name}</span>}
+                    {r.link && <span><SonataGlyph name="link" /> linked message</span>}
                 </span>
             </button>
             {sure ? (
@@ -142,7 +143,7 @@ function RemindersModal({ modalProps, draft, defaultColor }: { modalProps: Rende
                         <span className={cl("label")}>{g} · {l.length}</span>
                         <div className={rm("grid")}>{l.map(r => <Row key={r.id} r={r} onEdit={() => setEditing(r)} />)}</div>
                     </div>
-                )) : <div className={cl("empty")}><span className={cl("empty-icon")}>⏰</span>No reminders yet. You can also right-click any message → Remind me about this.</div>)}
+                )) : <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="alarm" /></span>No reminders yet. You can also right-click any message → Remind me about this.</div>)}
             </div>
         </Window>
     );

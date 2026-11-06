@@ -19,6 +19,7 @@ import { Window } from "../_shared/Window";
 import { openSection, registerSection } from "../_shared/Hub";
 import { cancelWatch, getRules, saveRules, settings } from "./index";
 import { clearLog, newRule, onGreeterChange, previewOf, Rule, sentLog, Trigger, VARIABLES, watching } from "./rules";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const cg = classNameFactory("vc-cg-");
@@ -158,8 +159,8 @@ function Editor({ rule, update, remove }: { rule: Rule; update(p: Partial<Rule>)
                     <span className={cl("label")}>3 · Say</span>
                     <span className={cl("spacer")} />
                     <div className={cl("seg")}>
-                        <button type="button" className={classes(cl("seg-btn"), rule.order === "random" && cl("seg-on"))} onClick={() => update({ order: "random" })}>🎲 Random</button>
-                        <button type="button" className={classes(cl("seg-btn"), rule.order === "sequence" && cl("seg-on"))} onClick={() => update({ order: "sequence", next: 0 })}>🔁 In order</button>
+                        <button type="button" className={classes(cl("seg-btn"), rule.order === "random" && cl("seg-on"))} onClick={() => update({ order: "random" })}><SonataGlyph name="dice" /> Random</button>
+                        <button type="button" className={classes(cl("seg-btn"), rule.order === "sequence" && cl("seg-on"))} onClick={() => update({ order: "sequence", next: 0 })}><SonataGlyph name="repeat" /> In order</button>
                     </div>
                 </div>
                 {msgs.map((m, i) => (
@@ -194,7 +195,7 @@ function Activity() {
     return (
         <div className={cg("activity")}>
             <section>
-                <div className={cg("heading")}>👀 Watching now {watches.length ? `(${watches.length})` : ""}</div>
+                <div className={cg("heading")}><SonataGlyph name="eye" /> Watching now {watches.length ? `(${watches.length})` : ""}</div>
                 {watches.length ? watches.map(w => {
                     const ch: any = ChannelStore.getChannel(w.channelId);
                     const rule = getRules().find(r => r.id === w.ruleId);
@@ -209,7 +210,7 @@ function Activity() {
             </section>
             <section>
                 <div className={cl("row")}>
-                    <div className={cg("heading")}>💬 Recent greetings</div>
+                    <div className={cg("heading")}><SonataGlyph name="message" /> Recent greetings</div>
                     <span className={cl("spacer")} />
                     {sentLog.length > 0 && <button type="button" className={cg("link")} onClick={clearLog}>Clear</button>}
                 </div>
@@ -247,7 +248,7 @@ function GreeterModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     title={s.active ? `${rules.filter(r => r.on).length} of ${rules.length} greeter${rules.length === 1 ? "" : "s"} running` : "Nothing will be sent"}
                     sub={s.active ? "New channels in your categories get greeted the moment someone posts." : "Resume to start greeting new channels again."}
                     numbers={[{ value: rules.length, label: rules.length === 1 ? "greeter" : "greeters" }, { value: sentLog.length, label: "sent" }]}>
-                    <button type="button" className={classes(cl("btn"), !s.active && cl("primary"))} onClick={() => { settings.store.active = !s.active; }}>{s.active ? "Pause all" : "▶ Resume"}</button>
+                    <button type="button" className={classes(cl("btn"), !s.active && cl("primary"))} onClick={() => { settings.store.active = !s.active; }}>{s.active ? "Pause all" : <><SonataGlyph name="play" />{" Resume"}</>}</button>
                 </ToolHero>
 
                 <div className={cg("layout")}>
@@ -259,7 +260,7 @@ function GreeterModal({ modalProps }: { modalProps: RenderModalProps; }) {
                                     <GuildBadge guildId={r.guildId} />
                                     <span className={cg("rule-text")}>
                                         <span className={cg("rule-name")}>{r.name || "Untitled"}</span>
-                                        <span className={cl("hint")}>{cat ? `📁 ${cat.name}` : "Not set up yet"}</span>
+                                        <span className={cl("hint")}>{cat ? <><SonataGlyph name="folder" /> {cat.name}</> : "Not set up yet"}</span>
                                     </span>
                                     <span className={classes(cg("pip"), r.on && cg("pip-on"))} />
                                 </button>
@@ -270,7 +271,7 @@ function GreeterModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     <div className={cg("main")}>
                         {rule
                             ? <Editor key={rule.id} rule={rule} update={p => update(rule.id, p)} remove={() => { saveRules(rules.filter(r => r.id !== rule.id)); setSelected(null); }} />
-                            : <div className={cg("empty")}>👋 No greeters yet.<br /><button type="button" className={classes(cl("btn"), cl("primary"))} onClick={add}>Create your first greeter</button></div>}
+                            : <div className={cg("empty")}><SonataGlyph name="handWave" /> No greeters yet.<br /><button type="button" className={classes(cl("btn"), cl("primary"))} onClick={add}>Create your first greeter</button></div>}
                     </div>
                 </div>
 

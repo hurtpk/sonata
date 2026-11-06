@@ -12,6 +12,7 @@ import { ChannelStore, NavigationRouter, SelectedChannelStore, useEffect, useRef
 import { windowAccent } from "../../controller/accent";
 import { Window } from "../_shared/Window";
 import { allNotes, channelKey, guildKey, Note, noteOf, placeName, setNote, useNotes } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 function ago(t: number) {
     const m = Math.round((Date.now() - t) / 60000);
@@ -62,7 +63,7 @@ function NoteCard({ k, n, onOpen, close }: { k: string; n: Note; onOpen(): void;
     return (
         <div className="vc-cnotes-card">
             <button type="button" className="vc-cnotes-card-main" onClick={onOpen} title="Open this note">
-                <span className="vc-cnotes-where">{k.startsWith("g:") ? "🏠" : "#"} {placeName(k)}</span>
+                <span className="vc-cnotes-where">{k.startsWith("g:") ? <SonataGlyph name="home" /> : "#"} {placeName(k)}</span>
                 <span className="vc-cnotes-preview">{n.text}</span>
                 <span className="vc-tool-hint">{ago(n.at)}</span>
             </button>
@@ -100,7 +101,7 @@ function NotesModal({ modalProps, channelId, guildId, startKey }: { modalProps: 
                 {current ? <NoteEditor k={current} /> : list.length ? (
                     <div className="vc-cnotes-grid">{list.map(([k, n]) => <NoteCard key={k} k={k} n={n} onOpen={() => setTab(k)} close={modalProps.onClose} />)}</div>
                 ) : (
-                    <div className="vc-tool-empty"><span className="vc-tool-empty-icon">📝</span>No notes yet. Open one from the 📝 button in any chat, or right-click a channel or server.</div>
+                    <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="fileText" /></span>No notes yet. Open one from the <SonataGlyph name="fileText" /> button in any chat, or right-click a channel or server.</div>
                 )}
             </div>
         </Window>

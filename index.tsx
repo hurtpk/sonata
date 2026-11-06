@@ -180,6 +180,7 @@ import { addTrayButton, removeTrayButton, startChatTray, stopChatTray } from "./
 import { setDoctorProvider, startErrors, startTimes } from "./sonata/doctorBridge";
 import { startFeatureAccent, stopFeatureAccent } from "./sonata/featureAccent";
 import { featureIconKey } from "./sonata/featureIcons";
+import { startFonts, stopFonts } from "./sonata/fonts";
 import { GROUP_OF, GROUPS } from "./sonata/groups";
 import { startMemoryWatch, stopMemoryWatch } from "./sonata/memoryWatch";
 import { openSonata } from "./sonata/open";
@@ -896,6 +897,7 @@ const qolDef: SettingsDefinition = {
     sonataProfiles: { type: OptionType.STRING, description: "Your saved feature profiles (School, Gaming…).", default: "", hidden: true },
     sonataInvertHues: { type: OptionType.BOOLEAN, description: "Inverted background: flip the colours too (a true negative).", default: false, hidden: true },
     perfLazyChat: { type: OptionType.BOOLEAN, description: "Performance: only draw messages near the screen.", default: false, hidden: true },
+    perfStaticNames: { type: OptionType.BOOLEAN, description: "Performance: keep pinned DM names and tags still.", default: false, hidden: true },
     perfNoBlur: { type: OptionType.BOOLEAN, description: "Performance: turn off blur effects.", default: false, hidden: true },
     perfNoProfileEffects: { type: OptionType.BOOLEAN, description: "Performance: hide profile effects.", default: false, hidden: true },
     perfNoDecorations: { type: OptionType.BOOLEAN, description: "Performance: hide avatar decorations.", default: false, hidden: true },
@@ -1242,6 +1244,7 @@ const plugin = definePlugin({
     },
 
     start() {
+        startFonts();
         if (!ACCESS_ENABLED) { this.startContents(); return; }
         startAccess(result => {
             const reload = rememberAccess(result);
@@ -1299,6 +1302,7 @@ const plugin = definePlugin({
     },
 
     stop() {
+        stopFonts();
         stopAccess();
         if (qolRunning) this.stopContents();
     },

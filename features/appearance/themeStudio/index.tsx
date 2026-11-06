@@ -20,6 +20,7 @@ import { openThemeStudio } from "./Panel";
 import { CODE_PREFIX, CODE_RE, readShared } from "./share";
 import { putTheme, setActive, startThemes, stopThemes } from "./store";
 import { OWN_MARK } from "./theme";
+import { SonataGlyph } from "../../../utilities/icons";
 
 /** A theme someone shared in chat: what it looks like, and a button to add it. */
 function SharedTheme({ code }: { code: string; }) {
@@ -29,7 +30,7 @@ function SharedTheme({ code }: { code: string; }) {
     return (
         <div className="vc-ts-shared">
             <span className="vc-ts-shared-swatch" style={{ background: `linear-gradient(135deg, ${theme.bg} 0 50%, ${theme.accent} 50% 75%, ${theme.accent2 ?? theme.accent} 75%)` }} />
-            <span className="vc-ts-shared-text"><b>🎨 {theme.name}</b><span>A Theme Studio theme</span></span>
+            <span className="vc-ts-shared-text"><b><SonataGlyph name="palette" /> {theme.name}</b><span>A Theme Studio theme</span></span>
             {added
                 ? <button type="button" className="vc-ts-shared-btn" onClick={() => openThemeStudio()}>Open Theme Studio</button>
                 : <button type="button" className="vc-ts-shared-btn" onClick={() => { putTheme(theme); setActive(theme.id); setAdded(true); showToast(`"${theme.name}" is on — change it in Theme Studio`, "success"); }}>Try it</button>}

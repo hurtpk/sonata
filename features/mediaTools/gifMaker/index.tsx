@@ -19,16 +19,24 @@ import { EquicordDevs } from "@utils/constants";
 import definePlugin, { IconProps } from "@utils/types";
 import { Menu } from "@webpack/common";
 
-import { fetchAllGoogleFonts } from "./fonts";
+import { openSection, registerSection } from "../../_shared/Hub";
+import { lazyWindow } from "../../_shared/Window";
 import type { MediaInput } from "./render/source";
 import { settings } from "./settings";
 import css from "./styles.css?managed";
-import { openEditor } from "./ui/Editor";
-import { openStart } from "./ui/Gallery";
+
 import { getMediaInfo } from "./utils/contextMenu";
 import { collectCandidateUrls, ensureGifUrl, isLikelyVideoUrl, normalizeUrl, orderCandidateUrls, stripDiscordFormatParam } from "./utils/gifPicker";
 
 const GIFMAKER_ID = "vc-gifmaker";
+const GifStart = lazyWindow("GIF Maker", () => import("./ui/Gallery").then(m => m.GifStart));
+const GifEdit = lazyWindow("GIF Maker", () => import("./ui/Editor").then(m => m.GifEditor));
+const openStart = () => openSection("mediaTools", "gifMaker", props => <GifStart modalProps={props} />);
+const openEditor = (inputs: MediaInput[], opts: { startAt?: number; } = {}) => openSection("mediaTools", "gifMaker", props => <GifEdit modalProps={props} inputs={inputs} startAt={opts.startAt} />);
+registerSection("mediaTools", {
+    id: "gifMaker", feature: "gifMaker", name: "GIF Maker", sub: "From a video, GIF or pictures",
+    render: (props, input) => <GifStart modalProps={props} file={input?.file} />,
+});
 
 const IMAGE = /^image\//;
 
@@ -170,7 +178,4 @@ export default definePlugin({
     chatBarButton: { icon: GifIcon, render: GifButton },
     openSettingsModal: () => openStart(),
 
-    start() {
-        void fetchAllGoogleFonts();
-    },
 });

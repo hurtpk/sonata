@@ -14,6 +14,7 @@ import { openSection, registerSection } from "../../_shared/Hub";
 import { ToolHero } from "../../_shared/ToolHero";
 import { Window } from "../../_shared/Window";
 import { allSounds, CATEGORIES, Category, clearSounds, customSounds, exportPack, importPack, isAudioFile, onSoundsChange, preview, previewOriginal, removeSound, setSoundFile, SoundInfo, stopPreview, updateSound } from "./sounds";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const ss = classNameFactory("vc-sstudio-");
@@ -117,11 +118,11 @@ function StudioModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         </button>
                     ))}
                 </div>
-                <div className={cl("hint")}>Press ▶ on the left to hear Discord's sound. Upload a file, or drop one onto a row. Your sound plays at Discord's notification volume, scaled by its own slider.</div>
+                <div className={cl("hint")}>Press <SonataGlyph name="play" /> on the left to hear Discord's sound. Upload a file, or drop one onto a row. Your sound plays at Discord's notification volume, scaled by its own slider.</div>
 
                 <div className={ss("list")}>
                     {shown.map(s => <SoundRow key={s.id} sound={s} onError={setError} />)}
-                    {!shown.length && <div className={cl("empty")}><span className={cl("empty-icon")}>🔇</span>{category === "mine" ? "You haven't changed any sounds yet." : `No sound matches “${query}”.`}</div>}
+                    {!shown.length && <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="volumeMute" /></span>{category === "mine" ? "You haven't changed any sounds yet." : `No sound matches “${query}”.`}</div>}
                 </div>
 
                 {error && <div className={cl("error")}>{error}</div>}

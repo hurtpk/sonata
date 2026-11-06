@@ -28,6 +28,7 @@ import { imagesOf, scan } from "../qrCodes/AutoQr";
 import { openChecker } from "./Checker";
 import { checkAny, fileWarning, newAccountWarning, qrWarning, shield, talkWarning, worthResolving } from "./checks";
 import { dashboardSection, openDashboard } from "./Dashboard";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const settings = defineFeatureSettings("scamShield", {
     checker: {
@@ -35,8 +36,8 @@ const settings = defineFeatureSettings("scamShield", {
         description: "",
         component: () => (
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => openShield()}>🛡️ Open Scam Shield</button>
-                <button type="button" className="vc-tool-btn" onClick={() => openChecker()}>🔍 Check a link</button>
+                <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => openShield()}><SonataGlyph name="shield" /> Open Scam Shield</button>
+                <button type="button" className="vc-tool-btn" onClick={() => openChecker()}><SonataGlyph name="search" /> Check a link</button>
                 <span className="vc-tool-hint">See what it's protected you from, and check any link yourself.</span>
             </div>
         ),

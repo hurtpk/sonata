@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "@webpack/common";
 
 import { ago, cardActions, fetchInventoryAt, fetchPlayerHistory, RbxInventoryDay, RbxPlayerHistory, short, sources } from "./data";
 import { LineChart, Range } from "./History";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const DAY = 86400;
@@ -58,9 +59,9 @@ export function PlayerValue({ userId }: { userId: string; }) {
     }, [p, metric, range]);
 
     if (!sources.rolimons) return null;
-    if (state.error) return <span className={rb("muted")}>💎 Couldn't get their Rolimons details: {state.error}</span>;
+    if (state.error) return <span className={rb("muted")}><SonataGlyph name="gem" /> Couldn't get their Rolimons details: {state.error}</span>;
     if (!p) return <div className={rb("loading")}><span className={rb("spin")} /> Asking Rolimons…</div>;
-    if (!p.tracked) return <span className={rb("muted")}>💎 Rolimons hasn't seen this player yet, so there's no value history or last-online time.</span>;
+    if (!p.tracked) return <span className={rb("muted")}><SonataGlyph name="gem" /> Rolimons hasn't seen this player yet, so there's no value history or last-online time.</span>;
 
     const hasHistory = p.t.length > 1 && (p.peakValue || p.peakRap);
     const items = allItems ? p.top : p.top.slice(0, 6);
@@ -69,7 +70,7 @@ export function PlayerValue({ userId }: { userId: string; }) {
         <div className={rb("history")}>
             <div className={rb("outfit-head")}>
                 <div>
-                    <b>💎 From Rolimons</b>
+                    <b><SonataGlyph name="gem" /> From Rolimons</b>
                     <span>What Roblox doesn't show: limiteds' worth, the highest it's been, and when they were last on.</span>
                 </div>
             </div>
@@ -105,7 +106,7 @@ export function PlayerValue({ userId }: { userId: string; }) {
                     <div className={rb("wears")}>
                         {items.map(i => (
                             <button key={i.id} type="button" className={classes(rb("wear"), rb("wear-btn"))} title={`${i.name} — open it`} onClick={() => cardActions.lookup(`https://www.roblox.com/catalog/${i.id}`)}>
-                                {i.image ? <img src={i.image} alt="" loading="lazy" /> : <span className={rb("img-none")}>💎</span>}
+                                {i.image ? <img src={i.image} alt="" loading="lazy" /> : <span className={rb("img-none")}><SonataGlyph name="gem" /></span>}
                                 <b>{i.name}</b>
                                 <span>RAP R$ {short(i.rap)}{i.copies > 1 ? ` · ×${i.copies}` : ""}</span>
                                 <i className={classes(rb("price"), rb("price-lim"))}>R$ {short(i.value)}<small> value</small></i>
@@ -188,7 +189,7 @@ function BackThen({ userId, p, t, onClose }: { userId: string; p: RbxPlayerHisto
                                         const gone = !ownedNow.has(i.id);
                                         return (
                                             <button key={i.id} type="button" className={classes(rb("wear"), rb("wear-btn"), gone && rb("then-new"))} title={`${i.name}${gone ? " — they don't have it any more" : ""} — open it`} onClick={() => cardActions.lookup(`https://www.roblox.com/catalog/${i.id}`)}>
-                                                {i.image ? <img src={i.image} alt="" loading="lazy" /> : <span className={rb("img-none")}>💎</span>}
+                                                {i.image ? <img src={i.image} alt="" loading="lazy" /> : <span className={rb("img-none")}><SonataGlyph name="gem" /></span>}
                                                 <b>{i.name}</b>
                                                 <span>{i.serials.length ? `#${i.serials.slice(0, 3).join(", #")}${i.serials.length > 3 ? "…" : ""} · ` : ""}RAP R$ {short(i.rap)}{i.copies > 1 ? ` · ×${i.copies}` : ""}</span>
                                                 <i className={classes(rb("price"), rb("price-lim"))}>R$ {short(i.value)}<small> value</small></i>

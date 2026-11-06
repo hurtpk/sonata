@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "@webpack/common";
 import { getBytes } from "../../_shared/media";
 import { openQrScan } from "./Panel";
 import { checkLink, readQrImage } from "./qr";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-qr-");
 const MAX_IMAGES = 4;
@@ -69,7 +70,7 @@ function Chip({ url }: { url: string; }) {
     const warn = !!link?.warnings.length;
     return (
         <button type="button" className={classes(cl("chip"), warn && cl("chip-warn"))} title={link ? `${link.url}${warn ? `\n⚠ ${link.warnings.join("\n⚠ ")}` : ""}` : text} onClick={() => openQrScan(url)}>
-            <span aria-hidden>{warn ? "⚠️" : "🔳"}</span>
+            <span aria-hidden>{warn ? <SonataGlyph name="warning" /> : <SonataGlyph name="qrCode" />}</span>
             <b>QR code</b>
             <span>{link ? `→ ${link.host}` : `“${text.slice(0, 60)}${text.length > 60 ? "…" : ""}”`}</span>
             {warn && <i>check before opening</i>}

@@ -16,6 +16,7 @@ import { Entry, kindOf, tidy,title } from "./kinds";
 import { allRequests, CURRENCIES, loadRequests, money, payLink, PayRequest, putRequest, removeRequest, togglePaid, useRequests } from "./payRequests";
 import { requestCardPng } from "./requestCard";
 import { qrPrefs } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const hex6 = (h: string) => /^#[0-9a-f]{3}$/i.test(h) ? `#${[...h.slice(1)].map(c => c + c).join("")}` : h;
 const myName = () => qrPrefs.name || (UserStore.getCurrentUser() as any)?.globalName || UserStore.getCurrentUser()?.username || "";
@@ -103,7 +104,7 @@ function NewRequest({ entries, onDone }: { entries: Entry[]; onDone(): void; }) 
                 </div>
                 <label className="vc-tool-field">
                     <span className="vc-tool-label">What for</span>
-                    <input className="vc-tool-input" value={note} maxLength={60} placeholder="pizza 🍕, tickets, the hotel…" onChange={e => setNote(e.currentTarget.value)} />
+                    <input className="vc-tool-input" value={note} maxLength={60} placeholder="Pizza, tickets, the hotel…" onChange={e => setNote(e.currentTarget.value)} />
                 </label>
                 <div className="vc-tool-field">
                     <span className="vc-tool-label">Ways to pay</span>
@@ -141,7 +142,7 @@ function NewRequest({ entries, onDone }: { entries: Entry[]; onDone(): void; }) 
                 </div>
             </div>
             <div className="vc-wallet-req-preview">
-                {preview ? <img src={preview} alt="Your card" /> : <div className="vc-tool-empty"><span className="vc-tool-empty-icon">💸</span>{entries.length ? "Type an amount to see your card." : "Add a payment app or address first."}</div>}
+                {preview ? <img src={preview} alt="Your card" /> : <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="wallet" /></span>{entries.length ? "Type an amount to see your card." : "Add a payment app or address first."}</div>}
                 <div className="vc-wallet-req-btns">
                     <button type="button" className="vc-tool-btn" onClick={onDone}>Cancel</button>
                     <button type="button" className="vc-tool-btn" disabled={!valid || busy} onClick={() => void copy()}>Copy card</button>
@@ -175,7 +176,7 @@ function RequestCard({ r, entries }: { r: PayRequest; entries: Entry[]; }) {
             {total > 0 ? (
                 <>
                     <div className="vc-wallet-reqbar"><i style={{ width: `${paid / total * 100}%` }} /></div>
-                    <span className="vc-tool-hint">{done ? `Everyone's paid 🎉 · ${money(r.amount * total, r.currency)} back` : `${paid} of ${total} paid · ${money(r.amount * paid, r.currency)} of ${money(r.amount * total, r.currency)}`}</span>
+                    <span className="vc-tool-hint">{done ? `Everyone's paid · ${money(r.amount * total, r.currency)} back` : `${paid} of ${total} paid · ${money(r.amount * paid, r.currency)} of ${money(r.amount * total, r.currency)}`}</span>
                     <div className="vc-wallet-payers">
                         {r.people.map(p => (
                             <button key={p.name} type="button" className={classes("vc-wallet-payer", p.paid && "vc-wallet-payer-paid")} onClick={() => togglePaid(r.id, p.name)}
@@ -187,7 +188,7 @@ function RequestCard({ r, entries }: { r: PayRequest; entries: Entry[]; }) {
                 </>
             ) : <span className="vc-tool-hint">Nobody added to track.</span>}
             <div className="vc-tool-row">
-                {!done && total > 0 && <button type="button" className="vc-tool-btn" onClick={remind}>🔔 Remind</button>}
+                {!done && total > 0 && <button type="button" className="vc-tool-btn" onClick={remind}><SonataGlyph name="bell" /> Remind</button>}
                 <span className="vc-tool-spacer" />
                 {sure
                     ? <button type="button" className="vc-tool-btn vc-wallet-sure" onClick={() => removeRequest(r.id)}>Delete</button>
@@ -215,7 +216,7 @@ export function RequestsView({ entries }: { entries: Entry[]; }) {
             {making ? <NewRequest entries={entries} onDone={() => setMaking(false)} /> : requests.length ? (
                 <div className="vc-wallet-reqgrid">{requests.map(r => <RequestCard key={r.id} r={r} entries={entries} />)}</div>
             ) : (
-                <div className="vc-tool-empty"><span className="vc-tool-empty-icon">💸</span>No requests yet.</div>
+                <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="wallet" /></span>No requests yet.</div>
             )}
         </div>
     );

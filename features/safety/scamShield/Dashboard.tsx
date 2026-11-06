@@ -18,6 +18,7 @@ import { openSection, registerSection } from "../../_shared/Hub";
 import { clearLog, LogEntry, logPrefs, removeLog, useLog } from "../../_shared/scamLog";
 import { Window } from "../../_shared/Window";
 import { openChecker } from "./Checker";
+import { SonataGlyph } from "../../../utilities/icons";
 
 export interface DashboardHooks { trusted(): string[]; untrust(site: string): void; }
 
@@ -63,7 +64,7 @@ function Row({ e, onClose }: { e: LogEntry; onClose(): void; }) {
     const isLink = !e.kind || e.kind === "link" || e.kind === "qr";
     return (
         <div className={classes("vc-shield-row", `vc-shield-row-${lv.cls}`)}>
-            <span className="vc-shield-row-icon" aria-hidden>{KIND_ICON[e.kind ?? "link"] ?? "🔗"}</span>
+            <span className="vc-shield-row-icon" aria-hidden><SonataGlyph name={KIND_ICON[e.kind ?? "link"] ?? "link"} /></span>
             <div className="vc-shield-row-main">
                 <div className="vc-shield-row-top">
                     <b className="vc-shield-row-title">{titleOf(e)}</b>
@@ -80,8 +81,8 @@ function Row({ e, onClose }: { e: LogEntry; onClose(): void; }) {
             </div>
             <div className="vc-shield-row-actions">
                 {e.where?.messageId && <button type="button" className="vc-tool-icon" title="Go to the message" onClick={() => { onClose(); jump(e); }}>↗</button>}
-                {isLink && e.url && <button type="button" className="vc-tool-icon" title="Check it again" onClick={() => openChecker(e.url)}>🔍</button>}
-                {isLink && e.url && <button type="button" className="vc-tool-icon" title="Copy the link (don't open it!)" onClick={() => copyWithToast(e.url, "Link copied")}>📋</button>}
+                {isLink && e.url && <button type="button" className="vc-tool-icon" title="Check it again" onClick={() => openChecker(e.url)}><SonataGlyph name="search" /></button>}
+                {isLink && e.url && <button type="button" className="vc-tool-icon" title="Copy the link (don't open it!)" onClick={() => copyWithToast(e.url, "Link copied")}><SonataGlyph name="clipboard" /></button>}
                 <button type="button" className="vc-tool-icon" title="Remove from history" onClick={() => void removeLog(e.id)}>✕</button>
             </div>
         </div>
@@ -133,7 +134,7 @@ function DashboardModal({ modalProps, hooks }: { modalProps: RenderModalProps; h
                         <b>{headline}</b>
                         <span>{protectedList.length ? `In ${period}: ${stopped.length} click${stopped.length === 1 ? "" : "s"} stopped and ${warned.length} warning${warned.length === 1 ? "" : "s"} shown under messages.` : `Scam Shield is watching your chats. Anything it catches in ${period} shows up here.`}</span>
                     </div>
-                    <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => openChecker()}>🔍 Check a link</button>
+                    <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => openChecker()}><SonataGlyph name="search" /> Check a link</button>
                 </div>
 
                 <div className="vc-shield-stats">
@@ -145,9 +146,9 @@ function DashboardModal({ modalProps, hooks }: { modalProps: RenderModalProps; h
 
                 <div className="vc-shield-bar">
                     <div className="vc-tool-tabs">
-                        <button type="button" className={classes("vc-tool-tab", tab === "protected" && "vc-tool-tab-on")} onClick={() => setTab("protected")}>🛡️ Protected you · {protectedList.length}</button>
-                        <button type="button" className={classes("vc-tool-tab", tab === "checked" && "vc-tool-tab-on")} onClick={() => setTab("checked")}>🔍 You checked · {checkedList.length}</button>
-                        <button type="button" className={classes("vc-tool-tab", tab === "trusted" && "vc-tool-tab-on")} onClick={() => setTab("trusted")}>✅ Trusted sites · {trusted.length}</button>
+                        <button type="button" className={classes("vc-tool-tab", tab === "protected" && "vc-tool-tab-on")} onClick={() => setTab("protected")}><SonataGlyph name="shield" /> Protected you · {protectedList.length}</button>
+                        <button type="button" className={classes("vc-tool-tab", tab === "checked" && "vc-tool-tab-on")} onClick={() => setTab("checked")}><SonataGlyph name="search" /> You checked · {checkedList.length}</button>
+                        <button type="button" className={classes("vc-tool-tab", tab === "trusted" && "vc-tool-tab-on")} onClick={() => setTab("trusted")}><SonataGlyph name="checkCircle" /> Trusted sites · {trusted.length}</button>
                     </div>
                     <span className="vc-tool-spacer" />
                     {tab !== "trusted" && (
@@ -170,12 +171,12 @@ function DashboardModal({ modalProps, hooks }: { modalProps: RenderModalProps; h
 
                 {tab === "protected" && (
                     shownProtected.length ? <div className="vc-shield-list">{shownProtected.map(e => <Row key={e.id} e={e} onClose={modalProps.onClose} />)}</div>
-                        : <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🛡️</span>{q || filter !== "all" ? "Nothing matches that." : `Nothing caught in ${period} — when Scam Shield warns you about a link, file or message, it shows up here.`}</div>
+                        : <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="shield" /></span>{q || filter !== "all" ? "Nothing matches that." : `Nothing caught in ${period} — when Scam Shield warns you about a link, file or message, it shows up here.`}</div>
                 )}
 
                 {tab === "checked" && (
                     shownChecked.length ? <div className="vc-shield-list">{shownChecked.map(e => <Row key={e.id} e={e} onClose={modalProps.onClose} />)}</div>
-                        : <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🔍</span>{q ? "Nothing matches that." : <>Links you check yourself show up here. <button type="button" className="vc-tool-link" onClick={() => openChecker()}>Check one now</button></>}</div>
+                        : <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="search" /></span>{q ? "Nothing matches that." : <>Links you check yourself show up here. <button type="button" className="vc-tool-link" onClick={() => openChecker()}>Check one now</button></>}</div>
                 )}
 
                 {tab === "trusted" && (
@@ -183,13 +184,13 @@ function DashboardModal({ modalProps, hooks }: { modalProps: RenderModalProps; h
                         <div className="vc-tool-list">
                             {trusted.map(site => (
                                 <div key={site} className="vc-tool-item">
-                                    <span className="vc-shield-row-icon" aria-hidden>✅</span>
+                                    <span className="vc-shield-row-icon" aria-hidden><SonataGlyph name="checkCircle" /></span>
                                     <span className="vc-tool-item-main"><span className="vc-tool-item-title">{site}</span><span className="vc-tool-item-sub">Scam Shield won't warn about this website</span></span>
                                     <button type="button" className="vc-tool-btn" onClick={() => { hooks.untrust(site); setTrusted(hooks.trusted()); }}>Stop trusting</button>
                                 </div>
                             ))}
                         </div>
-                    ) : <div className="vc-tool-empty"><span className="vc-tool-empty-icon">✅</span>No trusted sites. If Scam Shield warns about a site you know is fine, choose “Trust” in its popup.</div>
+                    ) : <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="checkCircle" /></span>No trusted sites. If Scam Shield warns about a site you know is fine, choose “Trust” in its popup.</div>
                 )}
 
                 <div className="vc-shield-foot">

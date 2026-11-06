@@ -36,6 +36,7 @@ import { fillReplyTexts, PRIVATE_STYLES, privateConfig, PrivateRepliesSetup, syn
 import { TemplateData, TemplatesSection } from "./templates";
 import { showOnlyMe, TestButton, TestChannel, testWebhookFor } from "./test";
 import { openWebhookPicker } from "./webhookPicker";
+import { SonataGlyph, SonataLabel } from "../../../utilities/icons";
 
 // The editor is the only visible option. The three defaults below are
 // hidden because the editor already has its own Webhook URL / Username /
@@ -1066,7 +1067,7 @@ function Toast({ toast, onClose }: { toast: ToastState; onClose: () => void }) {
                 animation: "vc-embedsender-toast-in 0.2s ease",
             }}
         >
-            <span style={{ flexShrink: 0 }}>{isSuccess ? "✅" : "⚠️"}</span>
+            <span style={{ flexShrink: 0 }}>{isSuccess ? <SonataGlyph name="checkCircle" /> : <SonataGlyph name="warning" />}</span>
             <span style={{ flex: 1, wordBreak: "break-word" }}>{toast.message}</span>
             <button
                 type="button"
@@ -1364,7 +1365,7 @@ function PreviewButtons({ buttons }: { buttons: MessageButton[]; }) {
                     background: b.kind === "private" ? PRIVATE_STYLES.find(x => x.id === (b.style ?? 1))!.color : "#4e5058", borderRadius: 6, padding: "6px 12px",
                     fontSize: 14, fontWeight: 500, color: "#fff",
                 }}>
-                    <ButtonEmoji token={b.emoji} />{b.label || "\u200b"} {b.kind === "private" ? "🔒" : <LinkIcon />}
+                    <ButtonEmoji token={b.emoji} />{b.label || "\u200b"} {b.kind === "private" ? <SonataGlyph name="lock" /> : <LinkIcon />}
                 </div>
             ))}
         </div>
@@ -1389,7 +1390,7 @@ function PreviewAttachments({ attachments }: { attachments: PreviewAttachment[];
                                 borderRadius: 8, background: "rgba(0,0,0,0.3)", fontSize: 12, opacity: 0.8, padding: 8,
                                 textAlign: "center", wordBreak: "break-all",
                             }}>
-                                ▶ {a.name}
+                                <SonataGlyph name="play" /> {a.name}
                             </div>
                         ))}
                 </div>
@@ -1970,7 +1971,7 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
                 <nav className="vc-es2-tabs" role="tablist">
                     {tabs.map(([id, label, n]) => (
                         <button key={id} type="button" role="tab" aria-selected={tab === id} className={"vc-es2-tab" + (tab === id ? " vc-es2-tab-on" : "")} onClick={() => setTab(id)}>
-                            {label}{n > 0 && <span className="vc-es2-tab-n">{n}</span>}
+                            <SonataLabel label={label} />{n > 0 && <span className="vc-es2-tab-n">{n}</span>}
                         </button>
                     ))}
                 </nav>
@@ -2018,10 +2019,10 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
                         <Card title="Builders" hint="Make something, then it drops into Compose.">
                             {!builder && (
                                 <div className="vc-es2-builder-pick">
-                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("rules")}><span>📜</span><b>Rules</b><small>Numbered rules with an “I agree” button</small></button>
-                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("banner")}><span>🖼️</span><b>Banner</b><small>A header picture with your title and colours</small></button>
-                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("hub")}><span>🧭</span><b>Navigation hub</b><small>A “start here” post linking to your channels</small></button>
-                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("roblox")}><span>🎮</span><b>Roblox game</b><small>Paste a game link — its picture, players and a Play button</small></button>
+                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("rules")}><span><SonataGlyph name="rules" /></span><b>Rules</b><small>Numbered rules with an “I agree” button</small></button>
+                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("banner")}><span><SonataGlyph name="image" /></span><b>Banner</b><small>A header picture with your title and colours</small></button>
+                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("hub")}><span><SonataGlyph name="compass" /></span><b>Navigation hub</b><small>A “start here” post linking to your channels</small></button>
+                                    <button type="button" className="vc-es2-builder-opt" onClick={() => setBuilder("roblox")}><span><SonataGlyph name="controller" /></span><b>Roblox game</b><small>Paste a game link — its picture, players and a Play button</small></button>
                                 </div>
                             )}
                             {builder === "rules" && (
@@ -2111,7 +2112,7 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
                                 </div>
                                 {loadedMessageId && (
                                     <div className="vc-es2-note">
-                                        ✏️ Editing message {loadedMessageId} — Send will update it.
+                                        <SonataGlyph name="pencil" /> Editing message {loadedMessageId} — Send will update it.
                                         <button type="button" className="vc-tool-link" onClick={() => { setLoadedMessageId(null); setKeptFiles([]); }}>Send as new instead</button>
                                     </div>
                                 )}
@@ -2169,7 +2170,7 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
                                                         <div className="vc-es2-row">
                                                             <input type="color" className="vc-es2-swatch" value={colorHex} onChange={e => updateEmbed(idx, { color: e.target.value.replace("#", "").toUpperCase() })} />
                                                             <input className="vc-tool-input vc-es2-grow vc-es2-mono" value={embed.color} maxLength={7} onChange={e => updateEmbed(idx, { color: e.target.value.replace("#", "") })} />
-                                                            <button type="button" className={"vc-tool-btn" + (openColour === idx ? " vc-es2-btn-on" : "")} title="Colours from the server, your picture, and more" onClick={() => setOpenColour(openColour === idx ? null : idx)}>🎨</button>
+                                                            <button type="button" className={"vc-tool-btn" + (openColour === idx ? " vc-es2-btn-on" : "")} title="Colours from the server, your picture, and more" onClick={() => setOpenColour(openColour === idx ? null : idx)}><SonataGlyph name="palette" /></button>
                                                         </div>
                                                     </Field>
                                                 </div>
@@ -2232,7 +2233,7 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
 
                             <Card title="Buttons" hint={`${buttons.length}/5`} folded={folded("msg-buttons", buttons.length > 0)} onToggle={() => fold("msg-buttons", buttons.length > 0)}>
                                 <div className="vc-tool-hint">
-                                    🔗 Link buttons open a website. 🔒 Private buttons show the presser a message only they can see (set up in the Private buttons tab).
+                                    <SonataGlyph name="link" /> Link buttons open a website. <SonataGlyph name="lock" /> Private buttons show the presser a message only they can see (set up in the Private buttons tab).
                                     {layout === "classic" ? " With classic embeds, buttons sit below the embed." : " Each one can sit inside the card or in a row below it."}
                                 </div>
                                 {buttons.map((b, i) => (
@@ -2243,11 +2244,11 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
                                                     <button key={k} type="button" role="radio" aria-checked={(b.kind ?? "link") === k}
                                                         className={"vc-embedsender-placement-opt" + ((b.kind ?? "link") === k ? " vc-embedsender-placement-opt-active" : "")}
                                                         title={k === "link" ? "Opens a website" : "Shows a message only the presser can see"}
-                                                        onClick={() => updateButton(i, { kind: k })}>{icon}</button>
+                                                        onClick={() => updateButton(i, { kind: k })}><SonataGlyph name={icon} /></button>
                                                 ))}
                                             </div>
                                             <button type="button" className={"vc-es2-btn-emoji" + (emojiFor === i ? " vc-es2-btn-emoji-on" : "")} title={b.emoji ? "Change the emoji" : "Add an emoji"} onClick={() => setEmojiFor(emojiFor === i ? null : i)}>
-                                                {b.emoji ? <ButtonEmoji token={b.emoji} size={20} /> : <span className="vc-es2-btn-emoji-empty">☺</span>}
+                                                {b.emoji ? <ButtonEmoji token={b.emoji} size={20} /> : <span className="vc-es2-btn-emoji-empty"><SonataGlyph name="smile" /></span>}
                                             </button>
                                             <input className="vc-tool-input vc-es2-grow" placeholder="Label" maxLength={80} value={b.label} onChange={e => updateButton(i, { label: e.target.value })} />
                                             {b.kind === "private" ? (
@@ -2341,7 +2342,7 @@ function EmbedEditorPanel({ modalProps }: { modalProps?: ModalProps; } = {}) {
                     <div className="vc-tool-footer">
                         <span className="vc-tool-spacer" />
                         {testButton}
-                        <button type="button" className="vc-tool-btn" onClick={() => setTab("schedule")}>⏰ Send later</button>
+                        <button type="button" className="vc-tool-btn" onClick={() => setTab("schedule")}><SonataGlyph name="alarm" /> Send later</button>
                         <button type="button" className="vc-tool-btn" onClick={() => { persist(); modalProps.onClose(); }}>Save &amp; close</button>
                         <button type="button" className="vc-tool-btn vc-tool-primary" onClick={handleSend}>{sendLabel}</button>
                     </div>

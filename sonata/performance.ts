@@ -40,6 +40,16 @@ export interface PerfOption {
 /** Sonata's own on/off options (stored in Sonata's settings). */
 export const OPTIONS: PerfOption[] = [
     {
+        key: "perfStaticNames",
+        title: "Keep pinned DM names and tags still",
+        detail: "Keeps your colors and gradients while removing animated and glowing effects.",
+        impact: "small",
+        recommended: true,
+        css: `:is(.vc-pindms-name, .vc-ptag), .vc-pindms-name-text, .vc-pindms-name::after, .vc-pindms-name-text::after, .vc-ptag::before, .vc-ptag::after { animation: none !important; }
+            :is(.vc-pindms-name-text, .vc-ptag).vc-namefx-glow, .vc-namefx-glow .vc-pindms-name-text { filter: none !important; }
+            :is(.vc-pindms-name, .vc-ptag) :is(.vc-namefx-sparkles, .vc-namefx-neon-rim, .vc-namefx-frost-rim, .vc-namefx-ripple-ring, .vc-namefx-orbit-dots, .vc-namefx-scanline-overlay), .vc-namefx-shine .vc-pindms-name-text::after, .vc-ptag.vc-namefx-shine::before { display: none !important; }`,
+    },
+    {
         key: "perfLazyChat",
         title: "Only draw messages you can see",
         detail: "Discord keeps hundreds of messages laid out even when they're far off screen. This skips drawing them until you scroll near — long, busy channels scroll and switch much faster. Experimental: if scrolling up through old messages jumps around, turn it off.",
@@ -271,6 +281,28 @@ export function stopPerformance() {
     GuildMemberCountStore.removeChangeListener(updateBigGuild);
     document.documentElement.classList.remove("sonata-perf-paused", "sonata-perf-big-guild");
     document.getElementById(STYLE_ID)?.remove();
+}
+
+export function scheduleBackgroundCheck(check: () => void, interval: number, hiddenInterval: number, firstDelay = interval) {
+    const started = Date.now();
+    let lastCheck: number | undefined;
+    let timer: number;
+    const schedule = () => {
+        clearTimeout(timer);
+        const delay = document.hidden ? hiddenInterval : interval;
+        const due = lastCheck == null ? started + (document.hidden ? Math.min(hiddenInterval, Math.max(firstDelay, 5 * 60_000)) : firstDelay) : lastCheck + delay;
+        timer = window.setTimeout(() => {
+            lastCheck = Date.now();
+            schedule();
+            check();
+        }, Math.max(0, due - Date.now()));
+    };
+    document.addEventListener("visibilitychange", schedule);
+    schedule();
+    return () => {
+        clearTimeout(timer);
+        document.removeEventListener("visibilitychange", schedule);
+    };
 }
 
 // ─── Starting Sonata features later ───

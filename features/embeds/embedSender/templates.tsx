@@ -8,6 +8,7 @@
 // announcement, a giveaway) and load it back into the editor in one click.
 
 import { React, useMemo, useState } from "@webpack/common";
+import { SonataGlyph } from "../../../utilities/icons";
 
 export interface TemplateData {
     content: string;
@@ -180,7 +181,7 @@ export function TemplatesSection({ read, write, current, apply, blankEmbed, from
             <div className="vc-embedsender-tpl-starters">
                 <span className="vc-tool-hint">Start from:</span>
                 {starters(blankEmbed).map(s => (
-                    <button key={s.name} type="button" className="vc-tool-chip" onClick={() => use(s.name, s.data)}>{s.icon} {s.name}</button>
+                    <button key={s.name} type="button" className="vc-tool-chip" onClick={() => use(s.name, s.data)}><SonataGlyph name={s.icon} /> {s.name}</button>
                 ))}
                 <span className="vc-tool-spacer" />
                 <button type="button" className="vc-tool-link" onClick={() => setImporting(i => !i)}>{importing ? "Cancel import" : "Import…"}</button>

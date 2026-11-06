@@ -19,6 +19,7 @@ import { MessagesView } from "./Messages";
 import { OverviewView } from "./Overview";
 import { PeopleView } from "./People";
 import { conversationPicture, MAX_PICTURE } from "./picture";
+import { SonataGlyph, SonataLabel } from "../../../../../utilities/icons";
 
 function BackendProvider({ value, children }: { value: Backend; children: React.ReactNode; }) {
     const Ctx = backendCtx();
@@ -286,11 +287,11 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                     {sideIndex && <Side index={sideIndex} scope={scope} onScope={setScope} total={total} browseAll={paged && !directory ? () => setDirectory(true) : undefined} />}
 
                     <main className={cl("main")}>
-                        {!index && !failed && <div className={classes("vc-tool-empty", cl("center"))}><span className="vc-tool-empty-icon">⏳</span>Opening your logs…</div>}
-                        {failed && <div className={classes("vc-tool-empty", cl("center"))}><span className="vc-tool-empty-icon">⚠️</span>Couldn't open the logs: {failed}<button type="button" className="vc-tool-btn" onClick={load}>Try again</button></div>}
+                        {!index && !failed && <div className={classes("vc-tool-empty", cl("center"))}><span className="vc-tool-empty-icon"><SonataGlyph name="hourglass" /></span>Opening your logs…</div>}
+                        {failed && <div className={classes("vc-tool-empty", cl("center"))}><span className="vc-tool-empty-icon"><SonataGlyph name="warning" /></span>Couldn't open the logs: {failed}<button type="button" className="vc-tool-btn" onClick={load}>Try again</button></div>}
                         {index && total === 0 && (
                             <div className={classes("vc-tool-empty", cl("center"))}>
-                                <span className="vc-tool-empty-icon">📭</span>
+                                <span className="vc-tool-empty-icon"><SonataGlyph name="inbox" /></span>
                                 <b>Nothing logged yet</b>
                                 Deleted and edited messages, and pings that vanish, will show up here as they happen.
                                 {backend.importOld && <><span className="vc-tool-hint">Used an older version? Bring its logs in — nothing here gets overwritten.</span><button type="button" className="vc-tool-btn" onClick={() => backend.importOld!().then(load)}>Import old logs</button></>}
@@ -311,14 +312,14 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                     {fresh > 0 && <button type="button" className={cl("fresh")} onClick={load}><i />{fresh} new · refresh</button>}
                                     <div className={classes("vc-tool-tabs", cl("views"))}>
                                         {([["overview", "📊 Overview"], ["messages", "💬 Messages"], ["media", "🖼️ Media"], ["people", "👥 People"]] as const).map(([v, label]) => (
-                                            <button key={v} type="button" className={classes("vc-tool-tab", view === v && "vc-tool-tab-on")} onClick={() => setView(v)}>{label}</button>
+                                            <button key={v} type="button" className={classes("vc-tool-tab", view === v && "vc-tool-tab-on")} onClick={() => setView(v)}><SonataLabel label={label} /></button>
                                         ))}
                                     </div>
                                 </div>
 
                                 <div className={cl("filters")}>
                                     <div className={cl("search")}>
-                                        <span>🔎</span>
+                                        <span><SonataGlyph name="search" /></span>
                                         <input ref={searchRef} value={typed} onChange={e => setTyped(e.currentTarget.value)} placeholder="Search words, names, files… or from:sam  in:general  has:image  before:2026-10-01  -is:edited" />
                                         {typed && <button type="button" className="vc-tool-icon" onClick={() => setTyped("")} title="Clear">✕</button>}
                                     </div>
@@ -331,29 +332,29 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                 <div className={cl("filters2")}>
                                     <div className="vc-tool-chips">
                                         {([["all", "Any time"], ["day", "24 hours"], ["week", "7 days"], ["month", "30 days"]] as [Period, string][]).map(([k, label]) => (
-                                            <button key={k} type="button" className={classes("vc-tool-chip", filters.period === k && "vc-tool-chip-on")} onClick={() => setFilter("period", k)}>{label}</button>
+                                            <button key={k} type="button" className={classes("vc-tool-chip", filters.period === k && "vc-tool-chip-on")} onClick={() => setFilter("period", k)}><SonataLabel label={label} /></button>
                                         ))}
                                         <span className={cl("sep")} />
                                         {([["star", "★ Starred"], ["media", "🖼️ Pictures"], ["file", "📎 Files"], ["link", "🔗 Links"], ["reply", "↪ Replies"], ["me", "@ Mentions me"], ["quick", "⚡ Gone in a minute"]] as [HasFilter, string][]).map(([k, label]) => (
-                                            <button key={k} type="button" className={classes("vc-tool-chip", filters.has.includes(k) && "vc-tool-chip-on")} onClick={() => toggleHas(k)}>{label}</button>
+                                            <button key={k} type="button" className={classes("vc-tool-chip", filters.has.includes(k) && "vc-tool-chip-on")} onClick={() => toggleHas(k)}><SonataLabel label={label} /></button>
                                         ))}
                                         {anyFilter && <button type="button" className="vc-tool-link" onClick={clearFilters}>Clear filters</button>}
                                     </div>
                                     <span className="vc-tool-spacer" />
                                     <button type="button" className="vc-tool-icon" title="Change the order" onClick={() => { setNewest(n => { savePrefs({ newest: !n }); return !n; }); }}>{newest ? "↓ Newest" : "↑ Oldest"}</button>
                                     {view === "messages" && backend.discordView && (
-                                        <button type="button" className="vc-tool-icon" title="Switch between cards and Discord's own look" onClick={() => setLook(l => { const n = l === "cards" ? "discord" : "cards"; savePrefs({ look: n }); return n; })}>{look === "cards" ? "🗂️ Cards" : "💬 Discord"}</button>
+                                        <button type="button" className="vc-tool-icon" title="Switch between cards and Discord's own look" onClick={() => setLook(l => { const n = l === "cards" ? "discord" : "cards"; savePrefs({ look: n }); return n; })}>{look === "cards" ? <><SonataGlyph name="folder" />{" Cards"}</> : <><SonataGlyph name="message" />{" Discord"}</>}</button>
                                     )}
-                                    {view === "messages" && <button type="button" className={classes("vc-tool-icon", picking && cl("icon-on"))} title="Pick several to export or delete" onClick={() => { setPicking(p => !p); setPicked(new Set()); }}>☑ Select</button>}
+                                    {view === "messages" && <button type="button" className={classes("vc-tool-icon", picking && cl("icon-on"))} title="Pick several to export or delete" onClick={() => { setPicking(p => !p); setPicked(new Set()); }}><SonataGlyph name="checkCircle" /> Select</button>}
                                     <div className={cl("pop-wrap")}>
                                         <button type="button" className="vc-tool-icon" title="Save these logs as a file" onClick={() => setExportOpen(o => !o)}>⤓ Export</button>
                                         {exportOpen && (
                                             <div className={cl("pop")}>
                                                 <span className="vc-tool-label">{picking && picked.size ? `${picked.size} selected` : `${filtered.length.toLocaleString()} shown`}</span>
-                                                <button type="button" onClick={() => void doPicture()}>🖼️ Picture<small>Looks like the chat (up to {MAX_PICTURE})</small></button>
-                                                <button type="button" onClick={() => doExport("txt")}>📝 Text<small>Easy to read</small></button>
-                                                <button type="button" onClick={() => doExport("csv")}>📊 Spreadsheet<small>Opens in Excel or Sheets</small></button>
-                                                <button type="button" onClick={() => doExport("json")}>🧩 JSON<small>Everything that was logged</small></button>
+                                                <button type="button" onClick={() => void doPicture()}><SonataGlyph name="image" /> Picture<small>Looks like the chat (up to {MAX_PICTURE})</small></button>
+                                                <button type="button" onClick={() => doExport("txt")}><SonataGlyph name="fileText" /> Text<small>Easy to read</small></button>
+                                                <button type="button" onClick={() => doExport("csv")}><SonataGlyph name="chart" /> Spreadsheet<small>Opens in Excel or Sheets</small></button>
+                                                <button type="button" onClick={() => doExport("json")}><SonataGlyph name="puzzle" /> JSON<small>Everything that was logged</small></button>
                                             </div>
                                         )}
                                     </div>
@@ -374,7 +375,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                 <div className={cl("body")} ref={bodyRef}>
                                     {paged && searching ? <div className="vc-tool-empty" role="status">Searching saved logs…</div> : !filtered.length ? (
                                         <div className="vc-tool-empty">
-                                            <span className="vc-tool-empty-icon">🔍</span>
+                                            <span className="vc-tool-empty-icon"><SonataGlyph name="search" /></span>
                                             Nothing here matches{anyFilter ? " these filters" : ""}.
                                             {anyFilter && <button type="button" className="vc-tool-btn" onClick={clearFilters}>Clear filters</button>}
                                             {scope.kind !== "all" && <button type="button" className="vc-tool-link" onClick={() => setScope({ kind: "all" })}>Look everywhere instead</button>}
@@ -399,7 +400,7 @@ export function Explorer({ modalProps, backend, initialQuery, accent }: Explorer
                                         <span className="vc-tool-hint">Page {page + 1} of {pageCount}</span>
                                         <button type="button" className="vc-tool-btn" disabled={searching || page + 1 >= pageCount} onClick={() => changePage(page + 1)}>Next</button>
                                     </>}
-                                    <button type="button" className="vc-tool-btn" onClick={() => setStorageOpen(true)}>🧹 Storage &amp; cleanup</button>
+                                    <button type="button" className="vc-tool-btn" onClick={() => setStorageOpen(true)}><SonataGlyph name="broom" /> Storage &amp; cleanup</button>
                                     <button type="button" className="vc-tool-btn" onClick={load} title="Load the newest logs">↻ Refresh</button>
                                     <button type="button" className="vc-tool-btn vc-tool-danger" onClick={clearAll}>Clear all logs</button>
                                 </div>
@@ -450,7 +451,7 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
         <div className={cl("overlay")} onClick={onClose}>
             <div className={cl("panel")} onClick={ev => ev.stopPropagation()}>
                 <div className="vc-tool-head">
-                    <b className={cl("panel-title")}>🧹 Storage &amp; cleanup</b>
+                    <b className={cl("panel-title")}><SonataGlyph name="broom" /> Storage &amp; cleanup</b>
                     <button type="button" className="vc-tool-icon" onClick={onClose}>✕</button>
                 </div>
                 <div className="vc-tool-stats">
@@ -466,7 +467,7 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
                     <span className="vc-tool-label">Delete logs older than</span>
                     <div className="vc-tool-chips">
                         {DAY_CHOICES.map(([d, label]) => (
-                            <button key={d} type="button" className={classes("vc-tool-chip", days === d && "vc-tool-chip-on")} onClick={() => { setDays(d); setPreview(undefined); setPreviewError(false); }}>{label}</button>
+                            <button key={d} type="button" className={classes("vc-tool-chip", days === d && "vc-tool-chip-on")} onClick={() => { setDays(d); setPreview(undefined); setPreviewError(false); }}><SonataLabel label={label} /></button>
                         ))}
                     </div>
                     <span className="vc-tool-hint">{previewError ? "Cleanup preview failed." : preview?.days === days ? preview.count.toLocaleString() + " logs would be removed. Starred logs are kept." : "Preview the selection before deleting. Save the schedule separately to run it automatically."}</span>
@@ -495,13 +496,13 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
                 {backend.setWatched && (
                     <section className="vc-tool-section">
                         <span className="vc-tool-label">Watching · {watched.length}</span>
-                        {!watched.length ? <span className="vc-tool-hint">Watch someone (👁 in People, or right-click them → Message Logger) to be told the moment they delete or edit a message. Their messages are always logged.</span> : (
+                        {!watched.length ? <span className="vc-tool-hint">Watch someone (<SonataGlyph name="eye" /> in People, or right-click them → Message Logger) to be told the moment they delete or edit a message. Their messages are always logged.</span> : (
                             <div className={classes("vc-tool-list", cl("ignored"))}>
                                 {watched.map(id => {
                                     const d = backend.describe(id);
                                     return (
                                         <div key={id} className="vc-tool-item">
-                                            {d.icon ? <Avatar src={d.icon} size={26} /> : <span className={cl("node-icon")}>👤</span>}
+                                            {d.icon ? <Avatar src={d.icon} size={26} /> : <span className={cl("node-icon")}><SonataGlyph name="profile" /></span>}
                                             <span className="vc-tool-item-main"><span className="vc-tool-item-title">{d.name}</span><span className="vc-tool-item-sub">{id}</span></span>
                                             <button type="button" className="vc-tool-btn" onClick={() => { backend.setWatched!(id, false); setWatchedList(backend.watched?.() ?? []); }}>Stop watching</button>
                                         </div>
@@ -520,7 +521,7 @@ function StoragePanel({ index, onClose, onCleaned, onClearAll }: { index: LogInd
                                 const d = backend.describe(id);
                                 return (
                                     <div key={id} className="vc-tool-item">
-                                        {d.icon ? <Avatar src={d.icon} size={26} /> : <span className={cl("node-icon")}>{d.kind === "Server" ? "🏠" : d.kind === "Channel" ? "#" : "👤"}</span>}
+                                        {d.icon ? <Avatar src={d.icon} size={26} /> : <span className={cl("node-icon")}>{d.kind === "Server" ? <SonataGlyph name="home" /> : d.kind === "Channel" ? "#" : <SonataGlyph name="profile" />}</span>}
                                         <span className="vc-tool-item-main"><span className="vc-tool-item-title">{d.name}</span><span className="vc-tool-item-sub">{d.kind} · {id}</span></span>
                                         <button type="button" className="vc-tool-btn" onClick={() => { backend.setIgnored(id, false); setIgnoredList(backend.ignored()); }}>Log again</button>
                                     </div>
@@ -565,7 +566,7 @@ function Side({ index, scope, onScope, total, browseAll }: { index: LogIndex; sc
             {browseAll && <button type="button" className="vc-tool-btn" onClick={browseAll}>Browse all places</button>}
             <div className={cl("side-scroll")}>
                 <button type="button" className={classes(cl("node"), is({ kind: "all" }) && cl("node-on"))} onClick={() => onScope({ kind: "all" })}>
-                    <span className={cl("node-icon")}>🌐</span><span className={cl("node-name")}>Everywhere</span><i>{total.toLocaleString()}</i>
+                    <span className={cl("node-icon")}><SonataGlyph name="globe" /></span><span className={cl("node-name")}>Everywhere</span><i>{total.toLocaleString()}</i>
                 </button>
 
                 {index.dms.length > 0 && (dms.length > 0 || !q) && (
@@ -577,7 +578,7 @@ function Side({ index, scope, onScope, total, browseAll }: { index: LogIndex; sc
                         </div>
                         {isOpen("dms") && (allDms || q ? dms : dms.slice(0, 8)).map(d => (
                             <button key={d.id} type="button" className={classes(cl("node"), cl("node-dm"), is({ kind: "channel", id: d.id }) && cl("node-on"))} onClick={() => onScope({ kind: "channel", id: d.id })} title={d.name}>
-                                {d.group ? <span className={cl("node-icon")}>👥</span> : <Avatar src={d.avatar} size={22} />}
+                                {d.group ? <span className={cl("node-icon")}><SonataGlyph name="people" /></span> : <Avatar src={d.avatar} size={22} />}
                                 <span className={cl("node-name")}>{d.name}</span><i>{d.count}</i>
                             </button>
                         ))}
@@ -602,7 +603,7 @@ function Side({ index, scope, onScope, total, browseAll }: { index: LogIndex; sc
                                 </button>
                                 {c.channels.map(ch => (
                                     <button key={ch.id} type="button" className={classes(cl("node"), cl("node-ch"), is({ kind: "channel", id: ch.id }) && cl("node-on"))} onClick={() => onScope({ kind: "channel", id: ch.id })} title={ch.parentName ? `${ch.name} in #${ch.parentName}` : ch.name}>
-                                        <span className={cl("hash")}>{ch.kind === "thread" ? "🧵" : ch.kind === "voice" ? "🔊" : ch.kind === "forum" ? "💬" : ch.kind === "announce" ? "📢" : "#"}</span>
+                                        <span className={cl("hash")}>{ch.kind === "thread" ? <SonataGlyph name="thread" /> : ch.kind === "voice" ? <SonataGlyph name="speaker" /> : ch.kind === "forum" ? <SonataGlyph name="message" /> : ch.kind === "announce" ? <SonataGlyph name="megaphone" /> : "#"}</span>
                                         <span className={cl("node-name")}>{ch.name}</span><i>{ch.count}</i>
                                     </button>
                                 ))}
@@ -617,7 +618,7 @@ function Side({ index, scope, onScope, total, browseAll }: { index: LogIndex; sc
 }
 
 function scopeTitle(s: Scope, index: LogIndex | null): { name: string; sub?: string; icon: React.ReactNode; } {
-    const icon = (t: string) => <span className={cl("crumb-icon")}>{t}</span>;
+    const icon = (t: string) => <span className={cl("crumb-icon")}><SonataGlyph name={t} /></span>;
     if (!index) return { name: "Everywhere", icon: icon("🌐") };
     switch (s.kind) {
         case "all": return { name: "Everywhere", sub: `${index.guilds.length} servers, ${index.dms.length} DMs`, icon: icon("🌐") };
@@ -633,10 +634,10 @@ function scopeTitle(s: Scope, index: LogIndex | null): { name: string; sub?: str
         }
         case "channel": {
             const e = index.entries.find(x => x.channelId === s.id);
-            if (!e) return { name: "Channel", icon: icon("#") };
+            if (!e) return { name: "Channel", icon: icon("hashtag") };
             const p = e.place;
             if (!p.guildId) return { name: p.kind === "group" ? p.channelName : `DM with ${p.channelName}`, icon: p.dmUser ? <Avatar src={p.dmUser.avatar} size={34} /> : icon(p.kind === "group" ? "👥" : "✉️") };
-            return { name: `${p.kind === "thread" ? "🧵 " : "#"}${p.channelName}`, sub: whereText(p).split(" › ")[0] + (p.categoryName ? ` › ${p.categoryName}` : ""), icon: icon("#") };
+            return { name: `${"#"}${p.channelName}`, sub: whereText(p).split(" › ")[0] + (p.categoryName ? ` › ${p.categoryName}` : ""), icon: icon("hashtag") };
         }
         case "person": {
             const p = index.people.get(s.id);

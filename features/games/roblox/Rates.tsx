@@ -14,6 +14,7 @@ import { classes } from "@utils/misc";
 import { useEffect, useReducer, useState } from "@webpack/common";
 
 import { ROBUX } from "../../currencyConverter/robux";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 
@@ -134,7 +135,7 @@ export function RobuxRates({ dir, amount, mine, money, convert }: Props) {
         <div className={rb("rates")}>
             <div className={rb("outfit-head")}>
                 <div>
-                    <b>💱 Rates</b>
+                    <b><SonataGlyph name="calculator" /> Rates</b>
                     <span>{dir === "from" ? `What ${rbx(amount)} comes to at each rate` : `How many Robux ${money(amount, mine)} gets at each rate`}</span>
                 </div>
                 <span className={rb("spacer")} />

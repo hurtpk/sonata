@@ -17,6 +17,7 @@ import { windowAccent } from "../../../../controller/accent";
 import { ToolHero } from "../../../_shared/ToolHero";
 import { Window } from "../../../_shared/Window";
 import { roleFill } from "./RoleInfo";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 const cl = classNameFactory("vc-permviewer-");
 const MAX_SHOWN = 300;
@@ -72,7 +73,7 @@ function WhoHasModal({ modalProps, guild, bit, title }: { modalProps: RenderModa
                     numbers={[{ value: holders.length.toLocaleString(), label: holders.length === 1 ? "person" : "people" }, { value: groups.size, label: groups.size === 1 ? "role" : "roles" }]} />
                 {everyone && <div className={cl("who-note")}>✓ <b>Everyone</b> can do this — the @everyone role allows it. Below are people who also get it from another role.</div>}
                 <input className="vc-tool-input" value={find} onChange={e => setFind(e.currentTarget.value)} placeholder={`Find among ${holders.length.toLocaleString()} ${holders.length === 1 ? "person" : "people"}`} />
-                {!holders.length && <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🫥</span>Nobody Discord has loaded gets this from a role{everyone ? " (other than @everyone)" : ""}.</div>}
+                {!holders.length && <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="eyeOff" /></span>Nobody Discord has loaded gets this from a role{everyone ? " (other than @everyone)" : ""}.</div>}
                 {[...groups].map(([via, list]) => (
                     <section key={via} className="vc-tool-section">
                         <span className="vc-tool-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>

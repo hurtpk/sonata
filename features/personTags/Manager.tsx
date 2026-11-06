@@ -19,6 +19,7 @@ import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { LookPicker, TagChip } from "./LookPicker";
 import { allTags, COLORS, createTag, deleteTag, isGradient, Look, lookStyle, moveTag, peopleWith, setTagged, STARTERS, Tag, updateTag, useTags } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 /** Ideas shown before "More ideas". */
 const FIRST_IDEAS = 8;
@@ -69,11 +70,11 @@ function TagRow({ tag, on, count, onSelect, first, last }: { tag: Tag; on: boole
                 <span className="vc-tool-spacer" />
                 <button type="button" className="vc-tool-icon" title="Move up" disabled={first} onClick={e => { e.stopPropagation(); moveTag(tag.id, -1); }}>↑</button>
                 <button type="button" className="vc-tool-icon" title="Move down" disabled={last} onClick={e => { e.stopPropagation(); moveTag(tag.id, 1); }}>↓</button>
-                <button type="button" className="vc-tool-icon" title="Delete this tag" onClick={e => { e.stopPropagation(); deleteTag(tag.id); }}>🗑️</button>
+                <button type="button" className="vc-tool-icon" title="Delete this tag" onClick={e => { e.stopPropagation(); deleteTag(tag.id); }}><SonataGlyph name="trash" /></button>
             </div>
             {colors && (
                 <div className="vc-ptag-row-look" onClick={e => e.stopPropagation()}>
-                    <LookPicker value={tag} onChange={l => updateTag(tag.id, { color: l.color, gradient: l.gradient })} />
+                    <LookPicker value={tag} onChange={l => updateTag(tag.id, { color: l.color, gradient: l.gradient, effects: l.effects })} />
                     <div className="vc-tool-footer"><span className="vc-tool-spacer" /><button type="button" className="vc-tool-btn" onClick={() => setColors(false)}>Done</button></div>
                 </div>
             )}

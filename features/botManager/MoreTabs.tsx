@@ -13,6 +13,7 @@ import { showToast, useEffect, useState } from "@webpack/common";
 import { BLANK_SPEC, canChoose, CmdOpt, CmdSpec, jsCode, OPT_TYPES, OptType, problems, pyCode } from "./builder";
 import { appCommands, Cmd, CmdOption, COMMAND_TYPES, guildCommands, OPTION_TYPES, usage } from "./commands";
 import { sharedServers, useBotState } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const open = (url: string) => VencordNative.native.openExternal(url);
 
@@ -59,7 +60,7 @@ export function CommandsTab({ initial }: { initial: string | null; }) {
     const t = q.trim().toLowerCase();
     const shown = (cmds ?? []).filter(c => !t || c.name.includes(t) || c.description.toLowerCase().includes(t)).sort((a, b) => a.type - b.type || a.name.localeCompare(b.name));
 
-    if (!choices.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon">⌨️</span>Your bots show up here once you've made one.</div>;
+    if (!choices.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="keyboard" /></span>Your bots show up here once you've made one.</div>;
     return (
         <>
             <div className="vc-bm-cmd-bar">
@@ -88,7 +89,7 @@ export function CommandsTab({ initial }: { initial: string | null; }) {
                     </div>
                 ))}
                 {!busy && !failed && cmds && !cmds.length && (
-                    <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🫥</span>No commands {where === "everywhere" ? "registered yet" : "here"}. If your code registers them, check its log for errors and that it was invited with "applications.commands".</div>
+                    <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="eyeOff" /></span>No commands {where === "everywhere" ? "registered yet" : "here"}. If your code registers them, check its log for errors and that it was invited with "applications.commands".</div>
                 )}
             </div>
         </>
@@ -254,20 +255,20 @@ export function HostingTab() {
                 {HOSTS.map((h, i) => (
                     <div key={h.title} className={classes("vc-bm-host", openI === i && "vc-bm-host-open")}>
                         <button type="button" className="vc-bm-host-head" onClick={() => setOpenI(openI === i ? -1 : i)}>
-                            <span className="vc-bm-host-icon">{h.icon}</span>
+                            <span className="vc-bm-host-icon"><SonataGlyph name={h.icon} /></span>
                             <span className="vc-bm-host-text"><b>{h.title}</b><small>{h.cost}</small></span>
                             <i>{openI === i ? "−" : "+"}</i>
                         </button>
                         {openI === i && (
                             <div className="vc-bm-host-body">
-                                <div className="vc-bm-proscons"><span className="vc-bm-pro">👍 {h.good}</span><span className="vc-bm-con">👎 {h.bad}</span></div>
+                                <div className="vc-bm-proscons"><span className="vc-bm-pro"><SonataGlyph name="thumbsUp" /> {h.good}</span><span className="vc-bm-con"><SonataGlyph name="thumbsDown" /> {h.bad}</span></div>
                                 <ol>{h.steps.map((s, j) => <li key={j}>{s}</li>)}</ol>
                             </div>
                         )}
                     </div>
                 ))}
             </div>
-            <div className="vc-bm-warn vc-bm-warn-soft">🔑 Wherever it runs: keep the token in .env or the host's secrets, never in the code, and never in a public GitHub repo — Discord resets tokens it finds there, and anyone else can find them too.</div>
+            <div className="vc-bm-warn vc-bm-warn-soft"><SonataGlyph name="key" /> Wherever it runs: keep the token in .env or the host's secrets, never in the code, and never in a public GitHub repo — Discord resets tokens it finds there, and anyone else can find them too.</div>
             <div className="vc-tool-row">
                 <button type="button" className="vc-tool-btn" onClick={() => open("https://pm2.keymetrics.io/docs/usage/quick-start/")}>pm2 quick start ↗</button>
             </div>

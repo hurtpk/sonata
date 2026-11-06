@@ -21,6 +21,7 @@ import { windowAccent } from "../../controller/accent";
 import { defineFeatureSettings } from "../../featureSettings";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-purger-");
 
@@ -1308,7 +1309,7 @@ function Card({ icon, title, hint, aside, children }: { icon: string; title: str
     return (
         <section className={cl("card")}>
             <div className={cl("card-head")}>
-                <span className={cl("card-icon")} aria-hidden>{icon}</span>
+                <span className={cl("card-icon")} aria-hidden><SonataGlyph name={icon} /></span>
                 <h3 className={cl("card-title")}>{title}</h3>
                 {aside}
             </div>
@@ -1321,7 +1322,7 @@ function Card({ icon, title, hint, aside, children }: { icon: string; title: str
 function Toggle({ icon, title, sub, on, set, danger }: { icon: string; title: string; sub?: string; on: boolean; set(v: boolean): void; danger?: boolean; }) {
     return (
         <button type="button" role="switch" aria-checked={on} className={classes(cl("toggle"), on && cl("toggle-on"), danger && cl("toggle-danger"))} onClick={() => set(!on)}>
-            <span className={cl("toggle-icon")} aria-hidden>{icon}</span>
+            <span className={cl("toggle-icon")} aria-hidden><SonataGlyph name={icon} /></span>
             <span className={cl("toggle-text")}>
                 <b>{title}</b>
                 {sub && <small>{sub}</small>}
@@ -1443,15 +1444,15 @@ function ControlsPanel({ channel, globalMode, optsRef, globalState, extraRight }
     ].filter(Boolean).join(" · ");
 
     const what = (
-        <Card icon="🎯" title="What to delete">
+        <Card icon="target" title="What to delete">
             <div className={cl("toggles")}>
-                <Toggle icon="🙋" title="Only my messages" sub={onlyOwn ? "Messages you sent" : "Anyone's — needs Manage Messages"} on={onlyOwn} set={setOnlyOwn} />
-                <Toggle icon="📌" title="Pinned ones too" sub="Kept unless this is on" on={includePinned} set={setIncludePinned} danger />
-                <Toggle icon="🔗" title="Only with links" on={hasLink} set={setHasLink} />
-                <Toggle icon="📎" title="Only with files" sub="Pictures, videos, anything attached" on={hasFile} set={setHasFile} />
-                <Toggle icon="🧩" title="Only with embeds" sub="Embeds or activities" on={hasEmbed} set={setHasEmbed} />
-                {!isGuild && <Toggle icon="😀" title="My reactions too" sub="Removes them as well" on={removeReactions} set={setRemoveReactions} />}
-                {!isGuild && <Toggle icon="⚡" title="Find activities" sub="Command replies search misses" on={scanActivities} set={setScanActivities} />}
+                <Toggle icon="profile" title="Only my messages" sub={onlyOwn ? "Messages you sent" : "Anyone's — needs Manage Messages"} on={onlyOwn} set={setOnlyOwn} />
+                <Toggle icon="pin" title="Pinned ones too" sub="Kept unless this is on" on={includePinned} set={setIncludePinned} danger />
+                <Toggle icon="link" title="Only with links" on={hasLink} set={setHasLink} />
+                <Toggle icon="paperclip" title="Only with files" sub="Pictures, videos, anything attached" on={hasFile} set={setHasFile} />
+                <Toggle icon="puzzle" title="Only with embeds" sub="Embeds or activities" on={hasEmbed} set={setHasEmbed} />
+                {!isGuild && <Toggle icon="smile" title="My reactions too" sub="Removes them as well" on={removeReactions} set={setRemoveReactions} />}
+                {!isGuild && <Toggle icon="bolt" title="Find activities" sub="Command replies search misses" on={scanActivities} set={setScanActivities} />}
             </div>
             <label className="vc-tool-field">
                 <span className="vc-tool-label">Containing text</span>
@@ -1461,7 +1462,7 @@ function ControlsPanel({ channel, globalMode, optsRef, globalState, extraRight }
     );
 
     const when = (
-        <Card icon="📅" title="When">
+        <Card icon="event" title="When">
             <div className="vc-tool-chips">
                 {WHEN.map(w => (
                     <button key={w.id} type="button" className={classes("vc-tool-chip", preset === w.id && "vc-tool-chip-on")}
@@ -1480,12 +1481,12 @@ function ControlsPanel({ channel, globalMode, optsRef, globalState, extraRight }
                         onChange={e => { setPreset(""); setBeforeDate(e.currentTarget.value); }} />
                 </label>
             </div>
-            {afterParsed && beforeParsed && afterParsed >= beforeParsed && <span className={cl("warn")}>⚠ “From” is after “Before” — nothing will match.</span>}
+            {afterParsed && beforeParsed && afterParsed >= beforeParsed && <span className={cl("warn")}><SonataGlyph name="warning" /> “From” is after “Before” — nothing will match.</span>}
         </Card>
     );
 
     const channels = isGuild && (
-        <Card icon="#️⃣" title="Channels" hint="Leave empty to only do this channel."
+        <Card icon="hashtag" title="Channels" hint="Leave empty to only do this channel."
             aside={(
                 <span className={cl("card-actions")}>
                     <button type="button" className="vc-tool-link" onClick={() => setSelectedChannels(channelOptions.map(c => c.id))}>All</button>
@@ -1507,11 +1508,11 @@ function ControlsPanel({ channel, globalMode, optsRef, globalState, extraRight }
     );
 
     const afterwards = isDm && (
-        <Card icon="👋" title="When it's done">
+        <Card icon="handWave" title="When it's done">
             <div className={cl("toggles")}>
-                <Toggle icon="🚫" title="Block them" on={postBlock} set={setPostBlock} danger />
-                <Toggle icon="💔" title="Remove friend" on={postUnadd} set={setPostUnadd} danger />
-                <Toggle icon="📪" title="Close the DM" on={postClose} set={setPostClose} />
+                <Toggle icon="block" title="Block them" on={postBlock} set={setPostBlock} danger />
+                <Toggle icon="heart" title="Remove friend" on={postUnadd} set={setPostUnadd} danger />
+                <Toggle icon="inbox" title="Close the DM" on={postClose} set={setPostClose} />
             </div>
             <label className="vc-tool-field">
                 <span className="vc-tool-label">Leave a message behind</span>
@@ -1521,13 +1522,13 @@ function ControlsPanel({ channel, globalMode, optsRef, globalState, extraRight }
     );
 
     const speed = (
-        <Card icon="⚙️" title="Order & speed">
+        <Card icon="gear" title="Order & speed">
             <div className="vc-tool-seg">
                 {([["newest_first", "Newest first"], ["oldest_first", "Oldest first"]] as const).map(([v, label]) => (
                     <button key={v} type="button" className={classes("vc-tool-seg-btn", deleteOrder === v && "vc-tool-seg-on")} onClick={() => setDeleteOrder(v)}>{label}</button>
                 ))}
             </div>
-            <Toggle icon="🛡️" title="Safe speed" sub={autoRateLimit ? "Follows Discord's limits, with room to spare" : "Using your own delays below"} on={autoRateLimit}
+            <Toggle icon="shield" title="Safe speed" sub={autoRateLimit ? "Follows Discord's limits, with room to spare" : "Using your own delays below"} on={autoRateLimit}
                 set={v => { setAutoRateLimit(v); settings.store.autoRateLimit = v; }} />
             {!autoRateLimit && (
                 <>
@@ -1547,7 +1548,7 @@ function ControlsPanel({ channel, globalMode, optsRef, globalState, extraRight }
     return (
         <>
             <div className={cl("summary")}>
-                <span className={cl("summary-icon")} aria-hidden>🗑️</span>
+                <span className={cl("summary-icon")} aria-hidden><SonataGlyph name="trash" /></span>
                 <span><b>Deletes</b> {summary}</span>
             </div>
             <div className={cl("cols")}>
@@ -1629,7 +1630,7 @@ function DmChannelPicker({ blacklisted, onChange }: { blacklisted: string[]; onC
     const filtered = channels.filter(ch => matches(ch, q));
     const toggle = (id: string) => onChange(blacklisted.includes(id) ? blacklisted.filter(x => x !== id) : [...blacklisted, id]);
 
-    if (!channels.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon">📭</span>No DMs found.</div>;
+    if (!channels.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="inbox" /></span>No DMs found.</div>;
 
     return (
         <div className={cl("people")}>
@@ -1639,7 +1640,7 @@ function DmChannelPicker({ blacklisted, onChange }: { blacklisted: string[]; onC
                     const skipped = blacklisted.includes(ch.id);
                     return (
                         <Person key={ch.id} ch={ch} onClick={() => toggle(ch.id)} className={skipped ? cl("person-skipped") : undefined}>
-                            <span className={classes(cl("pill"), skipped && cl("pill-keep"))}>{skipped ? "🛡️ Kept" : "Purge"}</span>
+                            <span className={classes(cl("pill"), skipped && cl("pill-keep"))}>{skipped ? <><SonataGlyph name="shield" />{" Kept"}</> : "Purge"}</span>
                         </Person>
                     );
                 })}
@@ -1673,7 +1674,7 @@ function DmActionPicker({ blockIds, onBlockChange, unaddIds, onUnaddChange, clos
     const toggleAll = (list: string[], onChange: (ids: string[]) => void) => onChange(allIn(list) ? [] : channels.map(ch => ch.id));
     const msgCount = Object.keys(leaveMessages).length;
 
-    if (!channels.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon">📭</span>No DMs found.</div>;
+    if (!channels.length) return <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="inbox" /></span>No DMs found.</div>;
 
     const ACTIONS = [
         { icon: "🚫", label: "Block", list: blockIds, set: onBlockChange },
@@ -1686,10 +1687,10 @@ function DmActionPicker({ blockIds, onBlockChange, unaddIds, onUnaddChange, clos
             <div className="vc-tool-chips">
                 {ACTIONS.map(a => (
                     <button key={a.label} type="button" className={classes("vc-tool-chip", allIn(a.list) && "vc-tool-chip-on")} onClick={() => toggleAll(a.list, a.set)}>
-                        {a.icon} {allIn(a.list) ? `Undo ${a.label.toLowerCase()} all` : `${a.label} all`}
+                        <SonataGlyph name={a.icon} /> {allIn(a.list) ? `Undo ${a.label.toLowerCase()} all` : `${a.label} all`}
                     </button>
                 ))}
-                <button type="button" className={classes("vc-tool-chip", (showGlobalMsg || msgCount > 0) && "vc-tool-chip-on")} onClick={() => setShowGlobalMsg(!showGlobalMsg)}>💬 Message all</button>
+                <button type="button" className={classes("vc-tool-chip", (showGlobalMsg || msgCount > 0) && "vc-tool-chip-on")} onClick={() => setShowGlobalMsg(!showGlobalMsg)}><SonataGlyph name="message" /> Message all</button>
             </div>
 
             {showGlobalMsg && (
@@ -1712,10 +1713,10 @@ function DmActionPicker({ blockIds, onBlockChange, unaddIds, onUnaddChange, clos
                                 <span className={cl("acts")}>
                                     {ACTIONS.map(a => (
                                         <button key={a.label} type="button" title={a.label} aria-label={a.label} aria-pressed={a.list.includes(ch.id)}
-                                            className={classes(cl("act"), a.list.includes(ch.id) && cl("act-on"))} onClick={() => toggleList(ch.id, a.list, a.set)}>{a.icon}</button>
+                                            className={classes(cl("act"), a.list.includes(ch.id) && cl("act-on"))} onClick={() => toggleList(ch.id, a.list, a.set)}><SonataGlyph name={a.icon} /></button>
                                     ))}
                                     <button type="button" title="Leave a message" aria-label="Leave a message" aria-pressed={hasMsg}
-                                        className={classes(cl("act"), (hasMsg || open) && cl("act-msg"))} onClick={() => setExpandedMsg(open ? null : ch.id)}>💬</button>
+                                        className={classes(cl("act"), (hasMsg || open) && cl("act-msg"))} onClick={() => setExpandedMsg(open ? null : ch.id)}><SonataGlyph name="message" /></button>
                                 </span>
                             </Person>
                             {open && (
@@ -1740,7 +1741,7 @@ function GlobalRightPanel({ globalState }: { globalState: GlobalState; }) {
     const { blacklistedChannels, setBlacklistedChannels, globalPostBlock, setGlobalPostBlock, globalPostUnadd, setGlobalPostUnadd, globalPostClose, setGlobalPostClose, globalLeaveMessages, setGlobalLeaveMessages } = globalState;
     return (
         <>
-            <Card icon="🛡️" title="Keep these DMs" hint="Tap someone to leave your messages with them alone."
+            <Card icon="shield" title="Keep these DMs" hint="Tap someone to leave your messages with them alone."
                 aside={blacklistedChannels.length > 0 && (
                     <span className={cl("card-actions")}>
                         <span className="vc-tool-badge vc-tool-badge-accent">{blacklistedChannels.length} kept</span>
@@ -1749,7 +1750,7 @@ function GlobalRightPanel({ globalState }: { globalState: GlobalState; }) {
                 )}>
                 <DmChannelPicker blacklisted={blacklistedChannels} onChange={setBlacklistedChannels} />
             </Card>
-            <Card icon="👋" title="When it's done" hint="Pick what happens with each person afterwards.">
+            <Card icon="handWave" title="When it's done" hint="Pick what happens with each person afterwards.">
                 <DmActionPicker
                     blockIds={globalPostBlock}
                     onBlockChange={setGlobalPostBlock}
@@ -1788,7 +1789,7 @@ function useGuildChannels(guildId: string | null) {
                     const ch = (entry as { channel?: { id: string; name: string; }; })?.channel;
                     if (ch?.name && !seen.has(ch.id)) {
                         seen.add(ch.id);
-                        channels.push({ id: ch.id, value: ch.id, label: `🔊 ${ch.name}` });
+                        channels.push({ id: ch.id, value: ch.id, label: `Voice · ${ch.name}` });
                     }
                 }
             }
@@ -1843,7 +1844,7 @@ function RunningPanel({ eta }: { eta: string | null; }) {
     const byChannel = Object.entries(engine.fetchedByChannel).sort(([, a], [, b]) => b - a);
 
     return (
-        <Card icon="📊" title="Progress">
+        <Card icon="chart" title="Progress">
             <div className={cl("progress-meta")}>
                 <span>{isFetching ? "Finding messages" : isDeleting ? "Deleting" : engine.state === "done" ? "Finished" : "Stopped"}</span>
                 <b>{pct}%{eta ? ` · ${eta} left` : ""}</b>
@@ -1869,7 +1870,7 @@ function RunningPanel({ eta }: { eta: string | null; }) {
             </div>
 
             <div className={classes(cl("pacing"), engine.coolingDown && cl("pacing-cooling"))}>
-                <span className={cl("pacing-icon")} aria-hidden>{engine.coolingDown ? "⏳" : "🛡️"}</span>
+                <span className={cl("pacing-icon")} aria-hidden>{engine.coolingDown ? <SonataGlyph name="hourglass" /> : <SonataGlyph name="shield" />}</span>
                 <span className={cl("pacing-text")}>
                     <b>{engine.coolingDown ? "Cooling down" : "Going at a safe speed"}</b>
                     <small>{engine.pacing || "Starting…"} · {engine.rateLimitHits === 0 ? "Discord hasn't asked to slow down" : `Discord asked to slow down ${engine.rateLimitHits}×`}</small>
@@ -1907,9 +1908,9 @@ function PreviewPanel() {
     }, [engine.preview.length]);
 
     return (
-        <Card icon="👀" title="Live preview" aside={<span className="vc-tool-badge">{engine.preview.length.toLocaleString()}</span>}>
+        <Card icon="eye" title="Live preview" aside={<span className="vc-tool-badge">{engine.preview.length.toLocaleString()}</span>}>
             {!engine.preview.length ? (
-                <div className="vc-tool-empty"><span className="vc-tool-empty-icon">{engine.state === "fetching" ? "🔍" : "📭"}</span>{engine.state === "fetching" ? "Looking for messages…" : "Messages show up here as they're found."}</div>
+                <div className="vc-tool-empty"><span className="vc-tool-empty-icon">{engine.state === "fetching" ? <SonataGlyph name="search" /> : <SonataGlyph name="inbox" />}</span>{engine.state === "fetching" ? "Looking for messages…" : "Messages show up here as they're found."}</div>
             ) : (
                 <div ref={scrollRef} className={cl("feed")}>
                     {engine.preview.map(entry => <MessagePreviewRow key={entry.msg.id} entry={entry} />)}
@@ -1974,10 +1975,10 @@ function PurgeModal({ modalProps, channel }: { modalProps: RenderModalProps; cha
                         numbers={engine.state === "fetching"
                             ? [{ value: engine.fetched.toLocaleString(), label: "found so far" }]
                             : [{ value: engine.deleted.toLocaleString(), label: "deleted" }, { value: left.toLocaleString(), label: "left" }]}>
-                        {working && <button type="button" className="vc-tool-btn" onClick={engine.paused ? resumePurge : pausePurge}>{engine.paused ? "▶ Resume" : "⏸ Pause"}</button>}
+                        {working && <button type="button" className="vc-tool-btn" onClick={engine.paused ? resumePurge : pausePurge}>{engine.paused ? <><SonataGlyph name="play" />{" Resume"}</> : <><SonataGlyph name="pause" />{" Pause"}</>}</button>}
                     </ToolHero>
                 ) : (
-                    <ToolHero icon="🗑️" kicker={activeTab === "global" ? "Every DM" : channel.guild_id ? channelLabel : `DM · ${channelLabel}`}
+                    <ToolHero icon="trash" kicker={activeTab === "global" ? "Every DM" : channel.guild_id ? channelLabel : `DM · ${channelLabel}`}
                         title={activeTab === "global" ? "Purge all your DMs" : "Purge messages"}
                         sub="Pick what to delete below, then start. It keeps going even if you close this window." />
                 )}
@@ -1985,9 +1986,9 @@ function PurgeModal({ modalProps, channel }: { modalProps: RenderModalProps; cha
                 {!isActive && (
                     <div className="vc-tool-seg">
                         <button type="button" className={classes("vc-tool-seg-btn", activeTab === "channel" && "vc-tool-seg-on")} onClick={() => setActiveTab("channel")}>
-                            {channel.guild_id ? "💬 This channel" : "💬 This DM"}
+                            {channel.guild_id ? <><SonataGlyph name="message" />{" This channel"}</> : <><SonataGlyph name="message" />{" This DM"}</>}
                         </button>
-                        <button type="button" className={classes("vc-tool-seg-btn", activeTab === "global" && "vc-tool-seg-on")} onClick={() => setActiveTab("global")}>🌐 All DMs</button>
+                        <button type="button" className={classes("vc-tool-seg-btn", activeTab === "global" && "vc-tool-seg-on")} onClick={() => setActiveTab("global")}><SonataGlyph name="globe" /> All DMs</button>
                     </div>
                 )}
 
@@ -2008,13 +2009,13 @@ function PurgeModal({ modalProps, channel }: { modalProps: RenderModalProps; cha
                         <>
                             <button type="button" className="vc-tool-btn" onClick={modalProps.onClose}>Cancel</button>
                             <button type="button" className={classes("vc-tool-btn", cl("go"), sure && cl("go-sure"))} onClick={start}>
-                                {sure ? "Sure? Click again to purge every DM" : activeTab === "global" ? "🗑️ Purge all DMs" : "🗑️ Start purging"}
+                                {sure ? "Sure? Click again to purge every DM" : activeTab === "global" ? <><SonataGlyph name="trash" />{" Purge all DMs"}</> : <><SonataGlyph name="trash" />{" Start purging"}</>}
                             </button>
                         </>
                     )}
                     {working && (
                         <>
-                            <button type="button" className={classes("vc-tool-btn", "vc-tool-danger")} onClick={stopPurge}>⏹ Stop</button>
+                            <button type="button" className={classes("vc-tool-btn", "vc-tool-danger")} onClick={stopPurge}><SonataGlyph name="block" /> Stop</button>
                             <button type="button" className={classes("vc-tool-btn", "vc-tool-primary")} onClick={modalProps.onClose}>Close</button>
                         </>
                     )}

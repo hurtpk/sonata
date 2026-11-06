@@ -5,17 +5,21 @@
  */
 
 import { classNameFactory } from "@utils/css";
+import { copyWithToast } from "@utils/discord";
 import { classes } from "@utils/misc";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { ChannelStore, DraftType, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
-import { openSection, replaceOriginal } from "../../_shared/Hub";
+import { isFeatureRunning } from "../../../featureSettings";
+import { openColoredText } from "../../textStyles/coloredText/Panel";
+import { replaceOriginal } from "../../_shared/Hub";
 import { Window } from "../../_shared/Window";
 import {
-    ALL_FILTERS, Aspect, Background, Brush, canvasToFile, DEFAULT_ADJUSTMENTS, DEFAULT_OPTIONS, FILTER_GROUPS, filterThumbs, GRADIENTS, ImageEdits, loadImage, LOOKS, MarkTool,
+    ALL_FILTERS, Aspect, Background, Brush, canvasToFile, DEFAULT_ADJUSTMENTS, DEFAULT_OPTIONS, FILTER_GROUPS, filterThumbs, GRADIENTS, ImageEdits, imagePalette, loadImage, LOOKS, MarkTool,
     NO_EDITS, renderStyled, renderStyledLayout, Styled, StyleOptions, TEXT_FONTS, TextStyle, Tool, toOriginalPoint, WindowBar
 } from "./render";
+import { SonataGlyph, SonataLabel } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-shot-");
 
@@ -84,6 +88,7 @@ export function StylerModal({ modalProps, initial, startOptions, saveOptions }: 
 }) {
     const accent = windowAccent("screenshotStyler");
     const [source, setSource] = useState<{ blob: Blob; img: HTMLImageElement; } | null>(null);
+    const palette = useMemo(() => source ? imagePalette(source.img) : [], [source]);
     const [opts, setOpts] = useState<StyleOptions>(startOptions);
     const [edits, setEdits] = useState<ImageEdits>(NO_EDITS);
     const [history, setHistory] = useState<ImageEdits[]>([]);
@@ -133,7 +138,12 @@ export function StylerModal({ modalProps, initial, startOptions, saveOptions }: 
 
     // Ctrl+V while the window is open swaps in whatever image you paste; Ctrl+Z undoes the last edit.
     useEffect(() => {
+        const fromAnotherWindow = (target: EventTarget | null) => {
+            const window = target instanceof Element ? target.closest(".vc-sw") : null;
+            return window && window !== stage.current?.closest(".vc-sw");
+        };
         const onPaste = (e: ClipboardEvent) => {
+            if (fromAnotherWindow(e.target)) return;
             const file = Array.from(e.clipboardData?.files ?? []).find(f => f.type.startsWith("image/"));
             if (!file) return;
             e.preventDefault();
@@ -141,6 +151,7 @@ export function StylerModal({ modalProps, initial, startOptions, saveOptions }: 
             use(file);
         };
         const onKey = (e: KeyboardEvent) => {
+            if (fromAnotherWindow(e.target)) return;
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && (e.target as HTMLElement)?.tagName !== "INPUT") {
                 e.preventDefault();
                 undo();
@@ -324,6 +335,24 @@ export function StylerModal({ modalProps, initial, startOptions, saveOptions }: 
                 )}
             </div>
 
+            {source && <div className={cl("group")}>
+                <div className={cl("label")}>Image palette</div>
+                {palette.length ? <>
+                    <div className={cl("palette")}>
+                        {palette.map(color => <div className={cl("palette-color")} key={color}>
+                            <button type="button" className={classes(cl("swatch"), opts.background.kind === "solid" && opts.background.color === color && cl("swatch-on"))}
+                                style={{ background: color }} title={`Use ${color} as the background`} aria-label={`Use ${color} as the background`}
+                                onClick={() => { setSolid(color); set({ background: { kind: "solid", color } }); }} />
+                            <button type="button" className={cl("chip")} title={`Copy ${color}`} onClick={() => void copyWithToast(color)}>{color}</button>
+                        </div>)}
+                    </div>
+                    <div className={cl("chips")}>
+                        <button type="button" className={cl("chip")} onClick={() => void copyWithToast(palette.join(", "))}>Copy palette</button>
+                        {isFeatureRunning("coloredText") && <button type="button" className={cl("chip")} onClick={() => openColoredText("", undefined, palette)}>Use in Colored Text</button>}
+                    </div>
+                </> : <span className="vc-tool-hint">No solid colors found in this image.</span>}
+            </div>}
+
             <Slider label="Padding" value={opts.padding} min={0} max={25} suffix="%" onChange={v => set({ padding: v })} />
             <Slider label="Corners" value={opts.radius} min={0} max={40} onChange={v => set({ radius: v })} />
             <Slider label="Shadow" value={opts.shadow} min={0} max={100} onChange={v => set({ shadow: v })} />
@@ -425,7 +454,7 @@ export function StylerModal({ modalProps, initial, startOptions, saveOptions }: 
                 <div className={cl("label")}>Tool</div>
                 <div className={cl("chips")}>
                     {TOOLS.map(t => (
-                        <button key={t.id} type="button" title={t.hint} className={classes(cl("chip"), tool === t.id && cl("chip-on"))} onClick={() => setTool(tool === t.id ? null : t.id)}>{t.label}</button>
+                        <button key={t.id} type="button" title={t.hint} className={classes(cl("chip"), tool === t.id && cl("chip-on"))} onClick={() => setTool(tool === t.id ? null : t.id)}><SonataLabel label={t.label} /></button>
                     ))}
                 </div>
                 <div className={cl("hint")}>{activeTool ? `${activeTool.hint}. Esc to stop.` : "Pick a tool, then drag on the picture."}</div>
@@ -506,7 +535,7 @@ export function StylerModal({ modalProps, initial, startOptions, saveOptions }: 
                                 onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={() => setDrag(null)} />
                             : (
                                 <div className={cl("empty")}>
-                                    <span className={cl("empty-icon")} aria-hidden>🖼️</span>
+                                    <span className={cl("empty-icon")} aria-hidden><SonataGlyph name="image" /></span>
                                     <div className={cl("empty-title")}>No screenshot yet</div>
                                     <div>Press Ctrl+V to paste one, drop an image here, or</div>
                                     <div className={cl("empty-actions")}>
@@ -563,6 +592,9 @@ function pickAdjustments(o: StyleOptions) {
     return out;
 }
 
-export function openStyler(initial: Blob | null, startOptions: StyleOptions, saveOptions: (o: StyleOptions) => void) {
-    openSection("mediaTools", "screenshotStyler", initial ? props => <StylerModal modalProps={props} initial={initial} startOptions={startOptions} saveOptions={saveOptions} /> : undefined);
+export function StylerWindow({ modalProps, initial, rawOptions, saveOptions }: { modalProps: RenderModalProps; initial: Blob | null; rawOptions: string; saveOptions(o: StyleOptions): void; }) {
+    const startOptions = useMemo(() => {
+        try { return { ...DEFAULT_OPTIONS, ...JSON.parse(rawOptions || "{}") }; } catch { return DEFAULT_OPTIONS; }
+    }, [rawOptions]);
+    return <StylerModal modalProps={modalProps} initial={initial} startOptions={startOptions} saveOptions={saveOptions} />;
 }

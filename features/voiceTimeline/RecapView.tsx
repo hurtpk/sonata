@@ -15,6 +15,7 @@ import { ToolHero } from "../_shared/ToolHero";
 import { avatar, channelName, displayName, personActions } from "./Panel";
 import { clearRecap, dayKey, useRecap, weekOf } from "./recapStore";
 import { getCurrent } from "./tracker";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-vtl-");
 
@@ -97,7 +98,7 @@ export function RecapView() {
                     <div className={cl("people")}>
                         {week.channels.length ? week.channels.slice(0, 8).map(([id, ms]) => (
                             <div key={id} className={cl("recap-row")}>
-                                <span className={cl("recap-rank")}>🔊</span>
+                                <span className={cl("recap-rank")}><SonataGlyph name="speaker" /></span>
                                 <div className={cl("recap-who")}>
                                     <b>{channelName(id)}</b>
                                     <div className={cl("recap-bar")}><i style={{ width: `${ms / week.channels[0][1] * 100}%` }} /></div>

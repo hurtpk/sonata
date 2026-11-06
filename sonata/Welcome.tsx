@@ -12,6 +12,7 @@ import { React, useState } from "@webpack/common";
 
 import type { QolApi } from "../controller/ControlCenter";
 import { ChangeEntry } from "./changelog";
+import { SonataGlyph } from "../utilities/icons";
 
 export function Welcome({ api, store, accents, onDone }: { api: QolApi; store: any; accents: { name: string; hex: string; }[]; onDone(): void; }) {
     const [step, setStep] = useState(0);
@@ -99,7 +100,7 @@ export function WhatsNew({ entries, onClose }: { entries: ChangeEntry[]; onClose
                     {entries.map(e => (
                         <section key={e.version}>
                             <div className="sonata-news-head"><b>{e.title}</b><span>{e.date}</span></div>
-                            <ul>{e.items.map((it, i) => <li key={i}><span aria-hidden>{it.icon}</span>{it.text}</li>)}</ul>
+                            <ul>{e.items.map((it, i) => <li key={i}><span aria-hidden><SonataGlyph name={it.icon} /></span>{it.text}</li>)}</ul>
                         </section>
                     ))}
                 </div>

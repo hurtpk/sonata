@@ -9,6 +9,7 @@ import { React, useEffect, useState } from "@webpack/common";
 import { Avatar, Badges, cl, classes, Content, Thumb, useBackend } from "./bits";
 import { diffWords, Entry, exportText, fmtBytes, fmtDuration, fmtWhen, LogIndex, Media, Scope, whereText } from "./data";
 import { conversationPicture } from "./picture";
+import { SonataGlyph } from "../../../../../utilities/icons";
 
 interface Props {
     e: Entry;
@@ -53,12 +54,12 @@ export function Detail({ e, index, onClose, onScope, openMedia, onRemove, onMeta
                     <div className={cl("crumbs")}>
                         {p.guildId ? (
                             <>
-                                <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "guild", id: p.guildId! })}>🏠 {p.guildName}</button>
-                                {p.categoryName && <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "category", guildId: p.guildId!, id: p.categoryId ?? "" })}>📁 {p.categoryName}</button>}
-                                <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "channel", id: p.channelId })}>{p.kind === "thread" ? "🧵" : "#"} {p.channelName}</button>
+                                <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "guild", id: p.guildId! })}><SonataGlyph name="home" /> {p.guildName}</button>
+                                {p.categoryName && <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "category", guildId: p.guildId!, id: p.categoryId ?? "" })}><SonataGlyph name="folder" /> {p.categoryName}</button>}
+                                <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "channel", id: p.channelId })}>{p.kind === "thread" ? <SonataGlyph name="thread" /> : "#"} {p.channelName}</button>
                             </>
                         ) : (
-                            <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "channel", id: p.channelId })}>{p.kind === "group" ? "👥" : "✉️"} {p.kind === "group" ? p.channelName : `DM with ${p.channelName}`}</button>
+                            <button type="button" className="vc-tool-chip" onClick={() => onScope({ kind: "channel", id: p.channelId })}>{p.kind === "group" ? <SonataGlyph name="people" /> : <SonataGlyph name="mail" />} {p.kind === "group" ? p.channelName : `DM with ${p.channelName}`}</button>
                         )}
                     </div>
                     <dl className={cl("facts")}>
@@ -73,7 +74,7 @@ export function Detail({ e, index, onClose, onScope, openMedia, onRemove, onMeta
                 {e.reply && (
                     <section className={cl("dsec")}>
                         <span className="vc-tool-label">Replying to</span>
-                        <div className={cl("reply")}>↪ <b>{e.reply.name}</b> {e.reply.content || "a message"}</div>
+                        <div className={cl("reply")}><SonataGlyph name="reply" /> <b>{e.reply.name}</b> {e.reply.content || "a message"}</div>
                     </section>
                 )}
 
@@ -152,7 +153,7 @@ export function Detail({ e, index, onClose, onScope, openMedia, onRemove, onMeta
                         const n = countFor(pred);
                         return (
                             <div key={id} className={cl("ignore-row")}>
-                                <span>{off ? <>🚫 Not logging <b>{label}</b></> : <>Logging <b>{label}</b></>}</span>
+                                <span>{off ? <><SonataGlyph name="block" /> Not logging <b>{label}</b></> : <>Logging <b>{label}</b></>}</span>
                                 <button type="button" className="vc-tool-link" onClick={() => toggleIgnore(id)}>{off ? "Log again" : "Stop logging"}</button>
                                 {off && n > 0 && <button type="button" className="vc-tool-link" onClick={() => onRemove(index.entries.filter(pred).filter(x => !x.star))}>Delete {n} log{n === 1 ? "" : "s"}</button>}
                             </div>
@@ -182,8 +183,8 @@ export function Detail({ e, index, onClose, onScope, openMedia, onRemove, onMeta
                 <button type="button" className="vc-tool-btn" onClick={() => backend.copy(e.m.content ?? "")}>Copy text</button>
                 <button type="button" className="vc-tool-btn" title="Save this message (with its earlier versions) as a picture" onClick={() => {
                     void conversationPicture([e], whereText(e.place)).then(png => backend.save(`message-${e.id}.png`, "image/png", png), err => backend.toast(err?.message ?? "Couldn't make the picture", false));
-                }}>🖼️ Picture</button>
-                <button type="button" className="vc-tool-btn" title="Save this message as a text file" onClick={() => backend.save(`message-${e.id}.txt`, "text/plain", exportText([e]))}>📝 Text file</button>
+                }}><SonataGlyph name="image" /> Picture</button>
+                <button type="button" className="vc-tool-btn" title="Save this message as a text file" onClick={() => backend.save(`message-${e.id}.txt`, "text/plain", exportText([e]))}><SonataGlyph name="fileText" /> Text file</button>
                 <button type="button" className="vc-tool-btn" onClick={() => backend.profile(e.authorId)}>Profile</button>
                 <button type="button" className="vc-tool-btn vc-tool-danger" onClick={() => onRemove([e])}>Delete log</button>
             </div>

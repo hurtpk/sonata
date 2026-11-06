@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "@webpack/common";
 
 import { MODEL_EXT, parseModel } from "./parse";
 import { mountViewer, Viewer } from "./viewer";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const Native = VencordNative?.pluginHelpers?.Sonata as PluginNative<typeof import("../filePreviewer/attachmentNative")> | undefined;
 
@@ -76,7 +77,7 @@ function ModelCard({ attachment }: { attachment: any; }) {
                 <span className="vc-m3d-name" title={attachment.filename}>{attachment.filename}</span>
                 <span className="vc-m3d-meta">{ext} · {sizeText(attachment.size ?? 0)}{info ? ` · ${info}` : ""}</span>
             </div>
-            {state === "idle" && <button type="button" className="vc-m3d-open" onClick={load}>🧊 View in 3D</button>}
+            {state === "idle" && <button type="button" className="vc-m3d-open" onClick={load}><SonataGlyph name="snowflake" /> View in 3D</button>}
             {state === "loading" && !data && <div className="vc-m3d-status">Downloading…</div>}
             {state === "error" && <div className="vc-m3d-status vc-m3d-error">{error}</div>}
             {data && state !== "error" && (
@@ -84,7 +85,7 @@ function ModelCard({ attachment }: { attachment: any; }) {
                     <canvas ref={canvas} className="vc-m3d-canvas" />
                     <div className="vc-m3d-tools">
                         <span className="vc-m3d-hint">Drag to turn · scroll to zoom · double-click to reset</span>
-                        <button type="button" onClick={() => setSpin(s => !s)}>{spin ? "⏸ Stop turning" : "▶ Turn"}</button>
+                        <button type="button" onClick={() => setSpin(s => !s)}>{spin ? <><SonataGlyph name="pause" />{" Stop turning"}</> : <><SonataGlyph name="play" />{" Turn"}</>}</button>
                         <button type="button" onClick={() => viewer.current?.reset()}>↺ Reset</button>
                     </div>
                 </>

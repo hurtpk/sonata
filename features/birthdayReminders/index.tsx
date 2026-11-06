@@ -18,6 +18,7 @@ import { playEffect } from "../_shared/effects";
 import { colorOf, daysUntil, dueReminders, formatDate, nextOccurrence, turning } from "./dates";
 import { avatarUrl, openBirthdays } from "./Panel";
 import { allBirthdays, getBirthday, loadBirthdays, patchBirthday, useBirthdays } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 export const settings = defineFeatureSettings("birthdayReminders", {
     remindHour: {
@@ -102,7 +103,7 @@ function ProfileCountdown({ userId, isSideBar }: { userId: string; isSideBar: bo
     const when = days === 0 ? "today! 🎉" : days === 1 ? "tomorrow" : `in ${days} days`;
     return (
         <div className={`vc-bday-profile${days === 0 ? " vc-bday-profile-today" : ""}${isSideBar ? " vc-bday-profile-side" : ""}`} style={{ "--m": colorOf(b) } as React.CSSProperties} title="Only you see this — from Birthday Reminders" onClick={() => open(userId)}>
-            <span className="vc-bday-profile-icon" aria-hidden>🎂</span>
+            <span className="vc-bday-profile-icon" aria-hidden><SonataGlyph name="cake" /></span>
             <span className="vc-bday-profile-text">
                 <b>{days === 0 ? (mine ? "Your birthday is today! 🎉" : "Birthday today! 🎉") : `${mine ? "Your birthday" : "Birthday"} ${when}`}</b>
                 <span>{formatDate(b)}{age ? ` · ${days === 0 ? "turning" : "turns"} ${age}` : ""}</span>

@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "@webpack/common";
 
 import { callNative } from "../../_shared/native";
 import { forgetHook } from "./extras";
+import { SonataGlyph } from "../../../utilities/icons";
 
 type Toast = (kind: "success" | "error", msg: string) => void;
 
@@ -185,10 +186,10 @@ export function PictureInput({ value, onChange, onFile, previewOf, placeholder, 
             }}
         >
             <button type="button" className="vc-es2-pic-thumb" title="Upload a picture" onClick={() => picker.current?.click()}>
-                {preview && !broken ? <img src={preview} alt="" onError={() => setBroken(true)} /> : <span aria-hidden>🖼️</span>}
+                {preview && !broken ? <img src={preview} alt="" onError={() => setBroken(true)} /> : <span aria-hidden><SonataGlyph name="image" /></span>}
             </button>
             {attached ? (
-                <div className="vc-es2-pic-file" title={attached}>📎 <span>{attached}</span><small>uploads with the message</small></div>
+                <div className="vc-es2-pic-file" title={attached}><SonataGlyph name="paperclip" /> <span>{attached}</span><small>uploads with the message</small></div>
             ) : (
                 <input className={"vc-tool-input vc-es2-grow" + (broken ? " vc-es2-input-bad" : "")} placeholder={placeholder ?? "Drop, paste or upload a picture — or a link"}
                     value={value} onChange={e => onChange(e.target.value)} />

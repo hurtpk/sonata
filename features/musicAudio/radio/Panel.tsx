@@ -15,6 +15,7 @@ import { CloseIcon, NextIcon, PauseIcon, PlayIcon, VolumeIcon } from "../wavefor
 import type { Station } from "./native";
 import { coverOf, failed, Item, next, play, playerState, position, previous, seek, serverBase, setVolume, shuffled, stop, toggle, useCovers, usePlayer, wantCover, windowOpened } from "./player";
 import { addFiles, forgetSoundCloud, isFavorite, loadLikes, MusicFile, playedStation, radioTools, removeFile, settings, stations, toggleFavorite, useRadio } from "./store";
+import { SonataGlyph } from "../../../utilities/icons";
 
 type Tab = "radio" | "soundcloud" | "files";
 let lastTab: Tab = "radio";
@@ -253,7 +254,7 @@ function FilesTab() {
             </div>
             {!saved.files.length ? (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">🎵</span>
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="sonata" /></span>
                     Add MP3, M4A, FLAC, WAV or OGG files from your computer. They stay where they are — nothing is copied or uploaded.
                 </div>
             ) : (

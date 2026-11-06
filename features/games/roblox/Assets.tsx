@@ -26,6 +26,7 @@ import { MeshError, parseMesh, RobloxMesh, toObj, toPreview } from "./mesh";
 import { Painter } from "./Painter";
 import { AssetRef, FileKind, readFile, refLabel, sniff } from "./rbxfile";
 import { decode, encodePng, isUnchanged, NO_CHANGE, Recolor, recolor } from "./recolor";
+import { SonataGlyph } from "../../../utilities/icons";
 
 export const TYPES: Record<number, string> = {
     1: "Image", 2: "T-shirt", 3: "Audio", 4: "Mesh", 8: "Hat", 9: "Place", 10: "Model", 11: "Shirt", 12: "Pants", 13: "Decal", 17: "Head", 18: "Face",
@@ -195,7 +196,7 @@ export function Preview({ parts }: { parts: Part[]; }) {
             <div className={rb("asset-3d-bar")}>
                 {meshes.length > 1 && meshes.map((m, i) => <button key={m.ref.id} type="button" className={classes("vc-tool-chip", i === which && "vc-tool-chip-on")} onClick={() => setWhich(i)}>Part {i + 1}</button>)}
                 <span className={rb("spacer")} />
-                <button type="button" className="vc-tool-btn" onClick={() => setSpin(s => !s)}>{spin ? "⏸ Stop turning" : "▶ Turn"}</button>
+                <button type="button" className="vc-tool-btn" onClick={() => setSpin(s => !s)}>{spin ? <><SonataGlyph name="pause" />{" Stop turning"}</> : <><SonataGlyph name="play" />{" Turn"}</>}</button>
                 <button type="button" className="vc-tool-btn" onClick={() => viewer.current?.reset()}>↺ Reset</button>
             </div>
             <span className="vc-tool-hint">Drag to turn it, scroll to zoom. The colours come from its texture{tex?.original ? " (edited)" : ""}.</span>
@@ -265,7 +266,7 @@ function PartRow({ p, base, texName, mesh, onReplace }: { p: Part; base: string;
     return (
         <div className={rb("asset-file-wrap")}>
             <div className={rb("asset-file")}>
-                {p.url && isImage(p.kind) ? <img src={p.url} alt="" /> : <span className={rb("asset-icon")}>{p.what === "mesh" ? "🧊" : p.what === "sound" || isSound(p.kind) ? "🔊" : p.what === "animation" ? "🏃" : "📄"}</span>}
+                {p.url && isImage(p.kind) ? <img src={p.url} alt="" /> : <span className={rb("asset-icon")}>{p.what === "mesh" ? <SonataGlyph name="snowflake" /> : p.what === "sound" || isSound(p.kind) ? <SonataGlyph name="speaker" /> : p.what === "animation" ? <SonataGlyph name="play" /> : <SonataGlyph name="fileText" />}</span>}
                 <div className={rb("asset-file-main")}>
                     <b>{p.label}{p.original && <span className={rb("badge-mini")}>edited</span>}</b>
                     <span>
@@ -275,7 +276,7 @@ function PartRow({ p, base, texName, mesh, onReplace }: { p: Part; base: string;
                     <button type="button" className={rb("link")} onClick={() => copyWithToast(p.ref.id, "ID copied")}>ID {p.ref.id}</button>
                 </div>
                 <div className={rb("asset-btns")}>
-                    {isImage(p.kind) && p.bytes && <button type="button" className={classes("vc-tool-btn", editOpen && "vc-tool-primary")} title="Paint on it or change its colours" onClick={() => setEditOpen(o => !o)}>🎨 Edit</button>}
+                    {isImage(p.kind) && p.bytes && <button type="button" className={classes("vc-tool-btn", editOpen && "vc-tool-primary")} title="Paint on it or change its colours" onClick={() => setEditOpen(o => !o)}><SonataGlyph name="palette" /> Edit</button>}
                     {p.mesh && <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => { const o = toObj(p.mesh!, name, texName); download(`${name}.obj`, o.obj, MIME.obj); if (o.mtl) download(`${name}.mtl`, o.mtl, MIME.mtl); }}>Save .obj</button>}
                     {p.bytes && <button type="button" className={classes("vc-tool-btn", !p.mesh && !isImage(p.kind) && "vc-tool-primary")} onClick={() => download(`${name}.${ext}`, p.bytes!, MIME[ext])}>Save .{ext}</button>}
                 </div>
@@ -285,8 +286,8 @@ function PartRow({ p, base, texName, mesh, onReplace }: { p: Part; base: string;
                 <div className={rb("edit")}>
                     <div className={rb("edit-head")}>
                         <div className="vc-tool-seg">
-                            <button type="button" className={classes("vc-tool-seg-btn", mode === "paint" && "vc-tool-seg-on")} onClick={() => setMode("paint")}>🖌 Paint</button>
-                            <button type="button" className={classes("vc-tool-seg-btn", mode === "colours" && "vc-tool-seg-on")} onClick={() => setMode("colours")}>🎨 Colours</button>
+                            <button type="button" className={classes("vc-tool-seg-btn", mode === "paint" && "vc-tool-seg-on")} onClick={() => setMode("paint")}><SonataGlyph name="brush" /> Paint</button>
+                            <button type="button" className={classes("vc-tool-seg-btn", mode === "colours" && "vc-tool-seg-on")} onClick={() => setMode("colours")}><SonataGlyph name="palette" /> Colours</button>
                         </div>
                         <span className={rb("spacer")} />
                         {p.original && <button type="button" className="vc-tool-btn" title="Undo every edit" onClick={() => onReplace(null)}>↺ Back to the original</button>}
@@ -305,8 +306,8 @@ export function Assets({ initial }: { initial?: string; }) {
     return (
         <>
             <div className="vc-tool-seg">
-                <button type="button" className={classes("vc-tool-seg-btn", view === "one" && "vc-tool-seg-on")} onClick={() => setView("one")}>📦 One item</button>
-                <button type="button" className={classes("vc-tool-seg-btn", view === "two" && "vc-tool-seg-on")} onClick={() => setView("two")}>⚖️ Compare two items</button>
+                <button type="button" className={classes("vc-tool-seg-btn", view === "one" && "vc-tool-seg-on")} onClick={() => setView("one")}><SonataGlyph name="package" /> One item</button>
+                <button type="button" className={classes("vc-tool-seg-btn", view === "two" && "vc-tool-seg-on")} onClick={() => setView("two")}><SonataGlyph name="sliders" /> Compare two items</button>
             </div>
             {view === "one" ? <OneItem initial={initial} /> : <ItemCompare initial={initial} />}
         </>
@@ -370,7 +371,7 @@ function OneItem({ initial }: { initial?: string; }) {
             {err && <span className="vc-tool-error">{err}</span>}
             {!id ? (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">📦</span>
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="package" /></span>
                     Get an item's files — its 3D model, textures, clothing template, decal image or sound.
                     <span className="vc-tool-hint">Works for most avatar items, clothing, decals, sounds and Creator Store models. Meshes become .obj files you can open in Blender; textures can be recoloured. Some newer items Roblox only hands out to signed-in accounts. A whole avatar can be saved from a profile's Outfit tab.</span>
                 </div>
@@ -378,21 +379,21 @@ function OneItem({ initial }: { initial?: string; }) {
                 <div className={rb("asset")}>
                     {info && (
                         <div className={rb("head")}>
-                            {info.image ? <img className={rb("icon")} src={info.image} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}>📦</span>}
+                            {info.image ? <img className={rb("icon")} src={info.image} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}><SonataGlyph name="package" /></span>}
                             <div className={rb("who")}>
                                 <b>{info.name}</b>
                                 <span>{TYPES[info.typeId] ?? `Type ${info.typeId}`} · by {info.creator}{info.price != null && info.forSale ? ` · R$ ${info.price.toLocaleString()}` : ""}</span>
                             </div>
-                            {(parts.some(p => p.bytes) || main?.bytes) && <button type="button" className="vc-tool-btn vc-tool-primary" onClick={zipAll}>⬇ Save everything (.zip)</button>}
+                            {(parts.some(p => p.bytes) || main?.bytes) && <button type="button" className="vc-tool-btn vc-tool-primary" onClick={zipAll}><SonataGlyph name="download" /> Save everything (.zip)</button>}
                         </div>
                     )}
                     {status && <div className={rb("loading")}><span className={rb("spin")} /> {status}</div>}
                     {!status && (blocked || sources.apiKey) && <ApiKeyBox key={String(blocked)} blocked={blocked} onSaved={() => setRetry(n => n + 1)} />}
-                    {main?.error && <span className={rb("muted")}>⚠️ The item's own file: {main.error}.{parts.length ? " Here's Roblox's picture of it instead." : ""}</span>}
+                    {main?.error && <span className={rb("muted")}><SonataGlyph name="warning" /> The item's own file: {main.error}.{parts.length ? " Here's Roblox's picture of it instead." : ""}</span>}
                     {!status && parts.length > 0 && <Preview parts={parts} />}
                     {main?.bytes && main.kind && !isSound(main.kind) && !isImage(main.kind) && main.kind !== "mesh" && (
                         <div className={rb("asset-file")}>
-                            <span className={rb("asset-icon")}>🗂️</span>
+                            <span className={rb("asset-icon")}><SonataGlyph name="folder" /></span>
                             <div className={rb("asset-file-main")}>
                                 <b>The item itself</b>
                                 <span>{main.kind === "rbxm" || main.kind === "rbxmx" ? "Roblox model file — drag it into Roblox Studio" : main.kind.toUpperCase()} · {size(main.bytes.length)}</span>

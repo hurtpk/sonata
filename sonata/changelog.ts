@@ -19,6 +19,15 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.11.06c",
+        date: "November 6, 2026",
+        title: "Sonata’s new look and performance improvements",
+        items: [
+            { icon: "palette", text: "The Sonata dashboard and feature windows now use the website’s typography, colors and SVG icons. Pinned DM category effects stay inside their headers when the sidebar gets narrow." },
+            { icon: "bolt", text: "Media editors load when opened, nonurgent trackers check less often while Discord is minimized, and busy chats update in batches. Light mode can keep pinned DM names and person tags static." },
+        ],
+    },
+    {
         version: "2026.11.06b",
         date: "November 6, 2026",
         title: "Auto Tools",
@@ -32,6 +41,17 @@ export const CHANGELOG: ChangeEntry[] = [
         title: "Word Purge for server moderation",
         items: [
             { icon: "🧹", text: "Word Purge in Server Tools lets staff queue words and channels, preview matching messages, and follow deletion progress even after closing the panel." },
+        ],
+    },
+    {
+        version: "2026.11.05b",
+        date: "November 5, 2026",
+        title: "Image palettes and role comparison",
+        items: [
+            { icon: "🎨", text: "Screenshot Styler pulls up to six colors from an image. Use one as the background, copy the hex codes, or open the palette as a gradient in Colored Text." },
+            { icon: "🔎", text: "Server Insights adds a Compare roles tab with two role pickers, permission search, and a view for permissions only one role grants." },
+            { icon: "✨", text: "Person Tags now share the Pin DMs effects picker. Both get Neon, Orbit, Ripple, Scanlines and Frost, and tags preview effects as you edit." },
+            { icon: "➕", text: "Add Sonata Bot opens Discord’s server picker directly in the app." },
         ],
     },
     {

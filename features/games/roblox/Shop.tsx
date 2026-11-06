@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from "@webpack/common";
 
 import { ROBUX } from "../../currencyConverter/robux";
 import { fetchShop, RbxPass, RbxShop } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const rbx = (n: number) => `R$ ${Math.round(n).toLocaleString()}`;
@@ -57,7 +58,7 @@ function WhatIf({ item }: { item: RbxPass; }) {
 function Row({ item, on, onPick }: { item: RbxPass; on: boolean; onPick(): void; }) {
     return (
         <button type="button" className={classes(rb("shop-row"), on && rb("shop-row-on"))} onClick={onPick} title={item.description || item.name}>
-            {item.icon ? <img src={item.icon} alt="" loading="lazy" /> : <span className={rb("img-none")}>🎟️</span>}
+            {item.icon ? <img src={item.icon} alt="" loading="lazy" /> : <span className={rb("img-none")}><SonataGlyph name="ticket" /></span>}
             <span className={rb("shop-name")}>
                 <b>{item.name}</b>
                 {item.description && <small>{item.description.split("\n")[0].slice(0, 110)}</small>}
@@ -97,8 +98,8 @@ export function GameShop({ placeId }: { placeId: string; }) {
             sort === "high" ? val(b) - val(a) : sort === "low" ? (val(a) < 0 ? 1 : val(b) < 0 ? -1 : val(a) - val(b)) : sort === "new" ? Date.parse(b.updated || "0") - Date.parse(a.updated || "0") : a.name.localeCompare(b.name));
     }, [state.shop, kind, sort, q]);
 
-    if (!open) return <button type="button" className={classes("vc-tool-btn", rb("shop-open"))} onClick={() => setOpen(true)}>🎟️ Game passes & products</button>;
-    if (state.error) return <span className={rb("muted")}>🎟️ Couldn't get the shop: {state.error}</span>;
+    if (!open) return <button type="button" className={classes("vc-tool-btn", rb("shop-open"))} onClick={() => setOpen(true)}><SonataGlyph name="ticket" /> Game passes & products</button>;
+    if (state.error) return <span className={rb("muted")}><SonataGlyph name="ticket" /> Couldn't get the shop: {state.error}</span>;
     if (!state.shop) return <div className={rb("loading")}><span className={rb("spin")} /> Opening the shop…</div>;
 
     const { passes, products } = state.shop;
@@ -109,7 +110,7 @@ export function GameShop({ placeId }: { placeId: string; }) {
         <div className={rb("shop")}>
             <div className={rb("outfit-head")}>
                 <div>
-                    <b>🎟️ {passes.length} game pass{passes.length === 1 ? "" : "es"} · {products.length >= 300 ? "300+" : products.length} developer product{products.length === 1 ? "" : "s"}</b>
+                    <b><SonataGlyph name="ticket" /> {passes.length} game pass{passes.length === 1 ? "" : "es"} · {products.length >= 300 ? "300+" : products.length} developer product{products.length === 1 ? "" : "s"}</b>
                     <span>Prices, and what the creator keeps after Roblox's {Math.round(ROBUX.fee * 100)}% cut. Roblox keeps sales numbers private.</span>
                 </div>
                 <span className={rb("spacer")} />

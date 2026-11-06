@@ -26,6 +26,7 @@ import { defineFeatureSettings } from "../../../featureSettings";
 import { openSection, registerSection } from "../../_shared/Hub";
 import { Window } from "../../_shared/Window";
 import { asMessage, Options, render, Style, STYLES, supported, widthOf } from "./font";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-ascii-");
 const tl = classNameFactory("vc-tool-");
@@ -88,8 +89,8 @@ function AsciiWindow({ modalProps }: { modalProps: RenderModalProps; }) {
                 </div>
                 <div className={cl("notes")}>
                     {unknown.length > 0 && <span>Left out (no letter for it): {unknown.join(" ")}</span>}
-                    {opts.style !== "emoji" && width > WIDE && <span>⚠ {width} characters wide — it may wrap on smaller windows and phones. Try fewer letters per line, or Compact.</span>}
-                    {tooLong && <span>⚠ Too long for one message ({message.length}/2000) — use fewer letters.</span>}
+                    {opts.style !== "emoji" && width > WIDE && <span><SonataGlyph name="warning" /> {width} characters wide — it may wrap on smaller windows and phones. Try fewer letters per line, or Compact.</span>}
+                    {tooLong && <span><SonataGlyph name="warning" /> Too long for one message ({message.length}/2000) — use fewer letters.</span>}
                 </div>
                 <div className={tl("footer")}>
                     <span className={tl("hint")}>{art ? `${message.length}/2000 characters` : ""}</span>

@@ -9,6 +9,8 @@
 // avatar is kept as a timeline (with a heads-up, if you like). Saved on this
 // computer.
 
+import { scheduleBackgroundCheck } from "../../../sonata/performance";
+
 import { DataStore } from "@api/index";
 import { showNotification } from "@api/Notifications";
 
@@ -135,10 +137,12 @@ export async function checkPeople(force = false, everyHours = 3) {
     } finally { busy = false; }
 }
 
-let timer: ReturnType<typeof setInterval> | null = null;
+let cancelSchedule: (() => void) | undefined;
 export function startPeopleChecks(everyHours: () => number) {
     stopPeopleChecks();
-    timer = setInterval(() => void checkPeople(false, everyHours()), 10 * 60_000);
-    setTimeout(() => void checkPeople(false, everyHours()), 40_000);
+    cancelSchedule = scheduleBackgroundCheck(() => void checkPeople(false, everyHours()), 10 * 60_000, 30 * 60_000, 40_000);
 }
-export function stopPeopleChecks() { if (timer) clearInterval(timer); timer = null; }
+export function stopPeopleChecks() {
+    cancelSchedule?.();
+    cancelSchedule = undefined;
+}

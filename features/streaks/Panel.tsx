@@ -15,6 +15,7 @@ import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { atRiskNow, settings, todayNote, useStreaks } from "./index";
 import { knownChannels, Rule, scanHistory, streakOf } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const st = classNameFactory("vc-streak-");
@@ -77,7 +78,7 @@ function StreaksModal({ modalProps }: { modalProps: RenderModalProps; }) {
                                         <span className={st("name")}>{user.globalName || user.username}</span>
                                         <span className={st("note")}>{streak.count ? todayNote(streak, rule) : "No streak right now"} · best {streak.best}</span>
                                     </button>
-                                    <span className={classes(st("big"), !streak.count && st("big-off"))}><span className={st("flame")} aria-hidden>🔥</span><b>{streak.count}</b><small>{risk ? "⌛ today" : "days"}</small></span>
+                                    <span className={classes(st("big"), !streak.count && st("big-off"))}><span className={st("flame")} aria-hidden><SonataGlyph name="flame" /></span><b>{streak.count}</b><small>{risk ? <><SonataGlyph name="hourglass" />{" today"}</> : "days"}</small></span>
                                     <button type="button" className={cl("btn")} disabled={!!scanning[id] || !!scanAll} onClick={() => scanOne(id)} title="Read back through this DM's history">
                                         {scanning[id] ?? "Scan"}
                                     </button>
@@ -86,7 +87,7 @@ function StreaksModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         })}
                     </div>
                 ) : (
-                    <div className={cl("empty")}><span className={cl("empty-icon")}>🔥</span>No streaks yet. They build up as you and your friends message each other — or scan your recent DMs to find the ones you already have.</div>
+                    <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="flame" /></span>No streaks yet. They build up as you and your friends message each other — or scan your recent DMs to find the ones you already have.</div>
                 )}
                 <div className={cl("hint")}>Sonata counts days from the messages it sees, so streaks from before you turned this on need a scan. Scanning reads your own DM history only until it finds where each streak broke. Everything stays on this computer.</div>
             </div>

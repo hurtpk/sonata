@@ -8,6 +8,7 @@ import { React, useMemo, useState } from "@webpack/common";
 
 import { Avatar, cl, classes, useBackend } from "./bits";
 import { Entry, fmtDay, Scope } from "./data";
+import { SonataGlyph } from "../../../../../utilities/icons";
 
 type Col = "name" | "count" | "deleted" | "edited" | "ghost" | "media" | "places" | "last";
 
@@ -55,7 +56,7 @@ export function PeopleView({ list, onScope }: { list: Entry[]; onScope(s: Scope)
     const Head = ({ col, label, title }: { col: Col; label: string; title?: string; }) => (
         <button type="button" className={classes(cl("th"), sort.col === col && cl("th-on"))} title={title}
             onClick={() => setSort(s => ({ col, desc: s.col === col ? !s.desc : col !== "name" }))}>
-            {label}{sort.col === col ? (sort.desc ? " ↓" : " ↑") : ""}
+            {title ? <SonataGlyph name={label} /> : label}{sort.col === col ? (sort.desc ? " ↓" : " ↑") : ""}
         </button>
     );
 
@@ -96,8 +97,8 @@ export function PeopleView({ list, onScope }: { list: Entry[]; onScope(s: Scope)
                         <span className={cl("num")}>{r.places}</span>
                         <span className={cl("muted")}>{fmtDay(r.last)}</span>
                         <span className={cl("pacts")}>
-                            {backend.setWatched && <button type="button" className={classes("vc-tool-icon", cl("watch"), watched.includes(r.id) && cl("watch-on"))} title={watched.includes(r.id) ? "Watching — click to stop" : "Watch: tell me when they delete or edit a message"} onClick={ev => { ev.stopPropagation(); toggleWatch(r.id); }}>👁</button>}
-                            <button type="button" className="vc-tool-icon" title="Open their profile" onClick={ev => { ev.stopPropagation(); backend.profile(r.id); }}>👤</button>
+                            {backend.setWatched && <button type="button" className={classes("vc-tool-icon", cl("watch"), watched.includes(r.id) && cl("watch-on"))} title={watched.includes(r.id) ? "Watching — click to stop" : "Watch: tell me when they delete or edit a message"} onClick={ev => { ev.stopPropagation(); toggleWatch(r.id); }}><SonataGlyph name="eye" /></button>}
+                            <button type="button" className="vc-tool-icon" title="Open their profile" onClick={ev => { ev.stopPropagation(); backend.profile(r.id); }}><SonataGlyph name="profile" /></button>
                         </span>
                     </div>
                 ))}

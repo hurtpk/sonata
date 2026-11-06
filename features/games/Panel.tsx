@@ -16,6 +16,7 @@ import { RobloxSection } from "./roblox/Panel";
 import { historyLine, recordShop, returnsEvery, searchHistory, useHistory } from "./shopHistory";
 import { SteamSection } from "./steam/Panel";
 import { addServer, cache, checkServer, country, dealStores, isWatchingPrice, isWished, native, removeServer, renameServer, settings, setWatchingDrops, setWished, unwatchPrice, useGames, watchPrice } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const open = (url: string) => VencordNative.native.openExternal(url);
 const money = (n: number) => `$${n.toFixed(2)}`;
@@ -48,7 +49,7 @@ function useLoad<T>(key: string, load: () => Promise<{ ok: boolean; error?: stri
     return { data, error, busy, reload: run };
 }
 
-const Empty = ({ icon, children }: { icon: string; children: React.ReactNode; }) => <div className="vc-tool-empty"><span className="vc-tool-empty-icon">{icon}</span>{children}</div>;
+const Empty = ({ icon, children }: { icon: string; children: React.ReactNode; }) => <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name={icon} /></span>{children}</div>;
 const Problem = ({ text, retry }: { text: string; retry(): void; }) => <div className="vc-games-error">{text} <button type="button" className="vc-tool-link" onClick={retry}>Try again</button></div>;
 
 /* ── Epic: free games ── */
@@ -64,7 +65,7 @@ function EpicFree() {
     const now = games.filter(g => g.now), next = games.filter(g => !g.now);
     const card = (g: EpicGame) => (
         <div key={`${g.id}:${g.start}`} className={classes("vc-games-epic", g.now && "vc-games-epic-now")}>
-            {g.image ? <img src={epicImg(g.image)} alt="" loading="lazy" /> : <div className="vc-games-noimg">🎁</div>}
+            {g.image ? <img src={epicImg(g.image)} alt="" loading="lazy" /> : <div className="vc-games-noimg"><SonataGlyph name="gift" /></div>}
             <div className="vc-games-epic-text">
                 <b>{g.title}</b>
                 <span>{g.now ? `Free until ${day(g.end)}` : `Free from ${day(g.start)} to ${day(g.end)}`}{g.price && g.price !== "0" ? ` · usually ${g.price}` : ""}</span>
@@ -96,7 +97,7 @@ function MoreFree() {
     const gog = games.filter(g => g.store === "gog"), rest = games.filter(g => g.store !== "gog");
     const card = (g: FreeGame) => (
         <div key={g.id} className={classes("vc-games-epic", "vc-games-epic-now")}>
-            {g.image ? <img src={g.image} alt="" loading="lazy" /> : <div className="vc-games-noimg">🎁</div>}
+            {g.image ? <img src={g.image} alt="" loading="lazy" /> : <div className="vc-games-noimg"><SonataGlyph name="gift" /></div>}
             <div className="vc-games-epic-text">
                 <b>{g.title}</b>
                 <span>{g.end ? `Free until ${day(g.end)}` : "Free for now"}{g.worth ? ` · usually ${g.worth}` : ""}</span>
@@ -145,7 +146,7 @@ function TwitchDrops({ picked }: { picked: boolean; }) {
         return (
             <div key={x.slug} className={classes("vc-games-drop", soon(x) && "vc-games-drop-soon")}>
                 <div className="vc-games-drop-head">
-                    {x.image ? <img src={x.image} alt="" loading="lazy" /> : <div className="vc-games-noimg">📺</div>}
+                    {x.image ? <img src={x.image} alt="" loading="lazy" /> : <div className="vc-games-noimg"><SonataGlyph name="tv" /></div>}
                     <div className="vc-games-drop-text">
                         <b>{x.name}</b>
                         <span>{left(x.end)} · {x.drops} drop{x.drops === 1 ? "" : "s"}</span>
@@ -167,7 +168,7 @@ function TwitchDrops({ picked }: { picked: boolean; }) {
                     <button type="button" className={classes("vc-tool-btn", on && "vc-games-drop-on")} aria-pressed={on}
                         title={on ? "Stop telling me about this game" : "Tell me when this game has new drops"}
                         onClick={() => { setWatchingDrops(x, !on); showToast(on ? `Stopped watching ${x.name}` : `You'll hear about new ${x.name} drops`, "message"); }}>
-                        {on ? "🔔 Picked" : "🔔 Tell me"}
+                        {on ? <><SonataGlyph name="bell" />{" Picked"}</> : <><SonataGlyph name="bell" />{" Tell me"}</>}
                     </button>
                 </div>
             </div>
@@ -181,7 +182,7 @@ function TwitchDrops({ picked }: { picked: boolean; }) {
                 <button type="button" className="vc-tool-link" disabled={busy} onClick={reload}>{busy ? "Loading…" : "Refresh"}</button>
             </div>
             {picked && !watching.length
-                ? <Empty icon="🔔">Press <b>🔔 Tell me</b> on a game in Active drops, and you'll get a notification when it starts new drops.</Empty>
+                ? <Empty icon="🔔">Press <b><SonataGlyph name="bell" /> Tell me</b> on a game in Active drops, and you'll get a notification when it starts new drops.</Empty>
                 : list.length
                     ? <div className="vc-games-drop-list">{list.map(card)}</div>
                     : <Empty icon="📺">{picked ? "None of your games have drops right now — you'll be told when they do." : "No games match that."}</Empty>}
@@ -241,7 +242,7 @@ function FortniteShop() {
             <div className="vc-games-shop">
                 {items.map(i => (
                     <div key={i.id} className="vc-games-item" style={{ "--rar": RARITY[i.rarity] ?? "#555" } as React.CSSProperties}>
-                        {i.image ? <img src={i.image} alt="" loading="lazy" /> : <div className="vc-games-noimg">🛒</div>}
+                        {i.image ? <img src={i.image} alt="" loading="lazy" /> : <div className="vc-games-noimg"><SonataGlyph name="cart" /></div>}
                         <button type="button" className={classes("vc-games-star", isWished(i.name) && "vc-games-star-on")} aria-label={isWished(i.name) ? "Stop waiting for it" : "Wait for it"} title={isWished(i.name) ? "Waiting for it" : "Tell me when it's back"}
                             onClick={() => setWished(i.name, !isWished(i.name))}>{isWished(i.name) ? "★" : "☆"}</button>
                         <b>{i.name}</b>
@@ -278,7 +279,7 @@ function ShopHistory() {
                         const every = returnsEvery(i);
                         return (
                             <div key={i.name} className="vc-games-hist" style={{ "--rar": RARITY[i.rarity ?? ""] ?? "#555" } as React.CSSProperties}>
-                                {i.image ? <img src={i.image} alt="" loading="lazy" /> : <div className="vc-games-noimg">🛒</div>}
+                                {i.image ? <img src={i.image} alt="" loading="lazy" /> : <div className="vc-games-noimg"><SonataGlyph name="cart" /></div>}
                                 <span className="vc-games-hist-text"><b>{i.name}</b><small>{i.type}</small></span>
                                 <span className="vc-games-hist-when"><b>Last: {ago(i.days.at(-1)!)}</b><small>{i.days.length} time{i.days.length === 1 ? "" : "s"}{every ? ` · back about every ${every} days` : ""}</small></span>
                             </div>
@@ -304,7 +305,7 @@ function GamePass({ list }: { list: "added" | "coming" | "leaving"; }) {
                 <div className="vc-games-posters">
                     {games.map(g => (
                         <button key={g.id} type="button" className="vc-games-poster" title={g.title} onClick={() => open(g.url)}>
-                            {g.image ? <img src={`${g.image}?w=240`} alt="" loading="lazy" /> : <div className="vc-games-noimg">🎮</div>}
+                            {g.image ? <img src={`${g.image}?w=240`} alt="" loading="lazy" /> : <div className="vc-games-noimg"><SonataGlyph name="controller" /></div>}
                             <b>{g.title}</b>
                             {g.publisher && <small>{g.publisher}</small>}
                         </button>
@@ -339,7 +340,7 @@ function McServers() {
                     const srv = typeof info === "object" ? info : null;
                     return (
                         <div key={s.host} className="vc-games-server">
-                            {srv?.icon || s.icon ? <img src={srv?.icon ?? s.icon} alt="" /> : <div className="vc-games-noimg">⛏️</div>}
+                            {srv?.icon || s.icon ? <img src={srv?.icon ?? s.icon} alt="" /> : <div className="vc-games-noimg"><SonataGlyph name="hammer" /></div>}
                             <div className="vc-games-server-text">
                                 {naming?.host === s.host
                                     ? <input className="vc-tool-input vc-games-name-edit" autoFocus value={naming.text} placeholder={s.host} aria-label="A name for this server"
@@ -438,7 +439,7 @@ function DealDetail({ game, onBack }: { game: { id: string; title: string; thumb
         <>
             <button type="button" className="vc-tool-link vc-games-back" onClick={onBack}>← Back to results</button>
             <div className="vc-games-deal-head">
-                {game.thumb ? <img src={game.thumb} alt="" /> : <div className="vc-games-noimg">🏷️</div>}
+                {game.thumb ? <img src={game.thumb} alt="" /> : <div className="vc-games-noimg"><SonataGlyph name="tag" /></div>}
                 <div>
                     <b>{game.title}</b>
                     <span>{best ? `Cheapest now ${money(best.price)} on ${stores[best.store]?.name ?? "a store"}` : d ? "No store has it right now" : "Loading prices…"}{d?.lowest ? ` · lowest ever ${money(d.lowest.price)} (${new Date(d.lowest.date).toLocaleDateString(undefined, { month: "short", year: "numeric" })})` : ""}</span>
@@ -498,7 +499,7 @@ function DealSearch() {
                         <div className="vc-games-results">
                             {results.map(r => (
                                 <button key={r.id} type="button" className="vc-games-result" onClick={() => setPicked(r)}>
-                                    {r.thumb ? <img src={r.thumb} alt="" loading="lazy" /> : <div className="vc-games-noimg">🎮</div>}
+                                    {r.thumb ? <img src={r.thumb} alt="" loading="lazy" /> : <div className="vc-games-noimg"><SonataGlyph name="controller" /></div>}
                                     <b>{r.title}</b>
                                     <span>from {money(r.cheapest)}</span>
                                 </button>
@@ -569,7 +570,7 @@ function Rail({ platform, setPlatform }: { platform: Platform; setPlatform(p: Pl
         <>
             {PLATFORMS.map(x => (
                 <button key={x.id} type="button" className={classes("vc-sw-row", x.id === platform && "vc-sw-row-on")} aria-pressed={x.id === platform} onClick={() => setPlatform(x.id)}>
-                    <span className="vc-sw-pic" aria-hidden>{x.icon}</span>
+                    <span className="vc-sw-pic" aria-hidden><SonataGlyph name={x.icon} /></span>
                     <span className="vc-sw-row-text"><span className="vc-sw-row-title">{x.name}</span><span className="vc-sw-row-sub">{x.sub}</span></span>
                 </button>
             ))}

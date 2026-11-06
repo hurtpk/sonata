@@ -8,6 +8,7 @@ import { classNameFactory } from "@utils/css";
 import { Parser, React, useEffect, useState } from "@webpack/common";
 
 import { Entry, Filters, fmtBytes, LogRecord, Media, MetaMap, Scope, TypeFilter } from "./data";
+import { SonataGlyph } from "../../../../../utilities/icons";
 
 export const cl = classNameFactory("vc-mlx-");
 
@@ -125,16 +126,16 @@ export function Thumb({ media, className, onClick, big }: { media: Media; classN
     return (
         <button type="button" className={classes(cl("thumb"), media.spoiler && cl("thumb-spoiler"), className)} onClick={onClick} title={media.name}>
             {failed || !url ? (
-                <span className={cl("thumb-gone")}>{url ? <>🚫<small>{media.saved ? "Couldn't open" : "Removed by Discord"}</small></> : "⏳"}</span>
+                <span className={cl("thumb-gone")}>{url ? <><SonataGlyph name="block" /><small>{media.saved ? "Couldn't open" : "Removed by Discord"}</small></> : <SonataGlyph name="hourglass" />}</span>
             ) : media.kind === "video" ? (
                 <>
                     <video src={url} muted preload="metadata" playsInline onError={() => setFailed(true)} controls={big} autoPlay={big} loop={big} />
-                    {!big && <span className={cl("thumb-play")}>▶</span>}
+                    {!big && <span className={cl("thumb-play")}><SonataGlyph name="play" /></span>}
                 </>
             ) : (
                 <img src={url} alt="" loading="lazy" onError={() => setFailed(true)} />
             )}
-            {media.saved && !big && <span className={cl("thumb-saved")} title="Saved on this computer">💾</span>}
+            {media.saved && !big && <span className={cl("thumb-saved")} title="Saved on this computer"><SonataGlyph name="hardDrive" /></span>}
         </button>
     );
 }
@@ -142,9 +143,9 @@ export function Thumb({ media, className, onClick, big }: { media: Media; classN
 export function Badges({ e }: { e: Entry; }) {
     return (
         <>
-            {e.ghost && <span className={classes("vc-tool-badge", cl("b-ghost"))}>👻 Ghost ping</span>}
-            {e.deleted && !e.ghost && <span className={classes("vc-tool-badge", cl("b-del"))}>🗑️ Deleted</span>}
-            {e.edited && <span className={classes("vc-tool-badge", cl("b-edit"))}>✏️ Edited{e.versions.length > 2 ? ` ×${e.versions.length - 1}` : ""}</span>}
+            {e.ghost && <span className={classes("vc-tool-badge", cl("b-ghost"))}><SonataGlyph name="ghost" /> Ghost ping</span>}
+            {e.deleted && !e.ghost && <span className={classes("vc-tool-badge", cl("b-del"))}><SonataGlyph name="trash" /> Deleted</span>}
+            {e.edited && <span className={classes("vc-tool-badge", cl("b-edit"))}><SonataGlyph name="pencil" /> Edited{e.versions.length > 2 ? ` ×${e.versions.length - 1}` : ""}</span>}
             {e.author.bot && <span className="vc-tool-badge">BOT</span>}
         </>
     );

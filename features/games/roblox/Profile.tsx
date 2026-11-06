@@ -18,6 +18,7 @@ import { Outfit } from "./Outfit";
 import { OwnedGames } from "./OwnedGames";
 import { PlayerValue } from "./PlayerValue";
 import { UserGroups } from "./UserGroups";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 type Section = "outfit" | "value" | "groups" | "games";
@@ -38,7 +39,7 @@ function Names({ u }: { u: RbxUser; }) {
     return (
         <div className={rb("pf-names")}>
             <button type="button" className={classes(rb("pf-names-btn"), open && rb("pf-names-btn-on"))} onClick={() => setOpen(o => !o)} aria-expanded={open}>
-                <span>🕘</span>
+                <span><SonataGlyph name="clock" /></span>
                 <b>{others} previous username{others === 1 ? "" : "s"}</b>
                 {u.names.length !== list.length && <small>{u.names.length} changes in all</small>}
                 <i>{open ? "▾" : "▸"}</i>
@@ -96,7 +97,7 @@ export function FullProfile({ u, Img }: { u: RbxUser; Img: (p: { src?: string; c
                 <div className={rb("pf-id")}>
                     <div className={rb("pf-name")}>
                         <b>{u.displayName}</b>
-                        {u.verified && <span className={rb("tick")} title="Verified">✔</span>}
+                        {u.verified && <span className={rb("tick")} title="Verified"><SonataGlyph name="checkCircle" /></span>}
                         {u.banned && <span className={rb("banned")}>Banned</span>}
                     </div>
                     <div className={rb("pf-sub")}>

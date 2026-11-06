@@ -19,6 +19,7 @@ import { ToolHero } from "../../_shared/ToolHero";
 import { Window } from "../../_shared/Window";
 import { isSpotify, looksLikePlaylist, singleIn, siteOf } from "./links";
 import { cancelDownload, cancelWaiting, clearFinished, Info, isActive, Item, native, Playlist, queueMany, removeItem, settings, startDownload, useItems } from "./store";
+import { SonataGlyph } from "../../../utilities/icons";
 
 interface Setup { ytdlp: string | null; version: string | null; ffmpeg: string | null; folder: string; }
 
@@ -69,7 +70,7 @@ function Picker({ info, setup, onDone }: { info: Info; setup: Setup; onDone(): v
 
     return (
         <section className="vc-dl-card">
-            {info.thumbnail ? <img className="vc-dl-thumb" src={info.thumbnail} alt="" /> : <div className="vc-dl-thumb vc-dl-thumb-none">{info.hasVideo ? "🎬" : "🎵"}</div>}
+            {info.thumbnail ? <img className="vc-dl-thumb" src={info.thumbnail} alt="" /> : <div className="vc-dl-thumb vc-dl-thumb-none">{info.hasVideo ? <SonataGlyph name="clapper" /> : <SonataGlyph name="sonata" />}</div>}
             <div className="vc-dl-card-main">
                 <b className="vc-dl-title" title={info.title}>{info.title}</b>
                 <span className="vc-tool-hint">{[info.uploader, info.site, length(info.duration)].filter(Boolean).join(" · ")}</span>
@@ -77,8 +78,8 @@ function Picker({ info, setup, onDone }: { info: Info; setup: Setup; onDone(): v
 
                 {info.hasVideo && (
                     <div className="vc-tool-seg">
-                        <button type="button" className={classes("vc-tool-seg-btn", mode === "video" && "vc-tool-seg-on")} onClick={() => setMode("video")}>🎬 Video</button>
-                        <button type="button" className={classes("vc-tool-seg-btn", mode === "audio" && "vc-tool-seg-on")} onClick={() => setMode("audio")}>🎵 Audio only</button>
+                        <button type="button" className={classes("vc-tool-seg-btn", mode === "video" && "vc-tool-seg-on")} onClick={() => setMode("video")}><SonataGlyph name="clapper" /> Video</button>
+                        <button type="button" className={classes("vc-tool-seg-btn", mode === "audio" && "vc-tool-seg-on")} onClick={() => setMode("audio")}><SonataGlyph name="sonata" /> Audio only</button>
                     </div>
                 )}
                 <div className="vc-tool-chips">
@@ -93,7 +94,7 @@ function Picker({ info, setup, onDone }: { info: Info; setup: Setup; onDone(): v
                     <span className="vc-tool-hint">{mode === "video" ? "MP4 that plays everywhere, including in Discord." : audio === "mp3" ? "MP3 with the title and cover art." : "The original audio, untouched."}</span>
                     <span className="vc-tool-spacer" />
                     <button type="button" className="vc-tool-btn" onClick={onDone}>Cancel</button>
-                    <button type="button" className="vc-tool-btn vc-tool-primary" disabled={busy || info.isLive} onClick={() => void go()}>⬇ Download</button>
+                    <button type="button" className="vc-tool-btn vc-tool-primary" disabled={busy || info.isLive} onClick={() => void go()}><SonataGlyph name="download" /> Download</button>
                 </div>
             </div>
         </section>
@@ -127,7 +128,7 @@ function PlaylistPicker({ list, setup, onDone }: { list: Playlist; setup: Setup;
     return (
         <section className="vc-dl-card vc-dl-pl">
             <div className="vc-dl-card-main">
-                <span className="vc-tool-label">📃 Playlist{list.site ? ` · ${list.site}` : ""}</span>
+                <span className="vc-tool-label"><SonataGlyph name="fileText" /> Playlist{list.site ? ` · ${list.site}` : ""}</span>
                 <b className="vc-dl-title" title={list.title}>{list.title}</b>
                 <span className="vc-tool-hint">{[list.uploader, `${list.entries.length}${list.count > list.entries.length ? ` of ${list.count}` : ""} items`].filter(Boolean).join(" · ")}</span>
 
@@ -140,7 +141,7 @@ function PlaylistPicker({ list, setup, onDone }: { list: Playlist; setup: Setup;
                         <label key={e.key} className={classes("vc-dl-pl-row", picked.has(e.key) && "vc-dl-pl-on")}>
                             <input type="checkbox" checked={picked.has(e.key)} onChange={() => toggle(e.key)} />
                             <span className="vc-dl-pl-n">{list.entries.indexOf(e) + 1}</span>
-                            {e.thumbnail ? <img className="vc-dl-pl-thumb" src={e.thumbnail} alt="" loading="lazy" /> : <span className="vc-dl-pl-thumb vc-dl-thumb-none">🎞️</span>}
+                            {e.thumbnail ? <img className="vc-dl-pl-thumb" src={e.thumbnail} alt="" loading="lazy" /> : <span className="vc-dl-pl-thumb vc-dl-thumb-none"><SonataGlyph name="film" /></span>}
                             <span className="vc-dl-pl-title" title={e.title}>{e.title}</span>
                             {e.duration != null && <span className="vc-tool-hint">{length(e.duration)}</span>}
                         </label>
@@ -149,8 +150,8 @@ function PlaylistPicker({ list, setup, onDone }: { list: Playlist; setup: Setup;
                 </div>
 
                 <div className="vc-tool-seg">
-                    <button type="button" className={classes("vc-tool-seg-btn", mode === "video" && "vc-tool-seg-on")} onClick={() => setMode("video")}>🎬 Video</button>
-                    <button type="button" className={classes("vc-tool-seg-btn", mode === "audio" && "vc-tool-seg-on")} onClick={() => setMode("audio")}>🎵 Audio only</button>
+                    <button type="button" className={classes("vc-tool-seg-btn", mode === "video" && "vc-tool-seg-on")} onClick={() => setMode("video")}><SonataGlyph name="clapper" /> Video</button>
+                    <button type="button" className={classes("vc-tool-seg-btn", mode === "audio" && "vc-tool-seg-on")} onClick={() => setMode("audio")}><SonataGlyph name="sonata" /> Audio only</button>
                 </div>
                 <div className="vc-tool-chips">
                     {mode === "video"
@@ -164,7 +165,7 @@ function PlaylistPicker({ list, setup, onDone }: { list: Playlist; setup: Setup;
                     <span className="vc-tool-hint">{picked.size} picked{total ? ` · ${length(total)} in all` : ""} · {mode === "video" ? "each at or under that quality" : audio === "mp3" ? "as MP3s with cover art" : "the original audio"} · two at a time</span>
                     <span className="vc-tool-spacer" />
                     <button type="button" className="vc-tool-btn" onClick={onDone}>Cancel</button>
-                    <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!picked.size || busy} onClick={() => void go()}>⬇ Download {picked.size}</button>
+                    <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!picked.size || busy} onClick={() => void go()}><SonataGlyph name="download" /> Download {picked.size}</button>
                 </div>
             </div>
         </section>
@@ -202,7 +203,7 @@ function Row({ i, close }: { i: Item; close(): void; }) {
     const j = i.job;
     return (
         <div className={classes("vc-dl-row", j.status === "error" && "vc-dl-row-error", j.status === "done" && "vc-dl-row-done")}>
-            {i.thumbnail ? <img className="vc-dl-rthumb" src={i.thumbnail} alt="" /> : <span className="vc-dl-rthumb vc-dl-thumb-none">{i.mode === "audio" ? "🎵" : "🎬"}</span>}
+            {i.thumbnail ? <img className="vc-dl-rthumb" src={i.thumbnail} alt="" /> : <span className="vc-dl-rthumb vc-dl-thumb-none">{i.mode === "audio" ? <SonataGlyph name="sonata" /> : <SonataGlyph name="clapper" />}</span>}
             <div className="vc-dl-rmain">
                 <b title={i.title}>{i.title}</b>
                 {active ? (
@@ -223,10 +224,10 @@ function Row({ i, close }: { i: Item; close(): void; }) {
                 {active
                     ? <button type="button" className="vc-tool-btn" onClick={() => void cancelDownload(i.id)}>Cancel</button>
                     : <>
-                        {j.status === "done" && <button type="button" className="vc-tool-btn" title="Open it" onClick={() => void native().dlOpen(j.file)}>▶</button>}
-                        {j.status === "done" && <button type="button" className="vc-tool-btn" title="Show it in its folder" onClick={() => void native().dlReveal(j.file)}>📂</button>}
-                        {j.status === "done" && i.mode !== "audio" && <button type="button" className="vc-tool-btn" title="Trim it, add captions or music, or make a GIF — in Media Tools" onClick={() => void editIt(i)}>✂ Edit</button>}
-                        {j.status === "done" && <button type="button" className="vc-tool-btn" title="Attach it to a message in the chat you have open" onClick={() => { void sendInChat(i); close(); }}>💬 Send</button>}
+                        {j.status === "done" && <button type="button" className="vc-tool-btn" title="Open it" onClick={() => void native().dlOpen(j.file)}><SonataGlyph name="play" /></button>}
+                        {j.status === "done" && <button type="button" className="vc-tool-btn" title="Show it in its folder" onClick={() => void native().dlReveal(j.file)}><SonataGlyph name="folderOpen" /></button>}
+                        {j.status === "done" && i.mode !== "audio" && <button type="button" className="vc-tool-btn" title="Trim it, add captions or music, or make a GIF — in Media Tools" onClick={() => void editIt(i)}><SonataGlyph name="scissors" /> Edit</button>}
+                        {j.status === "done" && <button type="button" className="vc-tool-btn" title="Attach it to a message in the chat you have open" onClick={() => { void sendInChat(i); close(); }}><SonataGlyph name="message" /> Send</button>}
                         <button type="button" className="vc-dl-x" title="Remove from this list (the file stays)" aria-label="Remove from list" onClick={() => removeItem(i.id)}>✕</button>
                     </>}
             </div>
@@ -294,7 +295,7 @@ function DownloaderModal({ modalProps, start }: { modalProps: RenderModalProps; 
                         <div className="vc-dl-input">
                             <input className="vc-tool-input vc-tool-grow" autoFocus={!start} value={url} placeholder="https://www.youtube.com/watch?v=…  ·  soundcloud.com/…  ·  tiktok.com/@…"
                                 onChange={e => { setUrl(e.currentTarget.value); setError(null); }} onKeyDown={e => { if (e.key === "Enter") void lookUp(); }} />
-                            <button type="button" className="vc-tool-btn" onClick={() => void paste()}>📋 Paste</button>
+                            <button type="button" className="vc-tool-btn" onClick={() => void paste()}><SonataGlyph name="clipboard" /> Paste</button>
                             <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!url.trim() || looking || !setup} onClick={() => void lookUp()}>{looking ? "Looking…" : "Look up"}</button>
                         </div>
                         {url && !info && !error && !looking && siteOf(url) && <span className="vc-tool-hint">{siteOf(url)} link — press Look up.</span>}

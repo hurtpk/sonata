@@ -304,6 +304,35 @@ function makeCanvas(w: number, h: number) {
     return c;
 }
 
+export function imagePalette(img: HTMLImageElement): string[] {
+    const scale = Math.min(1, 96 / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = makeCanvas(img.naturalWidth * scale, img.naturalHeight * scale);
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return [];
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const bins = new Map<number, { count: number; red: number; green: number; blue: number; }>();
+    for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 128) continue;
+        const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+        const key = (r >> 4) * 256 + (g >> 4) * 16 + (b >> 4);
+        const bin = bins.get(key) ?? { count: 0, red: 0, green: 0, blue: 0 };
+        bin.count++;
+        bin.red += r;
+        bin.green += g;
+        bin.blue += b;
+        bins.set(key, bin);
+    }
+    const colors: number[][] = [];
+    for (const { red, green, blue, count } of [...bins.values()].sort((a, b) => b.count - a.count)) {
+        const rgb = [red, green, blue].map(channel => Math.round(channel / count));
+        if (colors.some(color => color.reduce((distance, channel, i) => distance + (channel - rgb[i]) ** 2, 0) < 46 ** 2)) continue;
+        colors.push(rgb);
+        if (colors.length === 6) break;
+    }
+    return colors.map(rgb => "#" + rgb.map(channel => channel.toString(16).padStart(2, "0")).join(""));
+}
+
 function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
     const rr = Math.max(0, Math.min(r, w / 2, h / 2));
     ctx.beginPath();

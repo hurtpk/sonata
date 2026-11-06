@@ -8,6 +8,7 @@
 // colours from it — with the model's layout drawn on top, so you can see
 // where each part of the picture ends up on the 3D model.
 
+import { SonataGlyph } from "../../../utilities/icons";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { showToast, useEffect, useRef, useState } from "@webpack/common";
@@ -17,7 +18,7 @@ import { decode, encodePng } from "./recolor";
 
 const rb = classNameFactory("vc-rbx-");
 type Tool = "brush" | "eraser" | "fill" | "pick";
-const TOOLS: [Tool, string, string][] = [["brush", "🖌", "Brush"], ["eraser", "🧽", "Eraser (makes it see-through)"], ["fill", "🪣", "Fill an area"], ["pick", "💧", "Pick a colour from it"]];
+const TOOLS: [Tool, string, string][] = [["brush", "🖌", "Brush"], ["eraser", "broom", "Eraser (makes it see-through)"], ["fill", "palette", "Fill an area"], ["pick", "💧", "Pick a colour from it"]];
 const SWATCHES = ["#000000", "#ffffff", "#e23b3b", "#f0b232", "#3ddc84", "#00a2ff", "#8b5cf6", "#ff66c4"];
 const MAX_UNDO = 25;
 
@@ -172,7 +173,7 @@ export function Painter({ bytes, mesh, name, onUse, onSave }: { bytes: Uint8Arra
     return (
         <div className={rb("pt")}>
             <div className={rb("pt-tools")}>
-                {TOOLS.map(([t, icon, label]) => <button key={t} type="button" title={label} className={classes(rb("pt-tool"), tool === t && rb("pt-tool-on"))} onClick={() => setTool(t)}>{icon}</button>)}
+                {TOOLS.map(([t, icon, label]) => <button key={t} type="button" title={label} className={classes(rb("pt-tool"), tool === t && rb("pt-tool-on"))} onClick={() => setTool(t)}><SonataGlyph name={icon} /></button>)}
                 <span className={rb("pt-sep")} />
                 <label className={rb("pt-color")} title="Colour"><input type="color" value={color} onChange={e => setColor(e.currentTarget.value)} /></label>
                 {SWATCHES.map(s => <button key={s} type="button" className={classes(rb("pt-swatch"), color === s && rb("pt-swatch-on"))} style={{ background: s }} title={s} onClick={() => setColor(s)} />)}

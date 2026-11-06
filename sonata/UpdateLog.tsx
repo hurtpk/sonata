@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { ChangeEntry, CHANGELOG } from "./changelog";
 import { checkNow } from "./updateNotice";
+import { SonataGlyph } from "../utilities/icons";
 
 /** "October 2026" for grouping. */
 function monthOf(e: ChangeEntry) {
@@ -91,7 +92,7 @@ export function UpdateLog({ seen, onClose, store }: { seen: string | undefined; 
                                 return (
                                     <section key={e.version} className={classes("sonata-log-entry", isOpen && "sonata-log-entry-open", isNew && "sonata-log-entry-new")}>
                                         <button type="button" className="sonata-log-head" onClick={() => toggle(e.version)} aria-expanded={isOpen}>
-                                            <span className="sonata-log-icons" aria-hidden>{[...new Set(e.items.map(i => i.icon))].slice(0, 2).join(" ")}</span>
+                                            <span className="sonata-log-icons" aria-hidden>{[...new Set(e.items.map(i => i.icon))].slice(0, 2).map(icon => <SonataGlyph key={icon} name={icon} />)}</span>
                                             <span className="sonata-log-title">
                                                 <b><Highlight text={e.title} q={t} /></b>
                                                 <small>{e.date} · {e.items.length} change{e.items.length === 1 ? "" : "s"}</small>
@@ -100,7 +101,7 @@ export function UpdateLog({ seen, onClose, store }: { seen: string | undefined; 
                                             {e === CHANGELOG[0] && <span className="sonata-log-latest">Latest</span>}
                                             <i aria-hidden>{isOpen ? "▾" : "▸"}</i>
                                         </button>
-                                        {isOpen && <ul>{items.map((it, i) => <li key={i}><span aria-hidden>{it.icon}</span><span><Highlight text={it.text} q={t} /></span></li>)}</ul>}
+                                        {isOpen && <ul>{items.map((it, i) => <li key={i}><span aria-hidden><SonataGlyph name={it.icon} /></span><span><Highlight text={it.text} q={t} /></span></li>)}</ul>}
                                     </section>
                                 );
                             })}

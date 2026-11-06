@@ -17,6 +17,7 @@ import { gameMessage } from "./Board";
 import { FleetPlacer } from "./DuelBoards";
 import { encodeFleet, fleetCells, randomFleet, scramble, Ship, validWord, WD_LEN } from "./duelRules";
 import { emptyBoard, Game, GAME_NAMES, hangmanPayload, Kind, newId } from "./games";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const mg = classNameFactory("vc-mg-");
@@ -76,12 +77,12 @@ function StartModal({ modalProps, channelId }: { modalProps: RenderModalProps; c
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <ToolHero icon={GAMES.find(g => g.kind === kind)?.emoji ?? "🎮"} kicker={other ? `With ${(UserStore.getUser(other) as any)?.globalName ?? UserStore.getUser(other)?.username ?? "them"}` : "Anyone here can join"}
                     title={GAME_NAMES[kind]} sub={GAMES.find(g => g.kind === kind)?.blurb}>
-                    <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={start}>▶ Start</button>
+                    <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={start}><SonataGlyph name="play" /> Start</button>
                 </ToolHero>
                 <div className={mg("pick")}>
                     {GAMES.map(gm => (
                         <button key={gm.kind} type="button" className={classes(mg("tile"), kind === gm.kind && mg("tile-on"))} onClick={() => setKind(gm.kind)}>
-                            <span className={mg("tile-emoji")}>{gm.emoji}</span>
+                            <span className={mg("tile-emoji")}><SonataGlyph name={gm.emoji} /></span>
                             <span className={mg("tile-name")}>{GAME_NAMES[gm.kind]}</span>
                             <span className={mg("tile-blurb")}>{gm.blurb}</span>
                         </button>

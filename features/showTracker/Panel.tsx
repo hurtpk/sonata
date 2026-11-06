@@ -13,6 +13,7 @@ import { Window } from "../_shared/Window";
 import { Choice, FormGroup, FormRow, Toggle } from "../_shared/WindowParts";
 import type { Show, Source } from "./native";
 import { episodeLabel, follow, Followed, isFollowing, refresh, search, settings, unfollow, untilText, useShows, whenText } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 type Tab = "next" | "following" | "add";
 let lastTab: Tab | null = null;
@@ -38,7 +39,7 @@ function ComingUp({ list, goAdd }: { list: Followed[]; goAdd(): void; }) {
     for (const s of dated) { const b = bucket(s.next!.at!); groups.set(b, [...(groups.get(b) ?? []), s]); }
     if (!list.length) return (
         <div className="vc-tool-empty">
-            <span className="vc-tool-empty-icon">📺</span>
+            <span className="vc-tool-empty-icon"><SonataGlyph name="tv" /></span>
             Follow an anime or TV show and its next episode shows up here, with a pop-up when it's out.
             <button type="button" className="vc-tool-btn vc-tool-primary" onClick={goAdd}>Add a show</button>
         </div>

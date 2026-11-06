@@ -11,6 +11,7 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { showToast, useEffect, useMemo, useReducer, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { SonataGlyph } from "../../utilities/icons";
 import { Window } from "../_shared/Window";
 import { CURRENCIES, currentRates, ensureRates, findPrices, money, mySystem, onRatesChange, settings } from "./index";
 import { askFor, priceResult, usePrice } from "./prices";
@@ -53,7 +54,7 @@ function SavedChips({ favs, recent, onPick, onUnfav, onClearRecent }: { favs: Sa
         <div className={cv("saved")}>
             {favs.length > 0 && (
                 <div className={cv("saved-row")}>
-                    <span className={cv("saved-label")}>⭐ Favourites</span>
+                    <span className={cv("saved-label")}><SonataGlyph name="star" /> Favourites</span>
                     {favs.map((f, n) => (
                         <span key={`f${n}`} className={classes(cv("chip"), cv("chip-fav"))}>
                             <button type="button" onClick={() => onPick(f)}>{modeIcon(f.mode)} {f.text}</button>
@@ -64,7 +65,7 @@ function SavedChips({ favs, recent, onPick, onUnfav, onClearRecent }: { favs: Sa
             )}
             {others.length > 0 && (
                 <div className={cv("saved-row")}>
-                    <span className={cv("saved-label")}>🕘 Recent</span>
+                    <span className={cv("saved-label")}><SonataGlyph name="clock" /> Recent</span>
                     {others.slice(0, 8).map((r, n) => (
                         <span key={`r${n}`} className={cv("chip")}><button type="button" onClick={() => onPick(r)}>{modeIcon(r.mode)} {r.text}</button></span>
                     ))}
@@ -229,9 +230,9 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
         <Window {...modalProps} size="lg" title="Converter" subtitle="Type an amount with its unit — it shows up in every other one.">
             <div className={classes(cl("wrap"), cv("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <nav className={cv("kinds")}>
-                    <button type="button" className={classes(cv("kind"), mode === "auto" && cv("kind-on"))} onClick={() => pickMode("auto")}>✨ Anything</button>
-                    {SPECIAL.map(k => <button key={k.id} type="button" className={classes(cv("kind"), mode === k.id && cv("kind-on"))} onClick={() => pickMode(k.id)}>{k.icon} {k.name}</button>)}
-                    {CATEGORIES.map(c => <button key={c.id} type="button" className={classes(cv("kind"), mode === c.id && cv("kind-on"))} onClick={() => pickMode(c.id)}>{c.icon} {c.name}</button>)}
+                    <button type="button" className={classes(cv("kind"), mode === "auto" && cv("kind-on"))} onClick={() => pickMode("auto")}><SonataGlyph name="sparkles" /> Anything</button>
+                    {SPECIAL.map(k => <button key={k.id} type="button" className={classes(cv("kind"), mode === k.id && cv("kind-on"))} onClick={() => pickMode(k.id)}><SonataGlyph name={k.icon} /> {k.name}</button>)}
+                    {CATEGORIES.map(c => <button key={c.id} type="button" className={classes(cv("kind"), mode === c.id && cv("kind-on"))} onClick={() => pickMode(c.id)}><SonataGlyph name={c.icon} /> {c.name}</button>)}
                 </nav>
                 {mode === "clock" ? <WorldClock /> : <section className={cv("main")}>
                     <div className={cv("ask")}>

@@ -13,11 +13,12 @@ import { extractAndLoadChunksLazy } from "@webpack";
 import { openModalLazy, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { EffectPicker } from "../../_shared/NameEffects";
 import { Window } from "../../_shared/Window";
 import { pickCharacters } from "../../textStyles/charactersPicker";
 import { DEFAULT_COLOR, SWATCHES } from "../constants";
 import { categoryLen, createCategory, getCategory } from "../data";
-import { CategoryStyle, colorsOf, EffectId, EFFECTS, FillMode, GRADIENT_CHOICES, hexOf, normalizeStyle, numOf, StyledName } from "../style";
+import { CategoryStyle, colorsOf, FillMode, GRADIENT_CHOICES, hexOf, normalizeStyle, numOf, StyledName } from "../style";
 
 export const requireSettingsModal = extractAndLoadChunksLazy(['type:"USER_SETTINGS_MODAL_OPEN"']);
 
@@ -65,7 +66,6 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
     if (!category) return null;
 
     const patch = (p: Partial<CategoryStyle>) => setStyle(s => ({ ...s, ...p }));
-    const toggleEffect = (id: EffectId) => patch({ effects: style.effects.includes(id) ? style.effects.filter(e => e !== id) : [...style.effects, id] });
 
     // Characters go in where the cursor was.
     const insertChar = (ch: string) => {
@@ -166,19 +166,7 @@ export function NewCategoryModal({ categoryId, modalProps, initialChannelId }: P
 
                 <div className={cl("card")}>
                     <span className={cl("label")}>Effects</span>
-                    <div className={pd("effects")}>
-                        {EFFECTS.map(e => {
-                            const unavailable = e.gradientOnly && style.mode === "solid";
-                            const on = style.effects.includes(e.id) && !unavailable;
-                            return (
-                                <button key={e.id} type="button" disabled={unavailable} className={classes(pd("fx"), on && pd("fx-on"))} onClick={() => toggleEffect(e.id)} title={unavailable ? "Needs a gradient" : e.blurb}>
-                                    <span className={pd("fx-emoji")}>{e.emoji}</span>
-                                    <span className={pd("fx-name")}>{e.name}</span>
-                                    <span className={pd("fx-blurb")}>{unavailable ? "Needs a gradient" : e.blurb}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                    <EffectPicker effects={style.effects} gradient={style.mode === "gradient"} onChange={effects => patch({ effects })} />
                 </div>
 
                 <div className={cl("footer")}>

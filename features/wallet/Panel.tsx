@@ -25,6 +25,7 @@ import { checkBalance, coinAmount, COINS, usd, usePrices } from "./prices";
 import { qrCardPng } from "./qrCard";
 import { RequestsView } from "./RequestsView";
 import { lastCopy, moveEntry, putEntry, qrPrefs, removeEntry, useWallet } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 /* ── Icons ── */
 
@@ -182,8 +183,8 @@ function Card({ e, picking, picked, onPick, onEdit, first, last, price }: { e: E
 
             {shown && (e.note || (e.kind === "roblox" && e.pass)) && (
                 <div className="vc-wallet-extra">
-                    {e.kind === "roblox" && e.pass && <span>{robloxItemKind(e.pass) === "Game pass" ? "🎟️" : "👕"} {robloxItemKind(e.pass)}: {e.pass}</span>}
-                    {e.note && <span>📝 {e.note}</span>}
+                    {e.kind === "roblox" && e.pass && <span>{robloxItemKind(e.pass) === "Game pass" ? <SonataGlyph name="ticket" /> : <SonataGlyph name="personTag" />} {robloxItemKind(e.pass)}: {e.pass}</span>}
+                    {e.note && <span><SonataGlyph name="fileText" /> {e.note}</span>}
                 </div>
             )}
 
@@ -205,10 +206,10 @@ function Card({ e, picking, picked, onPick, onEdit, first, last, price }: { e: E
 
             {!picking && (
                 <div className="vc-wallet-card-row">
-                    {link && <button type="button" className="vc-tool-chip" onClick={() => copy(link, `${k.name} link`)}>🔗 Copy link</button>}
+                    {link && <button type="button" className="vc-tool-chip" onClick={() => copy(link, `${k.name} link`)}><SonataGlyph name="link" /> Copy link</button>}
                     <button type="button" className={classes("vc-tool-chip", qr && "vc-tool-chip-on")} onClick={() => { setQr(v => !v); setShown(true); }}>▦ QR code</button>
-                    {k.crypto && <button type="button" className="vc-tool-chip" title="Asks a public blockchain explorer — nothing to sign in to" onClick={() => askBalance(bal?.amount != null)}>💰 {bal?.amount != null ? "Update balance" : "Check balance"}</button>}
-                    {k.crypto && <button type="button" className="vc-tool-chip" onClick={() => openGuide(e.kind)}>💵 Cash out</button>}
+                    {k.crypto && <button type="button" className="vc-tool-chip" title="Asks a public blockchain explorer — nothing to sign in to" onClick={() => askBalance(bal?.amount != null)}><SonataGlyph name="wallet" /> {bal?.amount != null ? "Update balance" : "Check balance"}</button>}
+                    {k.crypto && <button type="button" className="vc-tool-chip" onClick={() => openGuide(e.kind)}><SonataGlyph name="wallet" /> Cash out</button>}
                     <span className="vc-tool-spacer" />
                     <button type="button" className="vc-tool-icon" title="Move up" disabled={first} onClick={() => moveEntry(e.id, -1)}>↑</button>
                     <button type="button" className="vc-tool-icon" title="Move down" disabled={last} onClick={() => moveEntry(e.id, 1)}>↓</button>
@@ -362,7 +363,7 @@ function Converter({ prices }: { prices: Record<string, number> | null; }) {
 
     return (
         <section className="vc-wallet-panel vc-wallet-conv">
-            <div className="vc-wallet-panel-head"><b>🪙 Converter</b><span>{price != null ? `1 ${sym} = ${usd(price)} right now` : prices ? `No price for ${k.name} right now` : "Getting today's prices…"}</span></div>
+            <div className="vc-wallet-panel-head"><b><SonataGlyph name="coin" /> Converter</b><span>{price != null ? `1 ${sym} = ${usd(price)} right now` : prices ? `No price for ${k.name} right now` : "Getting today's prices…"}</span></div>
             <div className="vc-wallet-coins">
                 {COINS.map(c => (
                     <button key={c} type="button" className={classes("vc-wallet-coin", coin === c && "vc-wallet-coin-on")} style={{ "--k": kindOf(c).color } as React.CSSProperties} onClick={() => setCoin(c)}>
@@ -392,7 +393,7 @@ function Alerts({ cryptoCount }: { cryptoCount: number; }) {
     const save = (o: boolean, m: number) => { setOn(o); setMinutes(m); alerts.set(o, m); };
     return (
         <section className="vc-wallet-panel vc-wallet-alerts">
-            <div className="vc-wallet-panel-head"><b>🔔 Payment alerts</b><span>A notification when crypto arrives</span></div>
+            <div className="vc-wallet-panel-head"><b><SonataGlyph name="bell" /> Payment alerts</b><span>A notification when crypto arrives</span></div>
             <label className="vc-wallet-switch">
                 <input type="checkbox" checked={on} onChange={e => save(e.currentTarget.checked, minutes)} />
                 <span className="vc-wallet-switch-track"><i /></span>
@@ -470,7 +471,7 @@ function WalletModal({ modalProps }: { modalProps: RenderModalProps; }) {
                                 <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => setEditing("new")}>+ Add</button>
                                 {entries.length > 0 && <button type="button" className="vc-tool-btn" onClick={() => setPicking(true)}>Send to chat…</button>}
                                 <span className="vc-tool-spacer" />
-                                <button type="button" className="vc-tool-link" onClick={() => openGuide()}>💵 Crypto → USD guide</button>
+                                <button type="button" className="vc-tool-link" onClick={() => openGuide()}><SonataGlyph name="wallet" /> Crypto → USD guide</button>
                             </>}
                         </div>
 
@@ -483,7 +484,7 @@ function WalletModal({ modalProps }: { modalProps: RenderModalProps; }) {
 
                         {loaded && !entries.length && (
                             <div className="vc-tool-empty">
-                                <span className="vc-tool-empty-icon">👛</span>
+                                <span className="vc-tool-empty-icon"><SonataGlyph name="wallet" /></span>
                                 Nothing here yet. Add your PayPal, Cash App, Venmo, Zelle, crypto or Roblox so they're one click away.
                             </div>
                         )}

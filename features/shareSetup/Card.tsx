@@ -13,6 +13,7 @@ import { classes } from "@utils/misc";
 import { showToast, useEffect, useState } from "@webpack/common";
 
 import { apply, CODE_RE, decode, describe, Part, Setup, Snapshot, undo } from "./setup";
+import { SonataGlyph } from "../../utilities/icons";
 
 const ss = classNameFactory("vc-sset-");
 
@@ -58,7 +59,7 @@ export function SetupCard({ setup, compact }: { setup: Setup; compact?: boolean;
                 {available.map(p => (
                     <label key={p} className={classes(ss("part"), chosen.includes(p) && ss("part-on"))}>
                         <input type="checkbox" checked={chosen.includes(p)} disabled={!!before} onChange={e => { const on = e.currentTarget.checked; setChosen(c => on ? [...c, p] : c.filter(x => x !== p)); }} />
-                        <span className={ss("part-emoji")}>{PART_INFO[p].emoji}</span>
+                        <span className={ss("part-emoji")}><SonataGlyph name={PART_INFO[p].emoji} /></span>
                         <span className={ss("part-text")}>
                             <span className={ss("part-name")}>{PART_INFO[p].name}</span>
                             <span className={ss("sub")}>{detail[p]}</span>
@@ -86,6 +87,6 @@ export function SetupAccessory({ message }: { message: any; }) {
     }, [code]);
     if (!code) return null;
     if (setup === undefined) return null;
-    if (setup === null) return <div className={classes(ss("card"), ss("bad"))}>🎁 This setup couldn't be read — it may be from a newer Sonata.</div>;
+    if (setup === null) return <div className={classes(ss("card"), ss("bad"))}><SonataGlyph name="gift" /> This setup couldn't be read — it may be from a newer Sonata.</div>;
     return <SetupCard setup={setup} />;
 }

@@ -264,6 +264,7 @@ export default definePlugin({
 
         return (
             <Clickable
+                className="vc-pindms-header"
                 onClick={() => collapseCategory(category.id, !category.collapsed)}
                 onContextMenu={e => {
                     ContextMenuApi.openContextMenu(e, () => (

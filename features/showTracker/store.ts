@@ -13,6 +13,7 @@ import { OptionType } from "@utils/types";
 import { useEffect, useState } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../featureSettings";
+import { scheduleBackgroundCheck } from "../../sonata/performance";
 import type { Show, Source } from "./native";
 
 export const settings = defineFeatureSettings("showTracker", {
@@ -91,17 +92,19 @@ let opener: (() => void) | null = null;
 export const setOpener = (fn: () => void) => { opener = fn; };
 
 const HOUR = 3_600_000;
-let timers: ReturnType<typeof setTimeout>[] = [];
+let cancelRefresh: (() => void) | undefined;
+let episodeTimer: ReturnType<typeof setInterval> | undefined;
 export function startChecks() {
     stopChecks();
     void loadShows();
-    timers.push(setTimeout(() => void refresh(), 45_000));
-    timers.push(setInterval(() => void refresh(), 6 * HOUR) as any);
-    timers.push(setInterval(tellAboutNew, 2 * 60_000) as any);
+    cancelRefresh = scheduleBackgroundCheck(() => void refresh(), 6 * HOUR, 12 * HOUR, 45_000);
+    episodeTimer = setInterval(tellAboutNew, 2 * 60_000);
 }
 export function stopChecks() {
-    for (const t of timers) clearTimeout(t);
-    timers = [];
+    cancelRefresh?.();
+    cancelRefresh = undefined;
+    clearInterval(episodeTimer);
+    episodeTimer = undefined;
 }
 
 /* ── Times ── */

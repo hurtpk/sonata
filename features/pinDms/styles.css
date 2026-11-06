@@ -1,8 +1,17 @@
+.vc-pindms-header {
+    min-inline-size: 0;
+    overflow: clip;
+}
+
 .vc-pindms-section-container {
     box-sizing: border-box;
     white-space: nowrap;
-    /* Visible, so sparkles can sit just outside the letters; the name itself cuts off with "…". */
-    overflow: visible;
+    display: flex;
+    align-items: center;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    margin-block: 0;
+    overflow: hidden;
     text-transform: uppercase;
     font-size: 12px;
     line-height: 16px;
@@ -15,9 +24,11 @@
 }
 
 .vc-pindms-header-text {
-    overflow: visible !important;
-    min-width: 0;
     display: flex;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: clip;
+    overflow-clip-margin: 2px;
 }
 
 .vc-pindms-collapse-icon {
@@ -60,50 +71,44 @@
 }
 
 /* Flow: the (mirrored) gradient drifts through the letters. */
-.vc-pindms-fx-flow .vc-pindms-name-text {
+.vc-namefx-flow .vc-pindms-name-text {
     background-size: 300% 100%;
-    animation: vc-pindms-flow 7s linear infinite;
+    animation: vc-namefx-flow 7s linear infinite;
 }
 
-@keyframes vc-pindms-flow { from { background-position: 0% 50%; } to { background-position: 150% 50%; } }
 
 /* Shine: a soft highlight sweeps across, then rests for a moment. */
-.vc-pindms-fx-shine .vc-pindms-name-text::after {
+.vc-namefx-shine .vc-pindms-name-text::after {
     content: attr(data-text);
     position: absolute;
     inset: 0;
     padding-block: inherit;
     overflow: hidden;
     text-overflow: ellipsis;
-    background: var(--sw-card, linear-gradient(105deg, transparent 38%, hsl(0 0% 100% / 0.9) 50%, transparent 62%));
+    background: linear-gradient(105deg, transparent 38%, hsl(0 0% 100% / 0.9) 50%, transparent 62%);
     background-size: 250% 100%;
     background-repeat: no-repeat;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: vc-pindms-shine 4.5s ease-in-out infinite;
+    animation: vc-namefx-shine 4.5s ease-in-out infinite;
     pointer-events: none;
 }
 
-@keyframes vc-pindms-shine {
-    0% { background-position: 130% 0; }
-    45%, 100% { background-position: -30% 0; }
-}
 
 /* Glow: a halo in the name's own colours, breathing slowly. */
-.vc-pindms-fx-glow .vc-pindms-name-text {
+.vc-namefx-glow .vc-pindms-name-text {
     filter: var(--sw-nofilter, drop-shadow(0 0 3px color-mix(in srgb, var(--pd-a) 70%, transparent)) drop-shadow(0 0 7px color-mix(in srgb, var(--pd-b) 45%, transparent)));
-    animation: vc-pindms-glow 3.6s ease-in-out infinite;
+    animation: vc-namefx-glow 3.6s ease-in-out infinite;
 }
 
-.vc-pindms-fx-glow.vc-pindms-fx-flow .vc-pindms-name-text {
-    animation: vc-pindms-flow 7s linear infinite, vc-pindms-glow 3.6s ease-in-out infinite;
+.vc-namefx-glow.vc-namefx-flow .vc-pindms-name-text {
+    animation: vc-namefx-flow 7s linear infinite, vc-namefx-glow 3.6s ease-in-out infinite;
 }
 
-@keyframes vc-pindms-glow { 50% { opacity: 0.82; } }
 
 /* Underline: a thin line in the same colours that fades out at the ends. */
-.vc-pindms-fx-underline::after {
+.vc-pindms-name.vc-namefx-underline::after {
     content: "";
     position: absolute;
     left: 0;
@@ -119,43 +124,13 @@
     pointer-events: none;
 }
 
-.vc-pindms-fx-underline.vc-pindms-fx-flow::after {
+.vc-pindms-name.vc-namefx-underline.vc-namefx-flow::after {
     background-size: 300% 100%;
-    animation: vc-pindms-flow 7s linear infinite;
-}
-
-/* Sparkles: four tiny stars around the name, twinkling one after another. */
-.vc-pindms-sparkles {
-    position: absolute;
-    inset: -7px -9px;
-    pointer-events: none;
-}
-
-.vc-pindms-sparkles i {
-    position: absolute;
-    font-style: normal;
-    font-size: 8px;
-    line-height: 1;
-    color: var(--pd-a);
-    text-shadow: var(--sw-noglow, 0 0 4px currentcolor);
-    opacity: 0;
-    animation: vc-pindms-twinkle 3.2s ease-in-out infinite;
-}
-
-.vc-pindms-sparkles i:nth-child(1) { left: 0; top: 0; }
-.vc-pindms-sparkles i:nth-child(2) { right: 18%; top: -1px; font-size: 7px; color: var(--pd-b); animation-delay: 0.8s; }
-.vc-pindms-sparkles i:nth-child(3) { right: 0; bottom: 1px; animation-delay: 1.6s; color: var(--pd-b); }
-.vc-pindms-sparkles i:nth-child(4) { left: 30%; bottom: -1px; font-size: 9px; animation-delay: 2.4s; }
-
-@keyframes vc-pindms-twinkle {
-    0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
-    15% { opacity: 1; transform: scale(1) rotate(20deg); }
-    35% { opacity: 0; transform: scale(0.5) rotate(45deg); }
+    animation: vc-namefx-flow 7s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .vc-pindms-name-text, .vc-pindms-name-text::after, .vc-pindms-fx-underline::after { animation: none !important; }
-    .vc-pindms-sparkles i { animation: none; opacity: 0.8; }
+    .vc-pindms-name-text, .vc-pindms-name-text::after, .vc-pindms-name.vc-namefx-underline::after { animation: none !important; }
 }
 
 /* ─── The category window ─── */
@@ -247,26 +222,3 @@
 .vc-pindms-ed-grad-swatch { width: 18px; height: 18px; border-radius: calc(6px * var(--sw-r, 1)); flex: none; }
 
 .vc-pindms-ed-range { flex: 1; accent-color: var(--tl-accent); }
-
-.vc-pindms-ed-effects { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
-
-.vc-pindms-ed-fx {
-    all: unset;
-    cursor: pointer;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto;
-    column-gap: 8px;
-    padding: 8px 10px;
-    border-radius: calc(10px * var(--sw-r, 1));
-    border: 1px solid var(--tl-line);
-    background: var(--sw-card, hsl(0 0% 100% / 0.03));
-}
-
-.vc-pindms-ed-fx:hover:not(:disabled) { background: hsl(from var(--tl-accent) h s l / 0.12); }
-.vc-pindms-ed-fx:focus-visible { outline: 2px solid var(--tl-accent); outline-offset: 2px; }
-.vc-pindms-ed-fx:disabled { cursor: default; opacity: 0.45; }
-.vc-pindms-ed-fx-on { border-color: var(--tl-accent); background: hsl(from var(--tl-accent) h s l / 0.18); }
-.vc-pindms-ed-fx-emoji { grid-row: span 2; font-size: 18px; align-self: center; }
-.vc-pindms-ed-fx-name { font-size: 13px; font-weight: 700; color: var(--text-default, var(--text-normal)); }
-.vc-pindms-ed-fx-blurb { font-size: 11.5px; color: var(--text-muted); line-height: 1.3; }

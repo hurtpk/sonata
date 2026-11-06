@@ -15,6 +15,7 @@ import { useEffect, useReducer, useState } from "@webpack/common";
 import { ago, cardActions } from "./data";
 import { isMe } from "./me";
 import { Change, checkPeople, describeChange, FIELD_LABEL, getPeople, onPeopleChange, Person, unwatchPerson, watchPerson } from "./watchlist";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 
@@ -40,7 +41,7 @@ function ChangeRow({ c }: { c: Change; }) {
                     {open && <span className={rb("change-bio")}><small>Before</small>{c.from || "(empty)"}<small>After</small>{c.to || "(empty)"}</span>}
                 </span>
             ) : c.field === "banned" || c.field === "verified" ? (
-                <span className={rb("change-text")}>{c.field === "banned" ? (c.to === "yes" ? "🚫 Banned" : "✅ Unbanned") : (c.to === "yes" ? "✔ Got verified" : "Lost verified")}</span>
+                <span className={rb("change-text")}>{c.field === "banned" ? (c.to === "yes" ? <><SonataGlyph name="block" /> Banned</> : <><SonataGlyph name="checkCircle" /> Unbanned</>) : (c.to === "yes" ? <><SonataGlyph name="verified" /> Got verified</> : "Lost verified")}</span>
             ) : (
                 <span className={rb("change-text")}>
                     <s>{c.field === "name" ? `@${c.from}` : c.from}</s> → <b>{c.field === "name" ? `@${c.to}` : c.to}</b>
@@ -57,9 +58,9 @@ function PersonCard({ p }: { p: Person; }) {
     return (
         <div className={rb("group")}>
             <div className={rb("head")}>
-                {p.avatar ? <img className={rb("avatar")} src={p.avatar} alt="" /> : <span className={classes(rb("avatar"), rb("img-none"))}>👤</span>}
+                {p.avatar ? <img className={rb("avatar")} src={p.avatar} alt="" /> : <span className={classes(rb("avatar"), rb("img-none"))}><SonataGlyph name="profile" /></span>}
                 <div className={rb("who")}>
-                    <b>{p.displayName}{p.verified && <span className={rb("tick")}>✔</span>}{p.banned && <span className={rb("banned")}>Banned</span>}</b>
+                    <b>{p.displayName}{p.verified && <span className={rb("tick")}><SonataGlyph name="checkCircle" /></span>}{p.banned && <span className={rb("banned")}>Banned</span>}</b>
                     <span>@{p.name} · checked {ago(p.lastCheck)}{p.error ? ` · ⚠️ ${p.error}` : ""}</span>
                 </div>
                 <button type="button" className={rb("link")} onClick={() => cardActions.lookup(`https://www.roblox.com/users/${p.id}/profile`)}>Profile</button>
@@ -108,7 +109,7 @@ export function People() {
             {err && <span className="vc-tool-error">{err}</span>}
             {!people.length ? (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">👤</span>
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="profile" /></span>
                     Watch Roblox accounts for changes.
                     <span className="vc-tool-hint">Get told when someone changes their username, display name, bio or avatar — or gets banned — and keep the old ones. Profile cards have a Watch button too.</span>
                 </div>

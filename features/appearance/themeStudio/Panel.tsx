@@ -22,6 +22,7 @@ import { coloursFrom } from "./palette";
 import { readShared, themeCode, themeFileText } from "./share";
 import { activeId, putTheme, removeTheme, setActive, themeById, useThemes, videoSrc } from "./store";
 import { DEFAULT_FX, Effects, fileName, fixReadability, FONTS, fromPreset, newId, NO_FX, normalize, PRESETS, readability, Theme, themeCss, themeFile, themeVars } from "./theme";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const HEX = /^#[0-9a-f]{6}$/i;
 const MB = 1024 * 1024;
@@ -158,7 +159,7 @@ function Readability({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
     if (!issues.length) return <span className="vc-ts-read vc-ts-read-ok">✓ Easy to read</span>;
     return (
         <div className="vc-ts-read vc-ts-read-bad">
-            <span>⚠ Hard to read: {issues.map(i => `${i.what.toLowerCase()} (${i.ratio.toFixed(1)}:1)`).join(", ")}</span>
+            <span><SonataGlyph name="warning" /> Hard to read: {issues.map(i => `${i.what.toLowerCase()} (${i.ratio.toFixed(1)}:1)`).join(", ")}</span>
             <span className="vc-tool-spacer" />
             <button type="button" className="vc-tool-btn" onClick={() => set(fixReadability(t))}>Fix it</button>
         </div>
@@ -194,7 +195,7 @@ function SeeThrough({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
     return (
         <div className={classes("vc-ts-card", "vc-ts-see", on && "vc-ts-see-on")}>
             <div className="vc-ts-see-head">
-                <span className="vc-ts-see-icon" aria-hidden>👁</span>
+                <span className="vc-ts-see-icon" aria-hidden><SonataGlyph name="eye" /></span>
                 <div className="vc-ts-see-text">
                     <b>See other apps through Discord</b>
                     <span>{on ? "Discord can't be resized or snapped while this is on." : "Watch a video or game behind Discord while you chat."}</span>
@@ -270,7 +271,7 @@ function BackgroundTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) 
             <div className="vc-ts-card vc-ts-media">
                 <div className="vc-ts-media-row">
                     <button type="button" className={classes("vc-ts-media-pick", hasMedia && "vc-ts-media-has")} disabled={busy} onClick={() => fileRef.current?.click()} title="A picture, GIF or MP4/WebM video">
-                        {t.video ? <video src={videoSrc(t.video)} muted loop autoPlay playsInline /> : t.image ? <img src={t.image} alt="" /> : <span>{busy ? "Loading…" : "🖼"}</span>}
+                        {t.video ? <video src={videoSrc(t.video)} muted loop autoPlay playsInline /> : t.image ? <img src={t.image} alt="" /> : <span>{busy ? "Loading…" : <SonataGlyph name="image" />}</span>}
                     </button>
                     <div className="vc-ts-media-text">
                         <b>{t.video ? "Video behind Discord" : t.image ? "Picture behind Discord" : "Picture, GIF or video"}</b>
@@ -300,7 +301,7 @@ function BackgroundTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) 
                     </label>
                 </>}
                 <div className="vc-ts-line">
-                    <span><b>🌈 Moving colours</b><small>Soft colours drifting behind Discord</small></span>
+                    <span><b><SonataGlyph name="rainbow" /> Moving colours</b><small>Soft colours drifting behind Discord</small></span>
                     <Switch on={t.moving} label="Moving colours" onChange={moving => set({ moving, ...(moving && t.opacity > 70 ? { opacity: 65 } : {}) })} />
                 </div>
             </div>
@@ -340,11 +341,11 @@ function ChatTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
     return (
         <div className="vc-ts-lines">
             <div className="vc-ts-line">
-                <span><b>💬 Message bubbles</b><small>Rounded bubbles around every message</small></span>
+                <span><b><SonataGlyph name="message" /> Message bubbles</b><small>Rounded bubbles around every message</small></span>
                 <Switch on={t.bubbles} label="Message bubbles" onChange={bubbles => set({ bubbles })} />
             </div>
             <div className={classes("vc-ts-line", !t.bubbles && "vc-ts-line-off")}>
-                <span><b>➡ Yours on the right</b><small>Like on a phone, in your accent colour</small></span>
+                <span><b><SonataGlyph name="nextTrack" /> Yours on the right</b><small>Like on a phone, in your accent colour</small></span>
                 <Switch on={t.bubblesRight} label="Your messages on the right" onChange={bubblesRight => set({ bubblesRight, ...(bubblesRight ? { bubbles: true } : {}) })} />
             </div>
             <div className="vc-ts-line">
@@ -352,11 +353,11 @@ function ChatTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
                 <Switch on={t.mentions} label="Mentions in the accent colour" onChange={mentions => set({ mentions })} />
             </div>
             <div className="vc-ts-line">
-                <span><b>↕ Accent scroll bars</b><small>Scroll bars take your accent colour</small></span>
+                <span><b><SonataGlyph name="sliders" /> Accent scroll bars</b><small>Scroll bars take your accent colour</small></span>
                 <Switch on={t.scrollbars === "accent"} label="Accent scroll bars" onChange={v => set({ scrollbars: v ? "accent" : "discord" })} />
             </div>
             <div className="vc-ts-line vc-ts-line-wide">
-                <span><b>🔴 Ping badges</b><small>The little number on servers and DMs</small></span>
+                <span><b><SonataGlyph name="statusDnd" /> Ping badges</b><small>The little number on servers and DMs</small></span>
                 <div className="vc-tool-chips">
                     <button type="button" className={classes("vc-tool-chip", badgeMode === "discord" && "vc-tool-chip-on")} onClick={() => set({ badge: null })}>Red</button>
                     <button type="button" className={classes("vc-tool-chip", badgeMode === "accent" && "vc-tool-chip-on")} onClick={() => set({ badge: "accent" })}>Accent</button>
@@ -367,7 +368,7 @@ function ChatTab({ t, set }: { t: Theme; set(p: Partial<Theme>): void; }) {
                 </div>
             </div>
             <div className="vc-ts-line vc-ts-line-wide">
-                <span><b>🎛 Dock buttons</b><small>The icons under your profile, all together (Sonata → Dock's colour wins if you set one there)</small></span>
+                <span><b><SonataGlyph name="sliders" /> Dock buttons</b><small>The icons under your profile, all together (Sonata → Dock's colour wins if you set one there)</small></span>
                 <div className="vc-tool-chips">
                     <button type="button" className={classes("vc-tool-chip", !t.dock && "vc-tool-chip-on")} onClick={() => set({ dock: null })}>Discord's</button>
                     <button type="button" className={classes("vc-tool-chip", t.dock === "accent" && "vc-tool-chip-on")} onClick={() => set({ dock: "accent" })}>Accent</button>
@@ -387,13 +388,13 @@ function ShareTab({ t }: { t: Theme; }) {
     return (
         <div className="vc-ts-two">
             <div className="vc-ts-card vc-ts-share">
-                <b>🔗 Share code</b>
+                <b><SonataGlyph name="link" /> Share code</b>
                 <span>A short code to paste in any chat. Friends with Sonata get a <b>Try it</b> button under your message.</span>
                 <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => { copyToClipboard(themeCode(t)); setCopied(true); setTimeout(() => setCopied(false), 1800); }}>{copied ? "✓ Copied" : "Copy share code"}</button>
                 {hasMedia && <span className="vc-tool-hint">The code has everything but the {t.video ? "video" : "picture"} — save a file for that.</span>}
             </div>
             <div className="vc-ts-card vc-ts-share">
-                <b>📁 Files</b>
+                <b><SonataGlyph name="folder" /> Files</b>
                 <span>{hasMedia ? `A .sonatatheme file keeps the ${t.video ? "video" : "picture"} too.` : "Keep a copy, or use it in other Discord mods."}</span>
                 <div className="vc-tool-row vc-ts-wrap-row">
                     {hasMedia && <button type="button" className="vc-tool-btn" onClick={() => saveFile(new File([themeFileText(t)], fileName(t).replace(/\.theme\.css$/, ".sonatatheme"), { type: "application/json" }))}>Save with {t.video ? "video" : "picture"}</button>}
@@ -445,7 +446,7 @@ function NewTheme({ onAdd, onClose }: { onAdd(t: Theme): void; onClose(): void; 
                 <button type="button" className="vc-ts-mini" aria-label="Close" onClick={onClose}>✕</button>
             </div>
             <button type="button" className="vc-ts-new-pic" disabled={reading} onClick={() => picRef.current?.click()}>
-                <span>🖼</span><b>{reading ? "Reading colours…" : "From a picture"}</b><small>Its colours become the theme</small>
+                <span><SonataGlyph name="image" /></span><b>{reading ? "Reading colours…" : "From a picture"}</b><small>Its colours become the theme</small>
             </button>
             <input ref={picRef} type="file" accept="image/*" hidden onChange={e => { const f = e.currentTarget.files?.[0]; e.currentTarget.value = ""; if (f) void fromPicture(f); }} />
             <div className="vc-ts-presets">
@@ -458,7 +459,7 @@ function NewTheme({ onAdd, onClose }: { onAdd(t: Theme): void; onClose(): void; 
             <div className="vc-ts-import">
                 <input className="vc-tool-input vc-tool-grow" value={code} placeholder="Paste a share code" onChange={e => setCode(e.currentTarget.value)} onKeyDown={e => { if (e.key === "Enter" && code.trim()) paste(code); }} />
                 <button type="button" className="vc-tool-btn" disabled={!code.trim()} onClick={() => paste(code)}>Add</button>
-                <button type="button" className="vc-ts-mini" title="Open a .sonatatheme file" onClick={() => fileRef.current?.click()}>📁</button>
+                <button type="button" className="vc-ts-mini" title="Open a .sonatatheme file" onClick={() => fileRef.current?.click()}><SonataGlyph name="folder" /></button>
                 <input ref={fileRef} type="file" accept=".sonatatheme,application/json" hidden onChange={async e => { const f = e.currentTarget.files?.[0]; e.currentTarget.value = ""; if (f) paste(await f.text()); }} />
             </div>
         </div>
@@ -539,7 +540,7 @@ function ThemeModal({ modalProps }: { modalProps: RenderModalProps; }) {
                                 <Switch on={isOn} label={isOn ? "Turn this theme off" : "Put this theme on"} onChange={v => setActive(v ? t.id : null)} />
                                 {sure
                                     ? <button type="button" className="vc-tool-btn vc-ts-sure" onClick={() => { removeTheme(t.id); setSure(false); }}>Delete?</button>
-                                    : <button type="button" className="vc-ts-mini vc-ts-del" title="Delete this theme" aria-label="Delete" onClick={() => setSure(true)}>🗑</button>}
+                                    : <button type="button" className="vc-ts-mini vc-ts-del" title="Delete this theme" aria-label="Delete" onClick={() => setSure(true)}><SonataGlyph name="trash" /></button>}
                             </div>
                             <Preview t={t} />
                             <section className="vc-ts-pane" key={`${t.id}-${view}`}>

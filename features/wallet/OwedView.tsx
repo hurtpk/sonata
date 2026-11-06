@@ -16,6 +16,7 @@ import { ChannelStore, IconUtils, NavigationRouter, RelationshipStore, showToast
 import { ToolHero } from "../_shared/ToolHero";
 import { addDebt, Debt, left, payPart, personKey, removeDebt, settle, settleAll, totals, useOwed } from "./owedStore";
 import { CURRENCIES, money, togglePaid, useRequests } from "./payRequests";
+import { SonataGlyph } from "../../utilities/icons";
 
 const SNOWFLAKE = /^\d{17,20}$/;
 const DAY = 86_400_000;
@@ -117,7 +118,7 @@ function PersonPicker({ value, onChange }: { value: Person | null; onChange(p: P
                     ))}
                     {!SNOWFLAKE.test(q) && (
                         <button type="button" className="vc-wallet-owe-option" onMouseDown={e => { e.preventDefault(); pick({ name: q }); }}>
-                            <span className="vc-wallet-owe-face vc-wallet-owe-letter" style={{ width: 26, height: 26 }}>✏️</span>
+                            <span className="vc-wallet-owe-face vc-wallet-owe-letter" style={{ width: 26, height: 26 }}><SonataGlyph name="pencil" /></span>
                             <span className="vc-wallet-owe-who"><b>Use “{q}”</b><small>Someone who isn't on Discord, or you'd rather not pick</small></span>
                         </button>
                     )}
@@ -248,13 +249,13 @@ function PersonCard({ p, debts, showDone, onAdd, close }: { p: Person; debts: De
         <section className={classes("vc-wallet-owe-card", !open.length && "vc-wallet-owe-card-done", late && "vc-wallet-owe-card-late")}>
             <header className="vc-wallet-owe-head">
                 <Face p={p} size={38} />
-                <span className="vc-wallet-owe-who"><b>{p.name}</b><small>{p.username ? `@${p.username}` : "Not on Discord"} · {open.length ? `${open.length} thing${open.length === 1 ? "" : "s"} open` : "all paid up 🎉"}</small></span>
+                <span className="vc-wallet-owe-who"><b>{p.name}</b><small>{p.username ? `@${p.username}` : "Not on Discord"} · {open.length ? `${open.length} thing${open.length === 1 ? "" : "s"} open` : <>{"all paid up "}<SonataGlyph name="party" /></>}</small></span>
                 <span className="vc-wallet-owe-total">{open.length ? sumText(totals(open)) : "✓"}</span>
             </header>
             {shown.length > 0 && <div className="vc-wallet-owe-lines">{shown.map(d => <DebtLine key={d.id} d={d} />)}</div>}
             <div className="vc-tool-row">
                 <button type="button" className="vc-tool-btn" onClick={onAdd}>+ Add more</button>
-                {open.length > 0 && <button type="button" className="vc-tool-btn" title={p.userId ? "Opens your DM with them and puts a friendly reminder in the message box — you send it" : "Copies a friendly reminder"} onClick={() => void remind(p, open, close)}>💬 Remind</button>}
+                {open.length > 0 && <button type="button" className="vc-tool-btn" title={p.userId ? "Opens your DM with them and puts a friendly reminder in the message box — you send it" : "Copies a friendly reminder"} onClick={() => void remind(p, open, close)}><SonataGlyph name="message" /> Remind</button>}
                 <span className="vc-tool-spacer" />
                 {open.length > 1 && <button type="button" className="vc-tool-link" onClick={() => settleAll(personKey(open[0]))}>All paid</button>}
             </div>
@@ -311,8 +312,8 @@ export function OwedView({ close }: { close(): void; }) {
                 </div>
             ) : adding === false && (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">🧾</span>
-                    {debts.length ? "Everyone's paid you back. 🎉" : "Nobody yet. Press “Someone owes me” to add the first."}
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="clipboard" /></span>
+                    {debts.length ? <>{"Everyone's paid you back. "}<SonataGlyph name="party" /></> : "Nobody yet. Press “Someone owes me” to add the first."}
                 </div>
             )}
 

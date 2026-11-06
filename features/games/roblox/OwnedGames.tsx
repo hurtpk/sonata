@@ -12,6 +12,7 @@ import { classes } from "@utils/misc";
 import { useEffect, useState } from "@webpack/common";
 
 import { ago, cardActions, fetchOwnedGames, RbxOwnedGame, short } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 
@@ -26,10 +27,10 @@ export function OwnedGames({ kind, id, name, emptyText }: { kind: "group" | "use
         return () => { alive = false; };
     }, [kind, id, tick]);
 
-    if (state.error) return <span className={rb("muted")}>🎮 Couldn't get their games: {state.error}</span>;
+    if (state.error) return <span className={rb("muted")}><SonataGlyph name="controller" /> Couldn't get their games: {state.error}</span>;
     if (!state.games) return <div className={rb("loading")}><span className={rb("spin")} /> Finding {kind === "group" ? "the group's" : "their"} games…</div>;
     const { games } = state;
-    if (!games.length) return kind === "group" || emptyText ? <span className={rb("muted")}>🎮 {emptyText ?? `${name} doesn't own any public games.`}</span> : null;
+    if (!games.length) return kind === "group" || emptyText ? <span className={rb("muted")}><SonataGlyph name="controller" /> {emptyText ?? `${name} doesn't own any public games.`}</span> : null;
 
     const playing = games.reduce((a, g) => a + g.playing, 0);
     const visits = games.reduce((a, g) => a + g.visits, 0);
@@ -40,7 +41,7 @@ export function OwnedGames({ kind, id, name, emptyText }: { kind: "group" | "use
         <div className={rb("owned")}>
             <div className={rb("outfit-head")}>
                 <div>
-                    <b>🎮 {games.length}{state.more ? "+" : ""} game{games.length === 1 ? "" : "s"} {kind === "group" ? "owned by the group" : "they made"}</b>
+                    <b><SonataGlyph name="controller" /> {games.length}{state.more ? "+" : ""} game{games.length === 1 ? "" : "s"} {kind === "group" ? "owned by the group" : "they made"}</b>
                     <span><span className={rb("live")}>{short(playing)} playing now</span> across {live} of them · {short(visits)} visits in all</span>
                 </div>
                 <span className={rb("spacer")} />
@@ -51,7 +52,7 @@ export function OwnedGames({ kind, id, name, emptyText }: { kind: "group" | "use
                     const share = playing ? g.playing / playing * 100 : 0;
                     return (
                         <div key={g.universeId} className={rb("owned-row")}>
-                            {g.icon ? <img src={g.icon} alt="" loading="lazy" /> : <span className={rb("img-none")}>🧱</span>}
+                            {g.icon ? <img src={g.icon} alt="" loading="lazy" /> : <span className={rb("img-none")}><SonataGlyph name="blockTile" /></span>}
                             <div className={rb("owned-main")}>
                                 <b>{g.name}</b>
                                 <span>{short(g.visits)} visits · {short(g.favorites)} favourites{g.updated ? ` · updated ${ago(g.updated)}` : ""}</span>

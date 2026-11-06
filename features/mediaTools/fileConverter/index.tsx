@@ -19,7 +19,8 @@ import { Menu, showToast } from "@webpack/common";
 import { defineFeatureSettings } from "../../../featureSettings";
 import { getBytes } from "../../_shared/media";
 import { shutdown } from "./media";
-import { openFileConverter } from "./Panel";
+import { openSection, registerSection } from "../../_shared/Hub";
+import { lazyWindow } from "../../_shared/Window";
 import { startUploadGuard, stopUploadGuard } from "./upload";
 
 const settings = defineFeatureSettings("fileConverter", {
@@ -29,6 +30,13 @@ const settings = defineFeatureSettings("fileConverter", {
         default: true,
     },
 });
+
+const ConverterModal = lazyWindow("File Converter", () => import("./Panel").then(m => m.ConverterModal));
+registerSection("mediaTools", { id: "fileConverter", feature: "fileConverter", name: "File Converter", sub: "Change a file's type or size", render: (props, input) => <ConverterModal modalProps={props} initial={input?.file ? [input.file] : []} /> });
+
+export function openFileConverter(files: File[] = []) {
+    openSection("mediaTools", "fileConverter", files.length ? props => <ConverterModal modalProps={props} initial={files} /> : undefined);
+}
 
 export function ConvertIcon({ height = 20, width = 20, className }: IconProps) {
     return (

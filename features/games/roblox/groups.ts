@@ -8,6 +8,8 @@
 // checked every few hours while Discord is open, with a heads-up for new
 // shouts and member milestones. Saved on this computer.
 
+import { scheduleBackgroundCheck } from "../../../sonata/performance";
+
 import { DataStore } from "@api/index";
 import { showNotification } from "@api/Notifications";
 
@@ -108,10 +110,12 @@ export async function checkGroups(force = false, everyHours = 3) {
     } finally { busy = false; }
 }
 
-let timer: ReturnType<typeof setInterval> | null = null;
+let cancelSchedule: (() => void) | undefined;
 export function startGroupChecks(everyHours: () => number) {
     stopGroupChecks();
-    timer = setInterval(() => void checkGroups(false, everyHours()), 10 * 60_000);
-    setTimeout(() => void checkGroups(false, everyHours()), 20_000);
+    cancelSchedule = scheduleBackgroundCheck(() => void checkGroups(false, everyHours()), 10 * 60_000, 30 * 60_000, 20_000);
 }
-export function stopGroupChecks() { if (timer) clearInterval(timer); timer = null; }
+export function stopGroupChecks() {
+    cancelSchedule?.();
+    cancelSchedule = undefined;
+}

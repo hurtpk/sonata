@@ -14,6 +14,7 @@ import { useEffect, useState } from "@webpack/common";
 import { collectItem, Main, parseAssetInput, Part, Preview, TYPES } from "./Assets";
 import { ago, date, fetchAssetInfo, RbxAssetInfo } from "./data";
 import { compareFingerprints, compareShapes, fingerprint, sameBytes } from "./similar";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 type Loaded = { info?: RbxAssetInfo; main?: Main; parts?: Part[]; error?: string; status?: string; };
@@ -51,7 +52,7 @@ function Column({ label, value, onChange, s }: { label: string; value: string; o
             {s.error && <span className="vc-tool-error">{s.error}</span>}
             {s.info && (
                 <div className={rb("head")}>
-                    {s.info.image ? <img className={rb("icon")} src={s.info.image} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}>📦</span>}
+                    {s.info.image ? <img className={rb("icon")} src={s.info.image} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}><SonataGlyph name="package" /></span>}
                     <div className={rb("who")}>
                         <b>{s.info.name}</b>
                         <span>{TYPES[s.info.typeId] ?? "Item"} · by {s.info.creator}</span>
@@ -62,7 +63,7 @@ function Column({ label, value, onChange, s }: { label: string; value: string; o
             {!s.status && s.parts && (mesh ? <Preview parts={s.parts} /> : tex?.url ? <img className={rb("ic-tex-big")} src={tex.url} alt="" /> : s.info && <span className={rb("muted")}>No 3D model or picture to show{s.main?.error ? ` — ${s.main.error}` : ""}.</span>)}
             {!s.status && (mesh || tex) && (
                 <div className={rb("ic-facts")}>
-                    {mesh?.mesh && <span>🧊 {(mesh.mesh.faces.length / 3).toLocaleString()} triangles · {(mesh.mesh.positions.length / 3).toLocaleString()} corners · mesh v{mesh.mesh.version}</span>}
+                    {mesh?.mesh && <span><SonataGlyph name="snowflake" /> {(mesh.mesh.faces.length / 3).toLocaleString()} triangles · {(mesh.mesh.positions.length / 3).toLocaleString()} corners · mesh v{mesh.mesh.version}</span>}
                     {tex?.url && <span className={rb("ic-tex")}><img src={tex.url} alt="" /> {tex.label}{tex.preview ? " (preview)" : ""}</span>}
                 </div>
             )}

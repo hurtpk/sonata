@@ -12,6 +12,7 @@ import { React, useState } from "@webpack/common";
 
 import { BS, bsState, cellChar, encodeFleet, FLEET, fleetCells, joinParts, markGuess, parts, randomFleet, scramble, Ship, SHIP_NAMES, shipCells, sunkShips, validWord, WD_LEN, WD_TRIES, wdState } from "./duelRules";
 import type { Game } from "./games";
+import { SonataGlyph } from "../../utilities/icons";
 
 const mg = classNameFactory("vc-mg-");
 
@@ -50,7 +51,7 @@ export function FleetPlacer({ fleet, setFleet }: { fleet: (Ship | null)[]; setFl
                 ))}
                 <div className={mg("place-tools")}>
                     <button type="button" className={mg("btn2")} onClick={() => setDir(d => d === "h" ? "v" : "h")}>{dir === "h" ? "↔ Across" : "↕ Down"}</button>
-                    <button type="button" className={mg("btn2")} onClick={() => setFleet(randomFleet())}>🎲 Random</button>
+                    <button type="button" className={mg("btn2")} onClick={() => setFleet(randomFleet())}><SonataGlyph name="dice" /> Random</button>
                     <button type="button" className={mg("btn2")} onClick={() => { setFleet(FLEET.map(() => null)); setSel(0); }}>Clear</button>
                 </div>
             </div>

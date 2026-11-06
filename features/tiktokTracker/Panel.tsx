@@ -15,6 +15,7 @@ import { windowAccent } from "../../controller/accent";
 import { Window } from "../_shared/Window";
 import { checkAll, checkOne, onProgress, opts, progress, refreshPosts, refreshRoblox, stopChecking } from "./refresh";
 import { Account, addAccount, ago, at, date, dateTime, getAccounts, loadAccounts, onChange, parseTikTok, Post, removeAccount, short, signed, update } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const tt = classNameFactory("vc-ttt-");
 
@@ -117,7 +118,7 @@ function Card({ a, onOpen }: { a: Account; onOpen(): void; }) {
             <div className={tt("card-head")}>
                 <Pic src={a.avatar} name={a.nickname ?? a.username} />
                 <div className={tt("who")}>
-                    <b>{a.nickname ?? a.username}{a.verified && <span className={tt("tick")} title="Verified">✔</span>}</b>
+                    <b>{a.nickname ?? a.username}{a.verified && <span className={tt("tick")} title="Verified"><SonataGlyph name="checkCircle" /></span>}</b>
                     <span>@{a.username}{a.private ? " · private" : ""}</span>
                 </div>
                 {checking && <span className={tt("spin")} title="Checking now" />}
@@ -138,7 +139,7 @@ function Card({ a, onOpen }: { a: Account; onOpen(): void; }) {
                     {rb.presence != null && <i className={classes(tt("dot"), tt(`dot-${rb.presence}`))} title={PRESENCE[rb.presence]} />}
                 </div>
             )}
-            <span className={tt("since")}>{a.error && a.last ? `⚠️ ${a.error} · ` : ""}Watching since {date(a.addedAt)} · checked {ago(a.lastCheck)}</span>
+            <span className={tt("since")}>{a.error && a.last ? <><SonataGlyph name="warning" /> {a.error} · </> : ""}Watching since {date(a.addedAt)} · checked {ago(a.lastCheck)}</span>
         </button>
     );
 }
@@ -185,9 +186,9 @@ function List({ onOpen }: { onOpen(u: string): void; }) {
                         : <button type="button" className="vc-tool-btn" onClick={() => void checkAll(true)}>↻ Check everyone now</button>}
                 </div>
             )}
-            {progress.blockedUntil > Date.now() && <div className={tt("warn")}>⚠️ TikTok asked for a break, so checking paused until {new Date(progress.blockedUntil).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}. It carries on by itself.</div>}
+            {progress.blockedUntil > Date.now() && <div className={tt("warn")}><SonataGlyph name="warning" /> TikTok asked for a break, so checking paused until {new Date(progress.blockedUntil).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}. It carries on by itself.</div>}
             {!accounts.length ? (
-                <div className="vc-tool-empty"><span className="vc-tool-empty-icon">📈</span><b>No one is being watched yet</b>Add a creator's TikTok above — and their Roblox if you like — and their followers, likes and posts are tracked from today.</div>
+                <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="trendingUp" /></span><b>No one is being watched yet</b>Add a creator's TikTok above — and their Roblox if you like — and their followers, likes and posts are tracked from today.</div>
             ) : (
                 <div className={tt("grid")}>{shown.map(a => <Card key={a.username} a={a} onOpen={() => onOpen(a.username)} />)}</div>
             )}
@@ -210,11 +211,11 @@ function PostRow({ p, username }: { p: Post; username: string; }) {
                 <span className={tt("post-when")}>Posted {dateTime(p.created)} · {ago(p.created)}{p.gone ? " · removed or private now" : ""}</span>
                 {l ? (
                     <div className={tt("post-stats")}>
-                        <span title="Likes">❤ <b>{short(l.likes)}</b>{f && l.likes !== f.likes && <Delta n={l.likes - f.likes} />}</span>
-                        <span title="Views">▶ <b>{short(l.views)}</b>{f && l.views !== f.views && <Delta n={l.views - f.views} />}</span>
-                        <span title="Comments">💬 <b>{short(l.comments)}</b></span>
+                        <span title="Likes"><SonataGlyph name="heart" /> <b>{short(l.likes)}</b>{f && l.likes !== f.likes && <Delta n={l.likes - f.likes} />}</span>
+                        <span title="Views"><SonataGlyph name="play" /> <b>{short(l.views)}</b>{f && l.views !== f.views && <Delta n={l.views - f.views} />}</span>
+                        <span title="Comments"><SonataGlyph name="message" /> <b>{short(l.comments)}</b></span>
                         <span title="Shares">↗ <b>{short(l.shares)}</b></span>
-                        <span title="Saves">🔖 <b>{short(l.saves)}</b></span>
+                        <span title="Saves"><SonataGlyph name="bookmark" /> <b>{short(l.saves)}</b></span>
                         <span className={tt("post-checked")}>checked {ago(l.t)}</span>
                     </div>
                 ) : <span className="vc-tool-hint">Likes not checked yet</span>}
@@ -249,7 +250,7 @@ function Detail({ username, onBack }: { username: string; onBack(): void; }) {
                 <button type="button" className="vc-tool-icon" onClick={onBack} title="Back">←</button>
                 <Pic src={a.avatar} name={a.nickname ?? a.username} size={60} />
                 <div className={tt("who")}>
-                    <b style={{ fontSize: 19 }}>{a.nickname ?? a.username}{a.verified && <span className={tt("tick")}>✔</span>}</b>
+                    <b style={{ fontSize: 19 }}>{a.nickname ?? a.username}{a.verified && <span className={tt("tick")}><SonataGlyph name="checkCircle" /></span>}</b>
                     <span>@{a.username} · watching since {dateTime(a.addedAt)} · checked {ago(a.lastCheck)}</span>
                     {a.bio && <span className={tt("bio")}>{a.bio}</span>}
                 </div>
@@ -259,7 +260,7 @@ function Detail({ username, onBack }: { username: string; onBack(): void; }) {
                     <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!!busy || progress.running} onClick={() => run("all", () => checkOne(a.username, { posts: showPosts }))}>{busy === "all" ? "Checking…" : "↻ Check now"}</button>
                 </div>
             </div>
-            {a.error && <div className={tt("warn")}>⚠️ {a.error}</div>}
+            {a.error && <div className={tt("warn")}><SonataGlyph name="warning" /> {a.error}</div>}
 
             {a.last && a.first && (
                 <div className="vc-tool-stats">
@@ -287,14 +288,14 @@ function Detail({ username, onBack }: { username: string; onBack(): void; }) {
 
             <section className="vc-tool-section">
                 <div className="vc-tool-head">
-                    <span className="vc-tool-label">🎮 Roblox</span>
+                    <span className="vc-tool-label"><SonataGlyph name="controller" /> Roblox</span>
                     {rb?.id && <span className={classes("vc-tool-badge", rb.presence ? "vc-tool-badge-good" : "")}><i className={classes(tt("dot"), tt(`dot-${rb.presence ?? 0}`))} />{PRESENCE[rb.presence ?? 0]}</span>}
                 </div>
                 {rb?.id && !rb.error ? (
                     <div className={tt("rb")}>
                         <Pic src={rb.avatar} name={rb.name ?? "R"} size={56} round={false} />
                         <div className={tt("who")}>
-                            <b>{rb.displayName}{rb.verified && <span className={tt("tick")}>✔</span>}{rb.banned && <span className="vc-tool-badge vc-tool-badge-bad" style={{ marginLeft: 6 }}>Banned</span>}</b>
+                            <b>{rb.displayName}{rb.verified && <span className={tt("tick")}><SonataGlyph name="checkCircle" /></span>}{rb.banned && <span className="vc-tool-badge vc-tool-badge-bad" style={{ marginLeft: 6 }}>Banned</span>}</b>
                             <span>@{rb.name} · on Roblox since {rb.created ? date(Date.parse(rb.created)) : "–"}{rb.presence === 0 && rb.lastOnline ? ` · last online ${ago(Date.parse(rb.lastOnline))}` : ""}</span>
                             {rb.bio && <span className={tt("bio")}>{rb.bio}</span>}
                         </div>
@@ -319,7 +320,7 @@ function Detail({ username, onBack }: { username: string; onBack(): void; }) {
 
             <section className="vc-tool-section">
                 <div className="vc-tool-head">
-                    <span className="vc-tool-label">📱 Posts · {posts.length}</span>
+                    <span className="vc-tool-label"><SonataGlyph name="mobile" /> Posts · {posts.length}</span>
                     <label className="vc-tool-check"><input type="checkbox" checked={showPosts} onChange={e => { setShowPosts(e.currentTarget.checked); opts.posts = e.currentTarget.checked; settingsHook.setPosts?.(e.currentTarget.checked); }} /> See current likes on posts</label>
                 </div>
                 {!showPosts ? <span className="vc-tool-hint">Turned off — only the account totals are checked.</span> : a.private ? <span className="vc-tool-hint">This account is private, so its posts can't be seen.</span> : (

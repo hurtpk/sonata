@@ -1,6 +1,6 @@
 .sonata {
     box-sizing: border-box;
-    --sn-accent: #c58d91;
+    --sn-accent: #ffad91;
     /* The second colour of a gradient accent (the same colour when the accent is solid). */
     --sn-accent-2: var(--sn-accent);
     --sn-hi: var(--sn-accent);
@@ -13,18 +13,18 @@
     --sn-faint: color-mix(in srgb, var(--sn-accent) 14%, transparent);
     /* The colour of faint tints, lines and highlights (white on dark, dark ink on light). */
     --sn-ink-rgb: 255 255 255;
-    --sn-text: #f1efed;
-    --sn-muted: #a7a1a2;
-    --sn-dim: #817b7e;
-    --sn-line: #303032;
+    --sn-text: var(--sonata-ink, #f5f0e9);
+    --sn-muted: var(--sonata-muted, #a7a4ad);
+    --sn-dim: #96939d;
+    --sn-line: var(--sonata-line, #2a292f);
     /* The canvas, and the surfaces on it. */
-    --sn-outside: #111112;
-    --sn-base: #111112;
-    --sn-surface: #19191b;
+    --sn-outside: var(--sonata-canvas, #0b0b0d);
+    --sn-base: var(--sonata-canvas, #0b0b0d);
+    --sn-surface: var(--sonata-surface, #151519);
     --sn-glass: rgb(var(--sn-ink-rgb) / 0.04);
     --sn-blur: none;
-    --sn-font: "Segoe UI", Arial, sans-serif;
-    --sn-display: var(--sn-font);
+    --sn-font: var(--sonata-ui-font);
+    --sn-display: var(--sonata-display-font);
     --text-default: var(--sn-text);
     --text-normal: var(--sn-text);
     --text-muted: var(--sn-muted);
@@ -57,24 +57,25 @@
 
 /* ─── The canvas ─── */
 
-.sonata-frame { position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--sn-base); }
+.sonata-frame { position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--sonata-glow), var(--sn-base); }
 
 /* ─── Top bar: name, a floating pill of tabs, actions ─── */
 
-.sonata-top { position: relative; z-index: 3; flex: none; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; min-height: 68px; padding: 14px 28px; border-bottom: 1px solid var(--sn-line); background: #141415; }
+.sonata-top { position: relative; z-index: 3; flex: none; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; column-gap: 24px; min-height: 72px; width: min(1440px, calc(100% - 56px)); margin-inline: auto; border-bottom: 1px solid var(--sn-line); }
 
-.sonata-brand { all: unset; cursor: pointer; justify-self: start; display: inline-flex; align-items: center; gap: 9px; font-family: var(--sn-display); font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--sn-text); }
-.sonata-brand svg { color: var(--sn-hi); }
+.sonata-brand { all: unset; cursor: pointer; justify-self: start; display: inline-flex; align-items: center; gap: 9px; font-family: var(--sn-display); font-size: 38px; line-height: 1; font-weight: 600; letter-spacing: -.055em; -webkit-text-stroke: .008em currentColor; color: var(--sn-text); }
+.sonata-brand svg, .sonata-brand i { color: var(--sn-hi); }
+.sonata-brand i { font-style: normal; }
 .sonata-brand:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 4px; border-radius: 6px; }
 
-.sonata-tabs { display: flex; flex-direction: column; gap: 4px; flex: 0 0 180px; min-height: 0; padding: 24px 16px; border-right: 1px solid var(--sn-line); overflow-y: auto; }
+.sonata-tabs { display: flex; align-items: stretch; align-self: stretch; gap: clamp(8px, 1.25vw, 22px); min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .sonata-tabs::-webkit-scrollbar { display: none; }
 
-.sonata-tab { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-left: 2px solid transparent; border-radius: 0 6px 6px 0; font-size: 13px; font-weight: 500; color: var(--sn-muted); white-space: nowrap; transition: color .15s, background .15s; }
+.sonata-tab { all: unset; position: relative; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 3px; border-bottom: 2px solid transparent; font: 650 11px var(--sn-font); letter-spacing: .09em; text-transform: uppercase; color: var(--sn-muted); white-space: nowrap; transition: color .15s; }
 
 .sonata-tab:hover { color: var(--sn-text); }
 .sonata-tab:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: -2px; }
-.sonata-tab-on, .sonata-tab-on:hover { color: var(--sn-text); border-left-color: var(--sn-accent); background: var(--sn-faint); }
+.sonata-tab-on, .sonata-tab-on:hover { color: var(--sn-text); border-bottom-color: var(--sn-accent); }
 .sonata-tab b { margin-left: auto; min-width: 20px; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; color: var(--sn-muted); background: #252527; font-variant-numeric: tabular-nums; }
 .sonata-tab-on b { background: var(--sn-faint); color: var(--sn-hi); }
 
@@ -100,7 +101,7 @@
     min-width: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 6px 30px 40px;
+    padding: 14px 28px 40px;
 }
 
 
@@ -111,7 +112,8 @@
 .sonata-head > div:first-child { position: relative; z-index: 1; flex: 1 1 320px; min-width: 0; }
 .sonata-kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sn-hi); }
 .sonata-kicker i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.sonata-head-title { margin: 0; font-family: var(--sn-font); font-size: 26px; line-height: 1.25; font-weight: 600; letter-spacing: -0.5px; color: var(--sn-text); }
+.sonata-eyebrow { margin-bottom: 5px; color: var(--sn-hi); font-size: 10px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase; }
+.sonata-head-title { margin: 0; font: 600 clamp(38px, 5vw, 66px)/1 var(--sn-display); letter-spacing: -.055em; -webkit-text-stroke: .008em currentColor; color: var(--sn-text); }
 .sonata-head-title b { font-weight: 700; }
 .sonata-head-sub { margin: 7px 0 0; max-width: 620px; font-size: 13px; line-height: 1.5; color: var(--sn-muted); }
 .sonata-pane-tools { position: relative; z-index: 1; flex: none; max-width: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
@@ -151,7 +153,7 @@
     gap: 7px;
     height: 34px;
     padding: 0 13px;
-    border-radius: 6px;
+    border-radius: 999px;
     font-size: 13px;
     font-weight: 600;
     color: var(--sn-muted);
@@ -171,7 +173,7 @@
 .sonata-group { display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 70px; }
 .sonata-group + .sonata-group { margin-top: 16px; }
 .sonata-group-head { display: flex; align-items: center; gap: 12px; margin: 0; padding: 8px 0 0; }
-.sonata-group-name { display: inline-flex; align-items: center; gap: 10px; font-family: var(--sn-display); font-size: 14px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sn-text); }
+.sonata-group-name { display: inline-flex; align-items: center; gap: 10px; font-family: var(--sn-font); font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sn-text); }
 .sonata-group-name i { width: 8px; height: 8px; border-radius: 50%; }
 .sonata-group-count { margin-left: auto; font-size: 12.5px; color: var(--sn-dim); font-variant-numeric: tabular-nums; }
 .sonata-group-count b { color: var(--sn-text); font-weight: 700; }
@@ -367,7 +369,7 @@
 
 /* ─── As a full-screen window ─── */
 
-.sonata-window { pointer-events: all; position: fixed; inset: 0; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #111112; animation: sonata-in 0.18s ease-out; }
+.sonata-window { pointer-events: all; position: fixed; inset: 0; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: var(--sonata-canvas, #0b0b0d); animation: sonata-in 0.18s ease-out; }
 .sonata-drag { position: absolute; z-index: 10; top: 0; left: 0; right: 0; height: var(--sn-safe-top, 0px); -webkit-app-region: drag; app-region: drag; }
 .sonata-window-closing { animation: sonata-out 0.18s ease-in forwards; }
 
@@ -537,7 +539,7 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-spacer { flex: 1; }
 
 /* Update log */
-.sonata-updates { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 7px 11px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--sn-text); background: var(--sn-surface); box-shadow: inset 0 0 0 1px var(--sn-line); transition: background 0.15s; }
+.sonata-updates { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 7px 12px; border-radius: 999px; font: 650 10px var(--sn-font); letter-spacing: .08em; text-transform: uppercase; color: var(--sn-text); background: transparent; box-shadow: inset 0 0 0 1px var(--sn-line); transition: background .15s; }
 .sonata-updates:hover { background: rgb(var(--sn-ink-rgb) / 0.12); }
 .sonata-updates:focus-visible { outline: 2px solid var(--sn-accent); }
 .sonata-updates-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff; background: var(--sn-faint); box-sizing: border-box; }
@@ -665,4 +667,17 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-log-notice .sonata-check { font-size: 13px; }
 .sonata-log-notice .sonata-field-hint { margin: 0; }
 
-@media (max-width: 760px) { .sonata-top { padding-inline: 18px; } .sonata-workspace { flex-direction: column; } .sonata-tabs { flex: none; flex-direction: row; padding: 12px 18px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--sn-line); } .sonata-tab { border-left: 0; border-bottom: 2px solid transparent; border-radius: 6px 6px 0 0; } .sonata-tab-on, .sonata-tab-on:hover { border-bottom-color: var(--sn-accent); } .sonata .sonata-pane { padding-inline: 18px; } }
+@media (max-width: 1100px) {
+    .sonata-top { padding-top: 10px; }
+    .sonata-tabs { order: 1; flex: 0 0 100%; }
+}
+
+@media (max-width: 560px) {
+    .sonata-top { width: calc(100% - 32px); row-gap: 6px; }
+    .sonata-corner { justify-content: flex-start; }
+    .sonata .sonata-pane { padding-inline: 16px; }
+}
+
+.sonata-log-icons { display: inline-flex; align-items: center; gap: 4px; color: var(--sn-hi); }
+.sonata-log-entry li > span:first-child { color: var(--sn-hi); }
+@media (max-width: 640px) { .sonata-log-icons { display: none; } }

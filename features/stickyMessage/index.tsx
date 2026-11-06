@@ -25,6 +25,7 @@ import { createRoot, Menu, NavigationRouter, Parser, SelectedChannelStore, useEf
 import { defineFeatureSettings } from "../../featureSettings";
 import { openSection, registerSection } from "../_shared/Hub";
 import { Window } from "../_shared/Window";
+import { SonataGlyph } from "../../utilities/icons";
 
 const COMPOSER_SETTING: ["plugins.Sonata.stickyMessage_showAboveComposer"] = ["plugins.Sonata.stickyMessage_showAboveComposer"];
 const settings = defineFeatureSettings("stickyMessage", {
@@ -157,14 +158,14 @@ function StickyCard() {
     return (
         <div ref={ref} className={`vc-sticky${collapsed ? " vc-sticky-collapsed" : ""}`}>
             {collapsed ? (
-                <button type="button" className="vc-sticky-pill" onClick={() => setCollapsed(false)} title="Show the stuck message">📌 {s.author}'s message</button>
+                <button type="button" className="vc-sticky-pill" onClick={() => setCollapsed(false)} title="Show the stuck message"><SonataGlyph name="pin" /> {s.author}'s message</button>
             ) : (
                 <>
-                    <span className="vc-sticky-pin" aria-hidden>📌</span>
+                    <span className="vc-sticky-pin" aria-hidden><SonataGlyph name="pin" /></span>
                     {s.avatar && <img className="vc-sticky-avatar" src={s.avatar} alt="" />}
                     <div className={`vc-sticky-body${expanded ? " vc-sticky-expanded" : ""}`} onClick={() => setExpanded(e => !e)} title={expanded ? "Show less" : "Show all"}>
                         <span className="vc-sticky-author">{s.author}</span>
-                        {s.until != null && <span className="vc-sticky-left" title={`Unsticks itself ${new Date(s.until).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`}>⏱ {timeLeft(s.until)}</span>}
+                        {s.until != null && <span className="vc-sticky-left" title={`Unsticks itself ${new Date(s.until).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`}><SonataGlyph name="stopwatch" /> {timeLeft(s.until)}</span>}
                         <div className="vc-sticky-text">{s.content ? Parser.parse(s.content, true, { channelId: s.channelId, messageId: s.id, allowLinks: true }) : <i>(image)</i>}</div>
                         {expanded && s.image && <img className="vc-sticky-image" src={s.image} alt="" />}
                     </div>

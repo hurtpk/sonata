@@ -16,6 +16,7 @@ import { Window } from "../_shared/Window";
 import { messageRect } from "./anchor";
 import { defaultConfig, getConfig, saveConfig } from "./settings";
 import { Config, effectsFor } from "./triggers";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-fx-");
 const ORDER = EFFECTS.map(e => e.id);
@@ -59,7 +60,7 @@ function EffectsModal({ modalProps }: { modalProps: RenderModalProps; }) {
                             <div className={classes(cl("row"), !c.on && cl("row-off"), hits.includes(e.id) && cl("row-hit"))}>
                                 <label className={cl("toggle")} title={c.on ? "On" : "Off"}>
                                     <input type="checkbox" checked={c.on} onChange={ev => patch(e.id, { on: ev.currentTarget.checked })} />
-                                    <span className={cl("icon")}>{e.icon}</span>
+                                    <span className={cl("icon")}><SonataGlyph name={e.icon} /></span>
                                     <span className={cl("name")}>{e.name}</span>
                                 </label>
                                 <input className={classes(cl("input"), cl("words"))} value={c.words} disabled={!c.on} spellCheck={false}

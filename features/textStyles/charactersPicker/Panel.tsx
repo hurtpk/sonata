@@ -14,6 +14,7 @@ import { windowAccent } from "../../../controller/accent";
 import { openSection, registerSection } from "../../_shared/Hub";
 import { Window } from "../../_shared/Window";
 import { ALL_CHARS, CATEGORIES } from "./chars";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const cp = classNameFactory("vc-chars-");
@@ -69,7 +70,7 @@ function CharsModal({ modalProps, recent, onPick, insert, target }: { modalProps
                             {c.ch}
                         </button>
                     ))}
-                    {!shown.length && <div className={cl("empty")}><span className={cl("empty-icon")}>🔍</span>Nothing matches “{query}”.</div>}
+                    {!shown.length && <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="search" /></span>Nothing matches “{query}”.</div>}
                 </div>
                 <div className={cl("hint")}>{flash ? `Added ${flash}` : q ? `${shown.length} found` : tab === "recent" ? "The ones you picked lately." : ""}</div>
             </div>

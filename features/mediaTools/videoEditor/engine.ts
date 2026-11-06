@@ -8,7 +8,7 @@
 // Converter uses, on this computer. One run does everything; looping is a
 // second, instant run that copies the result a few times without re-encoding.
 
-import { shutdown, Status, withFfmpeg } from "../fileConverter/media";
+import { Status, withFfmpeg } from "../fileConverter/media";
 import { captionPng } from "./captions";
 import { allCaptions, buildPlan, ClipInfo, encoding, outputSize, parseProbe, Project, totalLength } from "./project";
 
@@ -19,9 +19,7 @@ export interface GifOptions { width: number; fps: number; fit10: boolean; }
 
 const extOf = (name: string) => /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toLowerCase() ?? "mp4";
 
-export function stopExport() { shutdown(); }
-
-export function exportVideo(p: Project, status: Status, gif?: GifOptions): Promise<Exported> {
+export function exportVideo(p: Project, status: Status, gif?: GifOptions, signal?: AbortSignal): Promise<Exported> {
     // A GIF is made from the best-quality video, so it isn't squeezed twice.
     if (gif) p = { ...p, size: "best" };
     if (!p.clips.length || totalLength(p) < 0.1) return Promise.reject(new Error("There's nothing left to export."));
@@ -127,5 +125,5 @@ export function exportVideo(p: Project, status: Status, gif?: GifOptions): Promi
         } finally {
             for (const name of written) await f.deleteFile(name).catch(() => { });
         }
-    }, status);
+    }, status, signal);
 }

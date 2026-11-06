@@ -16,6 +16,7 @@ import { PRESENCE, short } from "./data";
 import { isMuted, onAlertsChange, toggleMuted } from "./gameAlerts";
 import { getMe } from "./me";
 import { MyAccount } from "./MyAccount";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const SECTIONS: { kind: SavedKind; label: string; icon: string; }[] = [
@@ -135,7 +136,7 @@ export function SavedSidebar({ current, onOpen, onOpenMe, onCompare }: { current
                         <div key={sec.kind} className={rb("side-sec")}>
                             <div className={rb("side-sec-head")}>
                                 <button type="button" className={rb("side-sec-btn")} onClick={() => toggleSection(sec.kind)}>
-                                    <i>{isClosed ? "▸" : "▾"}</i>{sec.icon} {sec.label} <small>{items.length}</small>
+                                    <i>{isClosed ? "▸" : "▾"}</i><SonataGlyph name={sec.icon} /> {sec.label} <small>{items.length}</small>
                                 </button>
                                 {sec.kind === "game" && games.length > 1 && !isClosed && (
                                     <button type="button" className={rb("link")} title="Put up to 4 saved games side by side"
@@ -148,12 +149,12 @@ export function SavedSidebar({ current, onOpen, onOpenMe, onCompare }: { current
                                     <div key={key} className={classes(rb("side-row"), current === key && rb("side-row-on"))} role="button" tabIndex={0}
                                         onClick={() => onOpen(s)} onKeyDown={e => { if (e.key === "Enter") onOpen(s); }} title={s.name}>
                                         {s.icon ? <img className={classes(rb("side-img"), s.kind === "user" && rb("side-img-round"))} src={s.icon} alt="" loading="lazy" />
-                                            : <span className={classes(rb("side-img"), rb("img-none"))}>{sec.icon}</span>}
+                                            : <span className={classes(rb("side-img"), rb("img-none"))}><SonataGlyph name={sec.icon} /></span>}
                                         <span className={rb("side-text")}><b>{s.name}</b>{liveLine(s)}</span>
                                         {s.kind === "game" && s.universeId && (
                                             <button type="button" className={classes(rb("side-x"), rb("side-bell"), isMuted(s.universeId) && rb("side-bell-off"))}
                                                 title={isMuted(s.universeId) ? "Alerts off for this game — click to turn on" : "Alerts on: updates and milestones — click to mute"}
-                                                onClick={e => { e.stopPropagation(); void toggleMuted(s.universeId!); }}>{isMuted(s.universeId) ? "🔕" : "🔔"}</button>
+                                                onClick={e => { e.stopPropagation(); void toggleMuted(s.universeId!); }}>{isMuted(s.universeId) ? "🔕" : <SonataGlyph name="bell" />}</button>
                                         )}
                                         <button type="button" className={rb("side-x")} title="Remove from saved" onClick={e => { e.stopPropagation(); removeSaved(s.kind, s.id); }}>✕</button>
                                     </div>

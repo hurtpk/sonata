@@ -23,6 +23,7 @@ import { defineFeatureSettings } from "../../featureSettings";
 import { coinPrice, findCoins } from "./coins";
 import { findMeasurements, guessSystem } from "./measurements";
 import { openConverter } from "./Panel";
+import { SonataGlyph } from "../../utilities/icons";
 
 const Native = VencordNative?.pluginHelpers?.Sonata as PluginNative<typeof import("./native")> | undefined;
 
@@ -208,19 +209,19 @@ const Conversions = ErrorBoundary.wrap(({ content }: { content: string; }) => {
     if (!rows.length && !measures.length && !coinRows.length) return null;
     return (
         <div className={`vc-cur-line${settings.store.when === "hover" ? " vc-cur-hover" : ""}`}>
-            {rows.length > 0 && <span className="vc-cur-icon" aria-hidden>💱</span>}
+            {rows.length > 0 && <span className="vc-cur-icon" aria-hidden><SonataGlyph name="calculator" /></span>}
             {rows.map(({ p, v }, i) => (
                 <span key={i} className="vc-cur-item">
                     <span className="vc-cur-from">{p.text}</span> ≈ <b>{money(v!, rates!.base)}</b>
                 </span>
             ))}
-            {coinRows.length > 0 && <span className="vc-cur-icon" aria-hidden>🪙</span>}
+            {coinRows.length > 0 && <span className="vc-cur-icon" aria-hidden><SonataGlyph name="coin" /></span>}
             {coinRows.map((c, i) => (
                 <span key={`c${i}`} className="vc-cur-item">
                     <span className="vc-cur-from">{c.text}</span> ≈ <b>{money(c.amount * coinPrices[c.coin]!, base)}</b>
                 </span>
             ))}
-            {measures.length > 0 && <span className="vc-cur-icon" aria-hidden>📏</span>}
+            {measures.length > 0 && <span className="vc-cur-icon" aria-hidden><SonataGlyph name="ruler" /></span>}
             {measures.map((m, i) => (
                 <span key={`m${i}`} className="vc-cur-item">
                     <span className="vc-cur-from">{m.text}</span> ≈ <b>{m.out}</b>

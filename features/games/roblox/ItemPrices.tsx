@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "@webpack/common";
 
 import { fetchItemHistory, RbxItemHistory, short, sources } from "./data";
 import { LineChart, Range } from "./History";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const DAY = 86400;
@@ -55,9 +56,9 @@ export function ItemPrices({ itemId }: { itemId: string; }) {
     }, [h, use, range]);
 
     if (!sources.rolimons) return null;
-    if (state.error) return <span className={rb("muted")}>📈 Couldn't get its price history: {state.error}</span>;
+    if (state.error) return <span className={rb("muted")}><SonataGlyph name="trendingUp" /> Couldn't get its price history: {state.error}</span>;
     if (state.h === undefined) return <div className={rb("loading")}><span className={rb("spin")} /> Getting its price history from Rolimons…</div>;
-    if (!h || !available.length) return <span className={rb("muted")}>📈 Rolimons has no price history for this item.</span>;
+    if (!h || !available.length) return <span className={rb("muted")}><SonataGlyph name="trendingUp" /> Rolimons has no price history for this item.</span>;
 
     const lo = data.v.length ? Math.min(...data.v) : 0, hi = data.v.length ? Math.max(...data.v) : 0;
     const now = data.v[data.v.length - 1], start = data.v[0];
@@ -68,7 +69,7 @@ export function ItemPrices({ itemId }: { itemId: string; }) {
         <div className={rb("history")}>
             <div className={rb("outfit-head")}>
                 <div>
-                    <b>📈 Price history</b>
+                    <b><SonataGlyph name="trendingUp" /> Price history</b>
                     <span>From Rolimons — RAP is what it's really been selling for.</span>
                 </div>
             </div>

@@ -229,6 +229,7 @@ export async function checkPackage(id: string) {
 
 const MIN = 60_000, HOUR = 60 * MIN;
 let timer: ReturnType<typeof setInterval> | undefined;
+let firstCheck: ReturnType<typeof setTimeout> | undefined;
 
 /** How long to wait between checks: food every minute, parcels every few hours (more often on the day). */
 function due(e: Entry, now: number) {
@@ -236,7 +237,7 @@ function due(e: Entry, now: number) {
     const since = now - (e.checked ?? 0);
     if (e.blocked) return since > (e.kind === "food" ? 10 * MIN : 12 * HOUR);
     if (e.kind === "food") return since > MIN;
-    return since > (e.parcel?.status === "out" ? 30 * MIN : 3 * HOUR);
+    return since > (e.parcel?.status === "out" ? 30 * MIN : (document.hidden ? 6 : 3) * HOUR);
 }
 
 async function tick() {
@@ -257,9 +258,11 @@ async function tick() {
 export function startChecks() {
     stopChecks();
     timer = setInterval(() => void tick(), MIN);
-    setTimeout(() => void tick(), 20_000);
+    firstCheck = setTimeout(() => void tick(), 20_000);
 }
 export function stopChecks() {
+    clearTimeout(firstCheck);
+    firstCheck = undefined;
     if (timer) clearInterval(timer);
     timer = undefined;
     void native().trackForget?.().catch?.(() => { });

@@ -34,7 +34,6 @@ let pending = new Set<Element>();
 let frame = 0;
 
 const lineHeightOf = (el: Element) => parseFloat(getComputedStyle(el).lineHeight) || 22;
-const maxHeight = (el: Element) => settings.store.maxLines * lineHeightOf(el);
 
 function setState(el: HTMLElement, state: "closed" | "open" | null, lines = 0) {
     const host = el.parentElement;
@@ -43,28 +42,28 @@ function setState(el: HTMLElement, state: "closed" | "open" | null, lines = 0) {
         if (host) { delete host.dataset.vcLmcHost; delete host.dataset.vcLmcLabel; }
         return;
     }
-    el.dataset.vcLmc = state;
+    if (el.dataset.vcLmc !== state) el.dataset.vcLmc = state;
     if (host) {
-        host.dataset.vcLmcHost = "";
-        host.dataset.vcLmcLabel = state === "closed" ? `Show more · ${lines} lines` : "Show less";
+        const label = state === "closed" ? `Show more · ${lines} lines` : "Show less";
+        if (host.dataset.vcLmcHost === undefined) host.dataset.vcLmcHost = "";
+        if (host.dataset.vcLmcLabel !== label) host.dataset.vcLmcLabel = label;
     }
-}
-
-function check(el: HTMLElement) {
-    if (!el.isConnected) return;
-    // scrollHeight is the full height even while folded (it's clipped, not shrunk).
-    const full = el.scrollHeight;
-    const lines = Math.round(full / lineHeightOf(el));
-    // A little slack, so a message just over the limit isn't folded to hide one line.
-    if (full <= maxHeight(el) + lineHeightOf(el) * 2) return setState(el, null);
-    setState(el, opened.has(el.id) ? "open" : "closed", lines);
 }
 
 function flush() {
     frame = 0;
     const batch = pending;
     pending = new Set();
-    batch.forEach(el => check(el as HTMLElement));
+    const limit = settings.store.maxLines + 2;
+    const changes: { el: HTMLElement; state: "closed" | "open" | null; lines: number; }[] = [];
+    for (const el of batch) {
+        if (!(el instanceof HTMLElement) || !el.isConnected) continue;
+        const height = el.scrollHeight;
+        const lineHeight = lineHeightOf(el);
+        const state = height <= limit * lineHeight ? null : opened.has(el.id) ? "open" : "closed";
+        if (state || el.dataset.vcLmc) changes.push({ el, state, lines: Math.round(height / lineHeight) });
+    }
+    for (const { el, state, lines } of changes) setState(el, state, lines);
 }
 
 function queue(el: Element | null) {

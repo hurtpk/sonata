@@ -19,6 +19,7 @@ import { ChannelStore, NavigationRouter, Tooltip, useEffect, useReducer,UserStor
 import { defineFeatureSettings } from "../../featureSettings";
 import { openStreaks } from "./Panel";
 import { knownChannels, loadStreaks, onStreaksChange, recordDay, recordMessages, Rule, Streak, streakOf, today } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 export const settings = defineFeatureSettings("streaks", {
     rule: {
@@ -87,7 +88,7 @@ const Badge = ErrorBoundary.wrap(({ channelId }: { channelId: string; }) => {
         <Tooltip text={tip}>
             {props => (
                 <span {...props} className="vc-streak-badge">
-                    🔥<span className="vc-streak-count">{s.count}</span>{risk && <span className="vc-streak-risk">⌛</span>}
+                    <SonataGlyph name="flame" /><span className="vc-streak-count">{s.count}</span>{risk && <span className="vc-streak-risk"><SonataGlyph name="hourglass" /></span>}
                 </span>
             )}
         </Tooltip>

@@ -16,6 +16,7 @@ import { Window } from "../_shared/Window";
 import { windowAccent } from "./accent";
 import { RecapView } from "./RecapView";
 import { getCurrent, getPast, Session, useTimeline, VtEvent } from "./tracker";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-vtl-");
 
@@ -172,8 +173,8 @@ function TimelineModal({ modalProps }: { modalProps: RenderModalProps; }) {
         <Window {...modalProps} size="lg" title="Voice Timeline" subtitle={subtitle}>
             <div className={classes("vc-tool-wrap", cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
                 <div className="vc-tool-seg" role="tablist">
-                    <button type="button" role="tab" aria-selected={view === "calls"} className={classes("vc-tool-seg-btn", view === "calls" && "vc-tool-seg-on")} onClick={() => setView("calls")}>🎙️ Calls</button>
-                    <button type="button" role="tab" aria-selected={view === "week"} className={classes("vc-tool-seg-btn", view === "week" && "vc-tool-seg-on")} onClick={() => setView("week")}>📊 This week</button>
+                    <button type="button" role="tab" aria-selected={view === "calls"} className={classes("vc-tool-seg-btn", view === "calls" && "vc-tool-seg-on")} onClick={() => setView("calls")}><SonataGlyph name="mic" /> Calls</button>
+                    <button type="button" role="tab" aria-selected={view === "week"} className={classes("vc-tool-seg-btn", view === "week" && "vc-tool-seg-on")} onClick={() => setView("week")}><SonataGlyph name="chart" /> This week</button>
                 </div>
                 {view === "week" ? <RecapView /> : <>
                 {s && (
@@ -184,7 +185,7 @@ function TimelineModal({ modalProps }: { modalProps: RenderModalProps; }) {
                 )}
                 {!s ? (
                     <div className={cl("empty")}>
-                        <span className="vc-tool-empty-icon">🎙️</span>
+                        <span className="vc-tool-empty-icon"><SonataGlyph name="mic" /></span>
                         <div className={cl("empty-title")}>No calls yet</div>
                         Join a voice channel and this fills in live: who joins, who leaves, and how long everyone stays.
                     </div>

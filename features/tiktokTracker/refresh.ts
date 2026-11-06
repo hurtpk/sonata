@@ -8,6 +8,8 @@
 // it looks like someone browsing — and if TikTok pushes back, it waits a
 // while before trying again.
 
+import { scheduleBackgroundCheck } from "../../sonata/performance";
+
 import { showToast } from "@webpack/common";
 
 import { Account, compact, getAccount, getAccounts, MILESTONES, postedAt, short, update } from "./store";
@@ -152,21 +154,20 @@ export async function checkAll(force = false) {
 
 export const stopChecking = () => { stopFlag = true; };
 
-let timer: ReturnType<typeof setInterval> | null = null;
+let cancelSchedule: (() => void) | undefined;
 
 export function startSchedule() {
     stopSchedule();
     const tick = () => {
-        const oldest = Math.min(...getAccounts().map(a => a.lastCheck ?? 0));
-        if (getAccounts().length && Date.now() - oldest >= opts.minutes * 60_000) void checkAll();
+        const accounts = getAccounts();
+        if (accounts.some(a => Date.now() - (a.lastCheck ?? 0) >= opts.minutes * 60_000)) void checkAll();
     };
-    timer = setInterval(tick, 60_000);
-    setTimeout(tick, 15_000);
+    cancelSchedule = scheduleBackgroundCheck(tick, 60_000, 5 * 60_000, 15_000);
 }
 
 export function stopSchedule() {
-    if (timer) clearInterval(timer);
-    timer = null;
+    cancelSchedule?.();
+    cancelSchedule = undefined;
     stopFlag = true;
 }
 

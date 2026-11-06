@@ -39,6 +39,7 @@ import { openMemberLookup } from "./MemberLookup";
 import { roleFill, RoleInfo } from "./RoleInfo";
 import { RoleMembers } from "./RoleMembers";
 import { openWhoHas } from "./WhoHas";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 const tl = classNameFactory("vc-tool-");
 
@@ -118,7 +119,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
         >
             <div className={classes(tl("wrap"), cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
             {!selectedItem && (
-                <div className={tl("empty")}><span className={tl("empty-icon")}>🔓</span>There are no permissions to show here.</div>
+                <div className={tl("empty")}><span className={tl("empty-icon")}><SonataGlyph name="unlock" /></span>There are no permissions to show here.</div>
             )}
 
             {selectedItem && (
@@ -239,7 +240,7 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                                         {overrideType === "denied" && <PermissionDeniedIcon />}
                                     </div>
                                     <span className={cl("perm-name")}>{guildPermissionSpecMap[String(bit)].title}</span>
-                                    <button type="button" className={classes(tl("icon"), cl("who-btn"))} title="Who in this server can do this?" onClick={() => openWhoHas(guild, bit, permName(bit))}>👥</button>
+                                    <button type="button" className={classes(tl("icon"), cl("who-btn"))} title="Who in this server can do this?" onClick={() => openWhoHas(guild, bit, permName(bit))}><SonataGlyph name="people" /></button>
 
                                     <Tooltip text={
                                         (() => {

@@ -9,6 +9,7 @@ import { React, useEffect, useMemo, useState } from "@webpack/common";
 import { Avatar, cl, classes, Thumb, useBackend, useMediaUrl } from "./bits";
 import { Entry, fmtBytes, fmtDay, fmtWhen, Media, whereText } from "./data";
 import { usePaged } from "./Messages";
+import { SonataGlyph } from "../../../../../utilities/icons";
 
 type Kind = "all" | "image" | "video" | "file";
 
@@ -50,7 +51,7 @@ export function GalleryView({ list, openMedia, onShowMessage }: { list: Entry[];
                         <button key={k} type="button" className={classes("vc-tool-seg-btn", kind === k && "vc-tool-seg-on")} onClick={() => setKind(k)}>{label} <small>{counts[k]}</small></button>
                     ))}
                 </div>
-                <label className="vc-tool-check"><input type="checkbox" checked={savedOnly} onChange={e => setSavedOnly(e.currentTarget.checked)} /> 💾 Only saved copies ({counts.saved})</label>
+                <label className="vc-tool-check"><input type="checkbox" checked={savedOnly} onChange={e => setSavedOnly(e.currentTarget.checked)} /> <SonataGlyph name="hardDrive" /> Only saved copies ({counts.saved})</label>
                 <span className="vc-tool-spacer" />
                 <div className="vc-tool-seg">
                     {(["s", "m", "l"] as const).map(s => <button key={s} type="button" className={classes("vc-tool-seg-btn", size === s && "vc-tool-seg-on")} onClick={() => setSize(s)} title="Tile size">{s.toUpperCase()}</button>)}
@@ -58,7 +59,7 @@ export function GalleryView({ list, openMedia, onShowMessage }: { list: Entry[];
             </div>
 
             {!items.length ? (
-                <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🖼️</span>No {kind === "all" ? "pictures or files" : kind === "file" ? "files" : `${kind}s`} here{savedOnly ? " with a saved copy" : ""}.</div>
+                <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="image" /></span>No {kind === "all" ? "pictures or files" : kind === "file" ? "files" : `${kind}s`} here{savedOnly ? " with a saved copy" : ""}.</div>
             ) : groups.map(g => (
                 <div key={g.day} className={cl("gday")}>
                     <div className={cl("day")}><span>{g.day}</span><i>{g.items.length}</i></div>
@@ -115,7 +116,7 @@ export function Lightbox({ items, index, onIndex, onClose, onShowMessage }: { it
                     <b>{e.author.name}</b>
                     <span>{whereText(e.place)} · {fmtWhen(e.sent)}</span>
                 </div>
-                <span className={classes("vc-tool-badge", local ? "vc-tool-badge-good" : "")}>{local ? "💾 Saved copy" : m.fromEmbed ? "From a link" : "Discord's link"}</span>
+                <span className={classes("vc-tool-badge", local ? "vc-tool-badge-good" : "")}>{local ? <><SonataGlyph name="hardDrive" />{" Saved copy"}</> : m.fromEmbed ? "From a link" : "Discord's link"}</span>
                 <span className={cl("lb-count")}>{index + 1} / {items.length}</span>
                 <button type="button" className="vc-tool-btn" onClick={() => onShowMessage(e)}>Show message</button>
                 <button type="button" className="vc-tool-btn" onClick={() => backend.copy(m.url)}>Copy link</button>
@@ -126,7 +127,7 @@ export function Lightbox({ items, index, onIndex, onClose, onShowMessage }: { it
                 {index > 0 && <button type="button" className={classes(cl("lb-nav"), cl("lb-prev"))} onClick={ev => { ev.stopPropagation(); onIndex(index - 1); }}>‹</button>}
                 <div className={cl("lb-media")} onClick={ev => ev.stopPropagation()}>
                     {!url ? <span className={cl("muted")}>Loading…</span>
-                        : failed ? <span className={cl("thumb-gone")}>🚫<small>{m.saved ? "Couldn't open the saved copy" : "Discord already removed this, and no copy was saved"}</small></span>
+                        : failed ? <span className={cl("thumb-gone")}><SonataGlyph name="block" /><small>{m.saved ? "Couldn't open the saved copy" : "Discord already removed this, and no copy was saved"}</small></span>
                             : m.kind === "video" ? <video key={url} src={url} controls autoPlay loop onError={() => setFailed(true)} />
                                 : <img key={url} src={url} alt="" onError={() => setFailed(true)} />}
                 </div>

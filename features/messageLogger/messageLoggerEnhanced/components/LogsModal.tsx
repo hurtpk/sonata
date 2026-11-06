@@ -19,6 +19,7 @@ import { messageJsonToMessageClass } from "../utils";
 import { importLogs } from "../utils/settingsUtils";
 import { openExplorer } from "./explorer/open";
 import { useMessages } from "./hooks";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 export interface MessagePreviewProps {
     className: string;
@@ -183,7 +184,7 @@ function NoResults({ tab }: { tab: LogTabs; }) {
 
     return (
         <div className="vc-tool-empty">
-            <span className="vc-tool-empty-icon">🔍</span>
+            <span className="vc-tool-empty-icon"><SonataGlyph name="search" /></span>
             Nothing matches in <b>{tab}</b>.
             <span>Try <b>{nextTab}</b> or <b>{lastTab}</b>.</span>
         </div>
@@ -193,7 +194,7 @@ function NoResults({ tab }: { tab: LogTabs; }) {
 function EmptyLogs({ hasQuery, reset: forceUpdate }: { hasQuery: boolean; reset: () => void; }) {
     return (
         <div className="vc-tool-empty">
-            <span className="vc-tool-empty-icon">{hasQuery ? "🔍" : "📭"}</span>
+            <span className="vc-tool-empty-icon">{hasQuery ? <SonataGlyph name="search" /> : <SonataGlyph name="inbox" />}</span>
             {hasQuery ? "Nothing matches that search." : "Nothing logged yet — deleted and edited messages will show up here."}
             {!hasQuery && (
                 <>
@@ -206,7 +207,7 @@ function EmptyLogs({ hasQuery, reset: forceUpdate }: { hasQuery: boolean; reset:
 }
 
 function LoadingLogs({ tab }: { tab: LogTabs; }) {
-    return <div className="vc-tool-empty"><span className="vc-tool-empty-icon">⏳</span>Loading {tab.toLowerCase()} messages…</div>;
+    return <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="hourglass" /></span>Loading {tab.toLowerCase()} messages…</div>;
 }
 
 interface LMessageProps {

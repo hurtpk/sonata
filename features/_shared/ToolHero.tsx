@@ -9,12 +9,14 @@
 
 import type { ReactNode } from "react";
 
+import { SonataGlyph } from "../../utilities/icons";
+
 export interface HeroNumber { value: ReactNode; label: string; }
 
 export function ToolHero({ icon, kicker, title, sub, numbers = [], children }: { icon: ReactNode; kicker?: string; title: ReactNode; sub?: ReactNode; numbers?: HeroNumber[]; children?: ReactNode; }) {
     return (
         <section className="vc-tool-hero">
-            <span className="vc-tool-hero-icon" aria-hidden>{icon}</span>
+            <span className="vc-tool-hero-icon" aria-hidden>{typeof icon === "string" ? <SonataGlyph name={icon} /> : icon}</span>
             <div className="vc-tool-hero-text">
                 {kicker && <span className="vc-tool-hero-kicker">{kicker}</span>}
                 <b>{title}</b>

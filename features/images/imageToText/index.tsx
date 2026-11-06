@@ -20,6 +20,7 @@ import { imageFromMenu, MediaNative } from "../../_shared/media";
 import { Window } from "../../_shared/Window";
 import { GoogleLanguages } from "../../translate/languages";
 import { translateWithGoogle } from "../../translate/utils";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-ocr-");
 
@@ -104,8 +105,8 @@ function OcrModal({ modalProps, src }: { modalProps: RenderModalProps; src: stri
                         {state.status === "error" && <div className={cl("error")}>{state.error}</div>}
                         {state.status === "done" && text && (
                             <div className={cl("tabs")} role="tablist">
-                                <button type="button" role="tab" aria-selected={tab === "text"} className={classes(cl("tab"), tab === "text" && cl("tab-on"))} onClick={() => setTab("text")}>📝 Text</button>
-                                <button type="button" role="tab" aria-selected={tab === "translate"} className={classes(cl("tab"), tab === "translate" && cl("tab-on"))} onClick={() => setTab("translate")}>🌐 Translate</button>
+                                <button type="button" role="tab" aria-selected={tab === "text"} className={classes(cl("tab"), tab === "text" && cl("tab-on"))} onClick={() => setTab("text")}><SonataGlyph name="fileText" /> Text</button>
+                                <button type="button" role="tab" aria-selected={tab === "translate"} className={classes(cl("tab"), tab === "translate" && cl("tab-on"))} onClick={() => setTab("translate")}><SonataGlyph name="globe" /> Translate</button>
                                 {tab === "translate" && (
                                     <select className={cl("lang")} value={to} onChange={e => { setTo(e.currentTarget.value); settings.store.translateTo = e.currentTarget.value; }} aria-label="Translate to">
                                         {LANGUAGES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}

@@ -85,16 +85,21 @@ let indicatorFromHold = false;
  * places that write the setting directly).
  */
 function applyIndicatorMode(on: boolean): void {
-    const isOn = indicatorInterval != null;
+    const isOn = indicatorObserver != null;
     if (on === isOn) return;
     if (on) {
         document.body.classList.add("vc-fakedms-indicator-active");
         refreshMessages();
-        setTimeout(markFakeMessageElements, 50);
-        indicatorInterval = window.setInterval(markFakeMessageElements, 500);
+        queueIndicatorRefresh();
+        indicatorObserver = new MutationObserver(records => {
+            const selector = '[id^="chat-messages-"]';
+            if (!channelsWithFakes.has(SelectedChannelStore.getChannelId())) return;
+            if (records.some(record => record.type === "attributes" ? record.target instanceof Element && record.target.matches(selector)
+                : Array.from(record.addedNodes).some(node => node instanceof Element && (node.matches(selector) || node.querySelector(selector))))) queueIndicatorRefresh();
+        });
+        indicatorObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["id"] });
     } else {
-        window.clearInterval(indicatorInterval!);
-        indicatorInterval = null;
+        stopIndicatorObserver();
         document.body.classList.remove("vc-fakedms-indicator-active");
         unmarkFakeMessageElements();
         refreshMessages();
@@ -252,7 +257,9 @@ let fluxInterceptor: ((e: { type: string; channelId?: string; messages?: unknown
 let originalFluxDispatch: typeof FluxDispatcher.dispatch | null = null;
 
 let indicatorTimer: number | null = null;
-let indicatorInterval: number | null = null;
+let indicatorObserver: MutationObserver | null = null;
+let indicatorFrame = 0;
+let refreshTimer: number | undefined;
 let ctrlDown = false;
 let shiftDown = false;
 
@@ -266,35 +273,35 @@ const fakeFriends = new Set<string>();
 
 function refreshMessages(): void {
     const channelId = SelectedChannelStore.getChannelId();
-    if (!channelId) return;
+    if (!channelId || refreshTimer != null) return;
 
     removeMessageStorePatch();
-    setTimeout(() => {
+    refreshTimer = window.setTimeout(() => {
+        refreshTimer = undefined;
         applyMessageStorePatch();
         try {
             (MessageStore as unknown as { emitChange?: () => void; }).emitChange?.();
         } catch { }
-        if (settings.store.indicatorMode) markFakeMessageElements();
+        if (indicatorObserver) queueIndicatorRefresh();
     }, 10);
 }
 
-function markFakeMessageElements(): void {
-    if (!settings.store.indicatorMode) return;
-    // Nothing to mark when no channel has fake messages — skip scanning the page.
-    if (!channelsWithFakes.size) return;
-    const container = document.querySelector("[class*='messagesWrapper']") ?? document.body;
-    const idPrefix = "chat-messages-";
-    container.querySelectorAll(`[id^='${idPrefix}']`).forEach(el => {
-        if (!(el instanceof HTMLElement)) return;
-        const rest = el.id.slice(idPrefix.length);
-        const lastDash = rest.lastIndexOf("-");
-        if (lastDash === -1) return;
-        const channelId = rest.slice(0, lastDash);
-        const messageId = rest.slice(lastDash + 1);
-        if (!channelId || !messageId) return;
-        const cached = channelFakeCache.get(channelId);
-        const isFake = cached?.some(m => m.id === messageId);
-        el.classList.toggle("vc-fakedms-fake-highlight", !!isFake);
+function stopIndicatorObserver() {
+    indicatorObserver?.disconnect();
+    indicatorObserver = null;
+    cancelAnimationFrame(indicatorFrame);
+    indicatorFrame = 0;
+}
+
+function queueIndicatorRefresh() {
+    indicatorFrame ||= requestAnimationFrame(() => {
+        indicatorFrame = 0;
+        const channelId = SelectedChannelStore.getChannelId();
+        const fake = channelFakeCache.get(channelId);
+        const ids = fake?.length ? idsOf(fake) : undefined;
+        const prefix = `chat-messages-${channelId}-`;
+        const container = document.querySelector("[class*='messagesWrapper']") ?? document.body;
+        container.querySelectorAll("[id^='chat-messages-']").forEach(el => el.classList.toggle("vc-fakedms-fake-highlight", !!ids && el.id.startsWith(prefix) && ids.has(el.id.slice(prefix.length))));
     });
 }
 
@@ -372,6 +379,16 @@ function isPersistedFakeMessage(x: unknown): x is PersistedFakeMessage {
 }
 
 const channelFakeCache = new Map<string, PersistedFakeMessage[]>();
+const fakeIdsByList = new WeakMap<PersistedFakeMessage[], Set<string>>();
+
+function idsOf(messages: PersistedFakeMessage[]) {
+    let ids = fakeIdsByList.get(messages);
+    if (!ids) {
+        ids = new Set(messages.map(message => message.id));
+        fakeIdsByList.set(messages, ids);
+    }
+    return ids;
+}
 
 async function ensureChannelCacheLoaded(channelId: string): Promise<void> {
     if (!channelId) {
@@ -590,8 +607,7 @@ async function deleteFakeFromDb(id: string): Promise<void> {
 function removeFakeFromCache(channelId: string, messageId: string): void {
     const cached = channelFakeCache.get(channelId);
     if (!cached?.length) return;
-    const idx = cached.findIndex(m => m.id === messageId);
-    if (idx !== -1) cached.splice(idx, 1);
+    channelFakeCache.set(channelId, cached.filter(message => message.id !== messageId));
 }
 
 async function deleteFake(channelId: string, messageId: string): Promise<void> {
@@ -1183,7 +1199,7 @@ function applyMessageStorePatch() {
         const existingMap = result._map ?? {};
         const existingArray = result._array ?? [];
 
-        const fakeIds = new Set(persisted.map(p => p.id));
+        const fakeIds = idsOf(persisted);
         const realMessages = existingArray.filter((m: Message) => !fakeIds.has(m.id));
 
         if (!realMessages.length) {
@@ -1205,9 +1221,7 @@ function applyMessageStorePatch() {
             return result;
         }
 
-        const existingIds = new Set(realMessages.map((m: Message) => m.id));
         const cachedFakesInWindow = persisted
-            .filter(p => !existingIds.has(p.id))
             .filter(p => isValidDateMs(Date.parse(p.timestamp)))
             .map(hydratePersistedMessage);
 
@@ -2417,10 +2431,9 @@ export default definePlugin({
     stop() {
         endAllFakeCalls();
         indicatorFromHold = false;
-        if (indicatorInterval != null) {
-            window.clearInterval(indicatorInterval);
-            indicatorInterval = null;
-        }
+        clearTimeout(refreshTimer);
+        refreshTimer = undefined;
+        stopIndicatorObserver();
         document.body.classList.remove("vc-fakedms-indicator-active");
         unmarkFakeMessageElements();
         if (originalFluxDispatch) {

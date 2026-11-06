@@ -28,6 +28,7 @@ import { amountOf, RobuxRates } from "./Rates";
 import { savedKey,SavedSidebar } from "./SavedSidebar";
 import { Servers } from "./Servers";
 import { Trade } from "./Trade";
+import { SonataGlyph } from "../../../utilities/icons";
 
 type Tab = "lookup" | "servers" | "compare" | "assets" | "trade" | "groups" | "people" | "names" | "robux";
 
@@ -104,7 +105,7 @@ function Lookup({ initial, onInfo }: { initial?: string; onInfo?(info: RbxInfo):
             )}
             {ref ? <RefCard key={`${ref.kind}:${ref.id}`} refx={ref} full onInfo={onInfo} /> : (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">🧱</span>
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="blockTile" /></span>
                     Look up any Roblox profile, game, group or catalog item.
                     <span className="vc-tool-hint">Profiles show every username they've had. Roblox links in chat get a live card under the message too.</span>
                 </div>
@@ -154,7 +155,7 @@ function Groups() {
             </div>
             {err && <span className="vc-tool-error">{err}</span>}
             {!groups.length ? (
-                <div className="vc-tool-empty"><span className="vc-tool-empty-icon">👥</span>No groups watched yet.<span className="vc-tool-hint">Add your group (and rivals') to see members grow over time, and get told about new shouts.</span></div>
+                <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="people" /></span>No groups watched yet.<span className="vc-tool-hint">Add your group (and rivals') to see members grow over time, and get told about new shouts.</span></div>
             ) : (
                 <div className={rb("groups")}>
                     {groups.map(g => {
@@ -162,7 +163,7 @@ function Groups() {
                         return (
                             <div key={g.id} className={rb("group")}>
                                 <div className={rb("head")}>
-                                    {g.icon ? <img className={rb("icon")} src={g.icon} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}>👥</span>}
+                                    {g.icon ? <img className={rb("icon")} src={g.icon} alt="" /> : <span className={classes(rb("icon"), rb("img-none"))}><SonataGlyph name="people" /></span>}
                                     <div className={rb("who")}>
                                         <b>{g.name}</b>
                                         <span>{now.toLocaleString()} members · checked {ago(g.lastCheck)}{g.error ? ` · ⚠️ ${g.error}` : ""}</span>
@@ -176,7 +177,7 @@ function Groups() {
                                     <div className={rb("stat")}><span>7 days</span><b><Delta n={since(g, 7 * 86400_000)} /></b></div>
                                 </div>
                                 <Spark g={g} />
-                                {g.shout && <div className={rb("shout")}><span>📣 {g.shout.poster} · {ago(g.shout.updated)}</span>{g.shout.body}</div>}
+                                {g.shout && <div className={rb("shout")}><span><SonataGlyph name="megaphone" /> {g.shout.poster} · {ago(g.shout.updated)}</span>{g.shout.body}</div>}
                                 {open === g.id && <RefCard refx={{ kind: "group", id: g.id }} full />}
                             </div>
                         );
@@ -283,13 +284,13 @@ export function RobloxSection({ start: startTab, initial }: { start?: string; in
                     <div className={rb("subnav")} style={{ "--n": group.tools.length } as React.CSSProperties}>
                         {group.tools.map(t => (
                             <button key={t.tab} type="button" className={classes(rb("sub"), tab === t.tab && rb("sub-on"))} onClick={() => setTab(t.tab)}>
-                                <b><span aria-hidden>{t.icon}</span> {t.label}</b>
+                                <b><span aria-hidden><SonataGlyph name={t.icon} /></span> {t.label}</b>
                                 <small>{t.blurb}</small>
                             </button>
                         ))}
                     </div>
                 ) : (
-                    <div className={rb("tool-head")}><b>{tool.icon} {tool.label}</b><small>{tool.blurb}</small></div>
+                    <div className={rb("tool-head")}><b><SonataGlyph name={tool.icon} /> {tool.label}</b><small>{tool.blurb}</small></div>
                 )}
                 <ErrorBoundary key={tab} message="This part of Roblox hit a problem — try another tab, or reopen the window.">
                     {tab === "lookup" && <Lookup key={lookupFor ?? ""} initial={lookupFor} onInfo={showing} />}

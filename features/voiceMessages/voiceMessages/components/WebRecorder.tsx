@@ -19,6 +19,7 @@
 import { MediaEngineStore, useState } from "@webpack/common";
 
 import { settings, type VoiceRecorder } from "..";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 export const VoiceRecorderWeb: VoiceRecorder = ({ setAudioBlob, onRecordingChange }) => {
     const [recording, setRecording] = useState(false);
@@ -88,7 +89,7 @@ export const VoiceRecorderWeb: VoiceRecorder = ({ setAudioBlob, onRecordingChang
                     else recorder?.pause();
                 }}
             >
-                {paused ? "▶ Resume" : "❚❚ Pause"}
+                {paused ? <><SonataGlyph name="play" />{" Resume"}</> : "❚❚ Pause"}
             </button>
         </>
     );

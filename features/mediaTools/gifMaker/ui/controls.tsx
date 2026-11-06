@@ -10,6 +10,7 @@ import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { React, Select, useEffect, useState } from "@webpack/common";
 
+import { SonataLabel } from "../../../../utilities/icons";
 import { GRADIENT_CHOICES } from "../../../pinDms/style";
 import { fetchAllGoogleFonts, getFontFamilyCss, loadGoogleFont } from "../fonts";
 import type { Fill, GoogleFontMetadata } from "../types";
@@ -34,7 +35,7 @@ export function Seg<T extends string | number>({ value, options, onChange, wrap 
             {options.map(o => (
                 <button key={String(o.value)} type="button" role="radio" aria-checked={o.value === value} title={o.title}
                     className={cl("seg-btn", o.value === value && "seg-on")} onClick={() => onChange(o.value)}>
-                    {o.label}
+                    {typeof o.label === "string" ? <SonataLabel label={o.label} /> : o.label}
                 </button>
             ))}
         </div>

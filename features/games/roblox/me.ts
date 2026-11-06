@@ -8,6 +8,8 @@
 // hear about any change to it), shown at the top of the sidebar, with your
 // followers and friends kept over time. Saved on this computer.
 
+import { scheduleBackgroundCheck } from "../../../sonata/performance";
+
 import { DataStore } from "@api/index";
 
 import { callNative } from "../../_shared/native";
@@ -110,14 +112,16 @@ export function change(field: keyof Omit<MePoint, "t">, days: number): number | 
     return then === now ? null : now[field] - then[field];
 }
 
-let timer: ReturnType<typeof setInterval> | null = null;
+let cancelSchedule: (() => void) | undefined;
 export function startMe(everyHours: () => number) {
     stopMe();
     void loadMe().then(ensureWatched);
-    timer = setInterval(() => void checkMe(false, everyHours()), 10 * 60_000);
-    setTimeout(() => void checkMe(false, everyHours()), 30_000);
+    cancelSchedule = scheduleBackgroundCheck(() => void checkMe(false, everyHours()), 10 * 60_000, 30 * 60_000, 30_000);
 }
-export function stopMe() { if (timer) clearInterval(timer); timer = null; }
+export function stopMe() {
+    cancelSchedule?.();
+    cancelSchedule = undefined;
+}
 
 /** For the People list: is this someone you can't stop watching? */
 export const lockedInWatch = (id: string) => isMe(id) && getPeople().some(p => p.id === id);

@@ -13,11 +13,12 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { React, showToast, UploadHandler, useEffect, useMemo, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../../controller/accent";
-import { openSection, registerSection, replaceOriginal } from "../../../_shared/Hub";
+import { openSection, replaceOriginal } from "../../../_shared/Hub";
 import { Window } from "../../../_shared/Window";
 import { getRecent, Recent, removeRecent } from "../store";
 import { cl } from "./controls";
 import { editorFor, openEditor, pickFiles } from "./Editor";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 const tint = () => { const a = windowAccent("gifMaker"); return a ? ({ "--vc-tool-accent": a } as React.CSSProperties) : undefined; };
 
@@ -77,7 +78,7 @@ function RecentModal({ modalProps }: { modalProps: RenderModalProps; }) {
             <div className="vc-tool-wrap" style={tint()}>
                 <div className={cl("recents")}>
                     {list == null ? <span className={cl("hint")}>Loading…</span>
-                        : !list.length ? <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🎞️</span>Nothing yet — GIFs you send or save from GIF Maker show up here.</div>
+                        : !list.length ? <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="film" /></span>Nothing yet — GIFs you send or save from GIF Maker show up here.</div>
                             : list.map(r => <RecentCard key={r.id} r={r} close={modalProps.onClose} onRemove={() => void removeRecent(r.id).then(setList)} />)}
                 </div>
             </div>
@@ -101,12 +102,12 @@ function StartModal({ modalProps }: { modalProps: RenderModalProps; }) {
             <div className="vc-tool-wrap" style={tint()}>
             <div className={cl("start")}>
                 <button type="button" className={cl("start-card")} onClick={fromComputer}>
-                    <span className={cl("start-icon")}>📁</span>
+                    <span className={cl("start-icon")}><SonataGlyph name="folder" /></span>
                     <span className={cl("start-title")}>From my computer</span>
                     <span className={cl("hint")}>A video, a GIF or a picture — or pick several pictures for a slideshow.</span>
                 </button>
                 <button type="button" className={cl("start-card")} onClick={() => { modalProps.onClose(); openRecent(); }}>
-                    <span className={cl("start-icon")}>🕘</span>
+                    <span className={cl("start-icon")}><SonataGlyph name="clock" /></span>
                     <span className={cl("start-title")}>Recent GIFs{count ? ` · ${count}` : ""}</span>
                     <span className={cl("hint")}>Send one again, save it, or keep editing.</span>
                 </button>
@@ -117,8 +118,6 @@ function StartModal({ modalProps }: { modalProps: RenderModalProps; }) {
     );
 }
 
-registerSection("mediaTools", {
-    id: "gifMaker", feature: "gifMaker", name: "GIF Maker", sub: "From a video, GIF or pictures",
-    render: (p, input) => input?.file && /^(image|video)\//.test(input.file.type) ? editorFor(p, input.file) : <StartModal modalProps={p} />,
-});
-export const openStart = () => openSection("mediaTools", "gifMaker", props => <StartModal modalProps={props} />);
+export function GifStart({ modalProps, file }: { modalProps: RenderModalProps; file?: File; }) {
+    return file && /^(image|video)\//.test(file.type) ? editorFor(modalProps, file) : <StartModal modalProps={modalProps} />;
+}

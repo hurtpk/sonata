@@ -42,7 +42,7 @@ const GRADIENT_PATTERNS: { mode: GradientMode; label: string; }[] = [
     { mode: "word", label: "Color by word" },
 ];
 
-function ColoredTextModal({ modalProps, initial, target }: { modalProps: RenderModalProps; initial: string; target?: ColoredTarget; }) {
+function ColoredTextModal({ modalProps, initial, target, initialPalette }: { modalProps: RenderModalProps; initial: string; target?: ColoredTarget; initialPalette?: string[]; }) {
     const LIMIT = target?.limit ?? 2000;
     const accent = windowAccent("coloredText");
     const start = initial ? fromAnsi(initial) : { text: "", styles: [] as Style[] };
@@ -50,9 +50,9 @@ function ColoredTextModal({ modalProps, initial, target }: { modalProps: RenderM
     const [styles, setStyles] = useState<Style[]>(start.styles);
     /** The style new typing gets, when you pick one with nothing selected. */
     const [pen, setPen] = useState<Style | null>(null);
-    const [ownFg, setOwnFg] = useState("#ff7ac6");
+    const [ownFg, setOwnFg] = useState(initialPalette?.[0] ?? "#ff7ac6");
     const [ownBg, setOwnBg] = useState("#3b2a66");
-    const [stops, setStops] = useState(["#ff5f9e", "#5f8fff"]);
+    const [stops, setStops] = useState(initialPalette && initialPalette.length > 1 ? initialPalette.slice(0, 6) : [initialPalette?.[0] ?? "#ff5f9e", "#5f8fff"]);
     const [mode, setMode] = useState<GradientMode>("selection");
     const [range, setRange] = useState<readonly [number, number]>([0, 0]);
     const area = useRef<HTMLTextAreaElement>(null);
@@ -265,6 +265,6 @@ function Preview({ text, styles, inline }: { text: string; styles: Style[]; inli
 }
 
 registerSection("textStyles", { id: "coloredText", feature: "coloredText", name: "Colored Text", sub: "Coloured words in code blocks", render: p => <ColoredTextModal modalProps={p} initial="" /> });
-export function openColoredText(initial = "", target?: ColoredTarget) {
-    openSection("textStyles", "coloredText", initial || target ? props => <ColoredTextModal modalProps={props} initial={initial} target={target} /> : undefined);
+export function openColoredText(initial = "", target?: ColoredTarget, palette?: string[]) {
+    openSection("textStyles", "coloredText", initial || target || palette?.length ? props => <ColoredTextModal modalProps={props} initial={initial} target={target} initialPalette={palette} /> : undefined);
 }

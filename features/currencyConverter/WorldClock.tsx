@@ -16,6 +16,7 @@ import { showToast, useEffect, useState } from "@webpack/common";
 
 import { settings } from "./index";
 import { findZone, hourIn, hoursFromMe, localZone, timeIn, zoneName } from "./special";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const cw = classNameFactory("vc-conv-wc-");
@@ -64,7 +65,7 @@ function ClockCard({ clock, t, mine, onRemove }: { clock: Clock; t: number; mine
             </div>
             <span className={cw("place")}>{clock.name || mine ? `${place} · ` : ""}{info.offset}</span>
             <b className={cw("time")}>{info.time}</b>
-            <span className={cw("when")}>{part.icon} {part.word} · {info.weekday}{dayWord(info.dayDiff) ? ` · ${dayWord(info.dayDiff)}` : ""}</span>
+            <span className={cw("when")}><SonataGlyph name={part.icon} /> {part.word} · {info.weekday}{dayWord(info.dayDiff) ? ` · ${dayWord(info.dayDiff)}` : ""}</span>
             {!mine && <span className={cw("diff")}>{fromMe(hoursFromMe(clock.zone, t))}</span>}
         </div>
     );

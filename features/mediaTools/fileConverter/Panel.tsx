@@ -11,7 +11,7 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { ChannelStore, DraftType, SelectedChannelStore, showToast, UploadHandler, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
-import { openSection, registerSection, replaceOriginal } from "../../_shared/Hub";
+import { replaceOriginal } from "../../_shared/Hub";
 import { ToolHero } from "../../_shared/ToolHero";
 import { Window } from "../../_shared/Window";
 import { applyPreset, convert, ImageOptions, imagesIntoPdf, Result, zipFiles, zipResults } from "./convert";
@@ -20,6 +20,7 @@ import { BgOptions, decodeImage, DEFAULT_BG, removeBackground } from "./image";
 import { DEFAULT_MEDIA, MediaOptions } from "./media";
 import { Renamer } from "./Rename";
 import { Trimmer } from "./Trimmer";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const fc = classNameFactory("vc-fconv-");
@@ -38,7 +39,7 @@ function Preview({ r }: { r: Done; }) {
     if (t.startsWith("image/")) return <img className={fc("thumb")} src={r.url} alt="" />;
     if (t.startsWith("video/")) return <video className={fc("thumb")} src={r.url} muted loop autoPlay playsInline />;
     if (t.startsWith("audio/")) return <audio className={fc("audio")} src={r.url} controls />;
-    return <span className={fc("thumb-icon")}>{t.includes("zip") ? "🗜️" : t.includes("pdf") ? "📕" : "📄"}</span>;
+    return <span className={fc("thumb-icon")}>{t.includes("zip") ? <SonataGlyph name="fileZip" /> : t.includes("pdf") ? <SonataGlyph name="book" /> : <SonataGlyph name="fileText" />}</span>;
 }
 
 function ResultRow({ r }: { r: Done; }) {
@@ -182,7 +183,7 @@ function BgPanel({ file, bg, setBg }: { file: File; bg: BgOptions; setBg(b: BgOp
     );
 }
 
-function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps; initial: File[]; }) {
+export function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps; initial: File[]; }) {
     const accent = windowAccent("fileConverter");
     const [files, setFiles] = useState<File[]>(initial);
     const [tab, setTab] = useState<"convert" | "presets" | "rename">("convert");
@@ -200,9 +201,15 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
     const [skipped, setSkipped] = useState(0);
 
     // Results stay viewable until the window closes; then their memory is let go.
-    const urls = useRef<string[]>([]);
-    useEffect(() => { urls.current = done.map(d => d.url); }, [done]);
-    useEffect(() => () => urls.current.forEach(u => URL.revokeObjectURL(u)), []);
+    const urls = useRef<Set<string> | null>(null);
+    useEffect(() => {
+        const owned = new Set<string>();
+        urls.current = owned;
+        return () => {
+            urls.current = null;
+            owned.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, []);
 
     const kinds = useMemo(() => new Set(files.map(kindOf)), [files]);
     const kind: Kind | null = kinds.size === 1 ? [...kinds][0] : null;
@@ -260,7 +267,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
     const run = async () => {
         if (!choice || !files.length || busy) return;
         setError(null);
-        const status = (text: string, progress?: number) => setBusy({ text, progress });
+        const status = (text: string, progress?: number) => { if (urls.current) setBusy({ text, progress }); };
         const out: Done[] = [];
         try {
             if (choice.type === "pdf-all") {
@@ -271,12 +278,16 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                 out.push({ result: r, url: URL.createObjectURL(r.blob), from: files.reduce((n, f) => n + f.size, 0) });
             } else {
                 for (const [i, f] of files.entries()) {
+                    if (!urls.current) break;
                     const each = (text: string, p?: number) => status(files.length > 1 ? `${f.name} (${i + 1} of ${files.length}) — ${text}` : text, p);
                     const results = choice.type === "preset" ? await applyPreset(f, choice.id, each, { bg }) : await convert(f, choice.id, choice.ext, img, media, each);
                     for (const r of results) out.push({ result: r, url: URL.createObjectURL(r.blob), from: f.size });
                 }
             }
-            setDone(d => [...out, ...d]);
+            if (urls.current) {
+                for (const { url } of out) urls.current.add(url);
+                setDone(d => [...out, ...d]);
+            } else out.forEach(d => URL.revokeObjectURL(d.url));
         } catch (e) {
             setError(e instanceof Error ? e.message : String(e));
             out.forEach(d => URL.revokeObjectURL(d.url));
@@ -319,11 +330,11 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                         ))}
                         <div className={fc("more-row")}>
                             <button type="button" className={fc("more")} onClick={() => picker.current?.click()}>＋ Add files</button>
-                            <button type="button" className={fc("more")} onClick={() => folderPicker.current?.click()}>📁 Add a folder</button>
+                            <button type="button" className={fc("more")} onClick={() => folderPicker.current?.click()}><SonataGlyph name="folder" /> Add a folder</button>
                         </div>
                     </div>
                 )}
-                {!files.length && <button type="button" className={cl("link")} style={{ alignSelf: "center" }} onClick={() => folderPicker.current?.click()}>📁 Or pick a whole folder</button>}
+                {!files.length && <button type="button" className={cl("link")} style={{ alignSelf: "center" }} onClick={() => folderPicker.current?.click()}><SonataGlyph name="folder" /> Or pick a whole folder</button>}
                 {files.length > 0 && <span className={cl("hint")}>{files.length} file{files.length === 1 ? "" : "s"} · {sizeText(files.reduce((n, f) => n + f.size, 0))}{skipped ? ` · ${skipped} more left out (up to ${MAX_FILES} at a time)` : ""}</span>}
 
                 {files.length > 0 && (
@@ -339,7 +350,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                         <div className={cl("seg")}>
                             <button type="button" className={classes(cl("seg-btn"), tab === "convert" && cl("seg-on"))} onClick={() => setTab("convert")}>Convert to…</button>
                             <button type="button" className={classes(cl("seg-btn"), tab === "presets" && cl("seg-on"))} disabled={!presets.length} onClick={() => setTab("presets")}>Presets &amp; tools</button>
-                            <button type="button" className={classes(cl("seg-btn"), tab === "rename" && cl("seg-on"))} onClick={() => setTab("rename")}>✏️ Rename</button>
+                            <button type="button" className={classes(cl("seg-btn"), tab === "rename" && cl("seg-on"))} onClick={() => setTab("rename")}><SonataGlyph name="pencil" /> Rename</button>
                         </div>
 
                         {tab === "rename" ? <Renamer files={files} /> : <>
@@ -376,7 +387,7 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
                         {choice?.type === "preset" && choice.id === "nobg" && files[0] && <BgPanel file={files[0]} bg={bg} setBg={setBg} />}
 
                         {tab === "convert" && kind && kind !== "data" && kind !== "pdf" && kind !== "other" && (
-                            <button type="button" className={cl("btn")} onClick={() => setShowOptions(s => !s)}>{showOptions ? "Hide options" : files.length === 1 && (kind === "video" || kind === "audio") ? "✂️ Trim & more options" : "More options (quality, size, trim…)"}</button>
+                            <button type="button" className={cl("btn")} onClick={() => setShowOptions(s => !s)}>{showOptions ? "Hide options" : files.length === 1 && (kind === "video" || kind === "audio") ? <><SonataGlyph name="scissors" />{" Trim & more options"}</> : "More options (quality, size, trim…)"}</button>
                         )}
                         {showOptions && tab === "convert" && <Options kinds={kinds} img={img} setImg={setImg} media={media} setMedia={setMedia} single={files.length === 1 ? files[0] : undefined} />}
 
@@ -413,9 +424,4 @@ function ConverterModal({ modalProps, initial }: { modalProps: RenderModalProps;
             </div>
         </Window>
     );
-}
-
-registerSection("mediaTools", { id: "fileConverter", feature: "fileConverter", name: "File Converter", sub: "Change a file's type or size", render: (p, input) => <ConverterModal modalProps={p} initial={input?.file ? [input.file] : []} /> });
-export function openFileConverter(files: File[] = []) {
-    openSection("mediaTools", "fileConverter", files.length ? p => <ConverterModal modalProps={p} initial={files} /> : undefined);
 }

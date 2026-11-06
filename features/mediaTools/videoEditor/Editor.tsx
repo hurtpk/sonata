@@ -8,7 +8,6 @@
 // cut it out, keep only it, mute it, or put a caption or blur on it. The
 // preview plays the edit as it will come out; Export makes the MP4.
 
-import ErrorBoundary from "@components/ErrorBoundary";
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";
 import { saveFile } from "@utils/web";
@@ -17,12 +16,13 @@ import { ChannelStore, DraftType, React, SelectedChannelStore, showToast, Upload
 
 import { windowAccent } from "../../../controller/accent";
 import { isFeatureRunning } from "../../../featureSettings";
-import { openSection, registerSection, replaceOriginal } from "../../_shared/Hub";
+import { openSection, replaceOriginal } from "../../_shared/Hub";
 import { Window } from "../../_shared/Window";
 import { realDuration } from "../fileConverter/Trimmer";
 import { captionUrl } from "./captions";
-import { Exported, exportVideo, GifOptions, stopExport } from "./engine";
+import { Exported, exportVideo, GifOptions } from "./engine";
 import { addRange, allCaptions, BlurItem, Clip, clipSpans, cutOut, emptyProject, Frame, frameRatio, inRanges, JOIN_FADE, keepOnly, locate, Look, Music, outputLength, Overlay, pieces, Project, Range, removeClip, restoreClip, SizeChoice, SoundPreset, subtractRange, TextItem, totalLength, Watermark } from "./project";
+import { SonataGlyph, SonataLabel } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const ve = classNameFactory("vc-vedit-");
@@ -61,11 +61,11 @@ async function loadClip(file: File): Promise<Clip> {
 }
 
 /** A few frames from across a clip, for the timeline. Kept per clip. */
-const thumbCache = new Map<string, string[]>();
+const thumbCache = new WeakMap<Blob, string[]>();
 function useThumbs(clip: Clip, count = 10) {
-    const [frames, setFrames] = useState<string[]>(() => thumbCache.get(clip.id) ?? []);
+    const [frames, setFrames] = useState<string[]>(() => thumbCache.get(clip.file) ?? []);
     useEffect(() => {
-        const cached = thumbCache.get(clip.id);
+        const cached = thumbCache.get(clip.file);
         if (cached) { setFrames(cached); return; }
         setFrames([]);
         let stop = false;
@@ -76,16 +76,29 @@ function useThumbs(clip: Clip, count = 10) {
         const ctx = c.getContext("2d")!;
         (async () => {
             await new Promise<void>(r => { v.onloadeddata = () => r(); v.onerror = () => r(); });
+            if (stop || v.error) return;
             const out: string[] = [];
             for (let i = 0; i < count && !stop; i++) {
                 v.currentTime = Math.min(clip.duration - 0.05, ((i + 0.5) / count) * clip.duration);
-                await new Promise(r => { v.onseeked = r; setTimeout(r, 1500); });
+                await new Promise<void>(resolve => {
+                    const finish = () => { clearTimeout(timer); v.onseeked = null; resolve(); };
+                    const timer = setTimeout(finish, 1500);
+                    v.onseeked = finish;
+                });
+                if (stop || v.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) break;
                 ctx.drawImage(v, 0, 0, c.width, c.height);
                 out.push(c.toDataURL("image/jpeg", 0.55));
             }
-            if (!stop) { thumbCache.set(clip.id, out); setFrames(out); }
+            if (!stop) { thumbCache.set(clip.file, out); setFrames(out); }
         })();
-        return () => { stop = true; v.removeAttribute("src"); v.load(); };
+        return () => {
+            stop = true;
+            v.onloadeddata?.(new Event("loadeddata"));
+            v.onseeked?.(new Event("seeked"));
+            v.onloadeddata = v.onerror = v.onseeked = null;
+            v.removeAttribute("src");
+            v.load();
+        };
     }, [clip.id]);
     return frames;
 }
@@ -95,16 +108,7 @@ function useThumbs(clip: Clip, count = 10) {
 type Tab = "clips" | "text" | "blur" | "pictures" | "sound" | "look" | "export";
 type Pick = { kind: "text" | "blur" | "overlay"; id: string; } | null;
 
-const isVideoFile = (f?: File) => !!f && (f.type.startsWith("video/") || /\.(mp4|webm|mov|m4v|mkv)$/i.test(f.name));
-registerSection("mediaTools", {
-    id: "videoEditor", feature: "videoEditor", name: "Video Editor", sub: "Trim, cut, captions, music",
-    render: (p, input) => <ErrorBoundary><VideoEditor modalProps={p} initial={isVideoFile(input?.file) ? [input!.file!] : []} /></ErrorBoundary>,
-});
-export function openVideoEditor(files: File[] = []) {
-    openSection("mediaTools", "videoEditor", files.length ? p => <ErrorBoundary><VideoEditor modalProps={p} initial={files} /></ErrorBoundary> : undefined);
-}
-
-function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; initial: File[]; }) {
+export function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; initial: File[]; }) {
     const accent = windowAccent("videoEditor");
     const [p, setP] = useState<Project>(emptyProject);
     const [undo, setUndo] = useState<Project[]>([]);
@@ -119,9 +123,23 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
     const [over, setOver] = useState(false);
     const picker = useRef<HTMLInputElement>(null);
     const total = totalLength(p);
+    const owned = useRef<Set<string> | null>(null);
+    useEffect(() => {
+        const urls = new Set<string>();
+        owned.current = urls;
+        return () => {
+            owned.current = null;
+            urls.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, []);
 
     /** Changes the project. Quick repeats with the same key (dragging a slider) are one undo step. */
     const change = (next: Project, key?: string) => {
+        const urls = [...next.clips.map(c => c.url), ...next.overlays.map(o => o.url)];
+        if (next.music) urls.push(next.music.url);
+        const owner = owned.current;
+        if (!owner) { urls.forEach(url => URL.revokeObjectURL(url)); return; }
+        urls.forEach(url => owner.add(url));
         const t = Date.now();
         const merge = key && lastKey.current?.key === key && t - lastKey.current.at < 1200;
         lastKey.current = key ? { key, at: t } : null;
@@ -152,15 +170,21 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
         setLoadingFiles(n => n + videos.length);
         const loaded: Clip[] = [];
         for (const f of videos) {
-            try { loaded.push(await loadClip(f)); } catch { showToast(`${f.name} can't play here — turn it into an MP4 with File Converter first`, "failure"); }
+            if (!owned.current) return;
+            try {
+                const clip = await loadClip(f);
+                if (!owned.current) { URL.revokeObjectURL(clip.url); return; }
+                owned.current.add(clip.url);
+                loaded.push(clip);
+            } catch {
+                if (owned.current) showToast(`${f.name} can't play here — turn it into an MP4 with File Converter first`, "failure");
+            }
+            if (!owned.current) return;
             setLoadingFiles(n => n - 1);
         }
         if (loaded.length) setP(cur => { setUndo(u => [...u.slice(-60), cur]); setRedo([]); return { ...cur, clips: [...cur.clips, ...loaded] }; });
     };
     useEffect(() => { if (initial.length) void addFiles(initial); }, []);
-    // Clean up the files' preview addresses when the window closes.
-    const pRef = useRef(p); pRef.current = p;
-    useEffect(() => () => { pRef.current.clips.forEach(c => URL.revokeObjectURL(c.url)); pRef.current.overlays.forEach(o => URL.revokeObjectURL(o.url)); if (pRef.current.music) URL.revokeObjectURL(pRef.current.music.url); }, []);
 
     // Keys: space plays, Ctrl+Z / Ctrl+Y undo and redo, Delete cuts the selection.
     useEffect(() => {
@@ -209,7 +233,7 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
 
                 {!p.clips.length ? (
                     <button type="button" className={classes(ve("drop"), over && ve("drop-over"))} onClick={() => picker.current?.click()}>
-                        <span className={ve("drop-icon")}>🎬</span>
+                        <span className={ve("drop-icon")}><SonataGlyph name="clapper" /></span>
                         <b>{loadingFiles ? "Opening…" : "Drop videos here, or click to choose"}</b>
                         <span>Several videos are joined one after another. Or right-click a video in chat → Edit video.</span>
                     </button>
@@ -230,11 +254,11 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
                             <Timeline p={p} now={now} setNow={setNow} sel={sel} setSel={setSel} total={total} pick={pick} playing={playing} setPlaying={setPlaying} onPick={(k, id) => { setPick({ kind: k, id }); setTab(k === "overlay" ? "pictures" : k); }} />
                             <div className={ve("actions")}>
                                 <span className={ve("actions-label")}>{sel ? `${clock(sel[0])} – ${clock(sel[1])} (${(sel[1] - sel[0]).toFixed(1)} s)` : "Drag across the timeline to pick a part"}</span>
-                                <button type="button" className={cl("btn")} disabled={!sel} onClick={() => act("cut")} title="Take this part out (Delete)">✂️ Cut out</button>
+                                <button type="button" className={cl("btn")} disabled={!sel} onClick={() => act("cut")} title="Take this part out (Delete)"><SonataGlyph name="scissors" /> Cut out</button>
                                 <button type="button" className={cl("btn")} disabled={!sel} onClick={() => act("keep")} title="Throw away everything else">⟷ Keep only this</button>
                                 {sel && p.muted.some(([a, b]) => a < sel[1] && b > sel[0])
-                                    ? <button type="button" className={cl("btn")} onClick={() => act("unmute")}>🔊 Unmute</button>
-                                    : <button type="button" className={cl("btn")} disabled={!sel} onClick={() => act("mute")}>🔇 Mute</button>}
+                                    ? <button type="button" className={cl("btn")} onClick={() => act("unmute")}><SonataGlyph name="speaker" /> Unmute</button>
+                                    : <button type="button" className={cl("btn")} disabled={!sel} onClick={() => act("mute")}><SonataGlyph name="volumeMute" /> Mute</button>}
                                 <button type="button" className={cl("btn")} onClick={() => act("text")} title={sel ? "A caption for this part" : "A caption for 3 seconds from here"}>🅣 Caption</button>
                                 <button type="button" className={cl("btn")} onClick={() => act("blur")} title={sel ? "Blur a spot during this part" : "Blur a spot for the whole video"}>▦ Blur</button>
                                 {sel && <button type="button" className={cl("link")} onClick={() => setSel(null)}>Clear</button>}
@@ -244,7 +268,7 @@ function VideoEditor({ modalProps, initial }: { modalProps: RenderModalProps; in
                         <aside className={ve("side")}>
                             <div className={classes(cl("seg"), ve("tabs"))}>
                                 {([["clips", "🎞️ Clips"], ["text", "🅣 Text"], ["pictures", "🖼 Pictures"], ["blur", "▦ Blur"], ["sound", "🔊 Sound"], ["look", "⏩ Look"], ["export", "⬇ Export"]] as [Tab, string][]).map(([id, label]) => (
-                                    <button key={id} type="button" className={classes(cl("seg-btn"), tab === id && cl("seg-on"))} onClick={() => setTab(id)}>{label}</button>
+                                    <button key={id} type="button" className={classes(cl("seg-btn"), tab === id && cl("seg-on"))} onClick={() => setTab(id)}><SonataLabel label={label} /></button>
                                 ))}
                             </div>
                             <div className={ve("panel")}>
@@ -404,10 +428,12 @@ function Stage({ p, change, now, setNow, playing, setPlaying, pick, total }: {
         ensureSound();
         void sound.current?.ctx.resume().catch(() => { });
         let stop = false, index = locate(pRef.current, nowRef.current)?.index ?? 0;
+        let frame = 0;
         const start = (i: number, at: number) => {
             const piece = pieces(pRef.current)[i];
             if (!piece) return;
             showAt(v, pRef.current.clips[piece.clip], at, () => {
+                if (stop) return;
                 v.playbackRate = pRef.current.speed;
                 void v.play().catch(() => { });
             });
@@ -422,7 +448,7 @@ function Stage({ p, change, now, setNow, playing, setPlaying, pick, total }: {
             const list = pieces(pRef.current);
             const piece = list[index];
             if (!piece) { setPlaying(false); return; }
-            if (v.dataset.loading) { requestAnimationFrame(tick); return; }
+            if (v.dataset.loading) { frame = requestAnimationFrame(tick); return; }
             if (v.currentTime >= piece.to - 0.02 || v.ended) {
                 if (index + 1 < list.length) { index++; start(index, list[index].from); }
                 else if (pRef.current.loops > 1) { index = 0; start(0, list[0].from); setNow(0); if (m && mus) m.currentTime = mus.offset; }
@@ -432,10 +458,10 @@ function Stage({ p, change, now, setNow, playing, setPlaying, pick, total }: {
                 setNow(t);
                 if (m && mus && Math.abs(m.currentTime - (mus.offset + t / pRef.current.speed)) > 0.35) m.currentTime = mus.offset + t / pRef.current.speed;
             }
-            requestAnimationFrame(tick);
+            frame = requestAnimationFrame(tick);
         };
-        requestAnimationFrame(tick);
-        return () => { stop = true; v.pause(); m?.pause(); };
+        frame = requestAnimationFrame(tick);
+        return () => { stop = true; cancelAnimationFrame(frame); v.pause(); m?.pause(); };
     }, [playing]);
 
     // Sound in the preview: muted parts (or the beep), volume, the preset, music.
@@ -610,7 +636,7 @@ function Timeline({ p, now, setNow, sel, setSel, total, pick, onPick, playing, s
             <div className={ve("lanes")}>
                 {p.muted.length > 0 && (
                     <div className={ve("lane")} title="Muted parts">
-                        <span className={ve("lane-name")}>{p.beep ? "📢" : "🔇"}</span>
+                        <span className={ve("lane-name")}>{p.beep ? <SonataGlyph name="megaphone" /> : <SonataGlyph name="volumeMute" />}</span>
                         {p.muted.map(([a, b], i) => <span key={i} className={classes(ve("item"), ve("item-mute"))} style={{ left: pct(a), width: pct(b - a) }} onClick={() => setSel([a, b])} />)}
                     </div>
                 )}
@@ -622,7 +648,7 @@ function Timeline({ p, now, setNow, sel, setSel, total, pick, onPick, playing, s
                 )}
                 {p.overlays.length > 0 && (
                     <div className={ve("lane")}>
-                        <span className={ve("lane-name")}>🖼</span>
+                        <span className={ve("lane-name")}><SonataGlyph name="image" /></span>
                         {p.overlays.map(o => <span key={o.id} className={classes(ve("item"), ve("item-overlay"), pick?.id === o.id && ve("item-on"))} style={{ left: pct(o.start), width: pct(o.end - o.start) }} onClick={() => onPick("overlay", o.id)}>{o.name}</span>)}
                     </div>
                 )}
@@ -805,7 +831,6 @@ function SoundPanel({ p, change, setNow }: PanelProps) {
         if (!file) return;
         try {
             const m = await mediaInfo(file, "audio");
-            if (p.music) URL.revokeObjectURL(p.music.url);
             const music: Music = { name: file.name, file, url: m.url, duration: m.duration, volume: 0.6, offset: 0 };
             change({ ...p, music });
         } catch { showToast("That song can't be played here — try an MP3", "failure"); }
@@ -818,23 +843,23 @@ function SoundPanel({ p, change, setNow }: PanelProps) {
                     <Slider label="Volume" min={0} max={3} step={0.05} value={p.volume} show={`${Math.round(p.volume * 100)}%`} onChange={v => change({ ...p, volume: v }, "volume")} />
                     <span className={cl("label")}>Sound preset</span>
                     <div className={ve("chips")}>
-                        {SOUND_PRESETS.map(([id, label]) => <button key={id} type="button" className={classes(ve("chip"), p.soundPreset === id && ve("chip-on"))} onClick={() => change({ ...p, soundPreset: id })}>{label}</button>)}
+                        {SOUND_PRESETS.map(([id, label]) => <button key={id} type="button" className={classes(ve("chip"), p.soundPreset === id && ve("chip-on"))} onClick={() => change({ ...p, soundPreset: id })}><SonataLabel label={label} /></button>)}
                     </div>
                     <label className={cl("check")}><input type="checkbox" checked={p.normalize} onChange={e => change({ ...p, normalize: e.currentTarget.checked })} /> Even out loud and quiet parts</label>
                     <Slider label="Fade in" min={0} max={5} step={0.1} value={p.audioFadeIn} show={p.audioFadeIn ? `${p.audioFadeIn.toFixed(1)} s` : "off"} onChange={v => change({ ...p, audioFadeIn: v }, "afi")} />
                     <Slider label="Fade out" min={0} max={5} step={0.1} value={p.audioFadeOut} show={p.audioFadeOut ? `${p.audioFadeOut.toFixed(1)} s` : "off"} onChange={v => change({ ...p, audioFadeOut: v }, "afo")} />
                     <span className={cl("label")}>Muted parts</span>
-                    <label className={cl("check")}><input type="checkbox" checked={p.beep} onChange={e => change({ ...p, beep: e.currentTarget.checked })} /> 📢 Beep over them instead of silence</label>
+                    <label className={cl("check")}><input type="checkbox" checked={p.beep} onChange={e => change({ ...p, beep: e.currentTarget.checked })} /> <SonataGlyph name="megaphone" /> Beep over them instead of silence</label>
                     {p.muted.length ? (
                         <div className={ve("stack-tight")}>
                             {p.muted.map(([a, b], i) => (
                                 <div key={i} className={ve("row")}>
-                                    <button type="button" className={cl("link")} onClick={() => setNow(a)}>{p.beep ? "📢" : "🔇"} {clock(a)} – {clock(b)}</button>
+                                    <button type="button" className={cl("link")} onClick={() => setNow(a)}>{p.beep ? <SonataGlyph name="megaphone" /> : <SonataGlyph name="volumeMute" />} {clock(a)} – {clock(b)}</button>
                                     <button type="button" className={ve("mini")} title="Unmute" onClick={() => change({ ...p, muted: p.muted.filter((_, j) => j !== i) })}>✕</button>
                                 </div>
                             ))}
                         </div>
-                    ) : <span className={cl("hint")}>Pick a part on the timeline and press 🔇 Mute.</span>}
+                    ) : <span className={cl("hint")}>Pick a part on the timeline and press <SonataGlyph name="volumeMute" /> Mute.</span>}
                 </>
             )}
             <span className={cl("label")}>Music</span>
@@ -842,7 +867,7 @@ function SoundPanel({ p, change, setNow }: PanelProps) {
             {p.music ? (
                 <>
                     <div className={ve("row")}>
-                        <span className={ve("music-name")} title={p.music.name}>🎵 {p.music.name}</span>
+                        <span className={ve("music-name")} title={p.music.name}><SonataGlyph name="sonata" /> {p.music.name}</span>
                         <button type="button" className={ve("mini")} title="Remove the music" onClick={() => change({ ...p, music: null })}>✕</button>
                     </div>
                     <Slider label="Music volume" min={0} max={1.5} step={0.05} value={p.music.volume} show={`${Math.round(p.music.volume * 100)}%`} onChange={v => change({ ...p, music: { ...p.music!, volume: v } }, "mvol")} />
@@ -873,7 +898,7 @@ function LookPanel({ p, change }: PanelProps) {
 
             <span className={cl("label")}>Colour</span>
             <div className={ve("chips")}>
-                {LOOKS.map(([id, label]) => <button key={id} type="button" className={classes(ve("chip"), p.look === id && ve("chip-on"))} onClick={() => change({ ...p, look: id })}>{label}</button>)}
+                {LOOKS.map(([id, label]) => <button key={id} type="button" className={classes(ve("chip"), p.look === id && ve("chip-on"))} onClick={() => change({ ...p, look: id })}><SonataLabel label={label} /></button>)}
             </div>
             <Slider label="Brightness" min={-0.5} max={0.5} step={0.01} value={p.brightness} show={`${p.brightness > 0 ? "+" : ""}${Math.round(p.brightness * 100)}`} onChange={v => change({ ...p, brightness: v }, "bright")} />
             <Slider label="Contrast" min={0.5} max={2} step={0.01} value={p.contrast} show={`${Math.round(p.contrast * 100)}%`} onChange={v => change({ ...p, contrast: v }, "contrast")} />
@@ -916,21 +941,29 @@ function ExportPanel({ p, change, sel }: PanelProps) {
     const [asGif, setAsGif] = useState(false);
     const [gif, setGif] = useState<GifOptions>({ width: 480, fps: 15, fit10: true });
 
+    const active = useRef<AbortController | null>(null);
+    useEffect(() => () => active.current?.abort(), []);
+
     const run = async (openGifMaker = false) => {
+        if (active.current) return;
+        const job = new AbortController();
+        active.current = job;
         setError(null);
         if (done) { URL.revokeObjectURL(done.url); setDone(null); }
         setBusy({ text: "Starting…" });
         try {
             const project = openGifMaker && sel ? keepOnly(p, ...sel) : p;
-            const r = await exportVideo(project, (text, progress) => setBusy({ text, progress }), asGif && !openGifMaker ? gif : undefined);
+            const r = await exportVideo(project, (text, progress) => setBusy({ text, progress }), asGif && !openGifMaker ? gif : undefined, job.signal);
+            if (job.signal.aborted) return;
             if (openGifMaker) {
                 openSection("mediaTools", "gifMaker", undefined, { file: new File([r.blob], r.name, { type: "video/mp4" }) });
                 return;
             }
             setDone({ ...r, url: URL.createObjectURL(r.blob) });
         } catch (e) {
-            setError(e instanceof Error && e.message ? e.message : "It stopped");
+            if (!job.signal.aborted) setError(e instanceof Error && e.message ? e.message : "It stopped");
         } finally {
+            active.current = null;
             setBusy(null);
         }
     };
@@ -946,8 +979,8 @@ function ExportPanel({ p, change, sel }: PanelProps) {
         <div className={ve("stack")}>
             <span className={cl("label")}>Export as</span>
             <div className={cl("seg")}>
-                <button type="button" className={classes(cl("seg-btn"), !asGif && cl("seg-on"))} onClick={() => setAsGif(false)}>🎬 Video (MP4)</button>
-                <button type="button" className={classes(cl("seg-btn"), asGif && cl("seg-on"))} onClick={() => setAsGif(true)}>🖼️ GIF</button>
+                <button type="button" className={classes(cl("seg-btn"), !asGif && cl("seg-on"))} onClick={() => setAsGif(false)}><SonataGlyph name="clapper" /> Video (MP4)</button>
+                <button type="button" className={classes(cl("seg-btn"), asGif && cl("seg-on"))} onClick={() => setAsGif(true)}><SonataGlyph name="image" /> GIF</button>
             </div>
             {asGif ? (
                 <div className={ve("stack")}>
@@ -992,7 +1025,7 @@ function ExportPanel({ p, change, sel }: PanelProps) {
                     <div className={cl("seg")}>
                         {heights.map(([h, l]) => <button key={h} type="button" className={classes(cl("seg-btn"), p.maxHeight === h && cl("seg-on"))} onClick={() => change({ ...p, maxHeight: h })}>{l}</button>)}
                     </div>
-                    <span className={cl("hint")}>The shape (9:16, 1:1…) is in ⏩ Look.</span>
+                    <span className={cl("hint")}>The shape (9:16, 1:1…) is in <SonataGlyph name="nextTrack" /> Look.</span>
                 </div>
             </details>
             </>}
@@ -1003,10 +1036,10 @@ function ExportPanel({ p, change, sel }: PanelProps) {
                 <div className={ve("busy")}>
                     <span>{busy.text}</span>
                     <div className={ve("bar")}><div style={{ width: `${Math.round((busy.progress ?? 0) * 100)}%` }} /></div>
-                    <button type="button" className={cl("btn")} onClick={() => stopExport()}>Stop</button>
+                    <button type="button" className={cl("btn")} onClick={() => active.current?.abort()}>Stop</button>
                 </div>
             ) : (
-                <button type="button" className={classes(cl("btn"), cl("primary"), ve("export"))} onClick={() => void run()}>{asGif ? "⬇ Make GIF" : "⬇ Export video"}</button>
+                <button type="button" className={classes(cl("btn"), cl("primary"), ve("export"))} onClick={() => void run()}>{asGif ? <><SonataGlyph name="download" />{" Make GIF"}</> : <><SonataGlyph name="download" />{" Export video"}</>}</button>
             )}
             {!busy && isFeatureRunning("gifMaker") && <button type="button" className={cl("btn")} onClick={() => void run(true)}>{sel ? "Open selection in GIF Maker" : "Open video in GIF Maker"}</button>}
             {error && <div className={cl("error")}>{error}</div>}
@@ -1067,7 +1100,7 @@ function PicturesPanel({ p, change, sel, total, pick, setPick }: PanelProps) {
             <span className={cl("hint")}>A logo, a sticker, or a video in the corner (like a webcam over gameplay). Move and resize it on the picture.</span>
             {p.overlays.length > 0 && (
                 <div className={ve("chips")}>
-                    {p.overlays.map(x => <button key={x.id} type="button" className={classes(ve("chip"), pick?.id === x.id && ve("chip-on"))} onClick={() => setPick({ kind: "overlay", id: x.id })}>{x.kind === "video" ? "🎞️" : "🖼"} {x.name.slice(0, 16)}</button>)}
+                    {p.overlays.map(x => <button key={x.id} type="button" className={classes(ve("chip"), pick?.id === x.id && ve("chip-on"))} onClick={() => setPick({ kind: "overlay", id: x.id })}>{x.kind === "video" ? <SonataGlyph name="film" /> : <SonataGlyph name="image" />} {x.name.slice(0, 16)}</button>)}
                 </div>
             )}
             {o && (
@@ -1083,7 +1116,7 @@ function PicturesPanel({ p, change, sel, total, pick, setPick }: PanelProps) {
                     {o.kind === "video" && <label className={cl("check")}><input type="checkbox" checked={o.sound} onChange={e => set({ sound: e.currentTarget.checked })} /> Include its sound</label>}
                     <div className={ve("row")}>
                         <button type="button" className={cl("btn")} onClick={() => setPick(null)}>Done</button>
-                        <button type="button" className={classes(cl("btn"), ve("danger"))} onClick={() => { URL.revokeObjectURL(o.url); change({ ...p, overlays: p.overlays.filter(x => x.id !== o.id) }); setPick(null); }}>Delete</button>
+                        <button type="button" className={classes(cl("btn"), ve("danger"))} onClick={() => { change({ ...p, overlays: p.overlays.filter(x => x.id !== o.id) }); setPick(null); }}>Delete</button>
                     </div>
                 </>
             )}

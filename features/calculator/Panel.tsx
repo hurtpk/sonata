@@ -19,6 +19,7 @@ import { addEntry, clearHistory, removeEntry, useHistory } from "./history";
 import { MoneyTab } from "./Money";
 import { ToolsTab } from "./Tools";
 import { removeVar, setVar, useVars } from "./variables";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-calc-");
 
@@ -206,7 +207,7 @@ function CalcTab({ prefs, setPrefs }: { prefs: CalcPrefs; setPrefs(p: Partial<Ca
                         </div>
                         <div className={cl("history-list")}>
                             {history.length === 0 ? (
-                                <div className={cl("empty")}><span className={cl("empty-icon")}>🧮</span>Your calculations will show up here.</div>
+                                <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="calculator" /></span>Your calculations will show up here.</div>
                             ) : history.map(h => (
                                 <div key={h.t} className={cl("entry")}>
                                     <button type="button" className={cl("entry-expr")} title="Load this calculation" onClick={() => { setExpr(h.expr); setShown(null); setError(null); focus(); }}>{h.expr}</button>

@@ -15,6 +15,7 @@ import { Archive, ArchiveEntry, childrenOf } from "./archive";
 import { readFontInfo } from "./fontInfo";
 import { decodeText, formatSize, previewKind } from "./formats";
 import { TableView, TextView } from "./TextViews";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-fprev-");
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|ico|svg|avif)$/i;
@@ -188,7 +189,7 @@ export function ArchiveView({ url, filename }: { url: string; filename: string; 
 
     return (
         <div className={cl("archive")}>
-            <div className={cl("meta")}>{files.length} file{files.length === 1 ? "" : "s"} · {formatSize(total)} uncompressed{files.some(f => f.encrypted) ? " · some files are password-protected 🔒" : ""}</div>
+            <div className={cl("meta")}>{files.length} file{files.length === 1 ? "" : "s"} · {formatSize(total)} uncompressed{files.some(f => f.encrypted) ? <>{" · some files are password-protected "}<SonataGlyph name="lock" /></> : ""}</div>
             <div className={cl("archive-body")}>
                 <div className={cl("browser")}>
                     <div className={cl("crumbs")}>
@@ -198,7 +199,7 @@ export function ArchiveView({ url, filename }: { url: string; filename: string; 
                         ))}
                     </div>
                     <div className={cl("rows")}>
-                        {folder && <button type="button" className={cl("row")} onClick={() => { setFolder(crumbs.slice(0, -1).join("/")); setSelected(null); }}><span className={cl("row-icon")}>↩</span><span className={cl("row-name")}>..</span></button>}
+                        {folder && <button type="button" className={cl("row")} onClick={() => { setFolder(crumbs.slice(0, -1).join("/")); setSelected(null); }}><span className={cl("row-icon")}><SonataGlyph name="undo" /></span><span className={cl("row-name")}>..</span></button>}
                         {items.map(e => (
                             <button
                                 key={e.path}
@@ -206,7 +207,7 @@ export function ArchiveView({ url, filename }: { url: string; filename: string; 
                                 className={classes(cl("row"), selected?.path === e.path && cl("row-on"))}
                                 onClick={() => e.dir ? (setFolder(e.path), setSelected(null)) : setSelected(e)}
                             >
-                                <span className={cl("row-icon")}>{e.dir ? "📁" : e.encrypted ? "🔒" : "📄"}</span>
+                                <span className={cl("row-icon")}>{e.dir ? <SonataGlyph name="folder" /> : e.encrypted ? <SonataGlyph name="lock" /> : <SonataGlyph name="fileText" />}</span>
                                 <span className={cl("row-name")}>{e.name}</span>
                                 {!e.dir && <span className={cl("row-size")}>{formatSize(e.size)}</span>}
                             </button>

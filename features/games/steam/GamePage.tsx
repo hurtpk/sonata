@@ -19,6 +19,7 @@ import { Window } from "../../_shared/Window";
 import { checkGames, opts } from "./check";
 import type { SteamAchievement, SteamDetails, SteamItem, SteamReviewSummary } from "./native";
 import { isWatched, profile, unwatch, useSteam, watch } from "./store";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const gp = classNameFactory("vc-steam-gp-");
@@ -43,7 +44,7 @@ function MediaViewer({ d }: { d: SteamDetails; }) {
                 ) : m.kind === "movie" ? (
                     <button type="button" className={gp("stage-fallback")} onClick={() => open(storeUrl(d.appid))}>
                         <img className={gp("stage-media")} src={m.thumb} alt="" />
-                        <span>▶ Watch “{m.name}” on Steam</span>
+                        <span><SonataGlyph name="play" /> Watch “{m.name}” on Steam</span>
                     </button>
                 ) : (
                     <img className={classes(gp("stage-media"), gp("stage-zoom"))} src={m.full} alt="" title="Click to see it bigger" onClick={() => openImageModal({ url: m.full })} />
@@ -53,7 +54,7 @@ function MediaViewer({ d }: { d: SteamDetails; }) {
                 {media.map((x, i) => (
                     <button key={i} type="button" className={classes(gp("thumb"), i === pick && gp("thumb-on"))} onClick={() => setPick(i)} title={x.kind === "movie" ? x.name : "Screenshot"}>
                         <img src={x.thumb} alt="" loading="lazy" />
-                        {x.kind === "movie" && <span className={gp("thumb-play")} aria-hidden>▶</span>}
+                        {x.kind === "movie" && <span className={gp("thumb-play")} aria-hidden><SonataGlyph name="play" /></span>}
                     </button>
                 ))}
             </div>
@@ -68,7 +69,7 @@ function Reviews({ r }: { r: SteamReviewSummary; }) {
             <span className={cl("label")}>Reviews</span>
             <div className={gp("rev-head")}><b>{r.label || "No score yet"}</b><span>{pct}% positive · {r.total.toLocaleString()} reviews</span></div>
             <div className={gp("rev-bar")}><i style={{ width: `${pct}%` }} /></div>
-            <div className={gp("rev-counts")}><span>👍 {r.positive.toLocaleString()}</span><span>👎 {r.negative.toLocaleString()}</span></div>
+            <div className={gp("rev-counts")}><span><SonataGlyph name="thumbsUp" /> {r.positive.toLocaleString()}</span><span><SonataGlyph name="thumbsDown" /> {r.negative.toLocaleString()}</span></div>
         </section>
     );
 }
@@ -82,9 +83,9 @@ function Achievements({ appid, total }: { appid: number; total: number; }) {
         native().steamAchievements(p.steamid, appid).then((r: any) => setState(r?.ok ? { list: r.list } : { error: r?.error ?? "Couldn't load them" }), () => setState({ error: "Couldn't reach Steam" }));
     }, [appid, p?.steamid]);
     if (!total) return null;
-    if (!p) return <section className={gp("card")}><span className={cl("label")}>🏆 Achievements · {total}</span><span className={cl("hint")}>Link your Steam profile in My Steam to see yours.</span></section>;
-    if (!state) return <section className={gp("card")}><span className={cl("label")}>🏆 Your achievements</span><span className={cl("hint")}>Loading…</span></section>;
-    if (state.error) return <section className={gp("card")}><span className={cl("label")}>🏆 Your achievements</span><span className={cl("hint")}>{state.error === "Your game details are private" ? "Your game details are private — in Steam's privacy settings, set Game details to Public." : state.error}</span></section>;
+    if (!p) return <section className={gp("card")}><span className={cl("label")}><SonataGlyph name="trophy" /> Achievements · {total}</span><span className={cl("hint")}>Link your Steam profile in My Steam to see yours.</span></section>;
+    if (!state) return <section className={gp("card")}><span className={cl("label")}><SonataGlyph name="trophy" /> Your achievements</span><span className={cl("hint")}>Loading…</span></section>;
+    if (state.error) return <section className={gp("card")}><span className={cl("label")}><SonataGlyph name="trophy" /> Your achievements</span><span className={cl("hint")}>{state.error === "Your game details are private" ? "Your game details are private — in Steam's privacy settings, set Game details to Public." : state.error}</span></section>;
     const list = state.list!;
     const got = list.filter(a => a.unlocked).sort((a, b) => (b.at ?? 0) - (a.at ?? 0));
     const left = list.filter(a => !a.unlocked);
@@ -93,7 +94,7 @@ function Achievements({ appid, total }: { appid: number; total: number; }) {
     return (
         <section className={gp("card")}>
             <div className={gp("ach-head")}>
-                <span className={cl("label")}>🏆 Your achievements</span>
+                <span className={cl("label")}><SonataGlyph name="trophy" /> Your achievements</span>
                 <span className={cl("spacer")} />
                 <div className={cl("seg")}>
                     {([["all", "All"], ["got", `Unlocked · ${got.length}`], ["left", `Locked · ${left.length}`]] as const).map(([v, l]) => (
@@ -101,7 +102,7 @@ function Achievements({ appid, total }: { appid: number; total: number; }) {
                     ))}
                 </div>
             </div>
-            <div className={gp("rev-head")}><b>{got.length} / {list.length}</b><span>{pct === 100 ? "Every one — perfect game! 🎉" : `${pct}% done`}</span></div>
+            <div className={gp("rev-head")}><b>{got.length} / {list.length}</b><span>{pct === 100 ? <>{"Every one — perfect game! "}<SonataGlyph name="party" /></> : `${pct}% done`}</span></div>
             <div className={gp("rev-bar")}><i style={{ width: `${pct}%` }} /></div>
             <div className={gp("ach-grid")}>
                 {shown.map(a => (
@@ -163,7 +164,7 @@ function GameModal({ modalProps, appid }: { modalProps: RenderModalProps; appid:
     return (
         <Window {...modalProps} size="xl" title={d?.name ?? "Steam game"} subtitle={d ? [d.developers[0], d.release].filter(Boolean).join(" · ") : "Loading from Steam…"}>
             <div className={classes("vc-tool-wrap", "vc-steam-wrap", gp("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                {error ? <div className={cl("error")}>{error}</div> : !d ? <div className={cl("empty")}><span className={cl("empty-icon")}>⏳</span>Loading…</div> : (
+                {error ? <div className={cl("error")}>{error}</div> : !d ? <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="hourglass" /></span>Loading…</div> : (
                     <>
                         <section className={gp("hero")} style={d.background ? { backgroundImage: `linear-gradient(180deg, hsl(0 0% 0% / 0.15), hsl(220 25% 8% / 0.92)), url("${d.background}")` } : undefined}>
                             <img className={gp("header")} src={d.header} alt="" />

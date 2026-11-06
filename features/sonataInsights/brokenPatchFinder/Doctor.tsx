@@ -24,6 +24,7 @@ import { checkLayout, onLayoutChecked, runLayoutCheck } from "./layout";
 import { PatchesSection } from "./Panel";
 import { onProblem } from "./recorder";
 import { SpeedUp } from "./SpeedUp";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const dr = classNameFactory("vc-doc-");
 
@@ -57,7 +58,7 @@ function Overview({ go }: { go(t: Tab): void; }) {
     return (
         <div className={dr("overview")}>
             <div className={classes(dr("verdict"), total ? dr("verdict-warn") : dr("verdict-ok"))}>
-                <span className={dr("verdict-icon")}>{total ? "🩺" : "✓"}</span>
+                <span className={dr("verdict-icon")}><SonataGlyph name={total ? "heartPulse" : "checkCircle"} /></span>
                 <div>
                     <div className={dr("verdict-title")}>{total ? `${total} thing${total === 1 ? "" : "s"} to look at` : "Sonata is healthy"}</div>
                     <div className={dr("muted")}>{total ? "Click a card to see what and fix it." : "No broken patches, stuck features or damaged settings."}</div>
@@ -66,7 +67,7 @@ function Overview({ go }: { go(t: Tab): void; }) {
             <div className={dr("cards")}>
                 {cards.map(c => (
                     <button key={c.tab} type="button" className={classes(dr("card"), c.count ? dr("card-warn") : dr("card-ok"))} onClick={() => go(c.tab)}>
-                        <span className={dr("card-icon")}>{c.icon}</span>
+                        <span className={dr("card-icon")}><SonataGlyph name={c.icon} /></span>
                         <span className={dr("card-title")}>{c.title}</span>
                         <span className={dr("card-count")}>{c.count || "✓"}</span>
                         <span className={dr("muted")}>{c.count ? `${c.count} ${c.bad}` : c.ok}</span>
@@ -92,7 +93,7 @@ function Culprit() {
     if (culpritActive()) {
         return (
             <div className={classes(dr("item"), dr("item-warn"), dr("culprit"))}>
-                <span className={dr("card-icon")}>🔎</span>
+                <span className={dr("card-icon")}><SonataGlyph name="search" /></span>
                 <div className={dr("item-main")}><b>Finding the culprit is under way</b><span className={dr("muted")}>Answer the question in the corner after each reload.</span></div>
                 <button type="button" className={dr("btn")} onClick={stopCulpritHunt}>Stop and put everything back</button>
             </div>
@@ -100,7 +101,7 @@ function Culprit() {
     }
     return (
         <div className={classes(dr("item"), dr("culprit"))}>
-            <span className={dr("card-icon")}>🔎</span>
+            <span className={dr("card-icon")}><SonataGlyph name="search" /></span>
             <div className={dr("item-main")}>
                 <b>Something wrong, but no idea which feature?</b>
                 <span className={dr("muted")}>{confirm
@@ -285,7 +286,7 @@ function Performance() {
                 ? <div className={dr("empty")}>✓ Nothing heavy to tune.</div>
                 : hints.map(h => (
                     <div key={h.id} className={dr("item")}>
-                        <span className={dr("item-icon")}>⚡</span>
+                        <span className={dr("item-icon")}><SonataGlyph name="bolt" /></span>
                         <div className={dr("item-main")}>
                             <span className={dr("item-name")}>{h.title}</span>
                             <span className={dr("muted")}>{h.detail}</span>

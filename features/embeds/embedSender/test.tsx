@@ -14,6 +14,7 @@
 import { sendBotMessage } from "@api/Commands";
 import { classes } from "@utils/misc";
 import { ChannelStore, GuildStore, PermissionsBits, PermissionStore, ReactDOM, RestAPI, SelectedChannelStore, SortedGuildStore, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { SonataGlyph } from "../../../utilities/icons";
 
 export interface TestChannel { channelId: string; url: string; }
 
@@ -161,11 +162,11 @@ export function TestButton({ raw, write, autoDelete, setAutoDelete, onOnlyMe, on
                 <div className="vc-es-test-pop" ref={pop}>
                     <b>Try it first</b>
                     <button type="button" className="vc-es-test-opt" disabled={!here} onClick={() => { setOpen(false); onOnlyMe(here.id); }}>
-                        <span>👁</span>
+                        <span><SonataGlyph name="eye" /></span>
                         <div><b>Only me, here</b><small>{here ? `Shows in ${here.guild_id ? "#" + here.name : "this chat"} — just for you, nothing is sent` : "Open a chat first"}</small></div>
                     </button>
                     <button type="button" className="vc-es-test-opt" disabled={!target} onClick={() => { if (target) { setOpen(false); onPost(target); } }}>
-                        <span>📨</span>
+                        <span><SonataGlyph name="mail" /></span>
                         <div><b>Post in my test channel</b><small>{target ? `#${targetChannel?.name ?? "unknown"}${targetChannel?.guild_id ? ` · ${GuildStore.getGuild(targetChannel.guild_id)?.name ?? ""}` : ""} — a real post` : "Pick one below"}</small></div>
                     </button>
                     {choosing ? (
@@ -192,7 +193,7 @@ export function TestButton({ raw, write, autoDelete, setAutoDelete, onOnlyMe, on
 
     return (
         <div className="vc-es-test" ref={box}>
-            <button type="button" className={classes("vc-tool-btn", open && "vc-es-test-on")} onClick={() => setOpen(o => !o)} title="Try it before the real post">🧪 Test</button>
+            <button type="button" className={classes("vc-tool-btn", open && "vc-es-test-on")} onClick={() => setOpen(o => !o)} title="Try it before the real post"><SonataGlyph name="flask" /> Test</button>
             {open && (host ? ReactDOM.createPortal(menu, host) : menu)}
         </div>
     );

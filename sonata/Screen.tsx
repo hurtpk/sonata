@@ -13,14 +13,15 @@ import { OptionComponentMap } from "@components/settings/tabs/plugins/components
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import { classes } from "@utils/misc";
 import { OptionType, Plugin, PluginSettingDef } from "@utils/types";
-import { useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { filters, find } from "@webpack";
+import { showToast, useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import { CATEGORIES, categoryOf } from "../controller/categories";
 import type { FeatureStatus, QolApi } from "../controller/ControlCenter";
 import { labelOf } from "../features/_shared/SettingsForm";
 import { QOL_NAME } from "../featureSettings";
 import { DockTab, IconPicker } from "../utilities/DockTab";
-import { DOCK_ICON_MAP, SonataIcon } from "../utilities/icons";
+import { DOCK_ICON_MAP, SonataIcon, SonataGlyph } from "../utilities/icons";
 import { KeybindsTab } from "../utilities/KeybindsTab";
 import { isUserPlugin, togglePlugin } from "../utilities/PluginsTab";
 import { getAllPlugins, pluginHasSettingsUi } from "../utilities/shared";
@@ -36,6 +37,7 @@ import { Welcome, WhatsNew } from "./Welcome";
 import { WindowStylePanel } from "./WindowStylePanel";
 
 export const ACCENTS: { name: string; hex: string; }[] = [
+    { name: "Peach", hex: DEFAULT_ACCENT },
     { name: "Dusty rose", hex: "#c58d91" },
     { name: "Sapphire", hex: "#3b82f6" },
     { name: "Iris", hex: "#6366f1" },
@@ -50,6 +52,16 @@ export const ACCENTS: { name: string; hex: string; }[] = [
 ];
 
 type StatusFilter = "all" | "on" | "off" | "pending";
+
+function addSonataBot() {
+    const oauth = find(filters.byProps("getOAuth2AuthorizeProps", "openOAuth2ModalWithCreateGuildModal"), { isIndirect: true }) as {
+        getOAuth2AuthorizeProps(url: string): object | null;
+        openOAuth2ModalWithCreateGuildModal(props: object): void;
+    } | undefined;
+    const invite = oauth?.getOAuth2AuthorizeProps("https://discord.com/oauth2/authorize?client_id=1564909992383877122&scope=bot%20applications.commands&permissions=8&integration_type=0");
+    if (invite) oauth?.openOAuth2ModalWithCreateGuildModal(invite);
+    else showToast("Discord’s Add App popup is unavailable. Try reloading Discord.", "failure");
+}
 
 /** The features you pinned, in the order you pinned them. */
 const readPinned = (raw: unknown): string[] => { try { const v = JSON.parse(typeof raw === "string" && raw ? raw : "[]"); return Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string").map(key => GROUP_OF[key] ?? GROUPS[key]?.aliasOf ?? key))] : []; } catch { return []; } };
@@ -108,6 +120,7 @@ function PaneHead({ title, sub, children }: { title: React.ReactNode; sub?: Reac
     return (
         <header className="sonata-head">
             <div>
+                <div className="sonata-eyebrow">Discord plugin</div>
                 <h2 className="sonata-head-title">{title}</h2>
                 {sub && <p className="sonata-head-sub">{sub}</p>}
             </div>
@@ -449,13 +462,13 @@ function SeasonalPanel({ store }: { store: any; }) {
     const pill = (o: Occasion) => (
         <button key={o.id} type="button" title={`Always use ${o.name}'s colours`} onClick={() => { store.sonataOccasion = o.id; }}
             className={classes("sonata-occasion-pill", !following && cur.id === o.id && "sonata-occasion-pill-on", following && today.id === o.id && "sonata-occasion-pill-today")}>
-            {chip(o.colors)}{o.emoji} {o.name}
+            {chip(o.colors)}<SonataGlyph name={o.emoji} /> {o.name}
         </button>
     );
     return (
         <div className="sonata-field">
             <div className="sonata-occasion">
-                <span className="sonata-occasion-emoji">{cur.emoji}</span>
+                <span className="sonata-occasion-emoji"><SonataGlyph name={cur.emoji} /></span>
                 <div className="sonata-occasion-text">
                     <div className="sonata-occasion-name">{cur.name}</div>
                     <div className="sonata-field-hint">
@@ -469,12 +482,12 @@ function SeasonalPanel({ store }: { store: any; }) {
             <div className="sonata-occasion-all">
                 <button type="button" onClick={() => { store.sonataOccasion = "current"; }} title="Follow the date: today's holiday, or the season"
                     className={classes("sonata-occasion-pill", "sonata-occasion-current", following && "sonata-occasion-pill-on")}>
-                    ✨ Current <span className="sonata-occasion-now">{today.emoji} {today.name}</span>
+                    <SonataGlyph name="sparkles" /> Current <span className="sonata-occasion-now"><SonataGlyph name={today.emoji} /> {today.name}</span>
                 </button>
                 {SEASONS.map(pill)}
                 {HOLIDAYS.map(pill)}
             </div>
-            {next.length > 0 && <div className="sonata-field-hint">Coming up: {next.map(n => `${n.holiday.emoji} ${n.holiday.name} (${shortDate(n.start)})`).join(" · ")}</div>}
+            {next.length > 0 && <div className="sonata-field-hint">Coming up: {next.map(n => `${n.holiday.name} (${shortDate(n.start)})`).join(" · ")}</div>}
             <div className="sonata-occasion-switches">
                 <label className="sonata-check"><input type="checkbox" checked={holidays} onChange={e => { store.sonataHolidays = e.currentTarget.checked; }} /> Holiday colours on holidays</label>
                 <label className="sonata-check"><input type="checkbox" checked={southern} onChange={e => { store.sonataSouthern = e.currentTarget.checked; }} /> I live in the southern hemisphere</label>
@@ -636,9 +649,9 @@ const BIG_SERVERS: [number, string][] = [[0, "Never"], [5000, "With 5,000+ membe
 
 type Mode = "normal" | "light" | "gaming";
 const MODES: { id: Mode; icon: string; name: string; sub: string; }[] = [
-    { id: "normal", icon: "🎵", name: "Normal", sub: "Your own settings" },
-    { id: "light", icon: "⚡", name: "Light", sub: "Everything recommended" },
-    { id: "gaming", icon: "🎮", name: "Gaming", sub: "Light, and pauses while you play" },
+    { id: "normal", icon: "sonata", name: "Normal", sub: "Your own settings" },
+    { id: "light", icon: "bolt", name: "Light", sub: "Everything recommended" },
+    { id: "gaming", icon: "controller", name: "Gaming", sub: "Light, and pauses while you play" },
 ];
 
 function PerformanceTab({ store }: { store: any; }) {
@@ -668,7 +681,7 @@ function PerformanceTab({ store }: { store: any; }) {
                 <div className="sonata-modes" role="radiogroup" aria-label="Performance mode">
                     {MODES.map(m => (
                         <button key={m.id} type="button" role="radio" aria-checked={mode === m.id} className={classes("sonata-mode", mode === m.id && "sonata-mode-on", `sonata-mode-${m.id}`)} onClick={() => pick(m.id)}>
-                            <span className="sonata-mode-icon">{m.icon}</span>
+                            <span className="sonata-mode-icon"><SonataGlyph name={m.icon} /></span>
                             <span className="sonata-mode-text"><b>{m.name}</b><small>{m.sub}</small></span>
                         </button>
                     ))}
@@ -712,7 +725,7 @@ function PerformanceTab({ store }: { store: any; }) {
 
                 <section className={classes("sonata-panel", "sonata-psection", "sonata-pclean", cleanup && "sonata-pclean-open")}>
                     <button type="button" className="sonata-pclean-head" onClick={() => setCleanup(c => !c)} aria-expanded={cleanup}>
-                        <span className="sonata-mode-icon">🧹</span>
+                        <span className="sonata-mode-icon"><SonataGlyph name="broom" /></span>
                         <span className="sonata-mode-text"><b>Disk space & memory</b><small>Free up space Discord keeps on disk, and see how much memory it uses{totalFreed() > 0 ? ` · ${formatBytes(totalFreed())} freed so far` : ""}</small></span>
                         <span className="sonata-pclean-open-label">{cleanup ? "Close" : "Open"}<Chevron open={cleanup} /></span>
                     </button>
@@ -795,8 +808,16 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
 
                 <header className="sonata-top">
                     <button type="button" className="sonata-brand" title="Features" onClick={() => setTab("features")}>
-                        <SonataIcon width={20} height={20} /><span>Sonata</span>
+                        <SonataIcon width={23} height={23} /><span>sonata<i aria-hidden>.</i></span>
                     </button>
+
+                    <nav className="sonata-tabs" role="tablist" aria-label="Sonata">
+                        {TABS.map(([id, label]) => (
+                            <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("sonata-tab", tab === id && "sonata-tab-on")} onClick={() => setTab(id)}>
+                                {label}{id === "features" && <b title={`${onCount} of ${api.keys.length} on`}>{onCount}</b>}
+                            </button>
+                        ))}
+                    </nav>
 
                     <div className="sonata-corner">
                         {pending > 0 && <button type="button" className="sonata-btn sonata-btn-light" onClick={api.apply}>Apply {pending} · reload</button>}
@@ -806,7 +827,7 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                             Dashboard
                         </Button>
                         <Button variant="none" size="min" className="sonata-updates" title="Add Sonata Bot to your Discord server"
-                            onClick={() => VencordNative.native.openExternal("https://sonatabot.info/invite")}>
+                            onClick={addSonataBot}>
                             <SonataIcon width={16} height={16} />
                             Add Sonata Bot
                         </Button>
@@ -824,13 +845,6 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                 </header>
 
                 <div className="sonata-workspace">
-                    <nav className="sonata-tabs" role="tablist" aria-label="Sonata" aria-orientation="vertical">
-                        {TABS.map(([id, label]) => (
-                            <button key={id} type="button" role="tab" aria-selected={tab === id} className={classes("sonata-tab", tab === id && "sonata-tab-on")} onClick={() => setTab(id)}>
-                                {label}{id === "features" && <b title={`${onCount} of ${api.keys.length} on`}>{onCount}</b>}
-                            </button>
-                        ))}
-                    </nav>
                     <div className="sonata-body">
                         {tab === "features" && <FeaturesTab api={api} s={s} query={query} setQuery={setQuery} search={search} onSearchPlugins={() => setTab("plugins")} onOpenLog={openLog} footer={footer} />}
                         {tab === "plugins" && <PluginsTab query={query} setQuery={setQuery} search={search} />}

@@ -38,6 +38,7 @@ import { Window } from "../../_shared/Window";
 import { VoiceRecorderDesktop } from "./components/DesktopRecorder";
 import { VoiceMessageProps, VoicePreview } from "./components/VoicePreview";
 import { VoiceRecorderWeb } from "./components/WebRecorder";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const VOICE_MESSAGE_FLAG = 1 << 13;
 const SILENT_MESSAGE_FLAG = 4096;
@@ -268,7 +269,7 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
                         }
                     }}
                 >
-                    📁 Use a file
+                    <SonataGlyph name="folder" /> Use a file
                 </button>
             </div>
 
@@ -285,7 +286,7 @@ function VoiceMessageModal({ modalProps }: { modalProps: RenderModalProps; }) {
 
             {isUnsupportedFormat && (
                 <div className="vc-tool-section vc-vmsg-warn">
-                    <b>⚠ This won't play on iPhones</b>
+                    <b><SonataGlyph name="warning" /> This won't play on iPhones</b>
                     <span className="vc-tool-hint">Voice messages need to be Ogg Opus for iPhones to play them, and this file is <code>{blob.type}</code>. Turn it into one with File Converter → Voice-message ready.</span>
                 </div>
             )}

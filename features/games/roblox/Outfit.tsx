@@ -17,6 +17,7 @@ import { callNative } from "../../_shared/native";
 import { ROBUX } from "../../currencyConverter/robux";
 import { collectItem, download, safe, zipEntries } from "./Assets";
 import { fetchOutfit, RbxOutfit } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 
@@ -70,7 +71,7 @@ function TileView({ t }: { t: Tile; }) {
     const p = priceOf(t);
     return (
         <a className={rb("wear")} href={t.url} target="_blank" rel="noreferrer" title={`${t.name} — open on Roblox`}>
-            {t.image ? <img src={t.image} alt="" loading="lazy" /> : <span className={rb("img-none")}>🧱</span>}
+            {t.image ? <img src={t.image} alt="" loading="lazy" /> : <span className={rb("img-none")}><SonataGlyph name="blockTile" /></span>}
             <b>{t.name}</b>
             <span>{t.parts ? (t.type === "AnimationPack" ? `Animation pack · ${t.parts} animations` : `${t.loose ? "Body parts" : "Bundle"} · ${t.parts} part${t.parts === 1 ? "" : "s"}`) : nice(t.type)}</span>
             <i className={classes(rb("price"), t.limited && rb("price-lim"), p.value == null && rb("price-off"))}>{p.text}{p.sub && <small> · {p.sub}</small>}</i>
@@ -118,7 +119,7 @@ function AvatarDownload({ outfit, who, body, list }: { outfit: RbxOutfit; who: s
     return status ? (
         <span className={rb("dl-status")}><span className={rb("spin")} /> {status} <button type="button" className={rb("link")} onClick={() => { stop.current = true; }}>Stop</button></span>
     ) : (
-        <button type="button" className="vc-tool-btn vc-tool-primary" title="Every item's 3D model, textures and files, plus a picture of the avatar, in one zip" onClick={run}>⬇ Download whole avatar</button>
+        <button type="button" className="vc-tool-btn vc-tool-primary" title="Every item's 3D model, textures and files, plus a picture of the avatar, in one zip" onClick={run}><SonataGlyph name="download" /> Download whole avatar</button>
     );
 }
 
@@ -133,7 +134,7 @@ export function Outfit({ userId, body, who = "Their" }: { userId: string; body?:
     }, [userId, tick]);
 
     const bodyView = body ? <div className={rb("body-wrap")}><img className={rb("body")} src={body} alt="Avatar" loading="lazy" /></div> : null;
-    if (state.error) return <div className={rb("look")}>{bodyView}<span className={rb("muted")}>👕 Couldn't get their outfit: {state.error}</span></div>;
+    if (state.error) return <div className={rb("look")}>{bodyView}<span className={rb("muted")}><SonataGlyph name="personTag" /> Couldn't get their outfit: {state.error}</span></div>;
     if (!state.outfit) return <div className={rb("look")}>{bodyView}<div className={rb("loading")}><span className={rb("spin")} /> Pricing their outfit…</div></div>;
 
     const list = tiles(state.outfit);
@@ -161,7 +162,7 @@ export function Outfit({ userId, body, who = "Their" }: { userId: string; body?:
                 </div>
             </div>
             <div className={rb("outfit")}>
-                {!list.length && <span className={rb("muted")}>👕 Wearing nothing from the catalog — just the default look.</span>}
+                {!list.length && <span className={rb("muted")}><SonataGlyph name="personTag" /> Wearing nothing from the catalog — just the default look.</span>}
                 {groups.map(g => {
                     const these = list.filter(t => groupOf(t.type === "AnimationPack" ? "Animation" : t.type === "Body" ? "Head" : t.type) === g)
                         .sort((a, b) => (priceOf(b).value ?? -1) - (priceOf(a).value ?? -1));

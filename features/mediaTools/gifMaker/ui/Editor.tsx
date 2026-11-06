@@ -31,6 +31,7 @@ import { cl } from "./controls";
 import { openRecent } from "./Gallery";
 import { CropPanel, EffectsPanel, OutputPanel, PanelProps, shapeRatio, StickersPanel, TextPanel, TimePanel, Tool } from "./panels";
 import { CropBox, TrimBar } from "./timeline";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 const logger = new Logger("GifMaker");
 
@@ -78,11 +79,20 @@ export function openEditor(inputs: MediaInput[], opts: { state?: EditState; owne
 
 /** The GIF editor on a file (a picture or video you're making a GIF from). */
 export function editorFor(props: RenderModalProps, file: File) {
-    const url = URL.createObjectURL(file);
-    return <ErrorBoundary><GifEditor modalProps={props} inputs={[{ url, isVideo: file.type.startsWith("video/"), isGif: file.type === "image/gif" }]} ownedUrls={[url]} /></ErrorBoundary>;
+    return <ErrorBoundary><GifEditorFile modalProps={props} file={file} /></ErrorBoundary>;
 }
 
-function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, startAt }: { modalProps: RenderModalProps; inputs: MediaInput[]; initial?: EditState; ownedUrls: string[]; startAt?: number; }) {
+function GifEditorFile({ modalProps, file }: { modalProps: RenderModalProps; file: File; }) {
+    const [url, setUrl] = useState("");
+    useEffect(() => {
+        const url = URL.createObjectURL(file);
+        setUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [file]);
+    return url ? <GifEditor modalProps={modalProps} inputs={[{ url, isVideo: file.type.startsWith("video/"), isGif: file.type === "image/gif" }]} /> : null;
+}
+
+export function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls = [], startAt }: { modalProps: RenderModalProps; inputs: MediaInput[]; initial?: EditState; ownedUrls?: string[]; startAt?: number; }) {
     const [src, setSrc] = useState<Source | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [s, setS] = useState<EditState>(() => initial ?? { ...structuredClone(DEFAULT_STATE), ...rememberedPrefs() });
@@ -489,7 +499,7 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
 
     return (
         <Window {...modalProps} size="xl" title="GIF Maker" subtitle="Trim, crop, caption, decorate — then send"
-            actionBarInput={<span className={cl("status", over && "status-warn")} title={over ? "Over Discord's 10 MB upload limit without Nitro" : undefined}>{over ? "⚠ " : ""}{status}</span>}
+            actionBarInput={<span className={cl("status", over && "status-warn")} title={over ? "Over Discord's 10 MB upload limit without Nitro" : undefined}>{over ? <><SonataGlyph name="warning" />{" "}</> : ""}{status}</span>}
             actions={[
                 { text: finishing === "send" ? "Making it…" : "Send", variant: "primary", onClick: () => void finish("send"), disabled: !src || !!finishing },
                 { text: finishing === "save" ? "Making it…" : "Save", variant: "secondary", onClick: () => void finish("save"), disabled: !src || !!finishing },
@@ -501,13 +511,13 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
                         <button type="button" className={cl("tb")} onClick={undo} disabled={!history.current.past.length} title="Undo (Ctrl+Z)">↶</button>
                         <button type="button" className={cl("tb")} onClick={redo} disabled={!history.current.future.length} title="Redo (Ctrl+Y)">↷</button>
                         <span className={cl("tb-sep")} />
-                        <button type="button" className={cl("tb")} onClick={() => step(-1)} title="Previous frame (←)">⏮</button>
-                        <button type="button" className={cl("tb", "tb-play")} onClick={togglePlay} title="Play / pause (Space)">{playing ? "❚❚" : "▶"}</button>
-                        <button type="button" className={cl("tb")} onClick={() => step(1)} title="Next frame (→)">⏭</button>
+                        <button type="button" className={cl("tb")} onClick={() => step(-1)} title="Previous frame (←)"><SonataGlyph name="history" /></button>
+                        <button type="button" className={cl("tb", "tb-play")} onClick={togglePlay} title="Play / pause (Space)">{playing ? "❚❚" : <SonataGlyph name="play" />}</button>
+                        <button type="button" className={cl("tb")} onClick={() => step(1)} title="Next frame (→)"><SonataGlyph name="nextTrack" /></button>
                         <span className={cl("tb-count")} ref={counter} />
                         <span className={cl("tb-grow")} />
-                        <button type="button" className={cl("tb", "tb-text")} onClick={() => setTab("output")} title="Presets">🎨 Presets</button>
-                        <button type="button" className={cl("tb", "tb-text")} onClick={() => openRecent()} title="GIFs you've made">🕘 Recent</button>
+                        <button type="button" className={cl("tb", "tb-text")} onClick={() => setTab("output")} title="Presets"><SonataGlyph name="palette" /> Presets</button>
+                        <button type="button" className={cl("tb", "tb-text")} onClick={() => openRecent()} title="GIFs you've made"><SonataGlyph name="clock" /> Recent</button>
                     </div>
                     <div className={cl("canvas-area", s.captionMode === "cutout" || s.cropShape === "circle" ? "checker" : undefined)}>
                         {loadError ? <div className={cl("message", "message-error")}>{loadError}</div>
@@ -529,7 +539,7 @@ function GifEditor({ modalProps, inputs: initialInputs, initial, ownedUrls, star
                     <div className={cl("tabs")} role="tablist">
                         {TABS.map(t => (
                             <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={cl("tab", tab === t.id && "tab-on")} onClick={() => { setTab(t.id); setTool("none"); }}>
-                                <span className={cl("tab-icon")}>{t.icon}</span>{t.label}
+                                <span className={cl("tab-icon")}><SonataGlyph name={t.icon} /></span>{t.label}
                             </button>
                         ))}
                     </div>

@@ -35,6 +35,7 @@ import { Promisable } from "type-fest";
 
 import { windowAccent } from "../../controller/accent";
 import { Window } from "../_shared/Window";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-steal-");
 
@@ -257,7 +258,7 @@ function StealModal({ data }: { data: Sticker | Emoji; }) {
             )}
 
             <div className={cl("list")}>
-                {servers.length === 0 && <div className={cl("empty")}><span className="vc-tool-empty-icon">🔒</span>You don't have permission to add {kind === "sticker" ? "stickers" : "emojis"} in any of your servers.</div>}
+                {servers.length === 0 && <div className={cl("empty")}><span className="vc-tool-empty-icon"><SonataGlyph name="lock" /></span>You don't have permission to add {kind === "sticker" ? "stickers" : "emojis"} in any of your servers.</div>}
                 {servers.length > 0 && shown.length === 0 && <div className={cl("empty")}>No servers match.</div>}
                 {shown.map(({ guild: g, used, max }) => {
                     const full = used >= max;

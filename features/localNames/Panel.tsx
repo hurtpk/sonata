@@ -11,6 +11,7 @@ import { openSection } from "../_shared/Hub";
 import { Window } from "../_shared/Window";
 import { FormGroup, FormRow } from "../_shared/WindowParts";
 import { iconFrom, Kind, setLocalIcon, setLocalName, setLocalRole, useNames } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 /** The real name, even while the local one is showing. */
 export type RealName = (kind: Kind, id: string) => string;
@@ -102,7 +103,7 @@ function RolesTab({ guildId, realRole }: { guildId: string; realRole(role: any):
                         <span className="vc-tool-hint">{count ? `${count} renamed` : "None renamed yet"}</span>
                     </div>
                 )}
-                {!roles.length ? <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🎭</span>This server's roles haven't loaded yet. Open the server once, then try again.</div> : (
+                {!roles.length ? <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="smileOutline" /></span>This server's roles haven't loaded yet. Open the server once, then try again.</div> : (
                     <FormGroup>
                         {shown.map(r => (
                             <FormRow key={r.id} label={<span className="vc-localnames-role"><i style={{ background: roleColour(r) }} />{realRole(r)}</span>}>
@@ -193,7 +194,7 @@ function AllNamesWindow({ modalProps, real, realRole }: { modalProps: RenderModa
             <div className="vc-tool-wrap">
                 {count === 0 ? (
                     <div className="vc-tool-empty">
-                        <span className="vc-tool-empty-icon">🏷️</span>
+                        <span className="vc-tool-empty-icon"><SonataGlyph name="tag" /></span>
                         Nothing changed yet. Right-click a server, channel or group chat and pick "Rename just for me", "Change icon just for me" or "Rename roles just for me".
                     </div>
                 ) : <>

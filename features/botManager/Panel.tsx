@@ -18,6 +18,7 @@ import { BuilderTab, CommandsTab, HostingTab } from "./MoreTabs";
 import { fromNumber, GROUPS, inviteUrl, PERM_PRESETS, PERMS, toNumber } from "./permissions";
 import { DEFAULT_PARTS, intentsNeeded, Lang, permsFor, slugOf, starterZip } from "./starter";
 import { Bot, botPicture, guideDone, isWatched, portalUrl, refreshBots, setGuideStep, setWatched, sharedServers, Status, statusOf, useBotState } from "./store";
+import { SonataGlyph } from "../../utilities/icons";
 
 const open = (url: string) => VencordNative.native.openExternal(url);
 const PORTAL = "https://discord.com/developers/applications";
@@ -100,7 +101,7 @@ function BotsTab({ query, onInvite, onFix, onGuide, onCommands }: { query: strin
             {error && <div className="vc-bm-error">{error}</div>}
             {busy ? <div className="vc-tool-empty">Loading your bots…</div> : (
                 <div className="vc-tool-empty">
-                    <span className="vc-tool-empty-icon">🤖</span>
+                    <span className="vc-tool-empty-icon"><SonataGlyph name="bot" /></span>
                     You haven't made a bot yet. The guide walks you through it — it takes about ten minutes.
                     <button type="button" className="vc-tool-btn vc-tool-primary" onClick={onGuide}>Start the guide</button>
                 </div>
@@ -214,7 +215,7 @@ function InviteTab({ initial, initialBits }: { initial: string | null; initialBi
                     </div>
                 </div>
                 {admin
-                    ? <div className="vc-bm-warn">⚠ Administrator gives the bot every permission in the server. Almost no bot needs it — if its token ever leaks, the whole server is at risk.</div>
+                    ? <div className="vc-bm-warn"><SonataGlyph name="warning" /> Administrator gives the bot every permission in the server. Almost no bot needs it — if its token ever leaks, the whole server is at risk.</div>
                     : risky.length > 0 && <div className="vc-bm-warn vc-bm-warn-soft">Careful with: {risky.map(p => p.name).join(", ")}. Only tick these if the bot really uses them.</div>}
                 <div className="vc-tool-row vc-bm-invite-go">
                     <button type="button" className="vc-tool-btn vc-tool-primary" disabled={!url} onClick={() => url && open(url)}>Invite to a server ↗</button>
@@ -228,7 +229,7 @@ function InviteTab({ initial, initialBits }: { initial: string | null; initialBi
                         {PERMS.filter(p => p.group === g).map(p => (
                             <label key={p.bit} className={classes("vc-bm-perm", bits.has(p.bit) && "vc-bm-perm-on", p.risky && "vc-bm-perm-risky")} title={p.what}>
                                 <input type="checkbox" checked={bits.has(p.bit)} onChange={() => toggle(p.bit)} />
-                                <span><b>{p.name}{p.risky ? " ⚠" : ""}</b><small>{p.what}</small></span>
+                                <span><b>{p.name}{p.risky ? <>{" "}<SonataGlyph name="warning" /></> : ""}</b><small>{p.what}</small></span>
                             </label>
                         ))}
                     </section>
@@ -298,15 +299,15 @@ function StarterTab({ onInvite }: { onInvite(bits: number[]): void; }) {
             </div>
             <div className="vc-bm-starter-side">
                 <div className="vc-bm-files">
-                    <b>📁 {slugOf(name)}</b>
+                    <b><SonataGlyph name="folder" /> {slugOf(name)}</b>
                     {files.map(f => <span key={f}>{f}</span>)}
                 </div>
                 {intents.length > 0 && <div className="vc-bm-warn vc-bm-warn-soft">Turn on <b>{intents.join(" and ")}</b> in the Developer Portal → Bot → Privileged Gateway Intents, or it won't start.</div>}
                 <button type="button" className="vc-tool-btn vc-tool-primary" onClick={() => {
                     saveFile(new File([starterZip(opts) as BlobPart], `${slugOf(name)}.zip`, { type: "application/zip" }));
                     showToast("Saved — unzip it, paste your token into .env, then double-click Start bot.bat", "success");
-                }}>⬇ Download the project</button>
-                <button type="button" className="vc-tool-btn" onClick={() => onInvite(permsFor(parts))}>🔗 Invite link with the right permissions</button>
+                }}><SonataGlyph name="download" /> Download the project</button>
+                <button type="button" className="vc-tool-btn" onClick={() => onInvite(permsFor(parts))}><SonataGlyph name="link" /> Invite link with the right permissions</button>
                 <span className="vc-tool-hint">Unzip it, paste your token into the .env file, then double-click Start bot.bat.</span>
             </div>
         </div>
@@ -334,7 +335,7 @@ function FixTab({ startWith }: { startWith: string | null; }) {
                     return (
                         <div key={f.id} className={classes("vc-bm-fix", isOpen && "vc-bm-fix-open")}>
                             <button type="button" className="vc-bm-fix-head" onClick={() => setOpenId(isOpen ? null : f.id)}>
-                                <span>{f.icon}</span><b>{f.problem}</b><i>{isOpen ? "−" : "+"}</i>
+                                <span><SonataGlyph name={f.icon} /></span><b>{f.problem}</b><i>{isOpen ? "−" : "+"}</i>
                             </button>
                             {isOpen && (
                                 <div className="vc-bm-fix-body">

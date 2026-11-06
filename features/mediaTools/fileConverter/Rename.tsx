@@ -15,6 +15,7 @@ import { saveFile } from "@utils/web";
 import { ChannelStore, DraftType, SelectedChannelStore, showToast, UploadHandler, useMemo, useState } from "@webpack/common";
 
 import { zipResults } from "./convert";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const fc = classNameFactory("vc-fconv-");
@@ -159,8 +160,8 @@ export function Renamer({ files }: { files: File[]; }) {
             <div className={cl("footer")}>
                 <span className={cl("hint")}>{changed ? `${changed} of ${list.length} get a new name · your files stay as they are; renamed copies are made` : "Nothing would change yet — edit the pattern above."}</span>
                 <span className={cl("spacer")} />
-                <button type="button" className={cl("btn")} disabled={!changed || list.length > 10} title={list.length > 10 ? "Discord takes up to 10 files per message" : undefined} onClick={attach}>📎 Attach to message</button>
-                <button type="button" className={classes(cl("btn"), cl("primary"))} disabled={!changed || busy} onClick={() => void zip()}>{busy ? "Zipping…" : "🗜️ Save as ZIP"}</button>
+                <button type="button" className={cl("btn")} disabled={!changed || list.length > 10} title={list.length > 10 ? "Discord takes up to 10 files per message" : undefined} onClick={attach}><SonataGlyph name="paperclip" /> Attach to message</button>
+                <button type="button" className={classes(cl("btn"), cl("primary"))} disabled={!changed || busy} onClick={() => void zip()}>{busy ? "Zipping…" : <><SonataGlyph name="fileZip" /> Save as ZIP</>}</button>
             </div>
         </div>
     );

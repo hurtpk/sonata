@@ -45,6 +45,9 @@
 
 .vc-tool-area { min-height: 90px; max-height: 32vh; overflow-y: auto; resize: vertical; }
 .vc-tool-input:focus, .vc-tool-area:focus { border-color: var(--tl-accent); }
+.sonata-glyph { display: inline-flex; flex: none; align-items: center; justify-content: center; vertical-align: -.16em; line-height: 1; }
+.sonata-glyph > svg { width: 1em; height: 1em; }
+
 .vc-tool-mono { font-family: var(--font-code, ui-monospace, Consolas, monospace); font-size: 13px; }
 
 .vc-tool-out {

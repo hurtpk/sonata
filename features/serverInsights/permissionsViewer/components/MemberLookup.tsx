@@ -28,6 +28,7 @@ import { openInsights } from "../../Insights";
 import { settings } from "..";
 import { getGuildPermissionSpecMap, getSortedRolesForMember, loadGetGuildPermissionSpecMap } from "../utils";
 import openRolesAndUsersPermissionsModal from "./RolesAndUsersPermissions";
+import { SonataGlyph } from "../../../../utilities/icons";
 
 const GuildActions = findByPropsLazy("requestMembersById", "banUser");
 const EPOCH = 1420070400000;
@@ -249,8 +250,8 @@ export function MemberLookupModal({ modalProps, initialGuildId, initialQuery }: 
                     </div>
                 )}
 
-                {error && <div className="vc-tool-empty"><span className="vc-tool-empty-icon">🔍</span>{error}</div>}
-                {busy && !found && <div className="vc-tool-empty"><span className="vc-tool-empty-icon">⏳</span>Asking Discord…</div>}
+                {error && <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="search" /></span>{error}</div>}
+                {busy && !found && <div className="vc-tool-empty"><span className="vc-tool-empty-icon"><SonataGlyph name="hourglass" /></span>Asking Discord…</div>}
 
                 {choices && (
                     <section className="vc-tool-section">
@@ -363,9 +364,9 @@ function ProfileExtras({ userId, guildId, fallbackFlags }: { userId: string; gui
                             const url = info.url?.(a);
                             return (
                                 <div key={`${a.type}:${a.id}`} className="vc-permlookup-account">
-                                    <span className="vc-permlookup-account-icon">{info.icon}</span>
+                                    <span className="vc-permlookup-account-icon"><SonataGlyph name={info.icon} /></span>
                                     <span className="vc-permlookup-account-main">
-                                        <b>{a.name}{a.verified && <span title="Verified" className="vc-permlookup-verified">✔</span>}</b>
+                                        <b>{a.name}{a.verified && <span title="Verified" className="vc-permlookup-verified"><SonataGlyph name="checkCircle" /></span>}</b>
                                         <span>{info.label}</span>
                                     </span>
                                     {url && <a className="vc-tool-icon" href={url} target="_blank" rel="noreferrer" title={`Open on ${info.label}`}>↗</a>}
@@ -431,13 +432,13 @@ function Result({ guild, found, onClose }: { guild: Guild; found: Found; onClose
                     <span>@{user.username}{user.bot ? " · BOT" : ""}</span>
                     <div className="vc-tool-chips">
                         <span className="vc-tool-badge"><i className="vc-permlookup-dot" style={{ background: STATUS[status]?.[1] }} />{STATUS[status]?.[0] ?? status}</span>
-                        {perms?.isOwner && <span className="vc-tool-badge vc-tool-badge-accent">👑 Server owner</span>}
-                        {perms?.admin && !perms.isOwner && <span className="vc-tool-badge vc-tool-badge-accent">🛡️ Administrator</span>}
+                        {perms?.isOwner && <span className="vc-tool-badge vc-tool-badge-accent"><SonataGlyph name="crown" /> Server owner</span>}
+                        {perms?.admin && !perms.isOwner && <span className="vc-tool-badge vc-tool-badge-accent"><SonataGlyph name="shield" /> Administrator</span>}
                         {!member && <span className="vc-tool-badge vc-tool-badge-bad">Not in this server</span>}
-                        {boosting > 0 && <span className="vc-tool-badge" style={{ color: "#f47fff" }}>💎 Boosting</span>}
-                        {timeout > Date.now() && <span className="vc-tool-badge vc-tool-badge-bad">⏳ Timed out</span>}
+                        {boosting > 0 && <span className="vc-tool-badge" style={{ color: "#f47fff" }}><SonataGlyph name="gem" /> Boosting</span>}
+                        {timeout > Date.now() && <span className="vc-tool-badge vc-tool-badge-bad"><SonataGlyph name="hourglass" /> Timed out</span>}
                         {member?.isPending && <span className="vc-tool-badge">Hasn't accepted the rules</span>}
-                        {joined > 0 && joined - created < 7 * 86400000 && <span className="vc-tool-badge vc-tool-badge-bad">⚠️ Account was new when they joined</span>}
+                        {joined > 0 && joined - created < 7 * 86400000 && <span className="vc-tool-badge vc-tool-badge-bad"><SonataGlyph name="warning" /> Account was new when they joined</span>}
                     </div>
                 </div>
                 <div className="vc-permlookup-actions">
@@ -490,7 +491,7 @@ function Result({ guild, found, onClose }: { guild: Guild; found: Found; onClose
                         <span className="vc-tool-label">Can they…</span>
                         <select className="vc-tool-select vc-permlookup-ch" value={channelId} onChange={e => setChannelId(e.currentTarget.value)}>
                             <option value="">Across the whole server</option>
-                            {channels.map(c => <option key={c.id} value={c.id}>{c.vocal ? "🔊 " : "# "}{c.name}{c.cat ? ` — ${c.cat}` : ""}</option>)}
+                            {channels.map(c => <option key={c.id} value={c.id}>{c.vocal ? "Voice · " : "# "}{c.name}{c.cat ? ` — ${c.cat}` : ""}</option>)}
                         </select>
                     </div>
                     <div className="vc-permlookup-keys">
@@ -500,7 +501,7 @@ function Result({ guild, found, onClose }: { guild: Guild; found: Found; onClose
                             return <span key={k} className={classes("vc-permlookup-key", r.on ? "vc-permlookup-yes" : "vc-permlookup-no")} title={r.why}>{r.on ? "✓" : "✕"} {KEY_LABEL[k]}</span>;
                         })}
                     </div>
-                    {perms.notes.map(n => <div key={n} className="vc-permlookup-note">⚠️ {n}</div>)}
+                    {perms.notes.map(n => <div key={n} className="vc-permlookup-note"><SonataGlyph name="warning" /> {n}</div>)}
 
                     <div className="vc-permlookup-filter">
                         <div className="vc-tool-seg">

@@ -6,6 +6,7 @@
 
 // Small pieces the Calculator's Money, Dates and Tools tabs are built from.
 
+import { SonataGlyph } from "../../utilities/icons";
 import { classNameFactory } from "@utils/css";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { classes } from "@utils/misc";
@@ -26,7 +27,7 @@ export const fmtN = (n: number, max = 4) => Number.isFinite(n) ? n.toLocaleStrin
 export function Card({ title, icon, children, wide }: { title: string; icon: string; children: ReactNode; wide?: boolean; }) {
     return (
         <section className={classes(cc("tool"), wide && cc("tool-wide"))}>
-            <h3 className={cc("tool-title")}><span aria-hidden>{icon}</span> {title}</h3>
+            <h3 className={cc("tool-title")}><SonataGlyph name={icon} /> {title}</h3>
             {children}
         </section>
     );

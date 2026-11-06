@@ -11,6 +11,7 @@ import type { RenderModalProps } from "@vencord/discord-types";
 import { openModal, useEffect, useState } from "@webpack/common";
 
 import { windowAccent } from "../../controller/accent";
+import { SonataGlyph } from "../../utilities/icons";
 import { ToolHero } from "../_shared/ToolHero";
 import { Window } from "../_shared/Window";
 import { clearQuotes, formatQuotes, getQuotes, moveQuote, QUOTE_BUDGET, removeQuote, subscribe } from "./basket";
@@ -57,7 +58,7 @@ function BasketModal({ modalProps, options }: { modalProps: RenderModalProps; op
                                             <button type="button" className={classes(cl("icon-btn"), cl("icon-btn-danger"))} onClick={() => removeQuote(q.id)} aria-label="Remove">✕</button>
                                         </span>
                                     </div>
-                                    <div className={cl("item-content")}>{q.content || <i>(no text)</i>}{q.attachments ? ` 📎 ${q.attachments}` : ""}</div>
+                                    <div className={cl("item-content")}>{q.content || <i>(no text)</i>}{q.attachments ? <> <SonataGlyph name="paperclip" /> {q.attachments}</> : ""}</div>
                                 </div>
                             ))}
                         </div>

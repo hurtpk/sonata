@@ -14,6 +14,7 @@ import { classes } from "@utils/misc";
 import { useEffect, useMemo, useRef, useState } from "@webpack/common";
 
 import type { MediaOptions } from "./media";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const fc = classNameFactory("vc-fconv-");
@@ -176,7 +177,7 @@ export function Trimmer({ file, media, setMedia }: { file: File; media: MediaOpt
                         <input type="range" className={fc("handle")} aria-label="End" min={0} max={duration} step={0.1} value={end} onChange={e => { const v = Number(e.currentTarget.value); set(start, v); seek(v); }} />
                     </div>
                     <div className={fc("trim-actions")}>
-                        <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={playCut}>{playingCut ? "⏸ Stop" : "▶ Play the cut"}</button>
+                        <button type="button" className={classes(cl("btn"), cl("primary"))} onClick={playCut}>{playingCut ? <><SonataGlyph name="pause" />{" Stop"}</> : <><SonataGlyph name="play" />{" Play the cut"}</>}</button>
                         <button type="button" className={cl("btn")} onClick={() => set(now, end)} title="Start where the preview is now">⇤ Start here</button>
                         <button type="button" className={cl("btn")} onClick={() => set(start, now)} title="End where the preview is now">End here ⇥</button>
                         <span className={cl("hint")}>{clock(now)}</span>

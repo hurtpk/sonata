@@ -14,13 +14,14 @@ import { openSection, registerSection } from "../../_shared/Hub";
 import { getBytes } from "../../_shared/media";
 import { Window } from "../../_shared/Window";
 import { checkLink, makeQr, qrPng, readQrImage } from "./qr";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const cl = classNameFactory("vc-qr-");
 const tl = classNameFactory("vc-tool-");
 
 function QrSvg({ text, px = 240 }: { text: string; px?: number; }) {
     const qr = useMemo(() => { try { return makeQr(text); } catch { return null; } }, [text]);
-    if (!qr) return <div className={tl("empty")}><span className={tl("empty-icon")}>📏</span>That's too much text for one QR code.</div>;
+    if (!qr) return <div className={tl("empty")}><span className={tl("empty-icon")}><SonataGlyph name="ruler" /></span>That's too much text for one QR code.</div>;
     return (
         <svg className={cl("svg")} width={px} height={px} viewBox={`0 0 ${qr.size} ${qr.size}`} shapeRendering="crispEdges" role="img" aria-label="QR code">
             <rect width={qr.size} height={qr.size} fill="#fff" />
@@ -89,18 +90,18 @@ function ScanModal({ modalProps, src }: { modalProps: RenderModalProps; src: str
     return (
         <Window {...modalProps} size="md" title="Scan QR code" subtitle="Check where it leads before opening it">
             <div className={classes(tl("wrap"), cl("wrap"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                {state.status === "loading" && <div className={tl("empty")}><span className={tl("empty-icon")}>🔍</span>Reading the image…</div>}
-                {state.status === "none" && <div className={tl("empty")}><span className={tl("empty-icon")}>🤷</span>No QR code found in this image.</div>}
-                {state.status === "error" && <div className={tl("empty")}><span className={tl("empty-icon")}>⚠️</span>Couldn't read the image: {state.error}</div>}
+                {state.status === "loading" && <div className={tl("empty")}><span className={tl("empty-icon")}><SonataGlyph name="search" /></span>Reading the image…</div>}
+                {state.status === "none" && <div className={tl("empty")}><span className={tl("empty-icon")}><SonataGlyph name="help" /></span>No QR code found in this image.</div>}
+                {state.status === "error" && <div className={tl("empty")}><span className={tl("empty-icon")}><SonataGlyph name="warning" /></span>Couldn't read the image: {state.error}</div>}
                 {state.status === "found" && (
                     <>
                         {link ? (
                             <div className={classes(cl("link"), link.warnings.length > 0 && cl("link-warn"))}>
-                                <span className={cl("link-icon")} aria-hidden>{link.warnings.length ? "⚠️" : "🔗"}</span>
+                                <span className={cl("link-icon")} aria-hidden>{link.warnings.length ? <SonataGlyph name="warning" /> : <SonataGlyph name="link" />}</span>
                                 <div className={cl("link-text")}>
                                     <span className={cl("link-kicker")}>{link.warnings.length ? "Be careful — goes to" : "Goes to"}</span>
                                     <div className={cl("link-host")}>{link.host}</div>
-                                    {link.warnings.map(w => <div key={w} className={cl("warning")}>⚠ {w}</div>)}
+                                    {link.warnings.map(w => <div key={w} className={cl("warning")}><SonataGlyph name="warning" /> {w}</div>)}
                                 </div>
                             </div>
                         ) : <span className={tl("label")}>Contains text</span>}

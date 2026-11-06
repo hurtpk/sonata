@@ -11,9 +11,9 @@
 import { classes } from "@utils/misc";
 
 import { GRADIENTS } from "../../sonata/accent";
+import { effectClasses, EffectDecorations, type EffectId, normalizeEffects } from "../_shared/NameEffects";
 
 export type FillMode = "solid" | "gradient";
-export type EffectId = "sparkles" | "shine" | "glow" | "flow" | "underline";
 
 export interface CategoryStyle {
     mode: FillMode;
@@ -36,21 +36,13 @@ export const GRADIENT_CHOICES: GradientChoice[] = [
     { id: "rainbow", name: "Rainbow", colors: ["#f87171", "#fbbf24", "#4ade80", "#38bdf8", "#c084fc"] },
 ];
 
-export const EFFECTS: { id: EffectId; name: string; emoji: string; blurb: string; gradientOnly?: boolean; }[] = [
-    { id: "sparkles", name: "Sparkles", emoji: "✨", blurb: "Little stars twinkle around the name" },
-    { id: "shine", name: "Shine", emoji: "💫", blurb: "A soft light sweeps across the letters" },
-    { id: "glow", name: "Glow", emoji: "🌟", blurb: "A gentle halo in the name's colours" },
-    { id: "flow", name: "Flow", emoji: "🌊", blurb: "The gradient drifts slowly through the text", gradientOnly: true },
-    { id: "underline", name: "Underline", emoji: "〰️", blurb: "A fading line in the same colours" },
-];
-
 export const DEFAULT_STYLE: CategoryStyle = { mode: "solid", gradient: "aurora", a: "#22d3ee", b: "#8b5cf6", angle: 90, effects: [] };
 
 export const hexOf = (color: number) => `#${(color >>> 0 & 0xffffff).toString(16).padStart(6, "0")}`;
 export const numOf = (hex: string) => parseInt(hex.replace("#", ""), 16) || 0;
 
 export function normalizeStyle(style: Partial<CategoryStyle> | undefined): CategoryStyle {
-    return { ...DEFAULT_STYLE, ...style, effects: [...(style?.effects ?? [])] };
+    return { ...DEFAULT_STYLE, ...style, effects: normalizeEffects(style?.effects) };
 }
 
 /** The name's colours, first to last. */
@@ -63,10 +55,10 @@ export function colorsOf(style: CategoryStyle, color: number): string[] {
 export function StyledName({ name, color, style: raw, className }: { name: string; color: number; style?: Partial<CategoryStyle>; className?: string; }) {
     const style = normalizeStyle(raw);
     const colors = colorsOf(style, color);
-    const has = (e: EffectId) => style.effects.includes(e) && !(e === "flow" && style.mode === "solid");
+    const flowing = style.mode === "gradient" && style.effects.includes("flow");
     const fill = colors.length === 1
         ? `linear-gradient(${colors[0]}, ${colors[0]})`
-        : has("flow")
+        : flowing
             // Mirrored, so the flowing loop is seamless.
             ? `linear-gradient(90deg, ${[...colors, ...colors.slice(0, -1).reverse()].join(", ")})`
             : `linear-gradient(${style.angle}deg, ${colors.join(", ")})`;
@@ -74,20 +66,18 @@ export function StyledName({ name, color, style: raw, className }: { name: strin
     const vars = {
         "--pd-fill": fill,
         "--pd-a": colors[0],
+        "--namefx-a": colors[0],
         "--pd-b": colors[colors.length - 1],
+        "--namefx-b": colors[colors.length - 1],
     } as React.CSSProperties;
 
     return (
         <span
-            className={classes("vc-pindms-name", ...style.effects.filter(has).map(e => `vc-pindms-fx-${e}`), className)}
+            className={classes("vc-pindms-name", ...effectClasses(style.effects, style.mode === "gradient"), className)}
             style={vars}
         >
             <span className="vc-pindms-name-text" data-text={name}>{name}</span>
-            {has("sparkles") && (
-                <span className="vc-pindms-sparkles" aria-hidden>
-                    <i>✦</i><i>✧</i><i>✦</i><i>⋆</i>
-                </span>
-            )}
+            {style.effects.length > 0 && <EffectDecorations effects={style.effects} />}
         </span>
     );
 }

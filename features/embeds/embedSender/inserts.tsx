@@ -17,6 +17,7 @@ import { ALL_CHARS, CATEGORIES } from "../../textStyles/charactersPicker/chars";
 import { openColoredText } from "../../textStyles/coloredText/Panel";
 import { DividerChips } from "./builders";
 import { FILL_INS } from "./extras";
+import { SonataGlyph, SonataLabel } from "../../../utilities/icons";
 
 type Panel = "fill" | "roles" | "channels" | "people" | "time" | "emoji" | "chars" | null;
 
@@ -145,14 +146,14 @@ export function RichText({ value, onChange, maxLength, minRows = 3, placeholder,
             <div className="vc-es2-fmt" role="toolbar" aria-label="Formatting">
                 {tools.map(([label, title, run, cls], i) => label === "|"
                     ? <span key={i} className="vc-es2-fmt-gap" />
-                    : <button key={i} type="button" className={"vc-es2-fmt-btn " + (cls ?? "")} title={title} onMouseDown={e => e.preventDefault()} onClick={run}>{label}</button>)}
+                    : <button key={i} type="button" className={"vc-es2-fmt-btn " + (cls ?? "")} title={title} onMouseDown={e => e.preventDefault()} onClick={run}><SonataLabel label={label} /></button>)}
             </div>
             {bulletsOpen && (
                 <div className="vc-es2-bullets" role="toolbar" aria-label="Bullet styles">
                     <span className="vc-tool-hint">Pick lines, then a style:</span>
                     {BULLETS.map(([label, mark]) => (
                         <button key={label} type="button" className="vc-es2-bullet" onMouseDown={e => e.preventDefault()}
-                            onClick={() => prefix(typeof mark === "string" ? `${mark} ` : i => `${mark(i)} `, ANY_BULLET)}>{label}</button>
+                            onClick={() => prefix(typeof mark === "string" ? `${mark} ` : i => `${mark(i)} `, ANY_BULLET)}><SonataLabel label={label} /></button>
                     ))}
                 </div>
             )}
@@ -165,7 +166,7 @@ export function RichText({ value, onChange, maxLength, minRows = 3, placeholder,
                 }} />
             <div className="vc-es2-insert-tabs">
                 {tabs.map(([p, label]) => (
-                    <button key={p} type="button" className={"vc-es2-insert-tab" + (panel === p ? " vc-es2-insert-tab-on" : "")} onClick={() => toggle(p)} aria-expanded={panel === p}>{label}</button>
+                    <button key={p} type="button" className={"vc-es2-insert-tab" + (panel === p ? " vc-es2-insert-tab-on" : "")} onClick={() => toggle(p)} aria-expanded={panel === p}><SonataLabel label={label} /></button>
                 ))}
             </div>
             {panel && (
@@ -258,7 +259,7 @@ function ChannelPanel({ guildId, onPick }: { guildId: string | null; onPick(t: s
                         <b>Discord pages</b>
                         <div className="vc-es2-insert-chips">
                             {[["<id:customize>", "Channels & Roles"], ["<id:browse>", "Browse Channels"], ["<id:guide>", "Server Guide"], ["<id:linked-roles>", "Linked Roles"]].map(([t, n]) => (
-                                <button key={t} type="button" className="vc-es2-chan" onClick={() => onPick(t)}>✨ {n}</button>
+                                <button key={t} type="button" className="vc-es2-chan" onClick={() => onPick(t)}><SonataGlyph name="sparkles" /> {n}</button>
                             ))}
                         </div>
                     </div>
@@ -354,7 +355,7 @@ function TimePanel({ onPick }: { onPick(t: string): void; }) {
                 <input type="datetime-local" className="vc-tool-input vc-es2-insert-date" value={when} onChange={e => setWhen(e.target.value)} />
             </div>
             <div className="vc-es2-insert-chips">
-                {quick.map(([label, make]) => <button key={label} type="button" className="vc-tool-chip" onClick={() => setWhen(localInput(make()))}>{label}</button>)}
+                {quick.map(([label, make]) => <button key={label} type="button" className="vc-tool-chip" onClick={() => setWhen(localInput(make()))}><SonataLabel label={label} /></button>)}
             </div>
             {ok && (
                 <div className="vc-es2-time-list">

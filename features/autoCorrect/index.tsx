@@ -166,7 +166,7 @@ function correct(msg: { content: string; }) {
     });
     if (!changes || text === msg.content) return;
     msg.content = text;
-    if (s.toast) showToast(`Fixed ${changes} word${changes === 1 ? "" : "s"} ✏️`, "success");
+    if (s.toast) showToast(`Fixed ${changes} word${changes === 1 ? "" : "s"}`, "success");
 }
 
 export default definePlugin({

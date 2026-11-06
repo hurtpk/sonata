@@ -8,6 +8,7 @@
 // colours picked from a server icon, and sending later (once or repeating).
 
 import { ChannelStore, GuildMemberCountStore, GuildStore, React, SelectedChannelStore, useEffect, UserStore,useState } from "@webpack/common";
+import { SonataGlyph } from "../../../utilities/icons";
 
 /* ── Which server and channel a webhook posts in ───────────────────── */
 
@@ -124,7 +125,7 @@ export function SavedWebhooks({ raw, write, current, onPick }: { raw: string; wr
         <div className="vc-embedsender-hooks">
             {list.map(h => (
                 <span key={h.url} className={"vc-tool-chip vc-embedsender-hook" + (h.url.trim() === current.trim() ? " vc-tool-chip-on" : "")}>
-                    <button type="button" onClick={() => onPick(h.url, h.name)} title={h.url.replace(/\/[\w-]+$/, "/…")}>🔗 {h.name}</button>
+                    <button type="button" onClick={() => onPick(h.url, h.name)} title={h.url.replace(/\/[\w-]+$/, "/…")}><SonataGlyph name="link" /> {h.name}</button>
                     <button type="button" className="vc-embedsender-hook-x" title="Forget this webhook" onClick={() => store(list.filter(x => x !== h))}>✕</button>
                 </span>
             ))}
@@ -292,7 +293,7 @@ export function ScheduleBox({ raw, write, makeItem, onDone, toast, sendNow }: {
                 <div className="vc-tool-seg">
                     {(["once", "daily", "weekly"] as Repeat[]).map(r => <button key={r} type="button" className={"vc-tool-seg-btn" + (repeat === r ? " vc-tool-seg-on" : "")} onClick={() => setRepeat(r)}>{r === "once" ? "Once" : r === "daily" ? "Every day" : "Every week"}</button>)}
                 </div>
-                <button type="button" className="vc-tool-btn vc-tool-primary" onClick={add}>⏰ Schedule</button>
+                <button type="button" className="vc-tool-btn vc-tool-primary" onClick={add}><SonataGlyph name="alarm" /> Schedule</button>
             </div>
             <span className="vc-tool-hint">Discord needs to be open at that time. If it was closed, it sends when you next open it (repeats skip ahead instead). Fill-ins are filled in when it sends. Files aren't included.</span>
 
@@ -300,7 +301,7 @@ export function ScheduleBox({ raw, write, makeItem, onDone, toast, sendNow }: {
                 <div className="vc-tool-list">
                     {list.map(s => (
                         <div key={s.id} className="vc-tool-item">
-                            <span className="vc-embedsender-sched-icon">{s.repeat === "once" ? "⏰" : "🔁"}</span>
+                            <span className="vc-embedsender-sched-icon">{s.repeat === "once" ? <SonataGlyph name="alarm" /> : <SonataGlyph name="repeat" />}</span>
                             <div className="vc-tool-item-main">
                                 <span className="vc-tool-item-title">{s.label}</span>
                                 <span className="vc-tool-item-sub">{new Date(s.at).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}{s.repeat !== "once" ? ` · every ${s.repeat === "daily" ? "day" : "week"}` : ""}{s.lastError ? ` · last try failed: ${s.lastError}` : ""}</span>

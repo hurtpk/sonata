@@ -29,6 +29,7 @@ import { addImport, ExportItem, ImportedCalendar, removeImport, updateImport, us
 import { byDay, CalendarItem, dayKey, Kind, monthGrid, sameDay, weekdayNames } from "./month";
 import { addReminder, removeReminder, useReminders } from "./reminders";
 import { itemsBetween, SourceOptions } from "./sources";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-cal-");
 
@@ -68,7 +69,7 @@ function ItemRow({ it, close }: { it: CalendarItem; close(): void; }) {
 
     return (
         <div className={classes(cl("item"), cl(`item-${it.kind}`), past && cl("item-past"))} style={it.ref?.color ? ({ "--k": it.ref.color } as React.CSSProperties) : undefined} title={it.ref?.description}>
-            <span className={cl("item-icon")}>{meta.icon}</span>
+            <span className={cl("item-icon")}><SonataGlyph name={meta.icon} /></span>
             <div className={cl("item-text")}>
                 <div className={cl("item-title")}>
                     {it.title}
@@ -183,9 +184,9 @@ function Calendars() {
     return (
         <div className={cl("cals")}>
             <div className={cl("cals-bar")}>
-                <button type="button" className={cl("mini")} onClick={fromFile}>⬆ Import .ics file</button>
-                <button type="button" className={cl("mini")} onClick={() => setOpen(o => !o)}>🔗 From a link</button>
-                <button type="button" className={cl("mini")} onClick={exportAll} title="Birthdays, reminders, scheduled messages and server events, for any calendar app">⬇ Export</button>
+                <button type="button" className={cl("mini")} onClick={fromFile}><SonataGlyph name="upload" /> Import .ics file</button>
+                <button type="button" className={cl("mini")} onClick={() => setOpen(o => !o)}><SonataGlyph name="link" /> From a link</button>
+                <button type="button" className={cl("mini")} onClick={exportAll} title="Birthdays, reminders, scheduled messages and server events, for any calendar app"><SonataGlyph name="download" /> Export</button>
             </div>
             {open && (
                 <div className={cl("add")}>
@@ -333,7 +334,7 @@ function CalendarModal({ modalProps, weekStart, sources, setSource }: {
                         )}
                         <div className={cl("items")}>
                             {selectedItems.length === 0
-                                ? <div className={cl("empty")}><span className={cl("empty-icon")}>🌤️</span>Nothing on this day.</div>
+                                ? <div className={cl("empty")}><span className={cl("empty-icon")}><SonataGlyph name="cloudSun" /></span>Nothing on this day.</div>
                                 : selectedItems.map(it => <ItemRow key={it.id} it={it} close={modalProps.onClose} />)}
                         </div>
                         {dayKey(selected) >= dayKey(today) && <AddReminder day={selected} />}

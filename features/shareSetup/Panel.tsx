@@ -16,6 +16,7 @@ import { windowAccent } from "../../controller/accent";
 import { Window } from "../_shared/Window";
 import { SetupCard } from "./Card";
 import { collect, decode, describe, encode, Part, Setup, summaryLine } from "./setup";
+import { SonataGlyph } from "../../utilities/icons";
 
 const cl = classNameFactory("vc-tool-");
 const ss = classNameFactory("vc-sset-");
@@ -64,7 +65,7 @@ function ShareModal({ modalProps }: { modalProps: RenderModalProps; }) {
     const send = () => {
         if (!channelId) return showToast("Open a chat first", "failure");
         sendMessage(channelId, { content: text });
-        showToast("Setup shared 🎁", "success");
+        showToast("Setup shared", "success");
         modalProps.onClose();
     };
 
@@ -81,7 +82,7 @@ function ShareModal({ modalProps }: { modalProps: RenderModalProps; }) {
                             {PARTS.map(p => (
                                 <label key={p.id} className={classes(ss("part"), parts.includes(p.id) && ss("part-on"))}>
                                     <input type="checkbox" checked={parts.includes(p.id)} onChange={e => { const on = e.currentTarget.checked; setParts(c => on ? [...c, p.id] : c.filter(x => x !== p.id)); }} />
-                                    <span className={ss("part-emoji")}>{p.emoji}</span>
+                                    <span className={ss("part-emoji")}><SonataGlyph name={p.emoji} /></span>
                                     <span className={ss("part-text")}>
                                         <span className={ss("part-name")}>{p.name}</span>
                                         <span className={ss("sub")}>{p.id === "look" ? [d.look, d.accent].filter(Boolean).join(" · ") : p.id === "dock" ? d.dock : d.features}</span>

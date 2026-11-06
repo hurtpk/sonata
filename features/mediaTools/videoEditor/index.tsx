@@ -19,7 +19,8 @@ import { Menu, showToast } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../../featureSettings";
 import { getBytes } from "../../_shared/media";
-import { openVideoEditor } from "./Editor";
+import { openSection, registerSection } from "../../_shared/Hub";
+import { lazyWindow } from "../../_shared/Window";
 
 const settings = defineFeatureSettings("videoEditor", {
     openOnDrop: {
@@ -29,7 +30,16 @@ const settings = defineFeatureSettings("videoEditor", {
     },
 });
 
-const isVideo = (f: File) => f.type.startsWith("video/") || /.(mp4|webm|mov|m4v|mkv|avi)$/i.test(f.name);
+const isVideo = (f: File) => f.type.startsWith("video/") || /\.(mp4|webm|mov|m4v|mkv|avi)$/i.test(f.name);
+const VideoEditor = lazyWindow("Video Editor", () => import("./Editor").then(m => m.VideoEditor));
+registerSection("mediaTools", {
+    id: "videoEditor", feature: "videoEditor", name: "Video Editor", sub: "Trim, cut, captions, music",
+    render: (props, input) => <VideoEditor modalProps={props} initial={input?.file && isVideo(input.file) ? [input.file] : []} />,
+});
+
+function openVideoEditor(files: File[] = []) {
+    openSection("mediaTools", "videoEditor", files.length ? props => <VideoEditor modalProps={props} initial={files} /> : undefined);
+}
 const SYNTHETIC = Symbol("vc-vedit-drop");
 
 /** A video dropped into Discord: into the editor instead of the upload box. */

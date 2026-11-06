@@ -11,6 +11,8 @@
 import { classes } from "@utils/misc";
 import type { ReactNode } from "react";
 
+import { SonataLabel } from "../../utilities/icons";
+
 /* ── List + details ── */
 
 /** A list on the left and the picked item's details on the right. Put it in a `flush` Window. */
@@ -117,7 +119,7 @@ export function Choice<T extends string | number | boolean>({ value, options, on
     return (
         <div className="vc-sw-choice" role="radiogroup">
             {options.map(([id, label]) => (
-                <button key={String(id)} type="button" role="radio" aria-checked={value === id} className={classes(value === id && "vc-sw-choice-on")} onClick={() => onChange(id)}>{label}</button>
+                <button key={String(id)} type="button" role="radio" aria-checked={value === id} className={classes(value === id && "vc-sw-choice-on")} onClick={() => onChange(id)}>{typeof label === "string" ? <SonataLabel label={label} /> : label}</button>
             ))}
         </div>
     );

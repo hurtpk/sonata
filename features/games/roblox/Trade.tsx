@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "@webpack/common";
 
 import { fetchLimiteds, fetchPlayerHistory, fetchRef, fetchThumbs, RbxLimited, short } from "./data";
 import { getMe } from "./me";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 const MAX_ITEMS = 4;
@@ -101,7 +102,7 @@ function Inventory({ all, side, onPick, full }: { all: Map<string, RbxLimited>; 
                         const i = all.get(o.id)!;
                         return (
                             <button key={o.id} type="button" className={rb("tr-inv-item")} disabled={full} title={`${i.name} — ${rbx(worth(i))}${o.copies > 1 ? ` · they have ${o.copies}` : ""}`} onClick={() => onPick(o.id)}>
-                                {thumbs[o.id] ? <img src={thumbs[o.id]} alt="" loading="lazy" /> : <span className={rb("img-none")}>💎</span>}
+                                {thumbs[o.id] ? <img src={thumbs[o.id]} alt="" loading="lazy" /> : <span className={rb("img-none")}><SonataGlyph name="gem" /></span>}
                                 <small>{i.acronym || i.name}</small>
                                 <b>{short(worth(i))}</b>
                                 {o.copies > 1 && <i>×{o.copies}</i>}
@@ -132,7 +133,7 @@ function SideBox({ id, label, side, all, thumbs, set }: { id: SideId; label: str
             <div className={rb("tr-items")}>
                 {items.map((i, n) => (
                     <div key={`${i.id}-${n}`} className={rb("tr-item")}>
-                        {thumbs[i.id] ? <img src={thumbs[i.id]} alt="" /> : <span className={rb("img-none")}>💎</span>}
+                        {thumbs[i.id] ? <img src={thumbs[i.id]} alt="" /> : <span className={rb("img-none")}><SonataGlyph name="gem" /></span>}
                         <div className={rb("tr-item-main")}>
                             <b>{i.name}{i.acronym && <small> · {i.acronym}</small>}</b>
                             <span>Value <b>{i.value != null ? rbx(i.value) : "—"}</b> · RAP {rbx(i.rap)}</span>
@@ -210,7 +211,7 @@ export function Trade() {
                     {ready && <button type="button" className="vc-tool-btn" onClick={() => setSides(blank())}>Clear</button>}
                 </div>
             </div>
-            {warnings.length > 0 && <div className={rb("tr-warnings")}>{warnings.map(w => <span key={w}>⚠️ {w}</span>)}</div>}
+            {warnings.length > 0 && <div className={rb("tr-warnings")}>{warnings.map(w => <span key={w}><SonataGlyph name="warning" /> {w}</span>)}</div>}
             <div className={rb("tr-sides")}>
                 <SideBox id="give" label="You give" side={sides.give} all={all} thumbs={thumbs} set={set("give")} />
                 <SideBox id="get" label="You get" side={sides.get} all={all} thumbs={thumbs} set={set("get")} />

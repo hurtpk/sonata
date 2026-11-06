@@ -11,6 +11,7 @@ import { classes } from "@utils/misc";
 import { useEffect, useMemo, useState } from "@webpack/common";
 
 import { cardActions, fetchUserGroups, RbxMembership, short } from "./data";
+import { SonataGlyph } from "../../../utilities/icons";
 
 const rb = classNameFactory("vc-rbx-");
 type Sort = "rank" | "members" | "name";
@@ -32,10 +33,10 @@ export function UserGroups({ userId }: { userId: string; }) {
             .sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "members" ? b.members - a.members : (Number(b.primary) - Number(a.primary)) || b.rank - a.rank || b.members - a.members);
     }, [state.groups, sort, q]);
 
-    if (state.error) return <span className={rb("muted")}>👥 Couldn't get their groups: {state.error}</span>;
+    if (state.error) return <span className={rb("muted")}><SonataGlyph name="people" /> Couldn't get their groups: {state.error}</span>;
     if (!state.groups) return <div className={rb("loading")}><span className={rb("spin")} /> Finding their groups…</div>;
     const { groups } = state;
-    if (!groups.length) return <span className={rb("muted")}>👥 Not in any groups (or they've hidden them).</span>;
+    if (!groups.length) return <span className={rb("muted")}><SonataGlyph name="people" /> Not in any groups (or they've hidden them).</span>;
     const owns = groups.filter(g => g.rank === 255).length;
 
     return (
@@ -53,13 +54,13 @@ export function UserGroups({ userId }: { userId: string; }) {
             <div className={rb("owned-list")}>
                 {list.map(g => (
                     <button key={g.id} type="button" className={classes(rb("owned-row"), rb("ugroup"))} title="Open this group" onClick={() => cardActions.lookup(`https://www.roblox.com/communities/${g.id}`)}>
-                        {g.icon ? <img src={g.icon} alt="" loading="lazy" /> : <span className={rb("img-none")}>👥</span>}
+                        {g.icon ? <img src={g.icon} alt="" loading="lazy" /> : <span className={rb("img-none")}><SonataGlyph name="people" /></span>}
                         <div className={rb("owned-main")}>
-                            <b>{g.name}{g.verified && <span className={rb("tick")}>✔</span>}</b>
+                            <b>{g.name}{g.verified && <span className={rb("tick")}><SonataGlyph name="checkCircle" /></span>}</b>
                             <span>{short(g.members)} member{g.members === 1 ? "" : "s"}</span>
                         </div>
                         <div className={rb("ugroup-role")}>
-                            {g.rank === 255 && <span className={classes(rb("badge-mini"), rb("badge-owner"))}>👑 Owner</span>}
+                            {g.rank === 255 && <span className={classes(rb("badge-mini"), rb("badge-owner"))}><SonataGlyph name="crown" /> Owner</span>}
                             {g.primary && <span className={classes(rb("badge-mini"), rb("badge-primary"))}>★ Main group</span>}
                             <b>{g.role || "Member"}</b>
                             <small>rank {g.rank}</small>
