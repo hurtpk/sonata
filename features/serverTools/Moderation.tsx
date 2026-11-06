@@ -17,11 +17,12 @@ const TOOLS = [
     { id: "memberLogs", name: "Member Logs" },
     { id: "activeTimeouts", name: "Timeouts" },
     { id: "autoModRegex", name: "AutoMod Regex" },
+    { id: "serverWordPurge", name: "Word Purge" },
 ] as const;
 type ToolId = typeof TOOLS[number]["id"];
 type RenderTool = (props: RenderModalProps) => ReactNode;
 const renderers = new Map<ToolId, RenderTool>();
-const KEYS = ["plugins.Sonata.on_memberLogs", "plugins.Sonata.on_activeTimeouts", "plugins.Sonata.on_autoModRegex"] satisfies Parameters<typeof useSettings>[0];
+const KEYS = ["plugins.Sonata.on_memberLogs", "plugins.Sonata.on_activeTimeouts", "plugins.Sonata.on_autoModRegex", "plugins.Sonata.on_serverWordPurge"] satisfies Parameters<typeof useSettings>[0];
 let last: ToolId = "memberLogs";
 
 export const registerModerationPart = (id: ToolId, render: RenderTool) => renderers.set(id, render);

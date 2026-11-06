@@ -385,7 +385,7 @@ function readHeader(headers: any, name: string): string | undefined {
 }
 
 /** Gap that spreads the requests left in Discord's current window evenly across it (0 if unknown). */
-function headerSpacing(headers: any): number {
+export function headerSpacing(headers: any): number {
     const remaining = Number(readHeader(headers, "x-ratelimit-remaining"));
     const resetAfter = Number(readHeader(headers, "x-ratelimit-reset-after"));
     if (!Number.isFinite(remaining) || !Number.isFinite(resetAfter) || resetAfter <= 0) return 0;
@@ -393,7 +393,7 @@ function headerSpacing(headers: any): number {
     return Math.ceil((resetAfter * 1000) / remaining * 1.05);
 }
 
-function retryAfterMs(err: any): number {
+export function retryAfterMs(err: any): number {
     const fromBody = Number(err?.body?.retry_after);
     const fromHeader = Number(readHeader(err?.headers, "retry-after"));
     const secs = Math.max(Number.isFinite(fromBody) ? fromBody : 0, Number.isFinite(fromHeader) ? fromHeader : 0);

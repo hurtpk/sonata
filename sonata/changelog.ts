@@ -19,6 +19,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.11.06",
+        date: "November 6, 2026",
+        title: "Word Purge for server moderation",
+        items: [
+            { icon: "🧹", text: "Word Purge in Server Tools lets staff queue words and channels, preview matching messages, and follow deletion progress even after closing the panel." },
+        ],
+    },
+    {
         version: "2026.11.05",
         date: "November 5, 2026",
         title: "Simpler features and better file previews",

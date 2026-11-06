@@ -101,6 +101,7 @@ import screenshotStyler from "./features/mediaTools/screenshotStyler";
 import videoEditor from "./features/mediaTools/videoEditor";
 import memberLogs from "./features/memberLogs";
 import messageCleanerUtil from "./features/messageCleanerUtil";
+import serverWordPurge from "./features/serverWordPurge";
 import messageLogger from "./features/messageLogger/messageLogger";
 import messageLoggerEnhanced from "./features/messageLogger/messageLoggerEnhanced";
 import messagePreview from "./features/messagePreview";
@@ -320,7 +321,7 @@ type Feature = Record<string, any> & { name: string; description: string; patche
 
 /** Feature key (its folder name) -> the original plugin object. */
 const FEATURES: Record<string, Feature> = {
-    activeTimeouts, memberLogs, timezones,
+    activeTimeouts, memberLogs, serverWordPurge, timezones,
     anonymiseFileNames, callTimer, crashHandler, disableCallIdle, forceOwnerCrown,
     imageFilename, imageLink, imageZoom, messageLogger, messageLoggerEnhanced, mutualGroupDMs,
     noUnblockToJump, onePingPerDM, permissionsViewer, pinDms, readAllNotificationsButton,
