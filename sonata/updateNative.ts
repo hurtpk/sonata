@@ -132,7 +132,8 @@ async function doUpdate(eq: string) {
             // An older set of the fixes is in there: put those files back, then add the new set.
             const files = [...readFileSync(patch, "utf8").matchAll(/^diff --git a\/(\S+)/gm)].map(m => m[1]);
             for (const f of files) await run("git", ["-C", eq, "checkout", "--quiet", "HEAD", "--", f], eq, 30_000);
-            await run("git", ["-C", eq, "apply", "--whitespace=nowarn", patch], eq, 30_000);
+            const applied = await run("git", ["-C", eq, "apply", "--whitespace=nowarn", patch], eq, 30_000);
+            if (applied.code !== 0) return fail("Couldn't apply the Equicord compatibility fixes. Run Install Sonata.bat and choose Repair.", applied.out);
         }
     }
 

@@ -19,6 +19,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.11.07",
+        date: "November 7, 2026",
+        title: "Discord compatibility fixes",
+        items: [
+            { icon: "wrench", text: "Fixed Command Shortcuts and One Ping Per DM for the latest Discord build. The installer and updater now include the Equicord startup fixes that were missing from distributed installs." },
+        ],
+    },
+    {
         version: "2026.11.06c",
         date: "November 6, 2026",
         title: "Sonata’s new look and performance improvements",

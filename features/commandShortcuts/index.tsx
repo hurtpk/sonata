@@ -167,12 +167,12 @@ export default definePlugin({
         // Discord's command sender (what runs when you press Enter on a slash command).
         find: "executeCommand.stageAttachments",
         replacement: {
-            match: /(async function (\i)\(\i\)\{)(let\{command:\i,optionValues:\i,context:\i,commandTargetId:)/,
-            replace: "$self.setRunner($2);$1$self.used(arguments[0]);$3",
+            match: /(async function(?: \i)?\((\i)\)\{)(let\{command:\i,optionValues:\i,context:\i,commandTargetId:[\s\S]+?\})(?=,\i:async function\([^)]*\)\{if\(\i\.isCommandType\(\))/,
+            replace: "$self.setRunner($1$self.used($2);$3)",
         },
     }],
 
-    setRunner(fn: (e: any) => Promise<void>) { runner = fn; },
+    setRunner(fn: (e: any) => Promise<void>) { return runner = fn; },
 
     /** Notes each bot command you run (with what you filled in), so it can be saved as a shortcut. */
     used(e: any) {

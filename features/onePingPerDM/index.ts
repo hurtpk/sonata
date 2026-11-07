@@ -62,7 +62,7 @@ export default definePlugin({
                     replace: "$&if(!$self.isPrivateChannelRead(arguments[0]?.message))return;else if($self.playSound())return $1;else "
                 },
                 {
-                    match: /sound:(\i\?(\i):void 0,volume:\i,onClick)/,
+                    match: /sound:(\i\?(\i):void 0)(?=,volume:(?:\i|\d*\.\d+),onClick)/,
                     replace: "sound:!$self.isPrivateChannelRead(arguments[0]?.message)?undefined:$self.playSound()?$2:$1"
                 }
             ]
@@ -71,7 +71,8 @@ export default definePlugin({
     playSound() {
         return settings.store.alwaysPlaySound;
     },
-    isPrivateChannelRead(message: MessageJSON) {
+    isPrivateChannelRead(message: MessageJSON | undefined) {
+        if (!message) return true;
         const ignoreList = settings.store.ignoreUsers.split(", ").filter(Boolean);
         if (ignoreList.includes(message.author.id)) return true;
         const channelType = ChannelStore.getChannel(message.channel_id)?.type;

@@ -15,10 +15,11 @@ const ts = require("typescript");
 const source = readFileSync(path.join(__dirname, "../sonata/updateNative.ts"), "utf8");
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 
-async function update({ installFails = false, buildFails = false, dependenciesExist = true, windows = false } = {}) {
+async function update({ installFails = false, buildFails = false, dependenciesExist = true, windows = false, patchFails = false } = {}) {
     const root = path.resolve("/sonata-updater-fixture"), sonata = path.join(root, "src/userplugins/sonata"), calls = [];
     const files = new Set([path.join(root, "package.json"), path.join(sonata, "index.tsx"), path.join(sonata, ".git"), path.join(sonata, "package.json")]);
     if (dependenciesExist) files.add(path.join(root, "node_modules"));
+    if (patchFails) files.add(path.join(sonata, "equicord-fixes.patch"));
     const processMock = { platform: windows ? "win32" : "linux", env: { PATH: "test-path", LOCALAPPDATA: path.resolve("/sonata-test-local") } };
     const spawn = (command, args, options) => {
         if (typeof args === "object" && !Array.isArray(args)) { options = args; args = []; }
@@ -30,7 +31,7 @@ async function update({ installFails = false, buildFails = false, dependenciesEx
             if (line.includes("rev-parse")) child.stdout.emit("data", Buffer.from("same-pin\n"));
             const install = command === "pnpm" ? args[0] === "install" && !args.includes("--dir") : line.startsWith("pnpm install ") && !line.includes("--dir");
             const build = line === "pnpm build";
-            const failed = (install && installFails) || (build && buildFails);
+            const failed = (install && installFails) || (build && buildFails) || (patchFails && args.includes("apply"));
             if (failed) child.stderr.emit("data", Buffer.from(install ? "Dependency install failed" : "Compile failed"));
             child.emit("close", failed ? 1 : 0);
         });
@@ -38,7 +39,7 @@ async function update({ installFails = false, buildFails = false, dependenciesEx
     };
     const imports = {
         child_process: { spawn }, electron: { shell: {} }, path,
-        fs: { existsSync: file => files.has(file), readFileSync: file => file.endsWith("equicord-version.txt") ? "same-pin" : 'version: "2026.10.28"' },
+        fs: { existsSync: file => files.has(file), readFileSync: file => file.endsWith("equicord-fixes.patch") ? "diff --git a/src/webpack/patchWebpack.ts b/src/webpack/patchWebpack.ts\n" : file.endsWith("equicord-version.txt") ? "same-pin" : 'version: "2026.10.28"' },
     };
     const module = { exports: {} };
     vm.runInNewContext(compiled, { exports: module.exports, require: name => { assert(name in imports, name); return imports[name]; }, __dirname: path.join(root, "dist/desktop"), process: processMock, Buffer, setTimeout, clearTimeout });
@@ -79,4 +80,12 @@ test("Missing dependencies are installed, and Windows keeps its hidden shell lau
     assert.equal(job.step, "done");
     const install = calls.find(call => call.line === "pnpm install --no-frozen-lockfile --fix-lockfile");
     assert(install); assert.equal(install.options.shell, true); assert.equal(install.options.windowsHide, true);
+});
+
+test("Missing compatibility fixes stop the updater before dependencies or build", async () => {
+    const { job, calls } = await update({ patchFails: true });
+    assert.equal(job.step, "error");
+    assert.equal(job.failedStep, "equicord");
+    assert.match(job.error, /compatibility fixes/);
+    assert(!calls.some(call => call.command === "pnpm"));
 });

@@ -1,3 +1,29 @@
+diff --git a/src/equicordplugins/equicordHelper/index.tsx b/src/equicordplugins/equicordHelper/index.tsx
+index 6361de8c1..7b8c1e846 100644
+--- a/src/equicordplugins/equicordHelper/index.tsx
++++ b/src/equicordplugins/equicordHelper/index.tsx
+@@ -197,8 +197,8 @@ export default definePlugin({
+         {
+             find: "discarding speculative database",
+             replacement: {
+-                match: /await \i\(\i\)(?=;.{0,15}this\.databases)/,
+-                replace: "$&.catch(()=>null)"
++                match: /await (\i\(\i\)|async function\(\)\{return null\}\(\))(?=;[^;]{0,55}this\.databases\.has\()/,
++                replace: "await ($1).catch(()=>null)"
+             }
+         },
+         // When focused on voice channel or group chat voice call
+@@ -378,8 +378,8 @@ export default definePlugin({
+         {
+             find: "renderEmptyFavorite",
+             replacement: {
+-                match: /(?<=handleContextMenu.{0,150})(?=link:(\i)\.url)/,
+-                replace: "...$1,"
++                match: /(handleContextMenu=\(\i,(\i)\)=>[\s\S]{0,650}?)(?=link:\2\.url)/,
++                replace: "$1...$2,"
+             }
+         }
+     ],
 diff --git a/src/main/patcher.ts b/src/main/patcher.ts
 index a93f78848..5bd65543b 100644
 --- a/src/main/patcher.ts
@@ -36,6 +62,19 @@ index a93f78848..5bd65543b 100644
  console.log("[Equicord] Loading original Discord app.asar");
 -require(require.main!.filename);
 +require(mainModule.filename);
+diff --git a/src/plugins/_api/notices.ts b/src/plugins/_api/notices.ts
+index ace58e705..381d3215e 100644
+--- a/src/plugins/_api/notices.ts
++++ b/src/plugins/_api/notices.ts
+@@ -29,7 +29,7 @@ export default definePlugin({
+             find: '"NoticeStore"',
+             replacement: [
+                 {
+-                    match: /(?<=!1;)\i=null;(?=.{0,80}getPremiumSubscription\(\))/g,
++                    match: /(?<=!1[;}])\i=null;(?=.{0,80}getPremiumSubscription\(\))/g,
+                     replace: "if(Vencord.Api.Notices.currentNotice)return false;$&"
+                 },
+                 {
 diff --git a/src/plugins/_core/concatenatedComponentExtractor.tsx b/src/plugins/_core/concatenatedComponentExtractor.tsx
 index 2c01bb36b..bcdc3c836 100644
 --- a/src/plugins/_core/concatenatedComponentExtractor.tsx
@@ -50,6 +89,26 @@ index 2c01bb36b..bcdc3c836 100644
                  replace: "$self.setCreateScroller($1);"
              }
          },
+diff --git a/src/plugins/betterFolders/index.tsx b/src/plugins/betterFolders/index.tsx
+index ab08c9f57..56ddb8834 100644
+--- a/src/plugins/betterFolders/index.tsx
++++ b/src/plugins/betterFolders/index.tsx
+@@ -149,12 +149,13 @@ export default definePlugin({
+         {
+             find: '("guildsnav")',
+             predicate: () => settings.store.sidebar,
++            group: true,
+             replacement: [
+                 // Create the isBetterFolders and betterFoldersExpandedIds variables in the GuildsBar component
+                 // Needed because we access this from a non-arrow closure so we can't use arguments[0]
+                 {
+-                    match: /let{disableAppDownload:\i=\i\.isPlatformEmbedded,isOverlay:.+?(?=}=\i)/,
+-                    replace: "$&,isBetterFolders,betterFoldersExpandedIds"
++                    match: /(?<=disableAppDownload:\i=\i\.isPlatformEmbedded,)(?=isOverlay:)/,
++                    replace: "isBetterFolders,betterFoldersExpandedIds,"
+                 },
+                 // Export the isBetterFolders and betterFoldersExpandedIds variable to the Guild List component
+                 {
 diff --git a/src/webpack/common/utils.ts b/src/webpack/common/utils.ts
 index 47903155b..36a752d2c 100644
 --- a/src/webpack/common/utils.ts
@@ -87,23 +146,40 @@ index 47903155b..36a752d2c 100644
  }
  
  export const UserUtils = {
-diff --git a/src/plugins/betterFolders/index.tsx b/src/plugins/betterFolders/index.tsx
-index ab08c9f57..56ddb8834 100644
---- a/src/plugins/betterFolders/index.tsx
-+++ b/src/plugins/betterFolders/index.tsx
-@@ -149,12 +149,13 @@ export default definePlugin({
-         {
-             find: '("guildsnav")',
-             predicate: () => settings.store.sidebar,
-+            group: true,
-             replacement: [
-                 // Create the isBetterFolders and betterFoldersExpandedIds variables in the GuildsBar component
-                 // Needed because we access this from a non-arrow closure so we can't use arguments[0]
-                 {
--                    match: /let{disableAppDownload:\i=\i\.isPlatformEmbedded,isOverlay:.+?(?=}=\i)/,
--                    replace: "$&,isBetterFolders,betterFoldersExpandedIds"
-+                    match: /(?<=disableAppDownload:\i=\i\.isPlatformEmbedded,)(?=isOverlay:)/,
-+                    replace: "isBetterFolders,betterFoldersExpandedIds,"
-                 },
-                 // Export the isBetterFolders and betterFoldersExpandedIds variable to the Guild List component
-                 {
+diff --git a/src/webpack/patchWebpack.ts b/src/webpack/patchWebpack.ts
+index d57311217..fcef132a0 100644
+--- a/src/webpack/patchWebpack.ts
++++ b/src/webpack/patchWebpack.ts
+@@ -205,7 +205,7 @@ define(Function.prototype, "m", {
+ 
+             // Overwrite Webpack's defineExports function to define the export descriptors configurable.
+             // This is needed so we can later blacklist specific exports from Webpack search by making them non-enumerable
+-            this.d = function (exports, definition) {
++            this.d = function (exports, definition, values?: Record<string, unknown>) {
+                 for (const key in definition) {
+                     if (Object.hasOwn(definition, key) && !Object.hasOwn(exports, key)) {
+                         Object.defineProperty(exports, key, {
+@@ -215,6 +215,15 @@ define(Function.prototype, "m", {
+                         });
+                     }
+                 }
++                if (values) for (const key of Object.keys(values)) {
++                    if (!Object.hasOwn(exports, key)) {
++                        Object.defineProperty(exports, key, {
++                            enumerable: true,
++                            configurable: true,
++                            value: values[key],
++                        });
++                    }
++                }
+             };
+         };
+     }
+@@ -427,6 +436,7 @@ function runFactoryWithWrap(patchedFactory: PatchedModuleFactory, thisArg: unkno
+         return originalFactory.apply(thisArg, argArray);
+     }
+ 
++    module.loaded ??= true;
+     exports = module.exports;
+ 
+     if (typeof require === "function" && require.c) {

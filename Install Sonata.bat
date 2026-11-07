@@ -104,6 +104,7 @@ if errorlevel 1 goto :failed
 
 :build
 call :matchequicord
+if errorlevel 1 goto :failed
 cd /d "%EQ%"
 call :preparetools
 if errorlevel 1 goto :failed
@@ -533,6 +534,7 @@ rem  Rebuilds Equicord with Sonata after preparing tools and refreshing its part
 :rebuild
 set "EQCHANGED=0"
 call :matchequicord
+if errorlevel 1 goto :failed
 cd /d "%EQ%"
 call :preparetools
 if errorlevel 1 exit /b 1
@@ -722,8 +724,8 @@ rem  came, then add the new set.
 for /f "tokens=3" %%f in ('findstr /b /c:"diff --git a/" "%TARGET%\equicord-fixes.patch"') do call :restorefile "%%f"
 git -C "%EQ%" apply --whitespace=nowarn "%TARGET%\equicord-fixes.patch" >nul 2>nul
 if errorlevel 1 (
-    echo   Couldn't add Sonata's small Equicord fixes - carrying on without them.
-    exit /b 0
+    echo   Couldn't apply the Equicord compatibility fixes. Stopping before rebuilding.
+    exit /b 1
 )
 :fixesadded
 echo   Added Sonata's small Equicord fixes.
