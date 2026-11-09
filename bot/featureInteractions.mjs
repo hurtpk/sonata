@@ -8,6 +8,7 @@ import { featureEnabled } from "./featureGroups.mjs";
 import { modlogInteraction } from "./modlogs.mjs";
 import { appealEligible, decideAppeal, submitAppeal } from "./appeals.mjs";
 import { parseSlash } from "./commands.mjs";
+import { commissionFields, readCommissionFields } from "./commissionIntake.mjs";
 import { fail } from "./discord.mjs";
 import { giveawayEntry } from "./giveaways.mjs";
 import { actorId, consumeForm, openForm } from "./interactionUI.mjs";
@@ -33,6 +34,7 @@ export function featureForm(data, store) {
     if (ticket) {
         const config = store.settings(ticket[2]).tickets, category = ticket[1] === "category" ? data.data.values?.[0] : "general";
         if (data.guild_id !== ticket[2] || !config?.enabled || config.panel?.message !== data.message.id || config.panel?.channel !== data.channel_id || (category !== "general" && !Object.hasOwn(config.categories ?? {}, category))) fail("This ticket panel is no longer active.");
+        if (config.intake === "commission") return openForm(data, store, ticket[2], "ticket", { category, intake: "commission" }, "Request a Commission", commissionFields);
         return openForm(data, store, ticket[2], "ticket", { category }, "Open a support ticket", "What do you need help with?");
     }
     const voice = /^snvoice:(\d{17,20}):(\d{17,20}):([a-z]+)$/.exec(id);
@@ -65,7 +67,7 @@ export async function featureAction(data, store, api, botId, music) {
         return imageEdit(await checked(parsed(data, data.guild_id, ...invocation)), data, store, music, id, action, revision);
     }
     if (data.type === 5) {
-        const form = consumeForm(data, store);
+        const form = consumeForm(data, store, readCommissionFields);
         if (form.kind === "appeal") { if (!featureEnabled(store.settings(form.guild), "community")) fail("Community & support is disabled in this server."); return submitAppeal(form, store, api); }
         if (form.kind === "voice") return voiceCommand(form.guild, form.details.room, form.details.action, form.value);
         if (form.kind === "ticket") return ticketCommand(await checked(parsed(data, form.guild, "ticket", form.details.category && form.details.category !== "general" ? "openin" : "open", { topic: form.value, ...(form.details.category && form.details.category !== "general" ? { category: form.details.category } : {}) })), store);

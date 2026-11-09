@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { embedColor } from "./discord.mjs";
+
 import { COMMANDS, slashName } from "./commands.mjs";
 import { embed, fail } from "./discord.mjs";
 
 const GROUPS = {
     general: { label: "General & information", names: ["help", "ping", "choose", "roll", "coinflip", "8ball", "timestamp", "snowflake", "afk", "remind", "dashboard", "userinfo", "avatar", "banner", "serverinfo", "membercount", "roleinfo", "roles", "channelinfo", "servericon", "serverbanner", "boosts", "firstmessage"] },
-    moderation: { label: "Moderation & cases", names: ["ban", "tempban", "softban", "banlist", "unban", "kick", "timeout", "untimeout", "nickname", "warn", "warnings", "warnremove", "warnclear", "escalation", "jailsetup", "jail", "unjail", "case", "modstats"] },
+    moderation: { label: "Moderation & cases", names: ["ban", "tempban", "softban", "banlist", "unban", "kick", "timeout", "untimeout", "nickname", "warn", "warnings", "warnremove", "warnclear", "escalation", "jailsetup", "jail", "unjail", "case", "modstats", "snipe"] },
     security: { label: "Security & AutoMod", names: ["honeypot", "automod", "antiraid", "antinuke", "lockdown", "nicknamepolicy"] },
     server: { label: "Server management", names: ["role", "settings", "prefix", "eventlog", "alias", "purge", "slowmode", "lock", "unlock", "hide", "unhide", "pin", "unpin", "pins", "channel", "stick", "fakepermissions", "commandsettings", "commandstats"] },
     community: { label: "Community", names: ["welcome", "goodbye", "rolemenu", "autorole", "autonick", "joinlogs", "autoresponder", "tag", "poll", "giveaway", "verification", "levels"] },
@@ -26,7 +28,7 @@ export function helpPage(owner, group = "home", page = 0, expires = Date.now() +
     const pages = Math.max(1, Math.ceil(values.length / size));
     if (!Number.isInteger(page) || page < 0 || page >= pages) fail(`Choose a help page from 1 to ${pages}.`);
     const response = group === "home" ? embed("Sonata · help", `**${entries(COMMANDS.map(command => command.name)).length} commands across ${Object.keys(GROUPS).length} categories.**\nChoose a category below, or use \`help <command>\`.\n\n` + Object.values(GROUPS).map(value => `**${value.label}** · ${entries(value.names).length}`).join("\n")) : embed(`Sonata · ${group === "all" ? "All commands" : GROUPS[group].label}`, values.slice(page * size, (page + 1) * size).map(value => group === "all" ? `**${value.name}** · ${value.description}` : `**${value.name}**\n\`${usage(value.name, value.options)}\`\n${value.description}`).join("\n\n"));
-    response.embeds[0].color = 0x34363c;
+    response.embeds[0].color = embedColor();
     if (group === "home") response.embeds[0].description += "\n\n[Sonata dashboard](https://sonatabot.info) · Manage settings, disabled commands and more.";
     response.embeds[0].footer = { text: `${group === "home" ? "Choose a category" : `Page ${page + 1} of ${pages}`} • Slash commands or your server prefix • <Required> [Optional]` };
     const id = (action, destination = group, target = page) => `snhelp:${owner}:${expires}:${destination}:${target}:${action}`;

@@ -13,7 +13,7 @@ import { settings } from "./settings";
 
 export default definePlugin({
     name: "AutoModRegex",
-    description: "Turn your own word list into Discord AutoMod regex patterns that also catch look-alike characters, spacing and stretched letters — batched ten to a rule, each under Discord's 260-character limit.",
+    description: "Build Discord AutoMod regex patterns and manage the server's rules, actions and exemptions from Server Tools.",
     authors: [{ name: "aiqen", id: 779172192461783110n }],
     settings,
 

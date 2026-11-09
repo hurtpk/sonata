@@ -19,12 +19,15 @@ const sample = fixture({ after() {} }), identity = openStore(":memory:"), token 
 Object.defineProperty(sample.storage.sql, "databaseSize", { get: () => sample.db.prepare("PRAGMA page_count").get().page_count * sample.db.prepare("PRAGMA page_size").get().page_size });
 sample.channels[0].name = "general";
 sample.roles.find(role => sample.members.get(BOT).roles.includes(role.id)).managed = true;
+sample.guild.features = ["ROLE_ICONS", "ENHANCED_ROLE_COLORS"];
 sample.guild.name = "Harbor Studio"; guildEvent("GUILD_CREATE", sample.guild, sample.store);
 const bot = { store: sample.store, api: sample.api, music: new MusicBridge(), session: { userId: BOT }, env: { DASHBOARD_OWNER_IDS: OWNER }, status: () => ({ connected: true, musicOnline: true, paused: false }) };
 const authenticate = () => identity.run("INSERT OR IGNORE INTO bot_sessions VALUES (?,?,?,?,?)", hash(token), OWNER, "preview-owner", csrf, Date.now() + 43_200_000);
 authenticate();
 identity.run("INSERT INTO bot_sessions VALUES (?,?,?,?,?)", hash(random()), TARGET, "sample-moderator", random(), Date.now() + 43_200_000);
 identity.run("INSERT INTO users (id,username,name,first_seen,last_seen,version) VALUES (?,?,?,?,?,?)", TARGET, "sample-moderator", "Sample moderator", Date.now() - 86400_000, Date.now(), "2026.10.29b");
+identity.run("INSERT INTO admin_grants VALUES (?,?,?,?)", TARGET, JSON.stringify(["users", "access", "servers"]), OWNER, Date.now() - 86400_000);
+identity.run("INSERT INTO staff_activity (actor,area,kind,action,target,at) VALUES (?,?,?,?,?,?),(?,?,?,?,?,?),(?,?,?,?,?,?)", TARGET, "dashboard", "visit", "", "", Date.now() - 3600_000, TARGET, "admin", "visit", "", "", Date.now() - 7200_000, TARGET, "dashboard", "action", "alias set", GUILD, Date.now() - 3500_000);
 sample.store.saveSettings(GUILD, { ...sample.store.settings(GUILD), aliases: { rules: "tag show rules" } }, OWNER, "Dashboard: alias set");
 sample.store.saveSettings(GUILD, { ...sample.store.settings(GUILD), dm: true }, OWNER, "Dashboard: settings dm");
 sample.store.run("INSERT INTO owner_server_notes VALUES (?,?,?,?,?)", GUILD, "Review the log channel before inviting more moderators.", JSON.stringify(["testing"]), OWNER, Date.now());
@@ -55,7 +58,7 @@ createServer(async (req, res) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     if (req.headers.host !== "127.0.0.1:4175" || req.headers.origin && req.headers.origin !== "http://127.0.0.1:4175") { res.writeHead(403); res.end(); return; }
     if (path === "/preview-session.json" && req.method === "GET") { authenticate(); res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify({ csrf, owner: OWNER, target: TARGET, guild: GUILD })); return; }
-    if (path === "/production" || ["/dm-sans.ttf", "/dashboard", "/admin", "/site.js", "/site.css", "/embed.js", "/embed.css", "/bot.js", "/bot.css", "/owner-bot.js", "/admin-tools.js", "/dashboard-extras.js", "/bot-profile.js", "/admin-app.js", "/dashboard-style.css"].includes(path)) { req.headers.cookie = "sonata_bot=" + token; if (path === "/production") req.url = "/"; await application(req, res); return; }
+    if (path === "/production" || ["/server-manager.js", "/server-manager.css", "/dashboard-search.js", "/logging-setup.js", "/editorial.css", "/bodoni.woff2", "/space.woff2", "/dm-sans.ttf", "/command-builder.js", "/commands", "/dashboard", "/admin", "/site.js", "/site.css", "/embed.js", "/embed.css", "/bot.js", "/bot.css", "/owner-bot.js", "/admin-tools.js", "/dashboard-extras.js", "/bot-profile.js", "/admin-app.js", "/dashboard-style.css"].includes(path)) { req.headers.cookie = "sonata_bot=" + token; if (path === "/production") req.url = "/"; await application(req, res); return; }
     if (path.startsWith("/api/")) { req.headers.cookie = "sonata_bot=" + token; await application(req, res); return; }
     if (/^\/(owner-console|command-setup|site-info|site-scrollbars)\.(js|css)$/.test(path)) { res.setHeader("Content-Type", path.endsWith(".js") ? "text/javascript" : "text/css"); res.end(await readFile(new URL("../public" + path, import.meta.url))); return; }
     if (req.method !== "GET") { res.writeHead(405); res.end(); return; }

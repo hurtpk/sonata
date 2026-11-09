@@ -9,8 +9,8 @@ import test from "node:test";
 import { parsePrefix, parseSlash } from "../commands.mjs";
 import { executeCommand } from "../moderation.mjs";
 import { modlogInteraction } from "../modlogs.mjs";
-import { eventLog, rememberLogEvent } from "../eventLogs.mjs";
-import { PERMS } from "../discord.mjs";
+import { eventLog, rememberLogEvent, rememberSnipe, snipeReply } from "../eventLogs.mjs";
+import { PERMS, embed, withEmbedColor } from "../discord.mjs";
 import { ACTOR, BOT, CHANNEL, GUILD, MODROLE, OWNER, TARGET, fixture } from "./fixture.mjs";
 
 const PNG=new Uint8Array([137,80,78,71,13,10,26,10,0]);
@@ -67,4 +67,63 @@ test("Deletion caching is capped, expires in memory and excludes bot content", (
     rememberLogEvent("MESSAGE_CREATE",{id:ACTOR,guild_id:GUILD,channel_id:CHANNEL,author:{id:BOT,bot:true},content:"Bot secret"},settings,cache,now);assert.equal(cache.messages.get(ACTOR).content,"");
     rememberLogEvent("MESSAGE_UPDATE",{id:ACTOR,content:"Edited bot secret"},settings,cache,now);assert.equal(cache.messages.get(ACTOR).content,"");
     rememberLogEvent("MESSAGE_UPDATE",{id:TARGET,content:"irrelevant"},settings,cache,now+1800_001);assert.equal(cache.messages.size,0);
+});
+
+
+test("Snipe retains media links, GIF previews and reply attribution without pinging", () => {
+    const cache = { messages: new Map(), channels: new Map(), snipes: new Map() }, settings = { snipeLimit: 15 }, now = Date.now();
+    const replyId = "999999999999999992", id = "999999999999999993";
+    const gif = { ...file, filename: "clip.gif", content_type: "image/gif", url: file.url.replace("evidence.png", "clip.gif") };
+    const mp4 = { ...file, filename: "clip.mp4", content_type: "video/mp4", url: file.url.replace("evidence.png", "clip.mp4") };
+    rememberLogEvent("MESSAGE_CREATE", { id, guild_id: GUILD, channel_id: CHANNEL, author: { id: ACTOR, username: "sender", global_name: "Sender Name", avatar: "a_abcdef" }, member: { nick: "Server Nick" }, content: "A reply", attachments: [gif, mp4], message_reference: { message_id: replyId, channel_id: CHANNEL, guild_id: GUILD }, referenced_message: { author: { id: TARGET } } }, settings, cache, now);
+    rememberLogEvent("MESSAGE_UPDATE", { id, content: "Edited reply" }, settings, cache, now);
+    rememberSnipe("MESSAGE_DELETE", { id, guild_id: GUILD, channel_id: CHANNEL }, settings, cache, now);
+    const body = snipeReply(cache, GUILD, CHANNEL, 15, 1, now), result = body.embeds[0];
+    assert.equal(result.description, `**Server Nick** (<@${ACTOR}>)\n\nEdited reply`);
+    assert.equal(body.allowed_mentions.replied_user, false);
+    assert.equal(result.image.url, gif.url);
+    const reply = result.fields.find(field => field.name.startsWith("Replying to"));
+    assert.ok(reply.value.includes(TARGET));
+    assert.ok(reply.value.includes(`https://discord.com/channels/${GUILD}/${CHANNEL}/${replyId}`));
+    assert.ok(result.fields.some(field => field.value.includes(mp4.url)));
+    assert.deepEqual(body.allowed_mentions.parse, []);
+    assert.match(result.footer.text, /expire/);
+    assert.match(result.footer.text, /Deleted 0 seconds ago/);
+    assert.match(result.thumbnail.url, /a_abcdef\.gif/);
+    assert.equal(result.title, undefined);
+    assert.ok(!result.fields.some(field => field.name === "Deleted" || field.name === "Author"));
+});
+
+test("Snipe ignores unsafe attachment URLs and still identifies replies with unavailable authors", () => {
+    const cache = { messages: new Map(), channels: new Map(), snipes: new Map() }, settings = { snipeLimit: 15 };
+    const id = "999999999999999993";
+    rememberLogEvent("MESSAGE_CREATE", { id, guild_id: GUILD, channel_id: CHANNEL, author: { id: ACTOR }, attachments: [{ filename: "x.png", url: "javascript:alert(1)", content_type: "image/png" }], message_reference: { message_id: "999999999999999992" } }, settings, cache);
+    rememberSnipe("MESSAGE_DELETE", { id, guild_id: GUILD, channel_id: CHANNEL }, settings, cache);
+    const result = snipeReply(cache, GUILD, CHANNEL, 15, 1).embeds[0];
+    assert.equal(result.image, undefined);
+    assert.match(result.fields.find(field => field.name.startsWith("Replying to")).value, /Original author unavailable/);
+    assert.ok(!JSON.stringify(result).includes("javascript:"));
+});
+
+
+test("Server embed colors validate, persist, reset and remain isolated between commands", async t => {
+    const f = fixture(t);
+    const run = text => executeCommand({ ...parsePrefix(text, ","), id: crypto.randomUUID(), guild: GUILD, actor: ACTOR, channel: CHANNEL }, f.store, f.api, BOT);
+    assert.equal((await run(",settings embedcolor #123456")).embeds[0].color, 0x123456);
+    assert.equal(f.store.settings(GUILD).embedColor, 0x123456);
+    assert.equal((await run(",ping")).embeds[0].color, 0x123456);
+    await assert.rejects(run(",settings embedcolor nope"), /six-digit/);
+    assert.equal(f.store.settings(GUILD).embedColor, 0x123456);
+    assert.equal((await run(",settings embedcolor default")).embeds[0].color, 0xffad91);
+    assert.equal((await run(",ping")).embeds[0].color, 0xffad91);
+});
+
+
+test("Concurrent server replies cannot inherit each other's embed colors", async () => {
+    const replies = await Promise.all([0x123456, 0x654321].map(color => withEmbedColor({ embedColor: color }, async () => {
+        await new Promise(resolve => setTimeout(resolve, color === 0x123456 ? 5 : 1));
+        return embed("Test", "").embeds[0].color;
+    })));
+    assert.deepEqual(replies, [0x123456, 0x654321]);
+    assert.equal(embed("Default", "").embeds[0].color, 0xffad91);
 });

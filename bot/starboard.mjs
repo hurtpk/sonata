@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { embedColor } from "./discord.mjs";
+
 import { featureEnabled } from "./featureGroups.mjs";
 import { channelPermissions, embed, fail, PERMS, requirePermission } from "./discord.mjs";
 
@@ -59,7 +61,7 @@ export async function starboardEvent(type, data, store, api) {
     const link = `https://discord.com/channels/${data.guild_id}/${data.channel_id}/${id}`;
     const body = embed(`⭐ ${count} · #${source.name || "channel"}`, `${(message.content ?? "").slice(0, 1400)}\n\n[Jump to message](${link})`);
     const card = body.embeds[0];
-    card.color = 0xc18b8f;
+    card.color = embedColor();
     card.author = { name: (message.author.global_name || message.author.username || message.author.id).slice(0, 256), ...(message.author.avatar ? { icon_url: `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=64` } : {}) };
     card.footer = { text: `User ${message.author.id} · Message ${id}` };
     if (message.timestamp) card.timestamp = message.timestamp;

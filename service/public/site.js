@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import { mountGuides, mountStatus } from "/site-info.js";
+import { openCommandBuilder } from "/command-builder.js";
 
 const $ = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
@@ -60,17 +61,22 @@ function commandCard(command) {
     const syntax = prefix + displayedName + " " + command.options.map(option => option.type === 11 ? `[upload ${option.name}${option.required ? ": required" : ""}]` : option.required ? `<${option.name}>` : `[${option.name}]`).join(" ");
     const parameters = command.parameters.length ? `<dl class="command-parameters">${command.parameters.map(option => `<div><dt><code>${escape(option.name)}</code><span>${option.required ? "Required" : "Optional"}</span></dt><dd>${escape(option.description)}${option.acceptedCommands ? `<details class="setup-targets"><summary>Supported commands and arguments</summary>${option.acceptedCommands.map(target => `<p><code>${escape(target.command)} ${escape(target.syntax)}</code><br>${escape(target.description)}</p>`).join("")}</details>` : ""}</dd></div>`).join("")}</dl>` : '<p class="no-arguments">This command takes no arguments.</p>';
     const bodyId = "command-" + command.name.replace(/\s+/g, "-");
-    return `<article class="command-card" data-command="${escape(command.name)}"><header><h2>${escape(prefix + displayedName)}</h2><div class="command-actions">${state.forms.some(form => form.name === command.name.split(" ")[0] && form.options.some(action => action.name === (command.name.split(" ")[1] ?? "run"))) ? `<button data-setup="${escape(command.name)}">Configure ↗</button>` : ""}<button class="command-expand" data-expand="${escape(bodyId)}" aria-controls="${escape(bodyId)}" aria-expanded="false" aria-label="Show details for ${escape(command.name)}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button data-copy="${escape(example(command))}" aria-label="Copy ${escape(command.name)} example">Copy ↗</button></div></header><div class="command-body" id="${escape(bodyId)}" hidden><div class="command-body-inner"><p class="command-description">${escape(command.description)}</p>${command.detail ? `<p class="command-detail">${escape(command.detail)}</p>` : ""}<div class="command-permissions"><span>PERMISSIONS</span>${escape(command.permissions)}</div><div class="syntax">${escape(syntax.trim())}</div><code class="example"><span>EXAMPLE</span>${escape(example(command))}</code>${command.attachment ? `<p class="attachment-instruction">Attach a real file in the <strong>${escape(command.attachment)}</strong> field or upload it on the same prefix-command message. The copied command does not attach a file.</p>` : ""}<section class="command-arguments" aria-label="Arguments for ${escape(command.name)}"><h3>Arguments</h3>${parameters}</section>${command.aliases.length ? `<p class="alias-note">Built-in prefix aliases for this command family: ${command.aliases.map(alias => `<code>${escape(state.prefix + alias)}</code>`).join(", ")}. Some aliases select a specific subcommand; check the behavior above.</p>` : ""}</div></div></article>`;
+    return `<article class="command-card" data-command="${escape(command.name)}"><header><h2>${escape(prefix + displayedName)}</h2><div class="command-actions"><button class="command-expand" data-expand="${escape(bodyId)}" aria-controls="${escape(bodyId)}" aria-expanded="false" aria-label="Show details for ${escape(command.name)}"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>${state.forms.some(form => form.name === command.name.split(" ")[0] && form.options.some(action => action.name === (command.name.split(" ")[1] ?? "run"))) ? `<button data-setup="${escape(command.name)}">Configure ↗</button>` : ""}<button data-copy="${escape(example(command))}" aria-label="Copy ${escape(command.name)} example">Copy ↗</button></div></header><div class="command-body" id="${escape(bodyId)}" hidden><div class="command-body-inner"><p class="command-description">${escape(command.description)}</p>${command.detail ? `<p class="command-detail">${escape(command.detail)}</p>` : ""}<button type="button" class="outline small" data-build-command="${escape(command.name)}">Build command</button><div class="command-permissions"><span>PERMISSIONS</span>${escape(command.permissions)}</div><div class="syntax">${escape(syntax.trim())}</div><code class="example"><span>EXAMPLE</span>${escape(example(command))}</code>${command.attachment ? `<p class="attachment-instruction">Attach a real file in the <strong>${escape(command.attachment)}</strong> field or upload it on the same prefix-command message. The copied command does not attach a file.</p>` : ""}<section class="command-arguments" aria-label="Arguments for ${escape(command.name)}"><h3>Arguments</h3>${parameters}</section>${command.aliases.length ? `<p class="alias-note">Built-in prefix aliases for this command family: ${command.aliases.map(alias => `<code>${escape(state.prefix + alias)}</code>`).join(", ")}. Some aliases select a specific subcommand; check the behavior above.</p>` : ""}</div></div></article>`;
 }
 function renderCommands() {
-    const categories = ["All", ...new Set(state.catalog.map(command => command.category))];
-    $("#categories").innerHTML = categories.map(category => `<button data-category="${escape(category)}" aria-pressed="${state.category === category}">${escape(category)}</button>`).join("");
+    const categories = new Map([["All", state.catalog.length]]);
+    for (const { category } of state.catalog) categories.set(category, (categories.get(category) ?? 0) + 1);
+    $("#categories").innerHTML = [...categories].map(([category, count]) => `<button data-category="${escape(category)}" aria-pressed="${state.category === category}">${escape(category)} <span class="category-count">${count}</span></button>`).join("");
     const list = state.catalog.filter(command => (state.category === "All" || command.category === state.category) && `${command.name} ${command.description} ${command.detail} ${command.permissions} ${command.parameters.map(option => option.description).join(" ")} ${command.aliases.join(" ")}`.toLowerCase().includes(state.search)).sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base", numeric: true }));
-    const pages = Math.max(1, Math.ceil(list.length / 10));
+    const families = new Map();
+    for (const command of list) { const name = (state.mode === "slash" ? command.slashName ?? command.name : command.name).split(" ")[0]; if (!families.has(name)) families.set(name, []); families.get(name).push(command); }
+    const grouped = [...families].sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }));
+    const pages = Math.max(1, Math.ceil(grouped.length / 10));
     state.page = Math.min(state.page, pages - 1);
     $("#command-total").textContent = `${state.catalog.length} command forms`;
-    $("#command-list").innerHTML = list.slice(state.page * 10, state.page * 10 + 10).map(commandCard).join("") || '<p class="empty">No commands found. Try another search or category.</p>';
-    $("#catalog-position").textContent = `${list.length ? state.page * 10 + 1 : 0}–${Math.min(list.length, state.page * 10 + 10)} of ${list.length} commands`;
+    $("#command-list").classList.add("command-families");
+    $("#command-list").innerHTML = grouped.slice(state.page * 10, state.page * 10 + 10).map(([name, commands]) => commands.length === 1 && commands[0].name === name && (commands[0].slashName ?? name) === name ? commandCard(commands[0]) : `<details class="command-family"><summary><strong>${escape((state.mode === "slash" ? "/" : state.prefix) + name)}</strong><span>${commands.length} ${commands.length === 1 ? "command" : "subcommands"}</span><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="m7.5 5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></summary><div>${commands.map(commandCard).join("")}</div></details>`).join("") || '<p class="empty">No commands found. Try another search or category.</p>';
+    $("#catalog-position").textContent = `${grouped.length ? state.page * 10 + 1 : 0}–${Math.min(grouped.length, state.page * 10 + 10)} of ${grouped.length} groups · ${list.length} command forms`;
     $("#previous").disabled = state.page === 0;
     $("#next").disabled = state.page >= pages - 1;
     all("[data-mode]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode)));
@@ -79,6 +85,11 @@ document.addEventListener("click", async event => {
     const button = event.target.closest("button, a") ?? event.target.closest(".command-card header")?.querySelector("[data-expand]");
     if (!button) return;
 
+    if (button.id === "open-command-builder" || button.dataset.buildCommand) {
+        if (state.catalog.length) openCommandBuilder(state.catalog, button.dataset.buildCommand, state.mode, state.prefix);
+        else notify("The command list is still loading.");
+        return;
+    }
     if (button.dataset.setup) { state.setupCommand = button.dataset.setup; loadFrame("dashboard", state.setupCommand); location.hash = "dashboard"; }
     if (button.dataset.category) { state.category = button.dataset.category; state.page = 0; renderCommands(); }
     if (button.dataset.mode) { state.mode = button.dataset.mode; renderCommands(); }

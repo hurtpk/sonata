@@ -9,7 +9,7 @@ import { reference } from "../bot/commandReference.mjs";
 import { DASHBOARD_ACTIONS } from "../bot/dashboard.mjs";
 
 const groups = {
-    Moderation: "ban tempban softban banlist unban kick timeout untimeout nickname warn warnings warnremove warnclear escalation jailsetup jail unjail case modstats",
+    Moderation: "ban tempban softban banlist unban kick timeout untimeout nickname warn warnings warnremove warnclear escalation jailsetup jail unjail case modstats snipe",
     Security: "honeypot automod antiraid antinuke lockdown nicknamepolicy verification",
     Music: "fm voice voicemaster play pause resume skip stop queue nowplaying volume shuffle remove loop seek filter voteskip musicsettings",
     Community: "welcome goodbye autorole autonick joinlogs autoresponder tag poll giveaway levels ticket appeals afk",

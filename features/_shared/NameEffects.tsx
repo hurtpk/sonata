@@ -29,7 +29,7 @@ export function normalizeEffects(value: unknown): EffectId[] {
 }
 
 export function effectClasses(effects: readonly EffectId[], gradient: boolean) {
-    return effects.filter(effect => gradient || effect !== "flow").map(effect => "vc-namefx-" + effect);
+    return effects.filter(effect => gradient || effect !== "flow").map(effect => effect === "sparkles" ? "vc-namefx-has-sparkles" : "vc-namefx-" + effect);
 }
 
 export function EffectPicker({ effects, gradient, onChange, compact }: {

@@ -8,7 +8,7 @@
     "scripts": {
         "dev": "wrangler dev",
         "check": "wrangler deploy --dry-run --outdir .check",
-        "deploy": "wrangler deploy",
+        "deploy": "wrangler deploy --durable-objects-code-update-mode immediate",
         "pretest": "npm run check",
         "test": "node --test test/*.test.mjs",
         "setup": "node --env-file=.env setup.mjs"

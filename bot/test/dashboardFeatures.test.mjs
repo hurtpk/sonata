@@ -14,12 +14,113 @@ import { levelFor, memberActivity } from "../levels.mjs";
 import { moderationStats } from "../memberTools.mjs";
 import { executeCommand, perform } from "../moderation.mjs";
 import { ticketDetails, ticketTimers } from "../ticketExtras.mjs";
-import { ACTOR, BOT, CHANNEL, GUILD, MODROLE, OWNER, TARGET, USERROLE, fixture } from "./fixture.mjs";
+import { ACTOR, BOT, BOTROLE, CHANNEL, GUILD, MODROLE, OWNER, TARGET, USERROLE, fixture } from "./fixture.mjs";
 
 const CATEGORY = "888888888888888889", ALT = "888888888888888890";
 let serial = 650000000000000000n;
 const run = (f, content, actor = ACTOR, channel = CHANNEL, api = f.api) => executeCommand({ ...f.command(content, actor), channel }, f.store, api, BOT);
 const message = (content, author = TARGET, mentions = []) => ({ id: String(++serial), guild_id: GUILD, channel_id: CHANNEL, author: { id: author }, content, mentions });
+
+test("Ticket Master creates categories and private text channels with Discord permissions enforced", async t => {
+    const f = fixture(t), bot = { store: f.store, api: f.api, session: { userId: BOT }, env: {} };
+    guildEvent("GUILD_CREATE", f.guild, f.store);
+    const create = (actor, sub, options) => dashboardRequest(new Request("https://bot.example/dashboard/action", {
+        method: "POST", headers: { "X-Sonata-User": actor },
+        body: JSON.stringify({ guild: GUILD, name: "ticket-space", sub, options }),
+    }), bot);
+    const limitedRole = f.roles.find(role => role.id === USERROLE);
+    limitedRole.permissions = PERMS.GUILD.toString();
+    await assert.rejects(create(TARGET, "category", { name: "Support" }), /permissions required/);
+    limitedRole.permissions = (PERMS.GUILD | PERMS.CHANNELS).toString();
+    const { channel: category } = await create(TARGET, "category", { name: "Support" });
+    assert.equal(category.type, 4);
+    const options = { name: "transcripts", parent: category.id, visibility: "staff", role: MODROLE };
+    await assert.rejects(create(TARGET, "text", options), /permissions required/);
+    await assert.rejects(create(OWNER, "text", { ...options, role: GUILD }), /Choose a staff role/);
+    await assert.rejects(create(OWNER, "text", { ...options, parent: CHANNEL }), /Choose a category/);
+    const { channel } = await create(OWNER, "text", options);
+    const created = f.channels.find(entry => entry.id === channel.id);
+    assert.equal(created.parent_id, category.id);
+    assert.deepEqual(created.permission_overwrites, [
+        { id: GUILD, type: 0, allow: "0", deny: PERMS.VIEW.toString() },
+        { id: MODROLE, type: 0, allow: (PERMS.VIEW | PERMS.HISTORY).toString(), deny: "0" },
+    ]);
+    assert.equal(f.store.settings(GUILD).tickets, undefined);
+});
+
+test("Ticket manager lists and updates saved panels, removes only its own panels, and protects live tickets", async t => {
+    const f = fixture(t), bot = { store: f.store, api: f.api, session: { userId: BOT }, env: {} };
+    guildEvent("GUILD_CREATE", f.guild, f.store);
+    f.channels.push({ id: CATEGORY, guild_id: GUILD, type: 4, name: "Support", permission_overwrites: [] });
+    await run(f, `,ticket setup ${CATEGORY} ${MODROLE} ${CHANNEL}`);
+    await run(f, `,ticket panel ${CHANNEL}`);
+    const first = f.store.settings(GUILD).tickets.panel;
+    await run(f, `,ticket panel ${CHANNEL}`);
+    assert.equal(f.store.settings(GUILD).tickets.panels.length, 2);
+    await run(f, ",ticket intake commission");
+    const manage = (sub, message = first.message, actor = ACTOR) => dashboardRequest(new Request("https://bot.example/dashboard/action", {
+        method: "POST", headers: { "X-Sonata-User": actor },
+        body: JSON.stringify({ guild: GUILD, name: "ticket-manage", sub, options: { message } }),
+    }), bot);
+    await assert.rejects(manage("panel-update", first.message, TARGET));
+    await assert.rejects(manage("panel-delete", "123456789012345678"), /saved ticket panel/);
+    await manage("panel-update");
+    assert.equal(f.postedMessages.find(row => row.id === first.message).embeds[0].title, "Commission inquiries");
+    await assert.rejects(manage("reset"), /Remove the saved ticket panels/);
+    await manage("panel-delete");
+    assert.equal(f.store.settings(GUILD).tickets.panels.length, 1);
+    await manage("panel-delete", f.store.settings(GUILD).tickets.panel.message);
+    const channelCount = f.channels.length;
+    f.store.run("INSERT INTO tickets (id,guild,owner,channel,state,at) VALUES (?,?,?,?,?,?)", "active-test", GUILD, TARGET, CHANNEL, "open", Date.now());
+    await assert.rejects(manage("reset"), /Archive existing/);
+    f.store.run("UPDATE tickets SET state='archived' WHERE id='active-test'");
+    await manage("reset");
+    assert.equal(f.store.settings(GUILD).tickets, undefined);
+    assert.equal(f.channels.length, channelCount);
+    assert.equal(f.store.get("SELECT id FROM tickets WHERE id='active-test'").id, "active-test");
+});
+
+test("Only the server owner can preview and apply presets, and a stale preview never overwrites settings", async t => {
+    const f = fixture(t), bot = { store: f.store, api: f.api, session: { userId: BOT }, env: {} };
+    guildEvent("GUILD_CREATE", f.guild, f.store);
+    f.members.get(ACTOR).roles = [BOTROLE];
+    const input = { guild: GUILD, channel: CHANNEL, preset: "strict", profile: "music" };
+    const request = (actor, body) => dashboardRequest(new Request("https://bot.example/dashboard/setup-presets", { method: "POST", headers: { "X-Sonata-User": actor }, body: JSON.stringify(body) }), bot);
+    await assert.rejects(request(ACTOR, input), { status: 403 });
+    const preview = await request(OWNER, input);
+    assert.equal(preview.applied, false);
+    assert.equal(f.store.settings(GUILD).antiraid, undefined);
+    f.store.saveSettings(GUILD, { ...f.store.settings(GUILD), antiraid: { enabled: false }, prefix: "!" });
+    await assert.rejects(request(OWNER, { ...input, review: preview.review }), { status: 409 });
+    const review = await request(OWNER, input);
+    const applied = await request(OWNER, { ...input, review: review.review });
+    assert.equal(applied.applied, true);
+    const settings = f.store.settings(GUILD);
+    assert.equal(settings.prefix, "!");
+    assert.equal(settings.logChannel, CHANNEL);
+    assert.equal(settings.antiraid.age, 72);
+    assert.deepEqual(settings.escalation[3], { action: "timeout", duration: 1_800_000 });
+    assert.deepEqual(settings.music, { mode: "dj", threshold: 75 });
+    assert.equal(f.postedMessages.length, 0);
+});
+
+test("Command conflict checks explain shadows, disabled targets and impossible channel rules", async t => {
+    const f = fixture(t), bot = { store: f.store, api: f.api, env: {} };
+    guildEvent("GUILD_CREATE", f.guild, f.store);
+    f.store.saveSettings(GUILD, {
+        ...f.store.settings(GUILD), aliases: { ping: "ban", example: "ban" }, disabledCommands: ["ban"],
+        commandRules: [
+            { command: "settings", kind: "channel", target: CHANNEL, mode: "allow" },
+            { command: "settings dm", kind: "channel", target: ALT, mode: "allow" },
+            { command: "settings dm", kind: "channel", target: CHANNEL, mode: "deny" },
+        ],
+    });
+    const result = await dashboardRequest(new Request("https://bot.example/dashboard/command-conflicts?guild=" + GUILD, { headers: { "X-Sonata-User": ACTOR } }), bot);
+    assert(result.issues.some(issue => issue.subject === "ping" && issue.kind === "Shortcut shadows a command"));
+    assert(result.issues.some(issue => issue.subject === "example" && issue.kind === "Shortcut points to a disabled command"));
+    assert(result.issues.some(issue => issue.subject === "settings dm" && issue.kind === "No channel can satisfy these rules"));
+    assert(result.issues.some(issue => issue.subject === "settings dm" && issue.kind === "Allow and deny overlap"));
+});
 const click = (card, custom_id, actor = TARGET, values) => ({ id: String(++serial), type: 3, guild_id: GUILD, channel_id: card.channel_id, member: { user: { id: actor } }, message: card, data: { custom_id, component_type: values ? 3 : 2, ...(values ? { values } : {}) } });
 
 test("Verification grants only the configured basic role after live age, screening and jail checks", async t => {
@@ -217,4 +318,7 @@ test("Avatar lookup is owner only and returns bounded public profile fields", as
     await assert.rejects(dashboardRequest(request(OWNER, Array.from({ length: 21 }, (_, i) => String(100000000000000000n + BigInt(i))).join(",")), bot), /up to 20/);
     const result = await dashboardRequest(request(OWNER), bot);
     assert.deepEqual(result, { users: [{ id: TARGET, avatar: user.avatar, discriminator: "0" }] });
+    user.global_name = "Test moderator";
+    const profile = await dashboardRequest(request(OWNER, TARGET + "&profile=1"), bot);
+    assert.deepEqual(profile.users[0], { ...result.users[0], username: user.username, name: "Test moderator" });
 });

@@ -7,7 +7,7 @@ import { COMMANDS } from "./commands.mjs";
 import { FEATURE_GROUPS } from "./featureGroups.mjs";
 import { channelPermissions, fail, isId, memberPermissions, PERMS } from "./discord.mjs";
 
-const restoreKeys = ["aliases", "disabledCommands", "dm", "templates", "logChannel", "videoEmbeds", "videoEmbedsAll"];
+const restoreKeys = ["aliases", "disabledCommands", "dm", "templates", "logChannel", "videoEmbeds", "videoEmbedsAll", "videoEmbedRoles"];
 export function requireBotUser(store, id) {
     if (store.get("SELECT id FROM user_blacklist WHERE id=?", id)) throw Object.assign(new Error("This account is blocked from Sonata Bot."), { status: 403, outcome: "denied" });
 }

@@ -23,6 +23,10 @@ For updates, run `npm run migrate` if there are new migrations, then `npm run de
 
 ## Local checks
 
+The deployed Worker enforces shared Cloudflare limits for authentication and API traffic, HTTPS redirects, HSTS, restrictive browser security headers, and no-store responses for private endpoints. Dashboard mutations continue to require a verified Discord session and CSRF token. Preview URLs are disabled. The legacy hostname remains available for native activation endpoints and redirects browser pages to the public domain.
+
+On `sonatabot.info`, Cloudflare enforces minimum TLS 1.2, Always Use HTTPS, Full (strict) encryption, and a managed challenge for browser page routes. The browser challenge excludes API, OAuth callback, and bot bridge routes; their server-side authentication and rate limits continue to apply. Keep these machine routes out of blanket browser challenge rules when changing firewall settings.
+
 Run `npm test`. It builds without deploying, runs the shared authorization and activation checks against a temporary D1 database, and checks the bundled Worker with real dashboard assets, request bodies, cookies and access restrictions. Tests use fake identities and mocked Discord responses.
 
 For an interactive local Worker, run `npm run migrate:local`, then `npm run dev`. Local development does not load the parent `.env`; use a private `.dev.vars` in this directory if you need local OAuth. Its `PUBLIC_URL` and Discord redirect must both use the same local origin. Do not use production credentials for automated tests.

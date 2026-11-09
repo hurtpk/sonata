@@ -5,13 +5,15 @@
  */
 
 import { getUserSettingLazy } from "@api/UserSettings";
+import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, PluginSettingComponentProps } from "@utils/types";
 import { chooseFile } from "@utils/web";
-import { Menu, RestAPI, showToast, UserSettingsProtoStore, UserStore,useState } from "@webpack/common";
+import { Constants, Menu, RestAPI, showToast, UserSettingsProtoStore, UserStore,useState } from "@webpack/common";
 
 import { defineFeatureSettings } from "../../../featureSettings";
 
 const StatusSetting = getUserSettingLazy<string>("status", "status")!;
+const logger = new Logger("StatusAvatar");
 
 type AvatarSettingKey = "onlineAvatar" | "idleAvatar" | "dndAvatar" | "invisibleAvatar";
 
@@ -156,7 +158,10 @@ const settings = defineFeatureSettings("statusAvatar", {
 
 let lastStatus: string | null = null;
 let originalAvatarBase64: string | null = null;
-let applying = false;
+let avatarOwnerId: string | null = null;
+let changedAvatar = false;
+let generation = 0;
+let applyingGeneration: number | null = null;
 let running = false;
 
 function getConfiguredAvatarFor(status: string): string {
@@ -170,30 +175,38 @@ function getConfiguredAvatarFor(status: string): string {
     }
 }
 
-async function setAvatarBase64(base64: string) {
+async function setAvatarBase64(base64: string, userId: string) {
+    if (UserStore.getCurrentUser()?.id !== userId) return false;
     try {
         await RestAPI.patch({
-            url: "/users/@me",
+            url: Constants.Endpoints.USER("@me"),
             body: { avatar: base64 },
         });
+        return true;
     } catch (e) {
-        console.error("[StatusAvatar] Failed to update avatar:", e);
+        logger.error("Failed to update avatar.", e);
+        return false;
     }
 }
 
 async function applyAvatarForStatus(status: string) {
+    const userId = avatarOwnerId;
+    const current = generation;
+    if (!running || !userId || UserStore.getCurrentUser()?.id !== userId) return;
     const base64 = getConfiguredAvatarFor(status);
-    if (!base64 || applying) return;
+    if (!base64 || applyingGeneration === current) return;
 
-    applying = true;
+    applyingGeneration = current;
     try {
-        await setAvatarBase64(base64);
+        const changed = await setAvatarBase64(base64, userId);
+        if (running && generation === current && UserStore.getCurrentUser()?.id === userId) changedAvatar ||= changed;
     } finally {
-        applying = false;
+        if (applyingGeneration === current) applyingGeneration = null;
     }
 }
 
 function handleStatusChange() {
+    if (!running || UserStore.getCurrentUser()?.id !== avatarOwnerId) return;
     const status = StatusSetting.getSetting();
     if (status === lastStatus) return;
     lastStatus = status;
@@ -210,20 +223,28 @@ export default definePlugin({
     settings,
 
     async start() {
+        const current = ++generation;
+        const me = UserStore.getCurrentUser();
+        if (!me) return;
+        const userId = me.id;
+        avatarOwnerId = userId;
+        changedAvatar = false;
+        originalAvatarBase64 = null;
         lastStatus = StatusSetting.getSetting();
 
         if (settings.store.revertOnStop) {
             try {
-                const me = UserStore.getCurrentUser();
                 const res = await fetch(me.getAvatarURL(void 0, 1024, true));
                 const blob = await res.blob();
-                originalAvatarBase64 = await blobToBase64(blob);
+                const original = await blobToBase64(blob);
+                if (current !== generation || UserStore.getCurrentUser()?.id !== userId) return;
+                originalAvatarBase64 = original;
             } catch (e) {
-                console.error("[StatusAvatar] Failed to snapshot your current avatar:", e);
-                originalAvatarBase64 = null;
+                logger.error("Failed to snapshot your current avatar.", e);
             }
         }
 
+        if (current !== generation || UserStore.getCurrentUser()?.id !== userId) return;
         UserSettingsProtoStore.addChangeListener(handleStatusChange);
         running = true;
 
@@ -235,10 +256,17 @@ export default definePlugin({
 
     async stop() {
         UserSettingsProtoStore.removeChangeListener(handleStatusChange);
+        generation++;
         running = false;
+        const original = originalAvatarBase64;
+        const userId = avatarOwnerId;
+        const restore = changedAvatar && settings.store.revertOnStop;
+        originalAvatarBase64 = null;
+        avatarOwnerId = null;
+        changedAvatar = false;
 
-        if (settings.store.revertOnStop && originalAvatarBase64) {
-            await setAvatarBase64(originalAvatarBase64);
+        if (restore && original && userId) {
+            await setAvatarBase64(original, userId);
         }
     },
 

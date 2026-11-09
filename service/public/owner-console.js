@@ -8,23 +8,114 @@ const date = value => value ? new Date(value).toLocaleString() : "Not recorded";
 const field = (name, label, value = "", extra = "") => `<label>${label}<input name="${name}" value="${escape(value)}" ${extra}></label>`;
 const empty = text => `<p class="console-empty">${text}</p>`;
 const table = (headers, rows) => `<div class="console-table"><table><thead><tr>${headers.map(text => `<th>${text}</th>`).join("")}</tr></thead><tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+const number = value => value == null ? "Unavailable" : Number(value).toLocaleString();
+const metric = (label, value, detail) => `<article><span>${label}</span><strong>${escape(value)}</strong><small>${detail}</small></article>`;
+
+function overview({ checkedAt, deployment, accounts, sessions, activity, bot, resources, operations }, servers, serverCount) {
+    const today = new Date(checkedAt).toISOString().slice(0, 10);
+    const samples = new Map(resources?.days.map(day => [day.day, day.commands]));
+    const days = Array.from({ length: 14 }, (_, i) => new Date(Date.parse(today) - (13 - i) * 86_400_000).toISOString().slice(0, 10));
+    const peak = Math.max(1, ...days.map(day => samples.get(day) ?? 0));
+    const totals = resources?.days.filter(day => day.day >= days[0] && day.day <= today)
+        .reduce((sum, day) => ({ commands: sum.commands + day.commands, videos: sum.videos + day.videos, ms: sum.ms + day.processing_ms }), { commands: 0, videos: 0, ms: 0 });
+    const chart = resources?.days.length ? `<svg viewBox="0 0 420 110" role="img" aria-label="Daily command counts over the last 14 UTC days"><path class="console-chart-grid" d="M0 20h420M0 60h420M0 109h420"/>${days.map((day, index) => {
+        if (resources.measuredSince && day < resources.measuredSince) return "";
+        const count = samples.get(day) ?? 0, height = Math.max(2, count / peak * 98);
+        return `<rect x="${index * 30 + 3}" y="${109 - height}" width="24" height="${height}" rx="3" class="${day === today ? "today" : ""}"><title>${day}: ${number(count)} commands</title></rect>`;
+    }).join("")}</svg><div class="console-chart-labels"><span>${days[0]}</span><span>${today} · UTC</span></div><details><summary>Daily counts</summary><ul class="console-overview-list">${days.slice().reverse().map(day => `<li><span>${day}</span><strong>${resources.measuredSince && day < resources.measuredSince ? "No data" : number(samples.get(day) ?? 0)}</strong></li>`).join("")}</ul></details>` : empty(resources ? "No command samples yet." : "Command activity is unavailable.");
+    const states = [
+        ["Discord gateway", bot ? bot.paused ? "Paused" : bot.connected ? "Connected" : "Offline" : "Unavailable", bot?.connected && !bot.paused],
+        ["Music and video service", bot ? bot.musicOnline ? "Connected" : "Offline" : "Unavailable", bot?.musicOnline],
+        ["Queued commands", number(bot?.queued)],
+        ["Pending timed actions", number(bot?.pendingJobs)],
+        ["Servers playing music", number(resources?.activeMusicServers)],
+        ["Bot database", resources?.databaseBytes != null ? (resources.databaseBytes / 1048576).toFixed(2) + " MiB" : "Unavailable"],
+    ];
+    const alerts = [
+        ...(!bot?.connected || bot.paused ? [states[0][0] + " · " + states[0][1]] : []),
+        ...(bot && !bot.musicOnline ? ["Music and video service is offline."] : []),
+        ...(bot?.error ? [bot.error] : []),
+        ...(bot?.stickyErrors ? [number(bot.stickyErrors) + " sticky message errors"] : []),
+        ...(resources?.alerts ?? []).map(alert => `${({ dailyCommands: "Daily commands", dailyVideoMiB: "Daily video transfer (MiB)", storageMiB: "Bot storage (MiB)", averageMs: "Average command time (ms)" })[alert.key] ?? alert.key}: ${alert.current} / ${alert.limit}`),
+    ];
+    return `<div class="console-overview-heading"><div><h2>Overview</h2><p>Checked ${date(checkedAt)}</p></div><span>Site ${escape(deployment)}</span></div>
+        <div class="console-metrics console-summary">
+            ${metric("Bot servers", number(serverCount), "Current installations")}
+            ${metric("Plugin activations", number(accounts.activated), `${number(accounts.recent)} checked in within 24 hours`)}
+            ${metric("Blocked plugin IDs", number(accounts.blocked), "Includes IDs blocked before activation")}
+            ${metric("Dashboard sessions", number(sessions), "Unexpired browser sessions")}
+            ${metric("Commands today", resources ? number(samples.get(today) ?? 0) : "Unavailable", "Since midnight UTC")}
+        </div>
+        <div class="console-overview-grid">
+            <section class="console-card"><div class="console-card-heading"><h3>Command activity</h3><button data-console-tab="resources">Resources</button></div>${totals ? `<ul class="console-overview-list"><li><span>Commands in 14 days</span><strong>${number(totals.commands)}</strong></li><li><span>Average processing time</span><strong>${totals.commands ? number(Math.round(totals.ms / totals.commands)) + " ms" : "No samples"}</strong></li><li><span>Video transfers received</span><strong>${number(totals.videos)}</strong></li></ul>` : ""}${chart}</section>
+            <section class="console-card"><div class="console-card-heading"><h3>Live services</h3><button data-console-tab="health">Server checks</button></div><ul class="console-overview-list">${states.map(([label, value, ok]) => `<li><span>${label}</span><strong${ok ? ' class="console-online"' : ""}>${escape(value)}</strong></li>`).join("")}</ul>${bot?.version ? `<small class="console-deployment">Bot ${escape(bot.version)}</small>` : ""}</section>
+            <section class="console-card"><div class="console-card-heading"><h3>Needs attention</h3><button data-console-tab="operations">Operations</button></div>
+                ${alerts.length ? `<ul class="console-alerts">${alerts.map(alert => `<li>${escape(alert)}</li>`).join("")}</ul>` : empty("No service alerts.")}
+                ${operations ? `<ul class="console-overview-list"><li><span>Paused commands and groups</span><strong>${operations.maintenance.length}</strong></li><li><span>Restricted rollouts</span><strong>${operations.rollouts.length}</strong></li></ul>${[...operations.maintenance, ...operations.rollouts].length ? `<p>${escape([...operations.maintenance, ...operations.rollouts].join(", "))}</p>` : ""}` : empty("Rollout status is unavailable.")}
+                ${bot?.failures.length ? `<h4>Recent command issues</h4><ul class="console-overview-list">${bot.failures.slice(0, 5).map(row => `<li><span>${escape(row.name)}</span><strong>${number(row.n)}</strong></li>`).join("")}</ul>` : ""}
+            </section>
+            <section class="console-card"><div class="console-card-heading"><h3>Recent access changes</h3><button data-console-tab="sessions">Sessions</button></div>${activity.length ? `<ul class="console-activity">${activity.map(row => `<li><strong>${escape(({ allowed: "Plugin access allowed", blocked: "Plugin access blocked", admin_granted: "Administrator access granted", admin_revoked: "Administrator access revoked", sessions_revoked: "Dashboard sessions revoked" })[row.action] ?? row.action.replaceAll("_", " "))}</strong><time>${date(row.at)}</time><small>Target ${escape(row.target)} · by ${escape(row.actor)}</small></li>`).join("")}</ul>` : empty("No access changes have been recorded.")}</section>
+            <section class="console-card console-installations"><div class="console-card-heading"><h3>Newest bot installations</h3></div>${serverCount ? `<ul class="console-overview-list">${servers.slice(0, 6).map(server => `<li><span><a href="/dashboard?owner=1&amp;guild=${encodeURIComponent(server.id)}">${escape(server.name || "Discord server")}</a><small>${server.member_count == null ? "Member count unavailable" : number(server.member_count) + " reported members"}</small></span><time>${date(server.firstSeen)}</time></li>`).join("")}</ul>` : empty(serverCount === 0 ? "Sonata has no current installations." : "The server directory is unavailable.")}</section>
+        </div>`;
+}
+
+function browserLabel(agent) {
+    if (!agent) return "Browser details unavailable";
+    const browser = /Edg(?:A|iOS)?\//.test(agent) ? "Edge" : /OPR\//.test(agent) ? "Opera" : /(?:Firefox|FxiOS)\//.test(agent) ? "Firefox" : /(?:Chrome|CriOS)\//.test(agent) ? "Chrome" : /Safari\//.test(agent) ? "Safari" : "Other browser";
+    const platform = /iPhone/.test(agent) ? "iPhone" : /iPad/.test(agent) ? "iPad" : /Android/.test(agent) ? "Android" : /Windows/.test(agent) ? "Windows" : /Macintosh/.test(agent) ? "macOS" : /Linux/.test(agent) ? "Linux" : "";
+    return [browser, platform].filter(Boolean).join(" · ");
+}
 
 export async function mountOwnerConsole(root, api) {
-    let tab = "health", guild = "", servers = [], policy, version = 0, lookupPage = 0, lookupId = "";
+    let tab = "overview", guild = "", servers = [], serverCount, serverRequest, policy, version = 0, lookupPage = 0, lookupId = "";
     root.classList.add("owner-console");
-    const tabs = [["health", "Server checks"], ["messages", "Send message"], ["operations", "Rollouts & maintenance"], ["history", "Configuration history"], ["resources", "Resources"], ["sessions", "Sessions"], ["lookup", "Account lookup"], ["notes", "Server notes"]];
-    root.innerHTML = `<nav class="console-tabs" aria-label="Owner tools">${tabs.map(([id, label]) => `<button data-console-tab="${id}" aria-selected="${id === tab}">${label}</button>`).join("")}</nav><div class="console-toolbar"><label>Server<select id="console-server"></select></label><button id="console-refresh">Refresh</button></div><p class="console-notice" role="status" hidden></p><div class="console-body"></div>`;
-    const body = root.querySelector(".console-body"), notice = root.querySelector(".console-notice"), select = root.querySelector("#console-server");
+    const groups = [
+        ["Operations", [["overview", "Overview"], ["resources", "Resources"], ["operations", "Rollouts & maintenance"]]],
+        ["Servers", [["health", "Server checks"], ["history", "Config history"], ["notes", "Server notes"], ["messages", "Send message"]]],
+        ["Access", [["sessions", "Sessions"], ["lookup", "Account lookup"]]],
+    ];
+    root.innerHTML = `<header class="console-title"><h1>Sonata Owner</h1><button type="button" id="console-refresh">Refresh</button></header><nav class="console-tabs" aria-label="Owner tools">${groups.map(([label, tabs]) => `<div class="console-tab-group"><span>${label}</span><div>${tabs.map(([id, label]) => `<button type="button" data-console-tab="${id}" aria-current="${id === tab ? "page" : "false"}">${label}</button>`).join("")}</div></div>`).join("")}</nav><div class="console-toolbar" hidden><div class="console-server-field"><span>Server</span><details class="console-server-picker"><summary>Choose a server</summary><div class="console-server-menu"><label>Find an installed server<input type="search" placeholder="Server name or ID" autocomplete="off"></label><div class="console-server-results"></div></div></details></div></div><p class="console-notice" role="status" hidden></p><div class="console-body"></div>`;
+    const body = root.querySelector(".console-body"), notice = root.querySelector(".console-notice");
+    const picker = root.querySelector(".console-server-picker"), summary = picker.querySelector("summary"), search = picker.querySelector("input"), matches = picker.querySelector(".console-server-results");
     const showNotice = text => { notice.textContent = text; notice.hidden = false; };
-    try { servers = (await api("servers")).servers; guild = servers[0]?.id ?? ""; select.innerHTML = servers.map(server => `<option value="${server.id}">${escape(server.name)} · ${server.id}</option>`).join(""); } catch (error) { showNotice(error.message); }
+    function updateServerPicker() {
+        const current = servers.find(server => server.id === guild);
+        summary.innerHTML = current ? `<span>${escape(current.name || "Discord server")}</span><small>${escape(current.id)}</small>` : "Choose a server";
+        const query = search.value.trim().toLowerCase();
+        const filtered = servers.filter(server => server.id.includes(query) || (server.name ?? "").toLowerCase().includes(query));
+        matches.innerHTML = filtered.map(server => `<button type="button" data-server-id="${escape(server.id)}" aria-pressed="${server.id === guild}"><span>${escape(server.name || "Discord server")}</span><small>${escape(server.id)}</small></button>`).join("") || empty("No matching installed servers.");
+    }
+    async function loadServers() {
+        const installed = (await api("servers")).servers;
+        servers = installed;
+        serverCount = servers.length;
+        if (!servers.some(server => server.id === guild)) guild = servers[0]?.id ?? "";
+        updateServerPicker();
+    }
     const serverQuery = () => `?guild=${encodeURIComponent(guild)}`;
-    async function render() {
+    const serverTabs = ["health", "history", "notes", "messages"];
+    function refreshServers() {
+        return serverRequest ??= loadServers().catch(() => {
+            servers = []; guild = ""; serverCount = undefined; updateServerPicker();
+        }).finally(() => { serverRequest = undefined; });
+    }
+    async function render(refreshDirectory = false) {
         const current = ++version; notice.hidden = true; body.innerHTML = empty("Loading…");
-        root.querySelector(".console-toolbar label").hidden = !["health", "history", "notes", "messages"].includes(tab);
-        for (const button of root.querySelectorAll("[data-console-tab]")) button.setAttribute("aria-selected", String(button.dataset.consoleTab === tab));
+        root.querySelector(".console-toolbar").hidden = !serverTabs.includes(tab);
+        body.classList.toggle("console-overview", tab === "overview");
+        for (const button of root.querySelectorAll(".console-tabs [data-console-tab]")) button.setAttribute("aria-current", button.dataset.consoleTab === tab ? "page" : "false");
         try {
             let html;
-            if (["health", "history", "notes", "messages"].includes(tab) && !guild) { body.innerHTML = empty("No installed servers are available."); return; }
+            if (tab === "overview") {
+                const [data] = await Promise.all([api("overview"), refreshServers()]);
+                html = overview(data, servers, serverCount);
+                if (current === version) body.innerHTML = html;
+                return;
+            }
+            if (serverTabs.includes(tab) && (refreshDirectory || serverCount === undefined)) await refreshServers();
+            else if (serverRequest && (serverTabs.includes(tab) || tab === "operations")) await serverRequest;
+            if (current !== version) return;
+            if (serverTabs.includes(tab) && !guild) { body.innerHTML = empty(serverCount === undefined ? "The server directory could not load." : "No installed servers are available."); return; }
             if (tab === "health") {
                 const data = await api("check" + serverQuery());
                 html = `<h2>${escape(data.name)}</h2><p>Read-only checks · ${date(data.checkedAt)}</p><div class="console-checks">${data.checks.map(check => `<article><span class="console-indicator ${check.ok ? "ok" : "issue"}">${check.ok ? "✓" : "!"}</span><div><h3>${escape(check.name)}</h3><p>${escape(check.detail)}</p></div></article>`).join("")}</div>`;
@@ -48,7 +139,11 @@ export async function mountOwnerConsole(root, api) {
             }
             if (tab === "sessions") {
                 const data = await api("sessions");
-                html = `<h2>Dashboard sessions</h2><p>Revoking a session signs that browser out on its next request. This does not revoke Discord itself or plugin activation.</p><form data-console-form="revoke-all" class="console-inline">${field("userId", "Revoke all sessions for an account", "", 'required pattern="[0-9]{17,20}" placeholder="Discord user ID"')}<button type="submit">Revoke all…</button></form>${data.sessions.length ? table(["Account", "Kind / browser", "Created / active", "Expires", ""], data.sessions.map(session => [`${escape(session.username)}<small>${session.user_id}</small>`, `${escape(session.kind)}<small>${escape(session.agent || "Browser details not recorded")}</small>`, `${date(session.created)}<small>${date(session.last_seen)}</small>`, date(session.expires), `<button data-revoke="${session.id}">Revoke…</button>`])) : empty("No active dashboard sessions.")}`;
+                html = `<h2>Dashboard sessions</h2><p>Revoking a session signs that browser out on its next request.</p><div class="console-session-tools"><label>Find a session<input type="search" data-session-filter placeholder="Account, Discord ID or device"></label><span class="console-session-count" role="status">${data.sessions.length} shown</span></div>
+                    <div class="console-sessions">${data.sessions.map(session => {
+                        const device = browserLabel(session.agent);
+                        return `<article class="console-session" data-session-search="${escape([session.username, session.user_id, session.kind, device].join(" ").toLowerCase())}"><div class="console-session-title"><div><strong>${escape(session.username)}</strong><small>${escape(session.user_id)}</small></div><button type="button" data-revoke="${escape(session.id)}">Revoke…</button></div><dl><div><dt>Device</dt><dd>${device}</dd></div><div><dt>Session type</dt><dd>${escape(session.kind)}</dd></div><div><dt>Last active</dt><dd>${date(session.last_seen)}</dd></div><div><dt>Expires</dt><dd>${date(session.expires)}</dd></div></dl><small>Created ${date(session.created)}</small>${session.agent ? `<details><summary>Browser details</summary><small>${escape(session.agent)}</small></details>` : ""}</article>`;
+                    }).join("")}</div><p class="console-session-empty" ${data.sessions.length ? "hidden" : ""}>No matching sessions.</p><details class="console-revision"><summary>Revoke all sessions for an account</summary><form data-console-form="revoke-all" class="console-inline">${field("userId", "Discord user ID", "", 'required pattern="[0-9]{17,20}" placeholder="Discord user ID"')}<button type="submit">Revoke all…</button></form></details>`;
             }
             if (tab === "lookup") html = `<h2>Account lookup</h2><p>Search plugin activation, access restrictions, Sonata staff access and current dashboard access in the bot's servers.</p><form data-console-form="lookup" class="console-inline">${field("id", "Discord user ID", lookupId, 'required pattern="[0-9]{17,20}"')}<button type="submit">Look up</button></form><div id="lookup-results"></div>`;
             if (tab === "notes") {
@@ -58,6 +153,17 @@ export async function mountOwnerConsole(root, api) {
             if (current === version) body.innerHTML = html;
         } catch (error) { if (current === version) { body.innerHTML = empty("This tool could not load."); showNotice(error.message); } }
     }
+    root.addEventListener("input", event => {
+        if (!event.target.matches("[data-session-filter]")) return;
+        const query = event.target.value.trim().toLowerCase();
+        let count = 0;
+        for (const session of body.querySelectorAll("[data-session-search]")) {
+            session.hidden = !session.dataset.sessionSearch.includes(query);
+            if (!session.hidden) count++;
+        }
+        body.querySelector(".console-session-count").textContent = count + " shown";
+        body.querySelector(".console-session-empty").hidden = count > 0;
+    });
     async function lookup() {
         const data = await api(`lookup?id=${encodeURIComponent(lookupId)}&page=${lookupPage}`), result = root.querySelector("#lookup-results");
         if (!result) return;
@@ -65,8 +171,15 @@ export async function mountOwnerConsole(root, api) {
     }
     root.addEventListener("click", async event => {
         const button = event.target.closest("button"); if (!button) return;
-        if (button.dataset.consoleTab) { tab = button.dataset.consoleTab; await render(); return; }
-        if (button.id === "console-refresh") { await render(); return; }
+        if (button.dataset.consoleTab) { picker.open = false; tab = button.dataset.consoleTab; await render(true); return; }
+        if (button.dataset.serverId) {
+            if (!servers.some(server => server.id === button.dataset.serverId)) return;
+            const changed = guild !== button.dataset.serverId;
+            guild = button.dataset.serverId; picker.open = false; summary.focus(); updateServerPicker();
+            if (changed) await render();
+            return;
+        }
+        if (button.id === "console-refresh") { picker.open = false; await render(true); return; }
         if (button.dataset.lookupPage) { lookupPage += Number(button.dataset.lookupPage); try { await lookup(); } catch (error) { showNotice(error.message); } return; }
         try {
             button.disabled = true;
@@ -94,14 +207,25 @@ export async function mountOwnerConsole(root, api) {
             if (action === "revoke-all" && confirm(`Sign out every dashboard session for ${data.get("userId")}?`)) { await api("sessions", { userId: data.get("userId") }); await render(); showNotice("All sessions for this account revoked."); }
         } catch (error) { showNotice(error.message); } finally { button.disabled = false; }
     });
-    select.addEventListener("change", () => { guild = select.value; void render(); });
+    picker.addEventListener("toggle", () => { if (picker.open) { search.value = ""; updateServerPicker(); search.focus(); } });
+    picker.addEventListener("focusout", event => { if (!picker.contains(event.relatedTarget)) picker.open = false; });
+    picker.addEventListener("keydown", event => {
+        if (event.key === "Escape" && picker.open) { event.preventDefault(); picker.open = false; summary.focus(); }
+        if (event.target === search && ["ArrowDown", "Enter"].includes(event.key)) {
+            event.preventDefault();
+            const first = matches.querySelector("button");
+            if (event.key === "ArrowDown") first?.focus(); else first?.click();
+        }
+    });
+    search.addEventListener("input", updateServerPicker);
     await render();
 }
 
 document.addEventListener("sonata-admin", async event => {
     if (!event.detail.owner) return;
     const session = event.detail, nav = document.querySelector(".bot-owner-nav"), body = document.querySelector(".admin-body");
-    const button = document.createElement("button"), panel = document.createElement("section"); button.textContent = "Owner tools"; button.className = "quiet"; panel.className = "extra-admin-panel"; panel.hidden = true; nav.append(button); body.append(panel);
+    const button = document.createElement("button"), panel = document.createElement("section"); button.type = "button"; button.textContent = "Owner overview"; button.className = "quiet"; panel.className = "extra-admin-panel"; panel.hidden = true; nav.prepend(button); body.prepend(panel);
     const api = async (path, input) => { const response = await fetch(path === "servers" ? "/api/admin/bot" : "/api/admin/console/" + path, { method: input ? "POST" : "GET", credentials: "same-origin", headers: input ? { "Content-Type": "application/json", "X-CSRF-Token": session.csrf } : {}, body: input ? JSON.stringify(input) : undefined }); const value = await response.json(); if (!response.ok) throw Error(value.error); return value; };
     button.addEventListener("click", () => { for (const item of body.children) item.hidden = item !== panel; for (const item of nav.querySelectorAll("button")) item.setAttribute("aria-selected", String(item === button)); if (!panel.children.length) void mountOwnerConsole(panel, api); });
+    button.click();
 });

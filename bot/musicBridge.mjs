@@ -76,7 +76,7 @@ export class MusicBridge {
         const author = socialAuthor(body.author);
         const p = body.pagination;
         const pagination = pending.job.name === "queue" && Number.isInteger(p?.page) && Number.isInteger(p.pages) && p.page >= 1 && p.page <= p.pages && p.pages <= 7 ? { page: p.page, pages: p.pages } : undefined;
-        pending.resolve({ title: body.title, description: body.description, ...(pagination ? { pagination } : {}), ...(pending.job.kind === "video" && (binary || body.video) ? { video: binary || body.video, format: gif && binary ? "gif" : "mp4", isGif: body.isGif === true || (gif && !!binary), stats, ...(author ? { author } : {}), ...(Number.isFinite(date) && date >= 946684800000 && date <= Date.now() + 86400000 ? { published: new Date(date).toISOString() } : {}) } : {}) });
+        pending.resolve({ title: body.title, description: body.description, ...(pending.job.kind === "video" && body.noMedia === true && !binary && !body.video ? { noMedia: true } : {}), ...(pagination ? { pagination } : {}), ...(pending.job.kind === "video" && (binary || body.video) ? { video: binary || body.video, format: gif && binary ? "gif" : "mp4", isGif: body.isGif === true || (gif && !!binary), stats, ...(author ? { author } : {}), ...(Number.isFinite(date) && date >= 946684800000 && date <= Date.now() + 86400000 ? { published: new Date(date).toISOString() } : {}) } : {}) });
     }
     voice(body, send) {
         const d = body.d;

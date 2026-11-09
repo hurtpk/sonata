@@ -39,7 +39,7 @@ async function until(predicate, attempts = 100) {
 }
 
 async function runtime(t, configured = true, extraPermissions = 0n) {
-    const sockets = [], gatewayPackets = [], apiCalls = [], memberRoles = new Map(), nicknames = new Map(), replyMessages = new Map(), channels = new Map(), bans = new Map(), uploadFailures = new Set(), uploadGates = new Map(); let serial = 900000000000000000n, sequence = 0;
+    const sockets = [], gatewayPackets = [], apiCalls = [], memberRoles = new Map(), nicknames = new Map(), replyMessages = new Map(), channels = new Map(), bans = new Map(), uploadFailures = new Set(), uploadGates = new Map(), appEmojis = []; let serial = 900000000000000000n, sequence = 0;
     const options = convertV4MiniflareOptions({ workers: [{ name: "sonata-test", modules: true, scriptPath: fileURLToPath(new URL("../.check/worker.js", import.meta.url)), compatibilityDate: "2026-10-28", compatibilityFlags: ["nodejs_compat"], durableObjects: { BOT: { className: "SonataBot", useSQLite: true } },
         bindings: configured ? { DISCORD_APPLICATION_ID: APP, DISCORD_BOT_TOKEN: "fake-test-token", BOT_CONTROL_SECRET: SECRET, MUSIC_BRIDGE_SECRET: MUSIC_SECRET, BOT_DASHBOARD_SECRET: DASHBOARD_SECRET } : {},
         outboundService: async request => {
@@ -64,6 +64,13 @@ async function runtime(t, configured = true, extraPermissions = 0n) {
             const raw = form || request.method === "GET" ? "" : await request.text(), body = form ? JSON.parse(form.get("payload_json")) : raw ? JSON.parse(raw) : undefined;
             const call = { path: url.pathname, method: request.method, body, ...(form ? { file: { name: form.get("files[0]").name, text: await form.get("files[0]").text() } } : {}) }; apiCalls.push(call);
             const path = url.pathname.replace("/api/v10", "");
+            if (path === "/applications/" + APP + "/emojis") {
+                if (request.method === "GET") return MockResponse.json({ items: appEmojis });
+                assert.match(body.image, /^data:image\/png;base64,iVBOR/);
+                const emoji = { name: body.name, id: String(++serial) };
+                appEmojis.push(emoji);
+                return MockResponse.json(emoji);
+            }
             if (form && uploadGates.has(path)) await uploadGates.get(path);
             if (form && uploadFailures.has(path)) return MockResponse.json({message:"Upload refused"},{status:403});
             if (request.method === "GET" && replyMessages.has(path)) return MockResponse.json(replyMessages.get(path));
@@ -87,7 +94,7 @@ async function runtime(t, configured = true, extraPermissions = 0n) {
     const request = (path, method = "GET", auth = true) => mf.dispatchFetch(`https://sonata.example${path}`, { method, redirect: "manual", headers: auth ? { Authorization: `Bearer ${SECRET}` } : {} });
     const status = async () => (await request("/control/status")).json();
     const send = (type, data) => sockets.at(-1).send(JSON.stringify({ op: 0, t: type, s: ++sequence, d: data }));
-    return { mf, request, status, send, sockets, gatewayPackets, apiCalls, memberRoles, nicknames, replyMessages, uploadFailures, uploadGates };
+    return { mf, request, status, send, sockets, gatewayPackets, apiCalls, memberRoles, nicknames, replyMessages, uploadFailures, uploadGates, channels };
 }
 
 test("Public routes expose no credentials, and control requires the private control key", async t => {
@@ -99,6 +106,89 @@ test("Public routes expose no credentials, and control requires the private cont
     assert.equal(url.origin, "https://discord.com"); assert.equal(url.searchParams.get("client_id"), APP);
     assert.equal(BigInt(url.searchParams.get("permissions")), 8n);
     assert.equal(f.sockets.length, 0);
+});
+
+test("Gateway replies use the configured server embed color", async t => {
+    const f = await runtime(t, true, 32n);
+    await f.request("/control/start", "POST");
+    await until(async () => (await f.status()).connected);
+    for (const [id, content] of [["100000000000019101", ",settings embedcolor #123456"], ["100000000000019102", ",ping"]]) {
+        f.send("MESSAGE_CREATE", { id, guild_id: GUILD, channel_id: CHANNEL, author: { id: ACTOR }, content });
+        const reply = () => f.apiCalls.find(call => call.body?.message_reference?.message_id === id)?.body;
+        await until(reply);
+        assert.equal(reply().embeds[0].color, 0x123456);
+    }
+});
+
+test("Snipe collects deletions in new channels without channel setup", async t => {
+    const f = await runtime(t, true, 32n);
+    await f.request("/control/start", "POST");
+    await until(async () => (await f.status()).connected);
+    const channel = "888888888888888891";
+    f.channels.set(channel, { id: channel, guild_id: GUILD, type: 0, permission_overwrites: [] });
+    f.send("MESSAGE_CREATE", { id: "100000000000019020", guild_id: GUILD, channel_id: channel, author: { id: TARGET }, content: "New channel works by default" });
+    f.send("MESSAGE_DELETE", { id: "100000000000019020", guild_id: GUILD, channel_id: channel });
+    f.send("MESSAGE_CREATE", { id: "100000000000019021", guild_id: GUILD, channel_id: channel, author: { id: ACTOR }, content: ",s" });
+    const reply = () => f.apiCalls.find(call => call.body?.message_reference?.message_id === "100000000000019021")?.body;
+    await until(reply);
+    assert.match(reply().embeds[0].description, /New channel works by default/);
+});
+
+test("Snipe keeps history per channel and honors the dashboard permission toggle", async t => {
+    const f = await runtime(t, true, 32n);
+    await f.request("/control/start", "POST");
+    await until(async () => (await f.status()).connected);
+    const ids = Array.from({ length: 12 }, (_, i) => String(100000000000019000n + BigInt(i)));
+    const configure = (limit, require_manage_messages) => f.mf.dispatchFetch("https://sonata.example/dashboard/action", {
+        method: "POST", headers: { Authorization: "Bearer " + DASHBOARD_SECRET, "X-Sonata-User": ACTOR },
+        body: JSON.stringify({ guild: GUILD, channel: CHANNEL, name: "settings", sub: "snipe", options: { limit, require_manage_messages } }),
+    });
+    const post = (id, content, actor = TARGET, channel = CHANNEL) => f.send("MESSAGE_CREATE", { id, guild_id: GUILD, channel_id: channel, author: { id: actor }, content });
+    const remove = id => f.send("MESSAGE_DELETE", { id, guild_id: GUILD, channel_id: CHANNEL });
+    const prefixReply = async (id, content, actor = ACTOR) => {
+        post(id, content, actor);
+        const find = () => f.apiCalls.find(call => call.body?.message_reference?.message_id === id)?.body;
+        await until(find);
+        return find();
+    };
+
+    post(ids[0], "Available by default");
+    remove(ids[0]);
+    assert.match((await prefixReply(ids[7], ",s")).embeds[0].description, /Available by default/);
+    const saved = await configure(5);
+    assert.equal(saved.status, 200);
+    assert.equal((await saved.json()).settings.snipeLimit, 5);
+    assert.equal((await configure(4)).status, 400);
+    for (let i = 1; i <= 6; i++) post(ids[i], "Deleted message " + i);
+    f.send("MESSAGE_UPDATE", { id: ids[6], guild_id: GUILD, channel_id: CHANNEL, content: "Updated text @everyone" });
+    f.send("MESSAGE_DELETE_BULK", { guild_id: GUILD, channel_id: CHANNEL, ids: ids.slice(1, 7).reverse() });
+    post(ids[0], "Different channel", TARGET, VOICE);
+    remove(ids[0]);
+    const newest = await prefixReply(ids[8], ",s");
+    assert.match(newest.embeds[0].footer.text, /1\/5 messages/);
+    assert.match(newest.embeds[0].description, /Updated text @everyone/);
+    assert.deepEqual(newest.allowed_mentions, { parse: [], replied_user: false });
+    assert.match((await prefixReply(ids[9], ",snipe 5")).embeds[0].description, /Deleted message 2$/);
+    const channel = { id: CHANNEL, guild_id: GUILD, type: 0, permission_overwrites: [{ id: TARGET, type: 1, allow: "65536", deny: "0" }] };
+    f.channels.set(CHANNEL, channel);
+    assert.match((await prefixReply(ids[10], ",snipe", TARGET)).content, /^Error code: S/);
+
+    assert.equal((await configure(5, false)).status, 200);
+    assert.equal((await (await configure(5)).json()).settings.snipeRequireManageMessages, false);
+    f.send("INTERACTION_CREATE", { id: ids[11], type: 2, guild_id: GUILD, channel_id: CHANNEL, member: { user: { id: TARGET } }, token: "snipe-test", data: { name: "snipe", options: [{ name: "number", value: 2 }] } });
+    const slashResult = () => f.apiCalls.find(call => call.path.includes("/snipe-test/messages/@original"))?.body;
+    await until(slashResult);
+    assert.match(slashResult().embeds[0].description, /Deleted message 5$/);
+    assert.equal(f.apiCalls.find(call => call.path.includes("/snipe-test/callback")).body.data.flags, 64);
+    assert.match((await prefixReply("100000000000019013", ",s", TARGET)).embeds[0].footer.text, /1\/5 messages/);
+    f.channels.set(CHANNEL, { ...channel, permission_overwrites: [] });
+    assert.match((await prefixReply("100000000000019014", ",s", TARGET)).content, /^Error code: S/);
+    f.channels.set(CHANNEL, channel);
+    assert.equal((await prefixReply("100000000000019015", ",settings snipe 5 on")).embeds[0].title, "Snipe settings saved");
+    assert.match((await prefixReply("100000000000019016", ",s", TARGET)).content, /^Error code: S/);
+    assert.equal((await configure(0)).status, 200);
+    assert.equal((await configure(25)).status, 200);
+    assert.equal((await prefixReply("100000000000019012", ",snipe")).embeds[0].title, "No deleted message at that position");
 });
 
 test("Music bridge authentication is separate from owner controls and cannot send arbitrary Gateway packets", async t => {
@@ -155,11 +245,24 @@ test("Video bridge replies upload a multipart MP4 with attribution and report fa
     assert.equal(job.kind,"video"); assert.equal(job.source,source);
     assert(f.apiCalls.some(call=>call.method==="POST"&&call.path.endsWith(`/channels/${CHANNEL}/typing`)));
     assert(!f.apiCalls.some(call=>call.method==="DELETE"&&call.path.endsWith("100000000000000195")));
-    await bridge("result", { id: job.id, title: "K (@cantbreakmeoff)", description: "#mood", stats:{views:85355,likes:13313,comments:89,shares:7100},published:"2026-10-10T10:57:00.000Z", video: Buffer.from(bytes).toString("base64") });
+    const avatar = "https://p16.tiktokcdn.com/avatar.jpg";
+    await bridge("result", { id: job.id, title: "K (@cantbreakmeoff)", description: "#mood", author: { name: "K", url: "https://www.tiktok.com/@cantbreakmeoff", avatar }, stats:{views:85355,likes:13313,comments:89,shares:7100},published:"2026-10-10T10:57:00.000Z", video: Buffer.from(bytes).toString("base64") });
     await until(() => f.apiCalls.some(call => call.file?.name === "sonata-video.mp4"));
     const posted = f.apiCalls.find(call => call.file?.name === "sonata-video.mp4");
-    assert.equal(posted.file.text,bytes); assert.match(posted.body.embeds[0].title,/#mood/); assert.match(posted.body.embeds[0].footer.text,/Sent by/); assert.equal(posted.body.content,undefined); assert.deepEqual(posted.body.allowed_mentions.parse,[]);
-    assert.match(posted.body.embeds[0].footer.text,/TikTok • 👁 85,355 • ❤️ 13,313 • 💬 89 • 🔁 7,100/);assert.equal(posted.body.embeds[0].timestamp,"2026-10-10T10:57:00.000Z");assert.equal(posted.body.message_reference,undefined);
+    const [header, caption, gallery, divider, footer] = posted.body.components[0].components;
+    assert.equal(posted.body.flags, 32768);
+    assert.match(header.components[0].content, /^<:tiktok:\d+> \[\*\*K\*\*\]\(https:\/\/www\.tiktok\.com\/@cantbreakmeoff\)$/);
+    assert.deepEqual(header.accessory, { type: 2, style: 5, emoji: { name: "🔗" }, url: source });
+    assert.match(caption.components[0].content, /#mood/);
+    assert.equal(caption.accessory.media.url, avatar);
+    assert.equal(gallery.items[0].media.url, "attachment://sonata-video.mp4");
+    assert.equal(divider.divider, true);
+    assert.equal(footer.content, `-# 👁 85,355 • ❤️ 13,313 • 💬 89 • 🔁 7,100 • Sent by Test user (<@${ACTOR}>)`);
+    assert.equal(posted.file.text, bytes);
+    assert.equal(posted.body.content, undefined);
+    assert.equal(posted.body.embeds, undefined);
+    assert.equal(posted.body.message_reference, undefined);
+    assert.deepEqual(posted.body.allowed_mentions.parse, []);
     await until(()=>f.apiCalls.some(call=>call.method==="DELETE"&&call.path.endsWith("100000000000000195")));assert(f.apiCalls.findIndex(call=>call.file)>0);assert(f.apiCalls.findIndex(call=>call.method==="DELETE"&&call.path.endsWith("100000000000000195"))>f.apiCalls.indexOf(posted));
     f.send("MESSAGE_CREATE", { id: "100000000000000196", guild_id: GUILD, channel_id: CHANNEL, author: { id: TARGET }, content: `,sonata ${source}` });
     await until(async () => { job = (await bridge("poll")).jobs[0]; return !!job; });
@@ -167,7 +270,7 @@ test("Video bridge replies upload a multipart MP4 with attribution and report fa
     await until(() => f.apiCalls.some(call => /^Error code: S\d+$/.test(call.body?.content || "")));
     const failed = f.apiCalls.find(call => /^Error code: S\d+$/.test(call.body?.content || "")); assert.equal(failed.file,undefined); assert.match(failed.body.content,/^Error code: S\d+$/); assert.equal(failed.body.embeds,undefined);
     const log=await f.mf.dispatchFetch('https://sonata.example/dashboard/owner/failures',{headers:{Authorization:`Bearer ${DASHBOARD_SECRET}`,'X-Sonata-User':'779172192461783110'}});
-    const records=await log.json();assert.equal(records.failures[0].code,failed.body.content.split(': ')[1]);assert.equal(records.failures[0].detail,'TikTok could not provide this video.');assert.equal(records.failures[0].actor,TARGET);assert(records.failures[0].source.startsWith('https://www.tiktok.com/'));
+    const records=await log.json();assert.equal(records.failures[0].code,failed.body.content.split(': ')[1]);assert.equal(records.failures[0].detail,'TikTok could not provide this video.');assert.equal(records.failures[0].actor,TARGET);assert(records.failures[0].source.startsWith('https://www.tiktok.com/'));assert.equal(records.failures[0].command, `,sonata ${source}`);
     assert(!f.apiCalls.some(call=>call.method==="DELETE"&&call.path.endsWith("100000000000000196")));
 });
 
@@ -186,6 +289,57 @@ test("All-channel automatic video uploads include channels created after the set
     await until(()=>f.apiCalls.some(call=>call.method==="DELETE"&&call.path.endsWith("100000000000000198")));
 });
 
+test("Automatic video embeds check roles for standalone links and shorthands while manual commands still work", async t => {
+    const f = await runtime(t, true, 32n), headers = { Authorization: "Bearer " + MUSIC_SECRET };
+    const bridge = async (path, input) => (await f.mf.dispatchFetch("https://sonata.example/music/" + path, { method: input ? "POST" : "GET", headers, body: input ? JSON.stringify(input) : undefined })).json();
+    await f.request("/control/start", "POST"); await until(async () => (await f.status()).connected); await bridge("poll");
+    f.send("MESSAGE_CREATE", { id: "100000000000012000", guild_id: GUILD, channel_id: CHANNEL, author: { id: ACTOR }, content: ",settings videoembeds on all roles: " + MOD });
+    await until(() => f.apiCalls.some(call => call.body?.embeds?.[0]?.title === "Settings saved"));
+    const source = "https://www.tiktok.com/@creator/video/123";
+    for (const [id, user, roles, content] of [["100000000000012001", TARGET, [USERROLE], source], ["100000000000012004", TARGET, [USERROLE], "sonata " + source], ["100000000000012002", ACTOR, [MOD], source], ["100000000000012003", TARGET, [USERROLE], ",sonata " + source]]) {
+        f.replyMessages.set("/channels/" + CHANNEL + "/messages/" + id, { id, author: { id: user }, content });
+        f.send("MESSAGE_CREATE", { id, guild_id: GUILD, channel_id: CHANNEL, author: { id: user }, member: { roles }, content });
+        if (user === TARGET && !content.startsWith(",")) {
+            await sleep(60);
+            assert.equal((await bridge("poll")).jobs.length, 0);
+            assert(!f.apiCalls.some(call => call.path.endsWith("/typing")));
+            continue;
+        }
+        let job; await until(async () => !!(job = (await bridge("poll")).jobs[0]));
+        assert.equal(job.id, id);
+        await bridge("result", { id, title: "Sample", description: "Sample clip", video: Buffer.from("0000ftyp0000test").toString("base64") });
+        await until(() => f.apiCalls.filter(call => call.file?.name === "sonata-video.mp4").length === Number(id.at(-1)) - 1);
+        await sleep(25);
+    }
+});
+
+test("Word filters delete matching messages and edits, ping only the author, and apply repeat timeouts", async t => {
+    const f = await runtime(t, true, 8n);
+    await f.request("/control/start", "POST"); await until(async () => (await f.status()).connected);
+    const source = "/api/v10/channels/" + CHANNEL + "/messages/";
+    const send = (id, content, user = ACTOR, roles = [MOD]) => f.send("MESSAGE_CREATE", { id, guild_id: GUILD, channel_id: CHANNEL, author: { id: user }, member: { roles }, content });
+    for (const [index, command] of [',automod filteradd "test word"', ',automod filterreply "test word" "{user} please stop @everyone"', ',automod filteraction "test word" timeout 2 10m'].entries()) {
+        send("10000000000001300" + index, command);
+        await until(() => f.apiCalls.filter(call => call.body?.embeds?.[0]?.title === "Message word filters saved").length === index + 1);
+    }
+    send("100000000000013003", "a test wordish example", TARGET, [USERROLE]);
+    send("100000000000013004", "a test word", ACTOR, [MOD]);
+    send("100000000000013005", "a TEST WORD!", TARGET, [USERROLE]);
+    await until(() => f.apiCalls.some(call => call.method === "DELETE" && call.path === source + "100000000000013005"));
+    assert(!f.apiCalls.some(call => call.method === "DELETE" && [source + "100000000000013003", source + "100000000000013004"].includes(call.path)));
+    assert(!f.apiCalls.some(call => call.body?.communication_disabled_until));
+    const id = "100000000000013006";
+    f.replyMessages.set("/channels/" + CHANNEL + "/messages/" + id, { id, author: { id: TARGET }, content: "edited into a test word" });
+    const edit = { id, guild_id: GUILD, channel_id: CHANNEL, content: "edited into a test word" };
+    f.send("MESSAGE_UPDATE", edit); f.send("MESSAGE_UPDATE", edit);
+    await until(() => f.apiCalls.some(call => call.body?.communication_disabled_until));
+    const replies = f.apiCalls.filter(call => call.body?.content === "<@" + TARGET + "> please stop @everyone");
+    assert.equal(replies.length, 2);
+    assert.deepEqual(replies[0].body.allowed_mentions, { parse: [], users: [TARGET] });
+    assert.equal(f.apiCalls.filter(call => call.method === "DELETE" && call.path === source + id).length, 1);
+    assert.equal(f.apiCalls.filter(call => call.body?.communication_disabled_until).length, 1);
+});
+
 test("Gateway embeds only standalone links or Sonata mentions and names, never links inside ordinary text",async t=>{
     const f=await runtime(t,true,32n),headers={Authorization:`Bearer ${MUSIC_SECRET}`},source='https://vt.tiktok.com/ZSpLhJS1S/';
     const bridge=async(path,body)=>(await f.mf.dispatchFetch(`https://sonata.example/music/${path}`,{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined})).json();
@@ -202,6 +356,7 @@ test("Gateway embeds only standalone links or Sonata mentions and names, never l
         await until(()=>f.apiCalls.some(call=>call.method==='DELETE'&&call.path.endsWith(id)));await sleep(30);
     }
     assert.equal(f.apiCalls.filter(call=>call.file?.name==='sonata-video.mp4').length,4);
+    assert.equal(f.apiCalls.filter(call=>call.method==="POST"&&call.path.endsWith("/applications/"+APP+"/emojis")).length,1);
 });
 
 test("Video uploads keep edited source messages and originals when Discord refuses the upload",async t=>{
@@ -249,12 +404,20 @@ test("Gateway GIF buttons edit the same message between GIF and MP4 using fresh 
     f.send('MESSAGE_CREATE',{id:'100000000000009001',guild_id:GUILD,channel_id:CHANNEL,author:{id:ACTOR},content:',sonata '+source});
     let job=await poll();assert.equal(job.limit,20*1048576);await complete(job,'gif');await until(()=>f.apiCalls.some(call=>call.file?.name==='sonata-animation.gif'));
     const initial=f.apiCalls.find(call=>call.file?.name==='sonata-animation.gif');await until(()=>!!initial.response);const messageId=initial.response.id;let message={id:messageId,author:{id:APP},...initial.body};
-    for(const[mode,n]of[['video',2],['gif',3]]){
+    const legacy = { id: messageId, author: { id: APP }, embeds: [{ url: source }], components: [message.components[0].components.find(component => component.type === 1)] };
+    for(const[mode,n]of[['video',2],['gif',3],['video',4]]){
+        if (n === 4) message = legacy;
         const token='fake-gif-toggle-'+mode;
-        f.send('INTERACTION_CREATE',{id:'10000000000000900'+n,type:3,guild_id:GUILD,channel_id:CHANNEL,member:{user:{id:ACTOR}},token,message,data:{custom_id:message.components[0].components[0].custom_id,component_type:2}});
+        const controls = (n === 4 ? message.components[0] : message.components[0].components.find(component => component.type === 1)).components;
+        f.send('INTERACTION_CREATE',{id:'10000000000000900'+n,type:3,guild_id:GUILD,channel_id:CHANNEL,member:{user:{id:ACTOR}},token:token+n,message,data:{custom_id:controls[0].custom_id,component_type:2}});
         job=await poll();assert.equal(job.mode,mode);await complete(job,mode==='gif'?'gif':'mp4');
-        await until(()=>f.apiCalls.some(call=>call.path.includes(token)&&call.method==='PATCH'&&call.file));const edit=f.apiCalls.find(call=>call.path.includes(token)&&call.method==='PATCH'&&call.file);
-        assert.equal(edit.file.name,mode==='gif'?'sonata-animation.gif':'sonata-video.mp4');assert.equal(edit.body.attachments.length,1);assert.equal(edit.body.components[0].components[0].label,mode==='gif'?'Video':'GIF');message={id:messageId,author:{id:APP},...edit.body};
+        await until(()=>f.apiCalls.some(call=>call.path.includes(token+n)&&call.method==='PATCH'&&call.file));const edit=f.apiCalls.find(call=>call.path.includes(token+n)&&call.method==='PATCH'&&call.file);
+        assert.equal(edit.file.name,mode==='gif'?'sonata-animation.gif':'sonata-video.mp4');assert.equal(edit.body.attachments.length,1);
+        const card = edit.body.components[0].components;
+        assert.equal(card.find(component => component.type === 1).components[0].label,mode==='gif'?'Video':'GIF');
+        assert.equal(card.find(component => component.type === 12).items[0].media.url,"attachment://"+edit.file.name);
+        assert.deepEqual(edit.body.embeds, n === 4 ? [] : undefined);
+        message={id:messageId,author:{id:APP},...edit.body};
         assert(f.apiCalls.some(call=>call.path.includes(token)&&call.body?.type===6));
     }
 });
@@ -455,7 +618,7 @@ test("Dashboard bridge rejects other service keys and trusts only its verified a
     assert.equal((await f.mf.dispatchFetch("https://sonata.example/dashboard/owner",{headers})).status,401);
     assert.equal((await f.mf.dispatchFetch("https://sonata.example/dashboard/owner",{headers:{...headers,"X-Sonata-User":ACTOR}})).status,403);
     const response=await f.mf.dispatchFetch("https://sonata.example/dashboard/owner",{headers:{...headers,"X-Sonata-User":"779172192461783110"}});
-    assert.equal(response.status,200); const value=await response.json(); assert.deepEqual(value.servers,[]); assert.equal(value.commands,103); assert(!JSON.stringify(value).includes("fake-test-token"));
+    assert.equal(response.status,200); const value=await response.json(); assert.deepEqual(value.servers,[]); assert.equal(value.commands,104); assert(!JSON.stringify(value).includes("fake-test-token"));
     assert.equal((await f.mf.dispatchFetch("https://sonata.example/control/start",{method:"POST",headers})).status,401);
 });
 
@@ -537,4 +700,20 @@ test("Gateway modlogs and modstats shorthands page the original menu and reject 
     assert(f.apiCalls.some(c=>c.path.includes("100000000000000922")&&c.body?.type===6));
     click("100000000000000923",TARGET);await until(()=>f.apiCalls.some(c=>c.path.endsWith("modlogs-token")&&c.method==="POST"&&c.body?.flags===64));
     send("100000000000000924",`,modstats ${ACTOR}`);await until(()=>f.apiCalls.some(c=>c.body?.message_reference?.message_id==="100000000000000924"));assert.match(f.apiCalls.find(c=>c.body?.message_reference?.message_id==="100000000000000924").body.embeds[0].fields[0].name,/#1/);
+});
+
+
+test("Text-only X posts are skipped silently without deleting the source or recording a failure", async t => {
+    const f = await runtime(t), headers = { Authorization: `Bearer ${MUSIC_SECRET}` };
+    const bridge = async (path, body) => (await f.mf.dispatchFetch(`https://sonata.example/music/${path}`, { method: body ? "POST" : "GET", headers, body: body ? JSON.stringify(body) : undefined })).json();
+    await f.request("/control/start", "POST"); await until(async () => (await f.status()).connected); await bridge("poll");
+    const source = "https://x.com/creator/status/2119202610322227327", id = "100000000000029100";
+    f.send("MESSAGE_CREATE", { id, guild_id: GUILD, channel_id: CHANNEL, author: { id: ACTOR }, content: `sonata ${source}` });
+    let job; await until(async () => { job = (await bridge("poll")).jobs[0]; return !!job; });
+    await bridge("result", { id: job.id, title: "No media", description: "This post has no attached media.", noMedia: true });
+    f.send("MESSAGE_CREATE", { id: "100000000000029101", guild_id: GUILD, channel_id: CHANNEL, author: { id: ACTOR }, content: ",ping" });
+    await until(() => f.apiCalls.some(call => call.body?.message_reference?.message_id === "100000000000029101"));
+    assert(!f.apiCalls.some(call => call.file || call.body?.message_reference?.message_id === id || call.method === "DELETE"));
+    const result = await f.mf.dispatchFetch("https://sonata.example/dashboard/owner/failures", { headers: { Authorization: `Bearer ${DASHBOARD_SECRET}`, "X-Sonata-User": "779172192461783110" } });
+    assert.equal((await result.json()).total, 0);
 });

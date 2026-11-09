@@ -38,7 +38,7 @@ test("Music options agree between prefixes and slash commands and reject invalid
     assert.throws(() => parsePrefix(",seek -1", ","), /valid seconds/);
     const registered = slashCommands();
     const group = registered.find(command => command.name === "music");
-    assert.deepEqual(group.options.map(action => action.name), ["pause", "resume", "seek", "volume", "shuffle"]);
+    assert.deepEqual(group.options.map(action => action.name), ["play", "pause", "resume", "skip", "stop", "nowplaying", "volume", "shuffle", "remove", "loop", "seek", "filter", "voteskip"]);
     for (const [action, option, amount] of [["pause"], ["resume"], ["seek", "seconds", 90], ["volume", "percent", 40], ["shuffle"]]) {
         assert.ok(!registered.some(command => command.name === action));
         assert.equal(slashName(action), `music ${action}`);
@@ -47,8 +47,8 @@ test("Music options agree between prefixes and slash commands and reject invalid
         assert.deepEqual(nested, parsePrefix(`,${action}${option ? ` ${amount}` : ""}`, ","));
         assert.deepEqual(nested, parseSlash({ name: action, options: values }));
     }
-    for (const name of ["play", "skip", "stop"]) assert.ok(registered.some(command => command.name === name));
-    assert.throws(() => parseSlash({ name: "music", options: [{ name: "stop", type: 1 }] }), /Choose music/);
+    for (const name of ["play", "skip", "stop"]) assert.ok(group.options.some(command => command.name === name));
+    assert.throws(() => parseSlash({ name: "music", options: [{ name: "unknown", type: 1 }] }), /available music/);
     assert.throws(() => parseSlash({ name: "music", options: [{ name: "volume", options: [{ name: "percent", value: 101 }] }] }), /valid percent/);
 });
 

@@ -60,7 +60,7 @@ test("Video URLs and CDN redirects are bounded and video replies credit the send
     for(const url of ["http://x.com/a/status/123","https://youtube.com.evil.test/watch?v=sMK6XgyLJGg","https://127.0.0.1/test","https://www.youtube.com/playlist?list=1"])assert.throws(()=>videoSource(url));
     assert.throws(()=>videoCdn("https://video.twimg.com.evil.test/a.mp4"));assert.throws(()=>videoCdn("http://video.twimg.com/a.mp4"));
     const context=await commandContext(f.command(",sonata https://youtu.be/sMK6XgyLJGg"),BOT,f.api);
-    const result=await videoCommand(context,{online:()=>true,submit:async()=>({title:"Clip",video:Buffer.from("testvideo").toString("base64")})});assert.match(result.embeds[0].footer.text,/Sent by/);assert.deepEqual(result.allowed_mentions.parse,[]);assert.equal(result.files[0].type,"video/mp4");
+    const result=await videoCommand(context,{online:()=>true,submit:async()=>({title:"Clip",video:Buffer.from("testvideo").toString("base64")})});assert.match(result.components[0].components.at(-1).content,/Sent by/);assert.deepEqual(result.allowed_mentions.parse,[]);assert.equal(result.files[0].type,"video/mp4");
     await assert.rejects(videoCommand(context,{online:()=>false}),/video service is offline/);
     await assert.rejects(videoCommand(context,{online:()=>true,submit:async()=>({description:"TikTok is unavailable."})}),/TikTok is unavailable/);
     const execute=async()=>({stdout:JSON.stringify({url:"https://video.twimg.com/test.mp4",ext:"mp4",duration:10,title:"Test"})});
@@ -84,7 +84,13 @@ test("TikTok metadata resolves to an actual bounded MP4 attachment with caption 
     const short="https://www.tiktok.com/t/ZPLDWC4UG/",redirect=async url=>url===short?new Response(null,{status:301,headers:{location:source+"?tracking="+"x".repeat(1000)}}):transport(url);
     assert.deepEqual(Buffer.from((await downloadVideo(short,redirect,execute)).video,"base64"),bytes);
     await assert.rejects(downloadVideo(short,async()=>new Response(null,{status:302,headers:{location:"https://127.0.0.1/video.mp4"}}),execute),/public video post/);
-    const f=fixture(t),context=await commandContext(f.command(`,sonata ${source}`),BOT,f.api),reply=await videoCommand(context,{online:()=>true,submit:async()=>result});assert.deepEqual(reply.files[0].bytes,bytes);assert.match(reply.embeds[0].title,/#mood/);assert.match(reply.embeds[0].footer.text,/TikTok • ❤️ 17.8K • 💬 159 • 🔁 3K • Sent by/);assert.equal(reply.embeds[0].timestamp,"2026-09-26T00:12:46.000Z");assert.equal(reply.embeds[0].footer.icon_url,"https://www.tiktok.com/favicon.ico");assert.equal(reply.content,undefined);
+    const f=fixture(t),context=await commandContext(f.command(`,sonata ${source}`),BOT,f.api),reply=await videoCommand(context,{online:()=>true,submit:async()=>result});
+    const card=reply.components[0].components;
+    assert.deepEqual(reply.files[0].bytes,bytes);
+    assert.match(card[0].components[0].content,/TikTok/);
+    assert.match(card[1].content,/#mood/);
+    assert.match(card.at(-1).content,/❤️ 17.8K • 💬 159 • 🔁 3K • Sent by/);
+    assert.equal(reply.content,undefined);
     await assert.rejects(downloadVideo(source,async()=>new Response(html.replace(offload,"https://127.0.0.1/a.mp4")),execute),/downloadable video/);
     await assert.rejects(downloadVideo(source,async url=>url.includes("www.tnktok.com")?new Response(html):new Response(null,{status:302,headers:{location:"https://127.0.0.1/a.mp4"}}),execute),/supported video stream/);
     await assert.rejects(downloadVideo(source,async url=>url.includes("www.tnktok.com")?new Response(html):new Response("not a video"),execute),/playable MP4/);
@@ -144,9 +150,18 @@ test("Instagram metadata adds real counts, creator avatar and publication time w
 });
 
 
-test("All supported social embeds put the creator avatar above the caption and include platform icons",async t=>{
+test("All supported social cards include a platform icon, creator profile and caption above the media",async t=>{
     const f=fixture(t);const sites=[['https://www.tiktok.com/@creator/video/123','TikTok','https://www.tiktok.com/@creator','https://offload.tnktok.com/generate/pfp/123'],['https://www.instagram.com/reel/example/','Instagram','https://www.instagram.com/creator/','https://oginstagram.com/offload/example/avatar?v=2'],['https://x.com/creator/status/123','X','https://x.com/creator','https://pbs.twimg.com/profile_images/123/avatar.jpg'],['https://youtu.be/sMK6XgyLJGg','YouTube','https://www.youtube.com/channel/UCexample','https://yt3.ggpht.com/avatar.jpg']];
-    for(const[source,platform,url,avatar]of sites){const context=await commandContext(f.command(',sonata '+source),BOT,f.api);const result=await videoCommand(context,{online:()=>true,submit:async()=>({video:Buffer.from('0000ftyp0000test'),title:'Generic video',description:'Actual video caption #test',author:{name:'Creator',url,avatar},stats:{likes:123}})});const card=result.embeds[0];assert.equal(card.author.name,'Creator');assert.equal(card.author.icon_url,avatar);assert.equal(card.title,'Actual video caption #test');assert.equal(card.description,'');assert(card.footer.icon_url.startsWith('https://'));assert(card.footer.text.startsWith(platform+' •'));}
+    for(const[source,platform,url,avatar]of sites){
+        const context=await commandContext(f.command(',sonata '+source),BOT,f.api);
+        const name=platform==="X"?"x_logo":platform.toLowerCase(), iconApi=async()=>({items:[{id:BOT,name}]});
+        const result=await videoCommand(context,{online:()=>true,submit:async()=>({video:Buffer.from('0000ftyp0000test'),title:'Generic video',description:'Actual video caption #test',author:{name:'Creator',url,avatar},stats:{likes:123}})},iconApi,BOT);
+        const [header, caption, media] = result.components[0].components;
+        assert.equal(header.components[0].content,"<:"+name+":"+BOT+"> [**Creator**]("+url+")");
+        assert.equal(caption.accessory.media.url,avatar);
+        assert.equal(caption.components[0].content,'Actual video caption \\#test');
+        assert.equal(media.items[0].media.url,"attachment://sonata-video.mp4");
+    }
 });
 
 test("X metadata supplies the post caption, creator picture and available real counts",async()=>{
@@ -187,7 +202,7 @@ test("X GIFs with zero provider duration upload as playable MP4s and indexed vid
     const transport=async raw=>raw.includes('api.fxtwitter.com')?Response.json({tweet:{id:'123',text:'GIF caption',media:{videos:[{type:'gif',duration:0,url}]}}}):new Response(bytes);
     const result=await downloadVideo('https://x.com/creator/status/123',transport,async program=>{assert.equal(program,'ffprobe');return{stdout:JSON.stringify({format:{duration:'3'},streams:[{codec_type:'video',codec_name:'h264'}]})}},20*1024*1024,'video');
     assert.deepEqual(result.video,bytes);assert.equal(result.description,'GIF caption');
-    await assert.rejects(downloadVideo('https://x.com/creator/status/123',async()=>Response.json({tweet:{id:'123',text:'Article',card:{url:'https://example.org'}}})),/does not contain a video or GIF/);
+    assert.equal((await downloadVideo('https://x.com/creator/status/123',async()=>Response.json({tweet:{id:'123',text:'Article',card:{url:'https://example.org'}}}))).noMedia,true);
 });
 
 test("TikTok retries the compatible stream when HD is HEVC or unavailable without lowering playable HD",async()=>{
@@ -206,4 +221,12 @@ test("TikTok retries the compatible stream when HD is HEVC or unavailable withou
     downloads.length=0;hdStatus=503;result=await downloadVideo(source,transport,execute);assert.deepEqual(result.video,h264);assert.deepEqual(downloads,[hd,standard]);
     hdStatus=200;hdBytes=hevc;standardBytes=hevc;await assert.rejects(downloadVideo(source,transport,execute));
     standardBytes=h264;standardOversized=true;await assert.rejects(downloadVideo(source,transport,execute));
+});
+
+
+test("Verified text-only tweets never invoke the downloader, while unknown metadata still uses normal error handling", async () => {
+    let fetches = 0, executed = 0;
+    const result = await downloadVideo("https://x.com/user/status/123", async () => { fetches++; return Response.json({ tweet: { id: "123", text: "Only text", media: {} } }); }, async () => { executed++; throw Error("Downloader must not run"); });
+    assert.equal(result.noMedia, true); assert.equal(fetches, 1); assert.equal(executed, 0);
+    await assert.rejects(downloadVideo("https://x.com/user/status/123", async () => Response.json({ tweet: { id: "123", media: { photos: [{ url: "https://pbs.twimg.com/a.jpg" }] } } }), async () => { executed++; }), /does not contain a video or GIF/);
 });

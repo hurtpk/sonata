@@ -15,7 +15,7 @@ const click = (message, component, values, actor = OWNER) => helpInteraction({ m
 
 test("Help opens a category overview with unique Discord controls", () => {
     const response = help({ actor: OWNER, options: {} });
-    assert.match(response.embeds[0].description, /323 commands across 8 categories/);
+    assert.match(response.embeds[0].description, /334 commands across 8 categories/);
     assert.match(response.embeds[0].description, /\[Sonata dashboard\]\(https:\/\/sonatabot\.info\)/);
     const ids = response.components.flatMap(row => row.components.map(component => component.custom_id));
     assert.equal(new Set(ids).size, ids.length);

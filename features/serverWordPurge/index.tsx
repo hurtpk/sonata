@@ -13,12 +13,14 @@ import definePlugin from "@utils/types";
 import type { RenderModalProps } from "@vencord/discord-types";
 import { ChannelStore, GuildStore, React, RestAPI, TextInput, useState } from "@webpack/common";
 
+import { isFeatureRunning } from "../../featureSettings";
 import { Window } from "../_shared/Window";
 import { canPurgeChannel, openPurgeChannelPicker } from "../exploiterReport/ChannelPicker";
 import { headerSpacing, retryAfterMs } from "../messageCleanerUtil";
+import { openMemberLogs } from "../memberLogs";
 import { openModeration, registerModerationPart } from "../serverTools/Moderation";
 
-type Message = { id: string; channel_id: string; content: string; hit?: boolean; };
+type Message = { id: string; channel_id: string; content: string; hit?: boolean; author?: { id: string; username: string; global_name?: string; }; };
 type SearchPage = { messages?: Message[][]; retry_after?: number; };
 type Response<T> = { status: number; body: T; headers?: unknown; };
 type Phase = "idle" | "searching" | "preview" | "deleting" | "done" | "stopped" | "error";
@@ -207,6 +209,7 @@ function WordPurgeWindow({ modalProps }: { modalProps: RenderModalProps; }) {
             {run.rows.map(({ message, result }) => <div className="vc-tool-section" key={message.id}>
                 <b>{label(message.channel_id)}</b> {result && <span className="vc-tool-hint">{result}</span>}
                 <div style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{message.content}</div>
+                {message.author && <div className="vc-tool-row"><span className="vc-tool-hint">{message.author.global_name ?? message.author.username} · {message.author.id}</span>{isFeatureRunning("memberLogs") && <Button size="small" variant="secondary" onClick={() => openMemberLogs(message.author?.id, ChannelStore.getChannel(message.channel_id)?.guild_id, true)}>Member notes &amp; evidence</Button>}</div>}
             </div>)}
         </div>
     </Window>;

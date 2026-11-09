@@ -2,17 +2,17 @@
 
 .vc-gp-hero {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 14px;
-    min-height: 92px;
-    padding: 16px;
-    border-radius: calc(16px * var(--sw-r, 1));
+    min-height: 96px;
+    padding: 18px;
+    margin-bottom: 18px;
+    border-radius: 8px;
     border: 1px solid var(--tl-line);
     background: var(--sw-card, radial-gradient(500px 200px at 0% 0%, hsl(from var(--tl-accent) h s l / 0.25), transparent 70%), hsl(0 0% 0% / 0.25));
     background-size: cover;
     background-position: center;
 }
-.vc-gp-hero[title] { cursor: zoom-in; min-height: 150px; }
 .vc-gp-icon, .vc-gp-icon-text { flex: none; width: 64px; height: 64px; border-radius: calc(18px * var(--sw-r, 1)); box-shadow: 0 4px 16px hsl(0 0% 0% / 0.4); }
 .vc-gp-icon { object-fit: cover; cursor: zoom-in; }
 .vc-gp-icon-text { display: grid; place-items: center; background: var(--sw-accent-fill, var(--tl-accent)); color: #fff; font-size: 22px; font-weight: 800; }
@@ -41,9 +41,20 @@
 .vc-gp-guild-acronym { display: grid; place-items: center; width: 100%; height: 100%; font-size: 8px; font-weight: 700; color: #fff; }
 .vc-gp-guild-count { margin-left: 4px; font-size: 11px; color: var(--text-muted); }
 
-/* 2026-10 refresh: roomier, with colour fades and glows. */
-.vc-gp-hero { min-height: 110px; padding: 20px; border-radius: calc(20px * var(--sw-r, 1)); border-color: var(--sw-line, color-mix(in srgb, var(--tl-accent) 28%, transparent)); box-shadow: none; }
-.vc-gp-icon, .vc-gp-icon-text { width: 72px; height: 72px; border-radius: calc(20px * var(--sw-r, 1)); box-shadow: var(--sw-noglow, 0 6px 22px hsl(0 0% 0% / 0.45), 0 0 0 3px color-mix(in srgb, var(--tl-accent) 45%, transparent)); }
+.vc-gp-icon, .vc-gp-icon-text { width: 58px; height: 58px; border-radius: 8px; box-shadow: none; }
 .vc-gp-icon-text { background: var(--sw-accent-fill, var(--sw-accent, linear-gradient(150deg, var(--tl-accent), color-mix(in srgb, var(--tl-accent) 55%, #000)))); }
 .vc-gp-hero-text b { font-size: 22px; }
 .vc-gp-facts { gap: 10px; }
+.vc-gp-icon-button { flex: none; padding: 0; border: 0; background: transparent; }
+.vc-gp-hero-text { flex: 1; }
+.vc-gp-hero-text b, .vc-gp-hero-text span { overflow-wrap: anywhere; }
+.vc-gp-server-switch { flex: none; margin-left: auto; color: var(--text-muted); border: 1px solid var(--tl-line); border-radius: 6px; }
+.vc-gp-server-switch:hover { color: var(--text-normal); background: var(--sw-card); }
+.vc-gp-server-picker { width: min(330px, 80vw); padding: 10px; background: var(--background-floating); border: 1px solid var(--border-subtle); border-radius: 8px; box-shadow: 0 12px 32px #0006; }
+.vc-gp-server-list { max-height: 320px; overflow-y: auto; margin-top: 8px; }
+.vc-gp-server-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px; border-radius: 5px; text-align: left; color: var(--text-normal); }
+.vc-gp-server-option:hover, .vc-gp-server-option[aria-pressed="true"] { background: var(--background-modifier-hover); }
+.vc-gp-server-option > span:not(.vc-gp-server-initials) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.vc-gp-server-option small { display: block; color: var(--text-muted); font-size: 11px; margin-top: 3px; }
+.vc-gp-server-option img, .vc-gp-server-initials { width: 30px; height: 30px; border-radius: 6px; flex: none; object-fit: cover; }
+.vc-gp-server-initials { display: grid; place-items: center; background: var(--background-secondary); font-size: 10px; }

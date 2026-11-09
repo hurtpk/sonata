@@ -27,8 +27,8 @@ test("New subcommands parse consistently for prefixes and slash commands", () =>
     assert.equal(parsePrefix(",help role add", ",").options.command, "role add");
     assert.throws(() => parsePrefix(`,softban ${TARGET} 8`, ","));
     assert.throws(() => parsePrefix(`,nickname ${TARGET} ${"a".repeat(33)}`, ","));
-    assert.equal(slashCommands().find(command => command.name === "userinfo").default_member_permissions, null);
-    assert.equal(slashCommands().find(command => command.name === "pin").default_member_permissions, PERMS.PINS.toString());
+    assert.equal(slashCommands().find(command => command.name === "information").default_member_permissions, null);
+    assert.equal(slashCommands().find(command => command.name === "messages").default_member_permissions, null);
 });
 
 test("Help pages cover every command and show full subcommand syntax", async t => {

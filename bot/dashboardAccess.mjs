@@ -6,6 +6,7 @@
 
 import { channelPermissions, fail, isId, memberPermissions, PERMS, requirePermission } from "./discord.mjs";
 import { expandMessage } from "./community.mjs";
+import { identifyModerator } from "./actionAttribution.mjs";
 
 export function assertDashboardAccess(info, roles, member, actor, settings) {
     const policy = settings.dashboardAccess ?? { administrators: true, users: [] };
@@ -22,6 +23,7 @@ export async function dashboardAccess(api, guild, actor, store, { listing = fals
         memberRequest,
     ]);
     const policy = assertDashboardAccess(info, roles, member, actor, store.settings(guild));
+    identifyModerator(member);
     return { guild: info, roles, actor: member, policy };
 }
 
@@ -36,7 +38,7 @@ export async function dashboardExtra(path, request, input, context, bot) {
     }
     const o = input;
     if (!["welcome", "goodbye", "ticket", "verification", "custom"].includes(o.kind) || typeof o.title !== "string" || o.title.length > 250 || typeof o.text !== "string" || !o.text.trim() || o.text.length > 1800 || (o.color && !/^#[a-f0-9]{6}$/i.test(o.color))) fail("Choose a message type, a title and up to 1,800 characters of text.");
-    const message = { embeds: [{ title: o.title || "Sonata", description: expandMessage(o.text, actor.user, guild), color: parseInt((o.color || "#bd898e").slice(1), 16) }], allowed_mentions: { parse: [] } };
+    const message = { embeds: [{ title: o.title || "Sonata", description: expandMessage(o.text, actor.user, guild), color: parseInt((o.color || "#ffad91").slice(1), 16) }], allowed_mentions: { parse: [] } };
     if (o.kind === "verification") message.components = [{ type: 1, components: [{ type: 2, style: 1, label: "Verify", custom_id: `snverify:${guild.id}` }] }];
     if (o.kind === "ticket") message.components = [{ type: 1, components: [{ type: 2, style: 1, label: "Open ticket", custom_id: `snticket:open:${guild.id}` }] }];
     if (o.preview) return { message };
@@ -46,7 +48,7 @@ export async function dashboardExtra(path, request, input, context, bot) {
     requirePermission(channelPermissions(actor, roles, guild, channel), PERMS.VIEW | PERMS.SEND);
     if (o.save) {
         if (!["welcome", "goodbye"].includes(o.kind)) fail("Only welcome and goodbye messages can be saved as automatic messages.");
-        const settings = store.settings(guild.id); settings.designedMessages ??= {}; settings.designedMessages[o.kind] ??= {}; settings.designedMessages[o.kind][channel.id] = { title: o.title, text: o.text, color: o.color || "#bd898e" }; settings[o.kind] ??= {}; settings[o.kind][channel.id] = o.text; store.saveSettings(guild.id, settings);
+        const settings = store.settings(guild.id); settings.designedMessages ??= {}; settings.designedMessages[o.kind] ??= {}; settings.designedMessages[o.kind][channel.id] = { title: o.title, text: o.text, color: o.color || "#ffad91" }; settings[o.kind] ??= {}; settings[o.kind][channel.id] = o.text; store.saveSettings(guild.id, settings);
         return { ok: true };
     }
     if (o.kind === "ticket" && !store.settings(guild.id).tickets?.enabled) fail("Set up tickets before posting a ticket panel.");

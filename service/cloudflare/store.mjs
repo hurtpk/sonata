@@ -16,6 +16,7 @@ export function d1Store(database) {
             const queries = ["devices", "pairings", "flows", "sessions", "bot_flows", "bot_sessions"].map(table => [`DELETE FROM ${table} WHERE expires < ?`, now]);
             queries.push(["DELETE FROM session_details WHERE NOT EXISTS (SELECT 1 FROM sessions WHERE sessions.hash=session_details.hash) AND NOT EXISTS (SELECT 1 FROM bot_sessions WHERE bot_sessions.hash=session_details.hash)"]);
             queries.push(["DELETE FROM users WHERE blocked=0 AND COALESCE(last_seen,registered_at) < ?", now - 90 * 86400_000], ["DELETE FROM audit WHERE at < ?", now - 90 * 86400_000]);
+            queries.push(["DELETE FROM staff_activity WHERE at < ?", now - 90 * 86400_000]);
             await database.batch(queries.map(([sql, ...params]) => statement(sql, params)));
         },
     };

@@ -22,7 +22,7 @@ test("Temporary roles and starboard have prefix and slash syntax within Discord'
     assert.equal(parsePrefix(",starboard", ",").sub, "starboardview");
     assert.throws(() => parsePrefix(`,starboard setup ${CHANNEL} 0`, ","));
     assert.throws(() => parsePrefix(",starboard unknown", ","));
-    assert.equal(COMMANDS.length, 103); assert.ok(slashCommands().length <= 100);
+    assert.equal(COMMANDS.length, 104); assert.ok(slashCommands().length <= 100);
 });
 
 test("Temporary roles persist and expire with grant and automatic expiry cases", async t => {

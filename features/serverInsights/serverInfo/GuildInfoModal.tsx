@@ -15,6 +15,7 @@ import { Guild, RenderModalProps, User } from "@vencord/discord-types";
 import { FluxDispatcher, GuildChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, IconUtils, Parser, PresenceStore, RelationshipStore, ScrollerThin, SnowflakeUtils, Timestamp, useEffect, UserStore, UserUtils, useState, useStateFromStores } from "@webpack/common";
 
 import { windowAccent } from "../../../controller/accent";
+import { SonataGlyph } from "../../../utilities/icons";
 import { Window } from "../../_shared/Window";
 import { openInsights } from "../Insights";
 import { settings } from ".";
@@ -68,44 +69,22 @@ export function GuildInfoModal({ guild, modalProps }: GuildProps & { modalProps:
 
     const [currentTab, setCurrentTab] = useState(Tabs.ServerInfo);
 
-    const bannerUrl = guild.banner && IconUtils.getGuildBannerURL(guild, true)!.replace(/\?size=\d+$/, "?size=1024");
-
-    const iconUrl = guild.icon && IconUtils.getGuildIconURL({
-        id: guild.id,
-        icon: guild.icon,
-        canAnimate: true,
-        size: 512
-    });
-
     const accent = windowAccent("serverInfo");
-    const memberCount = (GuildMemberStore.getMemberIds(guild.id) ?? []).length;
-    const tabs: [Tabs, string, number | undefined][] = [
-        [Tabs.ServerInfo, "ℹ️ About", undefined],
-        [Tabs.Friends, "🫂 Friends", friendCount],
-        [Tabs.MutualMembers, "🔗 Mutual", mutualMembersCount],
-        [Tabs.BlockedUsers, "🚫 Blocked", blockedCount],
-        [Tabs.IgnoredUsers, "🙈 Ignored", ignoredCount],
+    const tabs: [Tabs, string, string, number | undefined][] = [
+        [Tabs.ServerInfo, "About", "info", undefined],
+        [Tabs.Friends, "Friends", "people", friendCount],
+        [Tabs.MutualMembers, "Mutual", "link", mutualMembersCount],
+        [Tabs.BlockedUsers, "Blocked", "block", blockedCount],
+        [Tabs.IgnoredUsers, "Ignored", "eyeOff", ignoredCount],
     ];
 
     return (
         <Window {...modalProps} size="lg" title="Server Info" subtitle={guild.name}>
             <div className={classes(tl("wrap"), cl("window"))} style={accent ? ({ "--vc-tool-accent": accent } as React.CSSProperties) : undefined}>
-                <div className={cl("hero")} style={bannerUrl ? { backgroundImage: `linear-gradient(180deg, transparent 20%, hsl(0 0% 0% / 0.75)), url("${bannerUrl}")` } : undefined}
-                    onClick={bannerUrl ? () => openImageModal({ url: bannerUrl, width: 1024 }) : undefined} title={bannerUrl ? "Open the banner" : undefined}>
-                    {iconUrl
-                        ? <img className={cl("icon")} src={iconUrl} alt="" onClick={e => { e.stopPropagation(); openImageModal({ url: iconUrl, height: 512, width: 512 }); }} />
-                        : <div aria-hidden className={cl("icon-text")}>{getGuildAcronym(guild)}</div>}
-                    <div className={cl("hero-text")}>
-                        <b>{guild.name}</b>
-                        {guild.description && <span>{guild.description}</span>}
-                        {memberCount > 0 && <span className={cl("members")}>{memberCount.toLocaleString()} members loaded</span>}
-                    </div>
-                </div>
-
                 <div className={tl("tabs")}>
-                    {tabs.map(([id, label, count]) => (
+                    {tabs.map(([id, label, icon, count]) => (
                         <button key={id} type="button" className={classes(tl("tab"), currentTab === id && tl("tab-on"))} onClick={() => setCurrentTab(id)}>
-                            {label}{count !== undefined && <span className={classes(tl("badge"), cl("count"))}>{count}</span>}
+                            <SonataGlyph name={icon} /> {label}{count !== undefined && <span className={classes(tl("badge"), cl("count"))}>{count}</span>}
                         </button>
                     ))}
                 </div>
@@ -252,14 +231,14 @@ function UserList(type: "friends" | "blocked" | "ignored", guild: Guild, ids: st
 }
 
 const EMPTY = {
-    friends: ["🫂", "None of your friends are in this server."],
-    blocked: ["🚫", "Nobody you've blocked is in this server."],
-    ignored: ["🙈", "Nobody you've ignored is in this server."],
-    mutual: ["🔗", "Nobody here shares another server with you."],
+    friends: ["people", "None of your friends are in this server."],
+    blocked: ["block", "Nobody you've blocked is in this server."],
+    ignored: ["eyeOff", "Nobody you've ignored is in this server."],
+    mutual: ["link", "Nobody here shares another server with you."],
 } as const;
 
 function Empty({ type }: { type: keyof typeof EMPTY; }) {
-    return <div className={tl("empty")}><span className={tl("empty-icon")}>{EMPTY[type][0]}</span>{EMPTY[type][1]}</div>;
+    return <div className={tl("empty")}><span className={tl("empty-icon")}><SonataGlyph name={EMPTY[type][0]} /></span>{EMPTY[type][1]}</div>;
 }
 
 const STATUS_COLOR: Record<string, string> = { online: "#23a55a", idle: "#f0b232", dnd: "#f23f43", streaming: "#593695" };

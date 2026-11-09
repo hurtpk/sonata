@@ -25,5 +25,6 @@ export function openStore(path) {
         run("DELETE FROM session_details WHERE NOT EXISTS (SELECT 1 FROM sessions WHERE sessions.hash=session_details.hash) AND NOT EXISTS (SELECT 1 FROM bot_sessions WHERE bot_sessions.hash=session_details.hash)");
         run("DELETE FROM users WHERE blocked=0 AND COALESCE(last_seen,registered_at) < ?", now - 90 * 86400_000);
         run("DELETE FROM audit WHERE at < ?", now - 90 * 86400_000);
+        run("DELETE FROM staff_activity WHERE at < ?", now - 90 * 86400_000);
     } };
 }

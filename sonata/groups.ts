@@ -157,7 +157,7 @@ export const GROUPS: Record<string, Group> = {
     },
     serverTools: {
         name: "Server Tools",
-        description: "Server insights, permissions, invites, local names, AutoMod regex, private member evidence logs and active timeouts in one window.",
+        description: "Server insights, permissions, invites, local names, Discord AutoMod rules and regex, Word Purge, private member evidence logs and active timeouts in one window.",
         members: ["serverInfo", "permissionsViewer", "showHiddenChannels", "showTimeoutDuration", "forceOwnerCrown", "betterInvites", "inviteManager", "localNames", "autoModRegex", "memberLogs", "activeTimeouts", "serverWordPurge"],
         window: true,
     },

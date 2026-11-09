@@ -30,7 +30,7 @@ test("Fake permissions grant only Sonata actions, support prefix and slash, and 
     await assert.rejects(run(f, `,ban ${TARGET}`), /permissions/);
     assert.equal(f.roles.find(role => role.id === MODROLE).permissions, "0");
     assert.equal(f.store.get("SELECT COUNT(*) AS n FROM cases WHERE kind LIKE 'bot permission %'").n, 2);
-    assert.equal(slashCommands().find(command => command.name === "ban").default_member_permissions, null);
+    assert.equal(slashCommands().find(command => command.name === "moderation").default_member_permissions, null);
     assert.equal(slashCommands().find(command => command.name === "fakepermissions").default_member_permissions, PERMS.ADMIN.toString());
 });
 
@@ -164,5 +164,5 @@ test("Dashboard exposes nickname, permission, command controls and aggregate ins
     await assert.rejects(dashboardRequest(request("action", ACTOR, action), bot, command => executeCommand(command, f.store, f.api, BOT)), /permissions/);
     await dashboardRequest(request("action", OWNER, action), bot, command => executeCommand(command, f.store, f.api, BOT));
     assert.deepEqual(f.store.settings(GUILD).fakePermissions[USERROLE], ["kick"]);
-    assert.equal(COMMANDS.length, 103); assert(slashCommands().length <= 100);
+    assert.equal(COMMANDS.length, 104); assert(slashCommands().length <= 100);
 });

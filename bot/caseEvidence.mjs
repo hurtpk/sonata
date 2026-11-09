@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { embedColor } from "./discord.mjs";
+
 import { caseTarget } from "./moderation.mjs";
 import { channelPermissions, embed, fail, PERMS, replyPayload, requirePermission } from "./discord.mjs";
 import { readDiscordFile } from "./media.mjs";
@@ -30,7 +32,7 @@ export async function saveCaseEvidence(context,store,n,file,transport=fetch) {
 }
 export async function caseDetails(context,store,row) {
     const response=embed(`Case #${row.n} · ${row.kind}`,`**Target:** ${caseTarget(row.kind,row.target)}\n**Moderator:** <@${row.actor}> · \`${row.actor}\`\n**When:** <t:${Math.floor(row.at/1000)}:f>\n**Status:** ${row.status.replaceAll("_"," ")}\n\n**Reason**\n${row.reason}${row.duration?`\n**Duration:** ${Math.round(row.duration/60000)} minutes`:""}${row.detail?`\n\n**Details**\n${row.detail}`:""}`);
-    response.embeds[0].color=0xbd898e;
+    response.embeds[0].color=embedColor();
     const notes=store.all("SELECT * FROM notes WHERE guild=? AND n=? ORDER BY at DESC LIMIT 15",row.guild,row.n);
     response.embeds[0].fields=notes.slice(0,8).map(note=>({name:note.kind,value:`${String(note.value).slice(0,450)}\nBy <@${note.actor}> · <t:${Math.floor(note.at/1000)}:f>`,inline:false}));
     const references=store.all("SELECT channel,message FROM case_files WHERE guild=? AND n=? ORDER BY rowid LIMIT 10",row.guild,row.n);

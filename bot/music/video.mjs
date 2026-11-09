@@ -23,7 +23,7 @@ export async function xMetadata(source, transport = fetch, maximum = videoLimit(
     const media = tweet.media?.videos?.[Number(index) - 1];
     const variants = media?.formats?.filter(value => value.container === "mp4" && (!value.codec || value.codec === "h264") && (!media.duration || !value.bitrate || value.bitrate * media.duration / 8 <= maximum)).sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
     const stream = variants?.[0]?.url || media?.url;
-    return { description: String(tweet.text || "").slice(0, 1400), stats, ...(stream ? { url: videoCdn(stream), offload: true, isGif: media.type === "gif", duration: media.duration > 0 ? media.duration : undefined } : { noVideo: true }), ...(author ? { author } : {}), ...(Number.isFinite(date) ? { published: new Date(date).toISOString() } : {}) };
+    return { hasMedia: Object.values(tweet.media || {}).some(value => Array.isArray(value) && value.length > 0), description: String(tweet.text || "").slice(0, 1400), stats, ...(stream ? { url: videoCdn(stream), offload: true, isGif: media.type === "gif", duration: media.duration > 0 ? media.duration : undefined } : { noVideo: true }), ...(author ? { author } : {}), ...(Number.isFinite(date) ? { published: new Date(date).toISOString() } : {}) };
 }
 
 async function youtubeAvatar(info, transport) {
@@ -194,6 +194,7 @@ export async function downloadVideo(raw, transport = fetch, execute = run, maxim
         } catch { throw new Error("This provider could not supply the video. It may be private, unavailable or restricted on the host."); }
     };
     const x = host === "x.com" ? await metadata : null;
+    if (x?.noVideo && !x.hasMedia) return { title: "No media", description: "This post has no attached media.", noMedia: true };
     if (x?.noVideo) throw new Error("This X post does not contain a video or GIF. It may contain an article link or photo instead.");
     const providers = host.endsWith("tiktok.com") ? [() => tiktokVideo(source, transport), () => tiktokDownload(source, transport, maximum), native] : host === "www.instagram.com" ? [() => instagramVideo(source, transport), () => instagramDownload(source, transport), native] : x?.url ? [() => x, native] : [native];
     let info, bytes, failure;

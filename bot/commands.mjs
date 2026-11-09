@@ -12,6 +12,7 @@ import { MUSIC_COMMANDS, MUSIC_SETTINGS_COMMAND } from "./musicCommands.mjs";
 import { SERVER_COMMANDS } from "./serverCommands.mjs";
 import { DASHBOARD_COMMANDS } from "./dashboardCommands.mjs";
 import { AUTOMOD_OPTIONS } from "./advancedAutomod.mjs";
+import { WORD_FILTER_OPTIONS } from "./wordFilters.mjs";
 import { LASTFM_COMMAND } from "./lastfm.mjs";
 import { delegatedCommand } from "./commandAccess.mjs";
 import { ROLEMENU_COMMAND } from "./roleMenus.mjs";
@@ -20,6 +21,7 @@ import { APPROVAL_OPTIONS } from "./approvals.mjs";
 import { PERMISSION_AUDIT_OPTIONS } from "./permissionAudit.mjs";
 
 export const COMMANDS = [
+    command("snipe", "Show a recently deleted message in this channel", 0n, [option("number", 4, "Deleted message position, with 1 being the newest", false, { min_value: 1, max_value: 25 })], ["s"]),
     command("stick", "Keep a message below new channel messages", PERMS.MESSAGES, [sub("set", "Set sticky text or copy a message from this channel", [option("message", 3, "Text or message link, or reply to a message", false, { max_length: 1800 })]), sub("remove", "Stop reposting the channel sticky message", [text("message", "Current or original sticky message link", false)])], ["stickmessage", "unstick", "unstickmessage"]),
     command("sonata", "Embed a supported public video with sender credit", 0n, [option("url", 3, "TikTok, Instagram, X or YouTube video URL", true, { max_length: 500 })]),
     LASTFM_COMMAND,
@@ -140,14 +142,20 @@ export const COMMANDS = [
         sub("starboardoff", "Pause starboard without deleting featured messages"),
         sub("starboardview", "Show the starboard channel and threshold"),
         sub("view", "See this server's Sonata settings"),
-        sub("videoembeds", "Automatically upload supported videos in selected or all channels", [option("enabled", 5, "Enable automatic video embeds"), channel([0, 5], false), option("all", 5, "Apply to every channel, including new channels", false), option("channels", 3, "Channel mentions or IDs separated by spaces", false, { max_length: 2200 })]),
+        sub("embedcolor", "Change Sonata’s embed color for this server", [option("color", 3, "Six-digit hex color, or default for Sonata orange", true, { max_length: 7 })]),
+        sub("snipe", "Set deleted message history for all channels", [
+            option("limit", 4, "Messages to keep per channel", true, { choices: [{ name: "Off", value: 0 }, ...Array.from({ length: 21 }, (_, i) => ({ name: String(i + 5), value: i + 5 }))] }),
+            option("require_manage_messages", 5, "Require Manage Messages to use snipe", false),
+        ]),
+        sub("videoembeds", "Automatically upload supported videos in selected or all channels", [option("enabled", 5, "Enable automatic video embeds"), channel([0, 5], false), option("all", 5, "Apply to every channel, including new channels", false), option("channels", 3, "Channel mentions or IDs separated by spaces", false, { max_length: 2200 }), option("roles", 3, "Allowed role mentions or IDs, or all for everyone", false, { max_length: 650 })]),
         sub("prefix", "Set the prefix used for message commands", [option("prefix", 3, "Between one and five characters", true, { min_length: 1, max_length: 5 })]),
         sub("modlog", "Choose the moderation log channel", [option("channel", 7, "Where moderation actions are logged", true, { channel_types: [0, 5] })]),
         sub("dm", "Choose whether punishments send a DM", [option("enabled", 5, "Send the affected user a DM")]),
         sub("message", "Customize a punishment DM", [option("action", 3, "The punishment", true, { choices: ["ban", "tempban", "softban", "kick", "timeout", "warn", "jail", "unjail"].map(value => ({ name: value, value })) }), text("text", "Use {user}, {moderator}, {reason}, {duration}, {case} or {server}")]),
     ], ["starboard"]),
-    command("automod", "Configure Discord's built-in automatic moderation", PERMS.GUILD, [
+    command("automod", "Configure Discord AutoMod and Sonata message filters", PERMS.GUILD, [
         ...AUTOMOD_OPTIONS,
+        ...WORD_FILTER_OPTIONS,
         sub("allowadd", "Allow a word in Sonata's word filter", [text("word", "Allowed word or wildcard")]),
         sub("allowremove", "Remove an allowed word", [text("word", "Existing allowed word")]),
         sub("exemptrole", "Exempt a role from a Sonata rule", [option("rule", 3, "Sonata rule", true, { choices: ["words", "mentions", "spam", "regex", "profile"].map(value => ({ name: value, value })) }), role(), option("enabled", 5, "Exempt this role")]),
@@ -163,17 +171,26 @@ export const COMMANDS = [
 ];
 
 export const SERVER_INFO_SLASH = { serverinfo: "view", servericon: "icon", serverbanner: "banner", boosts: "boosts" };
-const MUSIC_SLASH = ["pause", "resume", "seek", "volume", "shuffle"];
-export const slashName = name => Object.hasOwn(SERVER_INFO_SLASH, name) ? "serverinfo " + SERVER_INFO_SLASH[name]
-    : MUSIC_SLASH.includes(name) ? "music " + name : name;
+export const SLASH_GROUPS = {
+    music: ["play", "pause", "resume", "skip", "stop", "nowplaying", "volume", "shuffle", "remove", "loop", "seek", "filter", "voteskip"],
+    moderation: ["ban", "tempban", "softban", "banlist", "nickname", "unban", "kick", "timeout", "untimeout", "warn", "warnings", "warnremove", "warnclear", "jail", "unjail"],
+    information: ["userinfo", "avatar", "banner", "membercount", "roleinfo", "roles", "channelinfo", "snowflake", "timestamp"],
+    messages: ["purge", "pin", "unpin", "pins", "snipe", "firstmessage"],
+};
+export const slashName = name => {
+    const [root, ...rest] = name.split(" ");
+    const group = Object.entries(SLASH_GROUPS).find(([, commands]) => commands.includes(root))?.[0];
+    return Object.hasOwn(SERVER_INFO_SLASH, root) ? "serverinfo " + SERVER_INFO_SLASH[root] : [group, root, ...rest].filter(Boolean).join(" ");
+};
 
 export function slashCommands() {
-    const standalone = COMMANDS.filter(({ name }) => !MUSIC_SLASH.includes(name) && !["servericon", "serverbanner", "boosts"].includes(name));
-    const music = command("music", "Adjust playback in your voice channel", 0n, MUSIC_SLASH.map(name => {
-        const action = MUSIC_COMMANDS.find(value => value.name === name);
+    const grouped = Object.values(SLASH_GROUPS).flat();
+    const standalone = COMMANDS.filter(({ name }) => !grouped.includes(name) && !["servericon", "serverbanner", "boosts"].includes(name));
+    const groups = Object.entries(SLASH_GROUPS).map(([name, names]) => command(name, { music: "Play and control music in your voice channel", moderation: "Moderate members and manage warnings", information: "Look up members, roles and server information", messages: "Manage messages and view deleted message history" }[name], 0n, names.map(name => {
+        const action = COMMANDS.find(value => value.name === name);
         return sub(name, action.description, action.options);
-    }));
-    return [...standalone, music].map(({ permission, aliases, ...value }) => ({
+    })));
+    return [...standalone, ...groups].map(({ permission, aliases, ...value }) => ({
         ...value,
         ...(value.name === "serverinfo" ? { options: Object.entries(SERVER_INFO_SLASH).map(([name, subName]) => sub(subName, COMMANDS.find(command => command.name === name).description)) } : {}),
         default_member_permissions: permission && !delegatedCommand(value.name) ? permission.toString() : null,
@@ -198,7 +215,7 @@ function validate(options, definitions) {
         let value = options[definition.name];
         if (value === undefined || value === "") { if (definition.required) fail(`Missing ${definition.name}. Use the help command to see the syntax.`); delete options[definition.name]; continue; }
         if ([6, 7, 8].includes(definition.type)) value = idValue(value);
-        if (definition.type === 4) { value = Number(value); if (!Number.isSafeInteger(value) || value < (definition.min_value ?? 0) || value > (definition.max_value ?? Number.MAX_SAFE_INTEGER)) fail(`Choose a valid ${definition.name}.`); }
+        if (definition.type === 4) { value = Number(value); if (!Number.isSafeInteger(value) || value < (definition.min_value ?? 0) || value > (definition.max_value ?? Number.MAX_SAFE_INTEGER) || (definition.choices && !definition.choices.some(choice => choice.value === value))) fail(`Choose a valid ${definition.name}.`); }
         if (definition.type === 5) { if (typeof value !== "boolean") { if (!/^(?:true|false|on|off|yes|no)$/i.test(value)) fail(`Use on or off for ${definition.name}.`); value = /^(?:true|on|yes)$/i.test(value); } }
         if (definition.type === 3) { value = String(value); if (value.length < (definition.min_length ?? 1) || value.length > (definition.max_length ?? 500) || (definition.choices && !definition.choices.some(choice => choice.value === value))) fail(`Choose a valid ${definition.name}.`); }
         options[definition.name] = value;
@@ -207,9 +224,9 @@ function validate(options, definitions) {
 }
 
 export function parseSlash(data, attachments = {}) {
-    if (data.name === "music") {
+    if (Object.hasOwn(SLASH_GROUPS, data.name)) {
         const action = data.options?.[0];
-        if (!MUSIC_SLASH.includes(action?.name)) fail("Choose music pause, resume, seek, volume or shuffle.");
+        if (!SLASH_GROUPS[data.name].includes(action?.name)) fail(`Choose an available ${data.name} subcommand.`);
         data = { ...data, name: action.name, options: action.options ?? [] };
     }
     if (data.name === "serverinfo" && data.options?.[0]?.name) {
@@ -234,6 +251,7 @@ export function parsePrefix(content, prefix, attachments = []) {
     if (!word) return null;
     const definition = COMMANDS.find(command => command.name === word || command.aliases.includes(word));
     if (!definition) return null;
+    if (definition.name === "snipe" && tokens.length > 1) fail("Choose just one deleted message number.");
     if (definition.name === "play" && attachments.length > 1) fail("Attach one MP3, WAV, MOV, MP4 or OGG file per play command.");
     if (definition.name === "fm") {
         if (["topartists", "toptracks"].includes(word)) tokens.unshift(word);
@@ -241,6 +259,7 @@ export function parsePrefix(content, prefix, attachments = []) {
         if (["topartists", "toptracks"].includes(tokens[0]) && /^(?:<@!?)?\d{17,20}>?$/.test(tokens[1] || "")) tokens.splice(1, 0, "overall");
     }
     if (word === "temprole") tokens.unshift("temp");
+    if (definition.name === "commandsettings" && word !== definition.name) tokens.unshift(word);
     if (word === "starboard") {
         const action = tokens.shift()?.toLowerCase() ?? "view";
         const sub = { setup: "starboard", off: "starboardoff", view: "starboardview" }[action];
@@ -278,6 +297,11 @@ export function parsePrefix(content, prefix, attachments = []) {
     }
     if (definition.name === "settings" && subName === "videoembeds") {
         values.enabled = tokens.shift();
+        const roleMarker = tokens.indexOf("roles:");
+        if (roleMarker >= 0) {
+            values.roles = tokens.splice(roleMarker).slice(1).join(" ");
+            if (!values.roles) fail("List role mentions or IDs after roles:, or use roles: all.");
+        }
         if (tokens.length === 1 && tokens[0].toLowerCase() === "all") values.all = true;
         else if (tokens.length) values.channels = tokens.join(" ");
         try { return { definition, name: definition.name, sub: subName, options: validate(values, selected.options) }; }

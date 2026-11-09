@@ -19,13 +19,35 @@
 import { classNameFactory } from "@utils/css";
 import { Guild, GuildMember, Role } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
-import { extractAndLoadChunksLazy, findByPropsLazy } from "@webpack";
-import { GuildRoleStore } from "@webpack/common";
+import { extractAndLoadChunksLazy, filters, find } from "@webpack";
+import { GuildRoleStore, i18n, PermissionsBits } from "@webpack/common";
 
 import { PermissionsSortOrder, settings } from ".";
 
-export const loadGetGuildPermissionSpecMap = extractAndLoadChunksLazy([".PRIMARY,badgeTooltipDelay:"]);
-export const { getGuildPermissionSpecMap } = findByPropsLazy("getGuildPermissionSpecMap");
+const loadPermissionChunk = extractAndLoadChunksLazy([".PRIMARY,badgeTooltipDelay:"]);
+
+export async function loadGetGuildPermissionSpecMap() {
+    try { await loadPermissionChunk(); } catch { return; }
+}
+
+export function getGuildPermissionSpecMap(guild: Guild): Record<string, { title: string; description: string; }> {
+    let native: Record<string, { title?: string; description?: unknown; }> | undefined;
+    try {
+        native = find(filters.byProps("getGuildPermissionSpecMap"), { isIndirect: true })?.getGuildPermissionSpecMap(guild);
+    } catch { /* Discord can move or remove its permission metadata. */ }
+
+    return Object.fromEntries(Object.entries(PermissionsBits).map(([name, bit]) => {
+        const spec = native?.[String(bit)];
+        let description = spec?.description;
+        if (typeof description === "function") {
+            try { description = i18n.intl.format(description, {}); } catch { description = ""; }
+        }
+        return [String(bit), {
+            title: spec?.title ?? name.replaceAll("_", " ").toLowerCase().replace(/^./, letter => letter.toUpperCase()),
+            description: typeof description === "string" ? description : ""
+        }];
+    }));
+}
 
 export const cl = classNameFactory("vc-permviewer-");
 

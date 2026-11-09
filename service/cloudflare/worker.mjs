@@ -23,7 +23,7 @@ function configuration(env, requestUrl) {
         configured: !!(validOrigin && env.PUBLIC_URL && validId(env.DISCORD_CLIENT_ID) && env.DISCORD_CLIENT_SECRET && adminIds.length && adminIds.every(validId) && env.DB) };
 }
 
-export default {
+const website = {
     async fetch(request, env) {
         const config = configuration(env, request.url), url = new URL(request.url);
         const publicBotRoute = request.method === "GET" && url.pathname === "/invite";
@@ -71,4 +71,37 @@ export default {
         return new Response(body, { status, headers: outgoingHeaders });
     },
     async scheduled(_event, env, context) { context.waitUntil(d1Store(env.DB).cleanup()); },
+};
+
+export default {
+    async fetch(request, env) {
+        const url = new URL(request.url);
+        let response;
+        if (url.protocol === "http:") response = Response.redirect(request.url.replace(/^http:/, "https:"), 308);
+        else {
+            const authentication = url.pathname.startsWith("/auth/") || ["/api/activation/start", "/api/activation/direct"].includes(url.pathname);
+            const limited = authentication || url.pathname.startsWith("/api/");
+            if (limited) {
+                const limiter = authentication ? env.AUTH_RATE_LIMIT : env.API_RATE_LIMIT;
+                try {
+                    if (!limiter) response = Response.json({ error: "This service is temporarily unavailable." }, { status: 503 });
+                    else if (!(await limiter.limit({ key: `${authentication ? "auth" : "api"}:${request.headers.get("CF-Connecting-IP") ?? "unknown"}` })).success) {
+                        response = Response.json({ error: "Too many requests. Please wait a minute." }, { status: 429, headers: { "Retry-After": "60" } });
+                    }
+                } catch { response = Response.json({ error: "This service is temporarily unavailable." }, { status: 503 }); }
+            }
+            response ??= await website.fetch(request, env);
+        }
+        const headers = new Headers(response.headers);
+        headers.set("Strict-Transport-Security", "max-age=15552000");
+        headers.set("X-Content-Type-Options", "nosniff");
+        headers.set("X-Frame-Options", "SAMEORIGIN");
+        headers.set("Referrer-Policy", "no-referrer");
+        headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+        headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://cdn.discordapp.com; connect-src 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; base-uri 'none'; upgrade-insecure-requests");
+        if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/") || url.pathname.startsWith("/bot-api/") || url.pathname === "/admin") headers.set("Cache-Control", "no-store");
+        if (url.pathname === "/admin" || url.pathname.startsWith("/auth/")) headers.set("X-Robots-Tag", "noindex, nofollow");
+        return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    },
+    scheduled: website.scheduled,
 };

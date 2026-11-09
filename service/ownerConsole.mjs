@@ -11,6 +11,25 @@ export async function ownerConsole(path, request, response, session, config, sto
     const action = path.slice("/api/admin/console/".length);
     if (!session.owner) throw failure(403, "Only the Sonata owner can use these tools.");
     if (!["GET", "POST"].includes(request.method)) throw failure(405, "Use GET or POST.");
+    if (action === "overview") {
+        if (request.method !== "GET") throw failure(405, "This tool is read only.");
+        const checkedAt = Date.now();
+        const remote = ["health", "resources", "operations"].map(tool => botFetch?.("owner/" + tool, session.user_id));
+        const [[health, resources, operations], accounts, sessions, activity] = await Promise.all([
+            Promise.allSettled(remote),
+            store.get("SELECT COUNT(first_seen) AS activated, COUNT(CASE WHEN blocked=0 AND last_seen>=? THEN 1 END) AS recent, COUNT(CASE WHEN blocked=1 THEN 1 END) AS blocked FROM users", checkedAt - 86_400_000),
+            store.get("SELECT (SELECT COUNT(*) FROM sessions WHERE expires>?) + (SELECT COUNT(*) FROM bot_sessions WHERE expires>?) AS total", checkedAt, checkedAt),
+            store.all("SELECT actor,target,action,at FROM audit ORDER BY id DESC LIMIT 8"),
+        ]);
+        const status = health.value?.status;
+        json(response, 200, {
+            checkedAt, deployment: config.version || "local", accounts, sessions: sessions.total, activity,
+            bot: status ? { connected: status.connected, musicOnline: status.musicOnline, paused: status.paused, queued: status.queued, version: status.version, pendingJobs: health.value.pendingJobs, failures: health.value.failures ?? [], stickyErrors: health.value.stickyErrors?.length ?? 0, error: health.value.error } : null,
+            resources: resources.value?.days ? { days: resources.value.days, alerts: resources.value.alerts, measuredSince: resources.value.measuredSince, databaseBytes: resources.value.databaseBytes, activeMusicServers: resources.value.activeMusicServers } : null,
+            operations: operations.value?.maintenance ? { maintenance: operations.value.maintenance.map(rule => rule.target), rollouts: operations.value.rollouts.map(rule => rule.target) } : null,
+        });
+        return;
+    }
     const input = request.method === "POST" ? await body(request) : Object.fromEntries(new URL(request.url, config.publicUrl).searchParams);
     if (action === "sessions") {
         await store.batch([

@@ -27,7 +27,7 @@ import { classes } from "@utils/misc";
 import { Guild, RenderModalProps, Role, RoleOrUserPermission, UnicodeEmoji, User } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
 import { findByCodeLazy } from "@webpack";
-import { ContextMenuApi, FluxDispatcher, GuildMemberStore, GuildRoleStore, i18n, Menu, openModalLazy, PermissionsBits, ScrollerThin, Tooltip, useEffect, useMemo, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
+import { ContextMenuApi, FluxDispatcher, GuildMemberStore, GuildRoleStore, Menu, openModalLazy, PermissionsBits, ScrollerThin, Tooltip, useEffect, useMemo, useRef, UserStore, useState, useStateFromStores } from "@webpack/common";
 
 import { windowAccent } from "../../../../controller/accent";
 import { Window } from "../../../_shared/Window";
@@ -242,14 +242,9 @@ function RolesAndUsersPermissionsComponent({ permissions, guild, modalProps, hea
                                     <span className={cl("perm-name")}>{guildPermissionSpecMap[String(bit)].title}</span>
                                     <button type="button" className={classes(tl("icon"), cl("who-btn"))} title="Who in this server can do this?" onClick={() => openWhoHas(guild, bit, permName(bit))}><SonataGlyph name="people" /></button>
 
-                                    <Tooltip text={
-                                        (() => {
-                                            const { description } = guildPermissionSpecMap[String(bit)];
-                                            return typeof description === "function" ? i18n.intl.format(description, {}) : description;
-                                        })()
-                                    }>
+                                    {guildPermissionSpecMap[String(bit)].description && <Tooltip text={guildPermissionSpecMap[String(bit)].description}>
                                         {props => <InfoIcon {...props} />}
-                                    </Tooltip>
+                                    </Tooltip>}
                                 </div>
                             );
                         })}

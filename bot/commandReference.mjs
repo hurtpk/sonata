@@ -7,6 +7,7 @@ import { COMMANDS } from "./commands.mjs";
 import { PERMS } from "./discord.mjs";
 
 const families = {
+    snipe: "Shows one cached human-authored deletion in the current text or announcement channel, with the original author, text, reply author and a jump link to the replied message, plus cached image, video and GIF attachment links. The first attached image or GIF is previewed. Attachment links may expire after deletion; Sonata does not permanently archive these files. Use snipe or s for the newest, or choose a position counting back from 1. Slash replies are private; prefix replies appear in the channel. By default, Sonata keeps 15 recent deletions in every channel it can view, including new channels. History lasts up to 30 minutes and clears when Sonata restarts.",
     rolemenu: "Build a self-service role menu from up to 25 safe roles. A selection replaces choices from that menu only; set a limit of one for mutually exclusive choices. Server managers with Manage Roles can create, publish or delete up to 12 menus. Sonata rechecks role hierarchy, staff privileges, channel grants and the member's current roles on every selection. Removing a menu does not remove roles already assigned.",
     remind: "Schedules a private DM reminder from one minute to one year away, with a message of up to 300 characters and up to 20 pending reminders per account. Use remind list for a private list or remind cancel with its ID. Delivered reminders have Snooze 10 min, Snooze 1 hour and Dismiss buttons. Delivery depends on whether Discord allows the bot to DM you.",
     fm: "Links a public Last.fm username to your Discord account across Sonata servers, then looks up current/recent tracks and listening charts. Use fm set <username> first; only you can replace or remove your saved username. This does not verify account ownership, log into Last.fm, create scrobbles or change playback. Recent data is cached for 30 seconds; profile/chart data for 5 minutes. Requests time out after 8 seconds and use up to 256 KiB per response. Requires the host to have a working API key. Listings show 5 entries per page, pages 1–100. Charts accept overall, 7day, 1month, 3month, 6month or 12month. An optional member selects their saved username; otherwise uses yours. Private or unavailable listening history cannot be shown.",
@@ -166,6 +167,8 @@ const notes = {
     "eventlog set": "One destination is saved per selected type. Setting the same type again replaces its destination, leaving the other types unchanged.",
     "escalation set": "Replaces the rule at the chosen active-warning threshold. A timeout duration cannot exceed Discord's 28-day timeout limit.",
     "ticket categoryadd": "Adds up to 5 additional support queues. Names are 1–24 lowercase letters, digits or hyphens, begin with a letter, and cannot be general. Supply an existing category and support role.",
+    "ticket intake": "Selects the standard support form or the four-question commission form. The active panel uses the new form as soon as it is saved.",
+    "ticket rename": "Renames the current ticket channel. Support staff can rename channels without changing ticket ownership or access.",
     "ticket categoryremove": "Removes the named queue for future tickets; existing ticket channels and records are not bulk-deleted.",
     "ticket idle": "Sets an inactivity reminder after 0–168 hours; zero disables reminders. Reminders notify staff rather than automatically deleting or closing tickets.",
     "ticket archive": "Requires a closed ticket with a saved transcript. Keeps its channel and transcript but removes the record from the unarchived ticket count.",
@@ -193,6 +196,14 @@ const notes = {
     "role color": "Use a six-digit hexadecimal colour such as #c58d91 or default to clear the colour. Does not set a gradient or individual member colour.",
     "role mentionable": "Enabling this allows everyone to mention the role through Discord. Consider notification exposure before enabling it for a large role.",
     "settings videoembeds": "Choose all channels or up to 100 text/announcement channel IDs or mentions. All mode includes future channels. Prefix examples: ,settings videoembeds on all or ,settings videoembeds on 123456789012345678 234567890123456789. Normal automatic mode only processes a supported link by itself; explicit Sonata requests can include the bot mention/name. Other message text is not silently replaced.",
+    "settings embedcolor": "Sets Sonata’s embed accent for this server. Use a six-digit hexadecimal color such as #ffad91, or default to restore the website’s orange. Requires Manage Server. This changes future bot replies, not messages already posted or explicitly designed message colors.",
+    "settings snipe": "Sets the number of recent deleted messages kept in every channel in this server, including new channels. Defaults to 15. Choose 5–25, or 0 to turn it off and clear the snipe history. You can also change who can use snipe. The Logging feature must be enabled to collect and view deletions.",
+    "automod filteradd": "Adds one literal, case-insensitive word or phrase to Sonata’s post-send filters. The bot deletes matching new messages and edits, up to 25 filters per server. Matches use word boundaries. The first matching filter applies. Server owners, administrators, bots, webhooks and exempt roles are skipped.",
+    "automod filterremove": "Removes this word or phrase, its optional reply and repeat action. Adding it again starts a fresh strike count.",
+    "automod filterlist": "Shows Sonata’s post-send filters, which ones reply, and their repeat actions.",
+    "automod filterreply": "Set a public reply of up to 300 characters after a matching message is deleted. Place the author’s ping with {user}, or omit it to put the ping first. Only the author is notified. Use off to clear the reply.",
+    "automod filteraction": "Apply a consequence at each multiple of the strike threshold during a 24-hour window per member and filter. Choose voice mute, timeout, kick or ban. Voice mute applies in voice and lasts until staff unmute. Timeouts default to 10 minutes. Use none for deletion and any configured reply only. Discord permissions and role hierarchy apply.",
+    "automod filterexempt": "Add or remove a role exemption for all Sonata post-send word filters. This does not change Discord’s native AutoMod exemptions.",
     "settings starboard": "Choose a destination and threshold of 1–100 star reactions. Sonata tracks eligible message stars and posts a copy with available attachments and a source link. Disabling pauses new processing and keeps existing featured messages.",
     "settings message": "Customize a selected punishment DM with a template up to 1,000 characters. This does not change case reasons or guarantee delivery to users whose DMs are closed.",
     "automod regexadd": "Adds one Rust-compatible pattern up to 260 characters, with at most 10 patterns in Sonata's regex rule. Discord validates the saved pattern.",
@@ -205,6 +216,11 @@ const notes = {
 const permissionNames = new Map([[PERMS.ADMIN, "Administrator"], [PERMS.KICK, "Kick Members"], [PERMS.BAN, "Ban Members"], [PERMS.CHANNELS, "Manage Channels"], [PERMS.GUILD, "Manage Server"], [PERMS.MESSAGES, "Manage Messages"], [PERMS.NICKNAMES, "Manage Nicknames"], [PERMS.ROLES, "Manage Roles"], [PERMS.TIMEOUT, "Moderate Members"], [PERMS.PINS, "Pin Messages"], [PERMS.MOVE, "Move Members"], [PERMS.VOICE_MUTE, "Mute Members"], [PERMS.VOICE_DEAFEN, "Deafen Members"]]);
 const channelTypes = { 0: "text", 2: "voice", 4: "category", 5: "announcement", 13: "stage", 15: "forum", 16: "media" };
 const permissionOverrides = {
+    snipe: "Read Message History in this channel. Manage Messages is also required by default. A server manager can turn off that requirement.",
+    "automod filteradd": "Administrator. Sonata needs Manage Messages in channels where the filter applies.",
+    "automod filterremove": "Administrator.", "automod filterlist": "Administrator.", "automod filterreply": "Administrator.",
+    "automod filteraction": "Administrator. Sonata needs the Discord permission for the chosen consequence and a higher role than the affected member.",
+    "automod filterexempt": "Administrator.",
     "case approvalrule": "Administrator; use a private staff review channel.",
     "case approvals": "Ban Members, Kick Members, Moderate Members or Administrator.",
     "case approve": "The appropriate real Discord moderation permission and role hierarchy; a different moderator must review the request.",
@@ -261,6 +277,11 @@ const exampleOverrides = {
     "pin": { message: "567890123456789012" }, "unpin": { message: "567890123456789012" }, "poll results": { message: "567890123456789012" },
     "giveaway end": { message: "567890123456789012" }, "giveaway reroll": { message: "567890123456789012" }, "giveaway cancel": { message: "567890123456789012" },
     "settings videoembeds": { enabled: true, all: true },
+    "settings embedcolor": { color: "#ffad91" },
+    "settings snipe": { limit: 15, require_manage_messages: false },
+    snipe: { number: 3 },
+    "automod filterreply": { text: "{user} please watch your language." },
+    "automod filteraction": { action: "timeout", strikes: 3, duration: "10m" },
     "timestamp": { seconds: 1793808000 }, "case export": { member: "123456789012345678", format: "json" },
     "case note": { note: "Reviewed the attached evidence." }, "settings message": { message: "You were warned in {server}: {reason}" },
     "voice move": { channel: "345678901234567890" }, "role color": { color: "#c58d91" },
@@ -276,6 +297,10 @@ const optionNotes = {
     "commandsettings enable.command": "Previously disabled native command or subcommand. Enabling a subcommand does not override a disabled parent command or paused feature group.",
     "settings videoembeds.all": "True enables every supported channel, including channels created later. False uses only the selected channel IDs. Sonata still needs View Channel, Send Messages, Embed Links and Attach Files.",
     "settings videoembeds.channels": "One or more text or announcement channel IDs or mentions separated by spaces. Use this instead of all for a selected-channel configuration.",
+    "settings videoembeds.roles": "Up to 25 allowed role IDs or mentions. Use all to allow everyone, or omit this option to keep the current allowlist. Prefix: add roles: followed by the roles after the channel selection. Applies to standalone links and links prefixed by Sonata’s name or mention.",
+    "settings snipe.limit": "Keep 5–25 recent deletions per channel, or choose Off (0) to clear the history and stop collecting.",
+    "settings snipe.require_manage_messages": "Defaults to on. Set it to off to let members who can read the channel history use snipe. Omit it to keep the saved permission setting.",
+    "snipe.number": "1 is the newest cached deletion. Omit to show the newest, or choose an older position up to the server's history limit.",
     "eventlog set.event": "Select the event type to route: deleted messages, member joins/leaves, voice changes, or channel creation/deletion, according to the choices below. This records events Sonata receives; it cannot retrieve uncached deleted message text.",
     "download message.index": "Attachment number from 1–10; defaults to 1. Counts file attachments, not embedded webpage previews.",
     "download attachment.file": "Upload an actual Discord attachment, any file type, at most 8 MiB. Do not type a local filename.",
@@ -300,7 +325,7 @@ function parameter(command, option) {
     if (option.type === 8) constraints.push("Use a role mention or 17–20 digit role ID in this server.");
     if (option.type === 7) constraints.push(`Use a channel mention or ID in this server${option.channel_types ? `; allowed types: ${option.channel_types.map(type => channelTypes[type] ?? type).join(", ")}` : ""}.`);
     if (option.type === 11) constraints.push("Choose/upload a real file; a typed filename does not attach it.");
-    if (option.name === "duration") constraints.push(`Use s/m/h/d/w, for example 30m or 1h30m. Minimum 1 second; maximum ${command === "timeout" || command === "jail" || command === "escalation set" ? "28 days" : command === "giveaway start" ? "30 days" : "365 days unless the action has a stricter limit above"}.`);
+    if (option.name === "duration") constraints.push(`Use s/m/h/d/w, for example 30m or 1h30m. Minimum 1 second; maximum ${["timeout", "jail", "escalation set", "automod filteraction"].includes(command) ? "28 days" : command === "giveaway start" ? "30 days" : "365 days unless the action has a stricter limit above"}.`);
     if (option.name === "reason") constraints.push("Optional staff reason saved with the action; maximum 500 characters.");
     if (option.name === "page") constraints.push("Defaults to page 1 when omitted.");
     if (["commandstats", "modstats"].includes(command.split(" ")[0]) && option.name === "days") constraints.push(command === "modstats staff" ? "Omit for all recorded history; supply 1–90 to limit the period." : "Defaults to 30 days.");

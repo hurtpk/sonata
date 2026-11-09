@@ -59,10 +59,9 @@ function FeatureSettings({ api, feature, modalProps }: { api: QolApi; feature: s
 
 function ServerInsightsHome({ modalProps }: { modalProps: RenderModalProps; }) {
     const guilds = useStateFromStores([GuildStore], () => Object.values(GuildStore.getGuilds()).sort((a, b) => a.name.localeCompare(b.name)), [], lodash.isEqual);
-    const [guildId, setGuildId] = useState(SelectedGuildStore.getGuildId() ?? guilds[0]?.id ?? "");
-    const guild = guilds.find(entry => entry.id === guildId) ?? guilds[0];
+    const guild = guilds.find(entry => entry.id === SelectedGuildStore.getGuildId()) ?? guilds[0];
     if (!guild) return <Window {...modalProps} title="Server Insights"><div className="vc-tool-empty">Join a server to view its insights.</div></Window>;
-    return <InsightsWindow key={guild.id} modalProps={modalProps} guild={guild} startOpts={{}} tools={<select className="vc-tool-select vc-merged-select" value={guild.id} aria-label="Server for insights" onChange={event => setGuildId(event.currentTarget.value)}>{guilds.map(entry => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select>} />;
+    return <InsightsWindow modalProps={modalProps} guild={guild} startOpts={{}} />;
 }
 
 function ServerSettings({ api, modalProps }: { api: QolApi; modalProps: RenderModalProps; }) {

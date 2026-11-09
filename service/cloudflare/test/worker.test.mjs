@@ -19,6 +19,10 @@ async function runtime(t, configured = true, provider = "normal", bridge, public
     const options = convertV4MiniflareOptions({ workers: [{ name: "test", modules: true, scriptPath: fileURLToPath(new URL("../.check/worker.js", import.meta.url)), compatibilityDate: "2026-10-28", compatibilityFlags: ["nodejs_compat"],
         d1Databases: ["DB"], bindings: configured ? { PUBLIC_URL: publicUrl, DISCORD_CLIENT_ID: "444444444444444444", DISCORD_CLIENT_SECRET: "test-only", ADMIN_USER_IDS: "111111111111111111", ...(bridge ? { BOT_DASHBOARD_SECRET: "fake-private-dashboard-key-at-least-32-characters" } : {}) } : {},
         serviceBindings: bridge ? { BOT_SERVICE: { node: bridge } } : {},
+        ratelimits: {
+            AUTH_RATE_LIMIT: { namespace_id: "4826421", simple: { limit: 10, period: 60 } },
+            API_RATE_LIMIT: { namespace_id: "4826422", simple: { limit: 300, period: 60 } },
+        },
         outboundService: async request => {
             if ((provider === "tokenRedirect" && request.url.endsWith("/token")) || (provider === "profileRedirect" && request.url.endsWith("/@me"))) return new Response(null, { status: 302, headers: { Location: "https://other.example/" } });
             if (request.url === "https://discord.com/api/oauth2/token") return Response.json({ access_token: "test-token", token_type: "Bearer" });
@@ -32,7 +36,7 @@ async function runtime(t, configured = true, provider = "normal", bridge, public
     t.after(() => worker.dispose());
     const db = await worker.getD1Database("DB");
     const schema = await readFile(new URL("../../migrations/0001_initial.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0002_bot_dashboard.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0003_user_profiles.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0004_admin_grants.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0005_in_app_activation.sql", import.meta.url), "utf8");
-    const sessionSchema = await readFile(new URL("../../migrations/0006_session_details.sql", import.meta.url), "utf8");
+    const sessionSchema = await readFile(new URL("../../migrations/0006_session_details.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0007_staff_activity.sql", import.meta.url), "utf8");
     for (const sql of (schema + sessionSchema).split(";").map(sql => sql.trim()).filter(Boolean)) await db.prepare(sql).run();
     return { worker, db };
 }
@@ -159,4 +163,24 @@ test("Custom domain redirects the old website and preserves only native activati
     assert.equal((await activate({ Origin: "https://attacker.example" })).status, 403);
     assert.equal((await activate({ Cookie: "sonata_admin=fake" })).status, 403);
     assert.equal((await worker.dispatchFetch(old + "/api/admin/block", { method: "POST", body: "{}" })).status, 403);
+});
+
+test("Worker enforces shared authentication limits and HTTPS with security headers", async t => {
+    const { worker } = await runtime(t);
+    const insecure = await worker.dispatchFetch("http://sonata.example/", { redirect: "manual" });
+    assert.equal(insecure.status, 308);
+    assert.equal(insecure.headers.get("location"), "https://sonata.example/");
+    const page = await worker.dispatchFetch("https://sonata.example/");
+    assert.equal(page.headers.get("strict-transport-security"), "max-age=15552000");
+    assert.equal(page.headers.get("x-content-type-options"), "nosniff");
+    assert.equal(page.headers.get("x-frame-options"), "SAMEORIGIN");
+    assert.match(page.headers.get("content-security-policy"), /object-src 'none'/);
+    let limited;
+    for (let attempt = 0; attempt < 14; attempt++) {
+        const response = await worker.dispatchFetch("https://sonata.example/auth/callback", { headers: { "CF-Connecting-IP": "192.0.2.50" } });
+        if (response.status === 429) { limited = response; break; }
+    }
+    assert.ok(limited);
+    assert.equal(limited.headers.get("retry-after"), "60");
+    assert.equal(limited.headers.get("cache-control"), "no-store");
 });

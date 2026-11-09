@@ -39,6 +39,8 @@ export const SERVER_COMMANDS = [
         sub("panel", "Post an open-ticket button", [channel([0, 5])]), sub("open", "Open your private support ticket", [text("topic", "What you need help with")]),
         sub("claim", "Claim this ticket as staff"), sub("close", "Save a transcript and close this ticket"), sub("reopen", "Reopen this closed ticket"), sub("transcript", "Export the latest messages from this ticket"),
         sub("view", "Show ticket configuration"), sub("off", "Disable new tickets"),
+        sub("intake", "Choose a support or commission ticket form", [choices("mode", "Ticket form", ["support", "commission"])]),
+        sub("rename", "Rename this ticket channel", [option("name", 3, "New channel name", true, { max_length: 90 })]),
         sub("archive", "Archive a closed ticket record, keeping its channel"),
         sub("categoryadd", "Add a ticket type with its own category and staff role", [text("name", "Ticket type name"), option("category", 7, "Discord category", true, { channel_types: [4] }), role()]), sub("categoryremove", "Remove a ticket type", [text("name", "Ticket type name")]),
         sub("openin", "Open a ticket in a specific support queue", [text("category", "Configured ticket type"), text("topic", "What you need help with")]),

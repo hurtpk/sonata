@@ -8,7 +8,7 @@ import { fail, memberPermissions, PERMS } from "./discord.mjs";
 export const FEATURE_GROUPS = [
     { id: "moderation", name: "Moderation", description: "Manual punishments, warnings, case commands and warning escalation. Existing timed bans and jails still expire.", commands: "ban tempban softban banlist unban kick timeout untimeout nickname warn warnings warnremove warnclear escalation jailsetup jail unjail case modstats" },
     { id: "security", name: "Security & AutoMod", description: "Native AutoMod filters, honeypots, join protection, anti-nuke and nickname enforcement. Saved rules are kept when paused.", commands: "honeypot automod antiraid antinuke lockdown nicknamepolicy" },
-    { id: "logging", name: "Logging", description: "Moderation log messages, member arrival/departure logs and server event logs. Saved cases and evidence remain available.", commands: "eventlog joinlogs" },
+    { id: "logging", name: "Logging", description: "Moderation logs, server event logs and deleted message history. Saved cases and evidence remain available.", commands: "eventlog joinlogs snipe" },
     { id: "music", name: "Music & Last.fm", description: "Voice music playback, queues, DJs and Last.fm commands. Disabling stops playback and clears the active music queue.", commands: "play pause resume skip stop queue nowplaying volume shuffle remove loop seek filter voteskip musicsettings fm" },
     { id: "voice", name: "Voice tools", description: "Voice moderation and temporary VoiceMaster rooms. Empty-room cleanup and restoring room privacy remain available.", commands: "voice voicemaster" },
     { id: "media", name: "Media & downloads", description: "Automatic video embeds, file downloads, and emoji/sticker tools.", commands: "download emoji sticker sonata" },
@@ -20,7 +20,7 @@ export const featurePermission = (context, settings) => context.actor.user.id ==
 export function requireFeature(command, settings) {
     const group = FEATURE_GROUPS.find(group => group.commands.split(" ").includes(command.name));
     const cleanup = command.name === "stop" || command.name === "fm" && (command.sub === "remove" || command.sub === "participate" && command.options?.enabled === false) || ["unban", "untimeout", "unjail", "unlock", "unhide", "unpin"].includes(command.name) || command.name === "lockdown" && command.sub === "restore" || command.name === "ticket" && ["close", "transcript", "archive"].includes(command.sub) || command.name === "voicemaster" && ["reset", "unlock", "unhide", "room"].includes(command.sub) || command.name === "stick" && command.sub === "remove";
-    if (group && !featureEnabled(settings, group.id) && !cleanup) fail(`${group.name} is disabled in this server. The server owner or an allowed administrator can enable it in Dashboard → Features.`, "denied");
+    if (group && !featureEnabled(settings, group.id) && !cleanup) fail(`${group.name} is disabled in this server. The server owner or an allowed administrator can enable it in Dashboard → Settings → Automation & feature groups.`, "denied");
 }
 
 const signature = rule => JSON.stringify([rule.trigger_metadata, rule.actions, rule.exempt_roles, rule.exempt_channels]);

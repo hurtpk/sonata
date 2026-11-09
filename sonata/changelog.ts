@@ -19,6 +19,19 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.11.08",
+        date: "November 8, 2026",
+        title: "Server Tools and sidebar fixes",
+        items: [
+            { icon: "message", text: "Fixed Sparkles cropping pinned DM category names. The effect no longer moves the whole name out of its header, and keeps working on person tags too." },
+            { icon: "wrench", text: "Status Avatar no longer restores another account’s picture when switching accounts, or restores a picture when it never changed one." },
+            { icon: "bell", text: "One Ping Per DM covers selected-channel sounds and shares its limit across Discord, PTB and Canary on the same computer. Each account stays separate. Reading the conversation in any build allows the next ping, and desktop notifications still appear." },
+            { icon: "shield", text: "Server Tools adds an AutoMod rule editor alongside Word Purge, Regex, Timeouts and Member Logs. View, create, edit, pause or delete Discord rules, with actions and exemptions. Insights has a cleaner server bar with an arrow to search and switch servers." },
+            { icon: "music", text: "Spotify Controls sits flush with the user panel instead of appearing to float above it, and leaves no empty space when the player is hidden." },
+            { icon: "shield", text: "Fixed Roles & Permissions crashing when Discord’s permission descriptions are unavailable." },
+        ],
+    },
+    {
         version: "2026.11.07",
         date: "November 7, 2026",
         title: "Discord compatibility fixes",

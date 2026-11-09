@@ -7,6 +7,8 @@
 export const SCHEMA = `
 CREATE TABLE IF NOT EXISTS owner_controls (id TEXT PRIMARY KEY,data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS user_blacklist (id TEXT PRIMARY KEY,actor TEXT NOT NULL,reason TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS word_filter_strikes (guild TEXT NOT NULL,rule TEXT NOT NULL,member TEXT NOT NULL,n INTEGER NOT NULL,expires INTEGER NOT NULL,PRIMARY KEY(guild,rule,member));
+CREATE INDEX IF NOT EXISTS word_filter_strikes_expiry ON word_filter_strikes(expires);
 CREATE TABLE IF NOT EXISTS owner_messages (id TEXT PRIMARY KEY,actor TEXT NOT NULL,guild TEXT NOT NULL,channel TEXT NOT NULL,at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS owner_server_notes (guild TEXT PRIMARY KEY,note TEXT NOT NULL,labels TEXT NOT NULL,actor TEXT NOT NULL,at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS config_history (id TEXT PRIMARY KEY,guild TEXT NOT NULL,actor TEXT NOT NULL,source TEXT NOT NULL,before_data TEXT NOT NULL,after_data TEXT NOT NULL,at INTEGER NOT NULL);
@@ -59,13 +61,14 @@ CREATE TABLE IF NOT EXISTS guild_blacklist (id TEXT PRIMARY KEY, actor TEXT NOT 
 CREATE TABLE IF NOT EXISTS command_usage (guild TEXT NOT NULL, name TEXT NOT NULL, day TEXT NOT NULL, uses INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(guild,name,day));
 CREATE TABLE IF NOT EXISTS command_results (guild TEXT NOT NULL, name TEXT NOT NULL, day TEXT NOT NULL, outcome TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(guild,name,day,outcome));
 CREATE TABLE IF NOT EXISTS command_failures (id INTEGER PRIMARY KEY AUTOINCREMENT,request TEXT UNIQUE NOT NULL,guild TEXT NOT NULL,channel TEXT NOT NULL,actor TEXT NOT NULL,name TEXT NOT NULL,outcome TEXT NOT NULL,detail TEXT NOT NULL,source TEXT NOT NULL,at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS failure_commands (request TEXT PRIMARY KEY,command TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS recovery_members (guild TEXT NOT NULL, user TEXT NOT NULL, roles TEXT NOT NULL, PRIMARY KEY(guild,user));
 CREATE TABLE IF NOT EXISTS role_returns (guild TEXT NOT NULL, user TEXT NOT NULL, roles TEXT NOT NULL, expires INTEGER NOT NULL, PRIMARY KEY(guild,user));
 CREATE TABLE IF NOT EXISTS music_audience (guild TEXT NOT NULL, user TEXT NOT NULL, channel TEXT NOT NULL, PRIMARY KEY(guild,user));
 CREATE TABLE IF NOT EXISTS music_audience_ready (guild TEXT PRIMARY KEY);
 `;
 
-const defaults = () => ({ prefix: ",", logChannel: "", dm: false, templates: {}, jailRole: "", jailChannel: "", automod: {} });
+const defaults = () => ({ prefix: ",", logChannel: "", dm: false, templates: {}, jailRole: "", jailChannel: "", automod: {}, snipeLimit: 15, snipeRequireManageMessages: true });
 
 export function botStore(storage) {
     const all = (sql, ...params) => storage.sql.exec(sql, ...params).toArray();
@@ -100,6 +103,6 @@ export function botStore(storage) {
         usage(guild, name) { storage.sql.exec("INSERT INTO command_usage VALUES (?,?,?,1) ON CONFLICT(guild,name,day) DO UPDATE SET uses=uses+1", guild, name, new Date().toISOString().slice(0, 10)); },
         outcome(guild, name, outcome) { storage.sql.exec("INSERT INTO command_results VALUES (?,?,?,?,1) ON CONFLICT(guild,name,day,outcome) DO UPDATE SET n=n+1", guild, name, new Date().toISOString().slice(0, 10), outcome); },
         schedule(guild, n, target, kind, due, detail = "") { storage.sql.exec("INSERT INTO jobs (id,guild,n,target,kind,due,detail) VALUES (?,?,?,?,?,?,?)", crypto.randomUUID(), guild, n, target, kind, due, detail); },
-        cleanup() { storage.sql.exec("DELETE FROM command_results WHERE day<?", new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10)); storage.sql.exec("DELETE FROM role_returns WHERE expires<=?", Date.now()); storage.sql.exec("DELETE FROM requests WHERE at<?", Date.now() - 7 * 86400_000); storage.sql.exec("DELETE FROM onboarding WHERE at<?", Date.now() - 7 * 86400_000); storage.sql.exec("DELETE FROM forms WHERE expires<?", Date.now()); storage.sql.exec("DELETE FROM security_events WHERE at<?", Date.now() - 3600_000); storage.sql.exec("DELETE FROM command_usage WHERE day<?", new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10)); },
+        cleanup() { storage.sql.exec("DELETE FROM word_filter_strikes WHERE expires<=?", Date.now()); storage.sql.exec("DELETE FROM command_results WHERE day<?", new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10)); storage.sql.exec("DELETE FROM role_returns WHERE expires<=?", Date.now()); storage.sql.exec("DELETE FROM requests WHERE at<?", Date.now() - 7 * 86400_000); storage.sql.exec("DELETE FROM onboarding WHERE at<?", Date.now() - 7 * 86400_000); storage.sql.exec("DELETE FROM forms WHERE expires<?", Date.now()); storage.sql.exec("DELETE FROM security_events WHERE at<?", Date.now() - 3600_000); storage.sql.exec("DELETE FROM command_usage WHERE day<?", new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10)); },
     };
 }

@@ -5,6 +5,7 @@
  */
 
 import { featureEnabled } from "./featureGroups.mjs";
+import { attributeMessage, identifyModerator, moderatorReason, withModerator } from "./actionAttribution.mjs";
 import { checkOperations, requireBotUser } from "./ownerConsole.mjs";
 import { lastfmClient, lastfmCommand } from "./lastfm.mjs";
 import { openModlogs } from "./modlogs.mjs";
@@ -14,6 +15,7 @@ import { stickyCommand } from "./sticky.mjs";
 import { starboardCommand } from "./starboard.mjs";
 import { syncProfileBio } from "./guildProfile.mjs";
 import { videoCommand } from "./videoEmbeds.mjs";
+import { WORD_FILTER_OPTIONS, wordFilterCommand } from "./wordFilters.mjs";
 import { EXTRA_COMMANDS, extraCommand } from "./actions.mjs";
 import { COMMANDS, parseDuration } from "./commands.mjs";
 import { commandAccess, commandSettings, fakePermissions } from "./commandAccess.mjs";
@@ -48,6 +50,8 @@ import { roleMenuCommand } from "./roleMenus.mjs";
 import { reminderCommand } from "./reminders.mjs";
 import { imageCommand, isImageCommand } from "./imageEditor.mjs";
 import { assertDashboardAccess } from "./dashboardAccess.mjs";
+import { withEmbedColor } from "./discord.mjs";
+import { configureSnipe, snipeReply } from "./eventLogs.mjs";
 
 export const caseMarker = (guild, n) => `[Sonata case ${guild}-${n}]`;
 export const caseTarget = (kind, id) => (kind === "role created" || kind.startsWith("server ")) ? `Server ${id}` : `${["lock", "unlock", "hide", "unhide", "slowmode", "purge", "pin", "unpin"].includes(kind) || kind.startsWith("channel ") ? `<#${id}>` : kind.startsWith("bot permission ") || (kind.startsWith("role ") && !["role add", "role remove"].includes(kind)) ? `<@&${id}>` : `<@${id}>`} (${id})`;
@@ -60,6 +64,7 @@ export async function commandContext(command, botId, api, settings = {}) {
         api(`/guilds/${command.guild}/members/${command.actor}`, command.dashboard ? { ...read, optional: true } : undefined),
         api(`/guilds/${command.guild}/members/${botId}`, read), api(`/channels/${command.channel}`, read),
     ]);
+    identifyModerator(actor);
     if (command.dashboard) assertDashboardAccess(guild, roles, actor, command.actor, settings);
     if (channel.guild_id !== command.guild) fail("Use a channel in this server.");
     if (!(memberPermissions(bot, roles, guild) & PERMS.ADMIN)) fail("Sonata is missing the Discord permissions required for this command. Grant Administrator on the bot's role or use the Add bot link again.", "denied");
@@ -96,7 +101,7 @@ export async function perform(context, store, kind, target, reason, duration, ac
         appealNotice = { channel: dm.id, message: notice.id };
     } catch { appealNotice = null; }
     let detail = "";
-    try { const result = await action(n, `${caseMarker(command.guild, n)} ${reason}`); if (typeof result === "string") detail = result; }
+    try { const result = await action(n, moderatorReason(`${caseMarker(command.guild, n)} ${reason}`)); if (typeof result === "string") detail = result; }
     catch (error) { store.status(command.guild, n, "needs_review", error.message); if (appealNotice) try { await context.api(`/channels/${appealNotice.channel}/messages/${appealNotice.message}`, { method: "PATCH", body: { ...embed("Ban needs staff review", "The requested action was not confirmed. Contact staff before assuming the ban completed."), components: [] } }); } catch { store.addNote(command.guild, n, command.actor, "appeal notice", "Could not update the earlier moderation notice."); } return embed(`Case #${n} needs review`, `${error.message}\nThe action may not have completed. Check the member's current state before repeating it.`); }
     store.status(command.guild, n, "completed", detail);
     const notices = [];
@@ -124,13 +129,20 @@ export async function perform(context, store, kind, target, reason, duration, ac
 }
 
 async function configure(context, store) {
-    const { command, api, guild } = context, options = command.options, settings = store.settings(guild.id);
+    const { command, api, guild } = context, options = command.options;
+    let settings = store.settings(guild.id);
     if (command.sub === "view") return embed("Sonata settings", `Prefix: \`${settings.prefix}\`\nLog channel: ${settings.logChannel ? `<#${settings.logChannel}>` : "Not configured"}\nPunishment DMs: ${settings.dm ? "On" : "Off"}\nJail role: ${settings.jailRole ? `<@&${settings.jailRole}>` : "Not configured"}${settings.automationError ? `\n\nLast member automation issue <t:${Math.floor(settings.automationError.at / 1000)}:R>:\n${settings.automationError.message}` : ""}`);
     if (command.sub === "prefix") { if (!/^[^\s/@<>`]{1,5}$/.test(options.prefix)) fail("Choose one to five characters without whitespace, mentions, a slash, or backticks."); settings.prefix = options.prefix; await syncProfileBio(store, api, guild.id, settings.prefix); }
     if (command.sub === "videoembeds") {
         const ids = [...new Set([options.channel, ...(options.channels || "").split(/[\s,]+/)].filter(Boolean).map(value => /^(?:<#)?(\d{17,20})>?$/.exec(value)?.[1]))];
         if (ids.some(id => !isId(id)) || ids.length > 100 || (options.all === true && ids.length) || (options.enabled && options.all !== true && !ids.length)) fail("Choose all channels, or up to 100 text channel mentions or IDs.");
         if (options.all === undefined && !ids.length) fail("Choose a channel, multiple channel IDs, or all.");
+        let allowedRoles;
+        if (options.roles !== undefined) {
+            const raw = options.roles.trim().toLowerCase();
+            allowedRoles = raw === "all" ? [] : [...new Set(raw.split(/[\s,]+/).map(value => /^(?:<@&)?(\d{17,20})>?$/.exec(value)?.[1]))];
+            if (allowedRoles.length > 25 || allowedRoles.some(id => !isId(id) || id === guild.id || !context.roles.some(role => role.id === id))) fail("Choose up to 25 roles from this server, or use all for everyone.");
+        }
         if (ids.length) {
             const channels = await api(`/guilds/${guild.id}/channels`);
             for (const id of ids) {
@@ -139,6 +151,8 @@ async function configure(context, store) {
                 requirePermission(channelPermissions(context.actor, context.roles, guild, channel), PERMS.VIEW);
             }
         }
+        settings = store.settings(guild.id);
+        if (allowedRoles) settings.videoEmbedRoles = allowedRoles;
         if (options.all !== undefined) { settings.videoEmbedsAll = options.all && options.enabled; settings.videoEmbeds = {}; }
         settings.videoEmbeds ??= {};
         for (const id of ids) { if (options.enabled || settings.videoEmbedsAll) settings.videoEmbeds[id] = options.enabled; else delete settings.videoEmbeds[id]; }
@@ -199,7 +213,11 @@ async function automod(context, store) {
     return embed("AutoMod updated", `${saved.name} is ${enabled ? "enabled" : "disabled"}. Discord applies these rules automatically.`);
 }
 
-export async function executeCommand(command, store, api, botId, music, lastfm) {
+export function executeCommand(command, store, api, botId, music, lastfm, eventCache) {
+    return withModerator(command.actor, command.actorName, () => withEmbedColor(store.settings(command.guild), async () => attributeMessage(await executeThemedCommand(command, store, api, botId, music, lastfm, eventCache))));
+}
+
+async function executeThemedCommand(command, store, api, botId, music, lastfm, eventCache) {
     const original = store, started = Date.now();
     store = { ...original, saveSettings: (guild, value) => original.saveSettings(guild, value, command.actor, `${command.id.startsWith("dashboard:") ? "Dashboard" : "Command"}: ${command.name}${command.sub ? " " + command.sub : ""}`) };
     if (!store.claim(command.id)) return embed("Already handled", "This command was already handled. Check case history before repeating an action.");
@@ -209,7 +227,7 @@ export async function executeCommand(command, store, api, botId, music, lastfm) 
         requireBotUser(store, command.actor);
         if (store.get("SELECT id FROM guild_blacklist WHERE id=?", command.guild)) throw Object.assign(new Error("This server is blacklisted from Sonata Bot."), { status: 403, outcome: "denied" });
         checkOperations(store, command);
-        const response = await runCommand(command, store, api, botId, music, lastfm);
+        const response = await runCommand(command, store, api, botId, music, lastfm, eventCache);
         const row = store.get("SELECT n,status,detail FROM cases WHERE request=?", command.id);
         store.outcome(command.guild, name, row?.status === "needs_review" ? "needs_review" : "success");
         if (row?.status === "needs_review") return errorReply(recordCommandFailure(store, command, { message: `Case #${row.n} needs review: ${row.detail}`, outcome: "needs_review" }));
@@ -218,7 +236,7 @@ export async function executeCommand(command, store, api, botId, music, lastfm) 
     finally { store.run("INSERT INTO resource_usage (day,commands,processing_ms) VALUES (?,1,?) ON CONFLICT(day) DO UPDATE SET commands=commands+1,processing_ms=processing_ms+excluded.processing_ms", new Date().toISOString().slice(0, 10), Date.now() - started); }
 }
 
-async function runCommand(command, store, api, botId, music, lastfm) {
+async function runCommand(command, store, api, botId, music, lastfm, eventCache) {
     const settings = store.settings(command.guild);
     if (["help", "ping", "dashboard"].includes(command.name)) commandAccess(command, settings, { roles: [] }, []);
     if (command.name === "dashboard") return embed("Sonata dashboard", "Manage your server, review cases and tickets, and configure Sonata at:\nhttps://sonatabot.info\n\nSign in with Discord. Each server requires your current Manage Server permission.");
@@ -228,12 +246,38 @@ async function runCommand(command, store, api, botId, music, lastfm) {
         return embed("Pong!", `Discord API response: ${Number.isFinite(command.latency?.api) ? `${command.latency.api} ms` : "Not measured yet"}\nGateway heartbeat: ${Number.isFinite(command.latency?.gateway) ? `${command.latency.gateway} ms` : "Waiting for the first heartbeat"}`);
     }
     const context = await commandContext(command, botId, api, settings), { guild, channel } = context, options = command.options, reason = options.reason ?? "No reason supplied.";
+    if (command.name === "settings" && command.sub === "embedcolor") {
+        const value = options.color.trim();
+        if (value !== "default" && !/^#?[0-9a-f]{6}$/i.test(value)) fail("Use a six-digit hex color such as #ffad91, or default.");
+        const settings = store.settings(guild.id);
+        if (value === "default") delete settings.embedColor;
+        else settings.embedColor = parseInt(value.replace("#", ""), 16);
+        store.saveSettings(guild.id, settings);
+        return withEmbedColor(settings, () => embed("Embed color saved", `Sonata's embed color is now \`${value === "default" ? "#ffad91" : "#" + settings.embedColor.toString(16).padStart(6, "0")}\`.`));
+    }
+    if (command.name === "snipe") {
+        if (![0, 5].includes(channel.type)) fail("Use snipe in a text or announcement channel.");
+        const current = store.settings(guild.id);
+        const required = current.snipeRequireManageMessages === false ? PERMS.HISTORY : PERMS.HISTORY | PERMS.MESSAGES;
+        requirePermission(channelPermissions(context.actor, context.roles, guild, channel), required);
+        return snipeReply(eventCache, guild.id, channel.id, current.snipeLimit, options.number ?? 1);
+    }
+    if (command.name === "settings" && command.sub === "snipe") {
+        const { limit, require_manage_messages } = options;
+        const current = store.settings(guild.id);
+        current.snipeLimit = limit;
+        if (require_manage_messages !== undefined) current.snipeRequireManageMessages = require_manage_messages;
+        store.saveSettings(guild.id, current);
+        configureSnipe(eventCache, guild.id, limit);
+        const access = current.snipeRequireManageMessages === false ? "Members with Read Message History can use snipe." : "Snipe requires Manage Messages and Read Message History.";
+        return embed("Snipe settings saved", limit ? `Sonata will keep up to ${limit} recent deletions per channel.\n${access}` : "Snipe is off and its history was cleared.");
+    }
     if (command.name === "fm") return lastfmCommand(context, store, lastfm ?? lastfmClient());
     if (command.name === "rolemenu") return roleMenuCommand(context, store);
     if (command.name === "remind") return reminderCommand(context, store);
     if (command.name === "stick") return stickyCommand(context, store);
     if (command.name === "settings" && command.sub.startsWith("starboard")) return starboardCommand(context, store);
-    if (command.name === "sonata") return videoCommand(context, music);
+    if (command.name === "sonata") return videoCommand(context, music, api, botId);
     if (["warn","kick","ban"].includes(command.name)) {
         const files=command.evidence || (options.file?[options.file]:[]);
         if(files.length>3)fail("Attach at most three evidence files to one action.");
@@ -251,6 +295,7 @@ async function runCommand(command, store, api, botId, music, lastfm) {
     if (command.name === "modstats") return statsCommand(context, store);
     if (command.name === "lockdown") return lockdownCommand(context, store, perform);
     if (command.name === "automod" && AUTOMOD_OPTIONS.some(value => value.name === command.sub)) return advancedAutomod(context, store);
+    if (command.name === "automod" && WORD_FILTER_OPTIONS.some(value => value.name === command.sub)) return wordFilterCommand(context, store);
     if (MUSIC_NAMES.includes(command.name)) return musicCommand(context, music, store);
     if (command.name === "musicsettings") return musicSettings(context, store);
     if (command.name === "role" && ["audit", "auditbaseline"].includes(command.sub)) return permissionAudit(context, store);

@@ -39,10 +39,12 @@ test("GIF bridge validates real GIF bytes and enforces each request's individual
 
 test("GIF and Video controls replace the original attachment, preserve attribution and reject other viewers",async t=>{
     const f=fixture(t),actor=f.members.get(ACTOR),reply=videoReply({video:gif,format:'gif',isGif:true,title:'Caption'},source,actor);
-    assert.equal(reply.files[0].type,'image/gif');assert.equal(reply.embeds[0].image.url,'attachment://sonata-animation.gif');assert.equal(reply.components[0].components[0].label,'Video');
-    const data={id:'123456789012345678',type:3,guild_id:GUILD,channel_id:CHANNEL,member:{user:{id:ACTOR}},message:{id:'123456789012345679',author:{id:BOT},...reply},data:{custom_id:reply.components[0].components[0].custom_id}};
+    const [,,gallery,controls] = reply.components[0].components;
+    assert.equal(reply.files[0].type,'image/gif');assert.equal(gallery.items[0].media.url,'attachment://sonata-animation.gif');assert.equal(controls.components[0].label,'Video');
+    const data={id:'123456789012345678',type:3,guild_id:GUILD,channel_id:CHANNEL,member:{user:{id:ACTOR}},message:{id:'123456789012345679',author:{id:BOT},...reply},data:{custom_id:controls.components[0].custom_id}};
     let job;const bridge={online:()=>true,submit:async value=>{job=value;return{video:mp4,format:'mp4',isGif:true,title:'Caption'}}};
-    const next=await videoModeReply(data,f.api,bridge,BOT);assert.equal(job.mode,'video');assert.equal(next.files[0].type,'video/mp4');assert.equal(next.embeds[0].image,undefined);assert.equal(next.components[0].components[0].label,'GIF');assert.match(next.embeds[0].footer.text,new RegExp(actor.user.username));
+    const next=await videoModeReply(data,f.api,bridge,BOT),card=next.components[0].components;
+    assert.equal(job.mode,'video');assert.equal(next.files[0].type,'video/mp4');assert.equal(card[2].items[0].media.url,'attachment://sonata-video.mp4');assert.equal(card[3].components[0].label,'GIF');assert.match(card.at(-1).content,new RegExp(actor.user.username));
     await assert.rejects(videoModeReply({...data,member:{user:{id:TARGET}}},f.api,bridge,BOT),/Only the original sender/);
     await assert.rejects(videoModeReply({...data,message:{...data.message,author:{id:TARGET}}},f.api,bridge,BOT),/Only the original sender/);
     const dm={...data,guild_id:undefined,member:undefined,user:{id:ACTOR}};

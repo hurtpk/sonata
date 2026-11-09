@@ -175,6 +175,38 @@ test("Ticket panel modals create a ticket once and expire when replayed", async 
     await assert.rejects(featureAction(submission, f.store, f.api, BOT), /expired/);
 });
 
+test("Commission intake works on an existing panel and saves the answers inside the ticket", async t => {
+    const f = fixture(t);
+    f.channels.push({ id: CATEGORY, guild_id: GUILD, type: 4, permission_overwrites: [] });
+    await run(f, `,ticket setup ${CATEGORY} ${MODROLE} ${CHANNEL}`);
+    await run(f, `,ticket panel ${CHANNEL}`);
+    const panel = f.postedMessages.at(-1);
+    const source = click(panel, panel.components[0].components[0].custom_id, TARGET);
+    await assert.rejects(run(f, ",ticket intake commission", TARGET), /permission/i);
+    await run(f, ",ticket intake commission");
+    const form = featureForm(source, f.store);
+    assert.equal(form.data.title, "Request a Commission");
+    assert.equal(form.data.components.length, 4);
+    const submission = (form, brief) => ({
+        ...source, id: String(++interaction), type: 5,
+        data: { custom_id: form.data.custom_id, components: [
+            { type: 18, component: { type: 3, custom_id: "commission-type", values: ["design"] } },
+            { type: 18, component: { type: 4, custom_id: "brief", value: brief } },
+            { type: 18, component: { type: 4, custom_id: "deadline", value: "Flexible" } },
+        ] },
+    });
+    await assert.rejects(featureAction(submission(form, "   "), f.store, f.api, BOT), /Complete the commission form/);
+    assert.equal(f.store.get("SELECT COUNT(*) AS n FROM tickets").n, 0);
+    await featureAction(submission(featureForm(source, f.store), "An illustrated cover"), f.store, f.api, BOT);
+    const ticket = f.store.get("SELECT * FROM tickets");
+    const message = f.postedMessages.at(-1);
+    assert.equal(message.channel_id, ticket.channel);
+    assert.match(message.embeds[0].description, /Graphic design[\s\S]+An illustrated cover[\s\S]+None provided[\s\S]+Flexible/);
+    await assert.rejects(run(f, ",ticket rename design-cover", TARGET, ticket.channel), /support staff/);
+    await run(f, ",ticket rename design-cover", ACTOR, ticket.channel);
+    assert.equal(f.channels.find(channel => channel.id === ticket.channel).name, "design-cover");
+});
+
 test("Giveaway buttons enforce entry eligibility and persist a draw before retrying a failed announcement", async t => {
     const f = fixture(t); await run(f, ',giveaway start 1h 1 "Example prize"');
     const row = f.store.get("SELECT * FROM giveaways"), card = f.postedMessages.find(message => message.id === row.message), entryId = card.components[0].components[0].custom_id;

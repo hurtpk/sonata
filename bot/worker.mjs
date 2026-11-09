@@ -11,7 +11,7 @@ import { Buffer } from "node:buffer";
 
 import { COMMANDS, expandAlias, parsePrefix, parseSlash, slashCommands } from "./commands.mjs";
 import { communityEvent } from "./communityEvents.mjs";
-import { discordApi, embed, inviteUrl, isId, replyPayload } from "./discord.mjs";
+import { withEmbedColor, discordApi, embed, inviteUrl, isId, replyPayload } from "./discord.mjs";
 import { helpInteraction } from "./help.mjs";
 import { runDueJobs } from "./jobs.mjs";
 import { executeCommand, perform } from "./moderation.mjs";
@@ -29,12 +29,14 @@ import { memberActivity } from "./levels.mjs";
 import { dashboardRequest, enforceGuildBlock, guildEvent } from "./dashboard.mjs";
 import { recoveryEvent } from "./roleRecovery.mjs";
 import { musicAudienceEvent } from "./musicPolicy.mjs";
-import { eventLog, rememberLogEvent } from "./eventLogs.mjs";
+import { eventLog, expireLogMessages, rememberLogEvent, rememberSnipe } from "./eventLogs.mjs";
 import { stickyEvent } from "./sticky.mjs";
 import { starboardEvent } from "./starboard.mjs";
 import { maintainProfileBio } from "./guildProfile.mjs";
-import { videoInvocation, videoModeReply } from "./videoEmbeds.mjs";
-import { errorReply, recordCommandFailure } from "./commandFailures.mjs";
+import { videoCardFlag, videoInvocation, videoModeReply } from "./videoEmbeds.mjs";
+import { withModerator } from "./actionAttribution.mjs";
+import { errorReply, recordCommandFailure, submittedCommand } from "./commandFailures.mjs";
+import { matchWordFilter, wordFilterEvent } from "./wordFilters.mjs";
 import { VIDEO_MAX_BYTES, videoLimit } from "./music/videoSource.mjs";
 import { IMAGE_OUTPUT_LIMIT } from "./music/imageSource.mjs";
 import { isImageCommand } from "./imageEditor.mjs";
@@ -83,7 +85,7 @@ export class SonataBot {
         this.socket = null; this.connecting = null; this.heartbeat = null; this.retryTimer = null;
         this.presenceTimer = null; this.presenceSentAt = 0; this.presenceCount = -1;
         this.ready = false; this.acked = true; this.session = {}; this.paused = false; this.nextConnect = 0; this.failures = 0;
-        this.eventCache = { messages: new Map(), channels: new Map() };
+        this.eventCache = { messages: new Map(), channels: new Map(), snipes: new Map() };
         this.tasks = Promise.resolve(); this.queued = 0; this.cooldowns = new Map(); this.lastJobs = 0;
         this.music = new MusicBridge();
         this.lastfm = lastfmClient(env.LASTFM_API_KEY);
@@ -113,7 +115,7 @@ export class SonataBot {
     close(socket, reason) { this.localCloseReason = reason; socket.close(4000, reason); }
 
     async execute(command) {
-        const response = await executeCommand(command, this.store, this.api, this.session.userId, this.music, this.lastfm);
+        const response = await executeCommand(command, this.store, this.api, this.session.userId, this.music, this.lastfm, this.eventCache);
         if (this.ready && command.name === "role" && command.sub === "recovery" && response.embeds?.[0]?.title === "Role recovery saved" && this.store.settings(command.guild).roleRecovery) this.send(this.socket, { op: 8, d: { guild_id: command.guild, query: "", limit: 0 } });
         return response;
     }
@@ -235,7 +237,12 @@ export class SonataBot {
 
     send(socket, value) { if (socket === this.socket && socket.readyState === 1) socket.send(JSON.stringify(value)); }
 
-    async packet(packet, socket) {
+    packet(packet, socket) {
+        const guild = packet.d?.guild_id ?? (packet.t === "GUILD_CREATE" ? packet.d?.id : undefined);
+        return withEmbedColor(guild ? this.store.settings(guild) : {}, () => this.handlePacket(packet, socket));
+    }
+
+    async handlePacket(packet, socket) {
         if (socket !== this.socket) return;
         this.lastOpcode = packet.op;
         if (Number.isInteger(packet.s)) this.session.seq = packet.s;
@@ -245,6 +252,7 @@ export class SonataBot {
             const beat = async () => {
                 if (socket !== this.socket) return;
                 if (!this.acked) { this.close(socket, "Heartbeat not acknowledged"); return; }
+                expireLogMessages(this.eventCache);
                 this.acked = false; this.heartbeatSent = Date.now(); this.send(socket, { op: 1, d: this.session.seq ?? null });
                 await this.ctx.storage.put("session", this.session);
                 this.heartbeat = setTimeout(() => this.ctx.waitUntil(beat()), interval);
@@ -275,13 +283,21 @@ export class SonataBot {
         }
         if (packet.t === "RESUMED") { this.ready = true; this.nextConnect = 0; this.failures = 0; await this.ctx.storage.put("failures", 0); for (const row of this.store.all("SELECT id FROM bot_guilds WHERE active=1")) if (this.store.settings(row.id).roleRecovery) this.send(socket, { op: 8, d: { guild_id: row.id, query: "", limit: 0 } }); }
         if (["READY", "RESUMED", "GUILD_CREATE", "GUILD_DELETE"].includes(packet.t)) this.updatePresence(["READY", "RESUMED"].includes(packet.t));
+        if (["MESSAGE_CREATE", "MESSAGE_UPDATE"].includes(packet.t) && packet.d.guild_id && matchWordFilter(packet.d, this.store.settings(packet.d.guild_id))) {
+            try { if (await wordFilterEvent(packet.d, this.store, this.api, this.session.userId, perform)) return; }
+            catch (error) {
+                recordCommandFailure(this.store, { id: "word-filter:" + packet.d.id, guild: packet.d.guild_id, channel: packet.d.channel_id, actor: packet.d.author?.id, name: "automod", sub: "filter" }, error);
+                return;
+            }
+        }
         if (["GUILD_CREATE","MESSAGE_CREATE","MESSAGE_UPDATE","CHANNEL_CREATE","CHANNEL_UPDATE","CHANNEL_DELETE"].includes(packet.t)) {
             const guildId=packet.t==="GUILD_CREATE"?packet.d.id:packet.d.guild_id;
             if(guildId && featureEnabled(this.store.settings(guildId), "logging"))rememberLogEvent(packet.t,packet.d,this.store.settings(guildId),this.eventCache);
         }
-        if (["MESSAGE_DELETE","MESSAGE_DELETE_BULK","GUILD_MEMBER_ADD","GUILD_MEMBER_REMOVE","GUILD_AUDIT_LOG_ENTRY_CREATE"].includes(packet.t)&&packet.d.guild_id&&this.queued<100) {
-            const logs=this.store.settings(packet.d.guild_id).eventlogs;
-            if(logs&&Object.keys(logs).length)this.enqueue(()=>eventLog(packet.t,{...packet.d,eventId:`${this.session.id}:${packet.s}`},this.store,this.api,this.eventCache,this.session.userId));
+        if (["MESSAGE_DELETE","MESSAGE_DELETE_BULK","GUILD_MEMBER_ADD","GUILD_MEMBER_REMOVE","GUILD_AUDIT_LOG_ENTRY_CREATE"].includes(packet.t) && packet.d.guild_id) {
+            const settings = this.store.settings(packet.d.guild_id);
+            if (featureEnabled(settings, "logging") && packet.t.startsWith("MESSAGE_DELETE")) rememberSnipe(packet.t, packet.d, settings, this.eventCache);
+            if (settings.eventlogs && Object.keys(settings.eventlogs).length && this.queued < 100) this.enqueue(() => eventLog(packet.t, {...packet.d,eventId:`${this.session.id}:${packet.s}`}, this.store, this.api, this.eventCache, this.session.userId));
         }
         if (["MESSAGE_REACTION_ADD", "MESSAGE_REACTION_REMOVE", "MESSAGE_REACTION_REMOVE_ALL", "MESSAGE_REACTION_REMOVE_EMOJI", "MESSAGE_UPDATE", "MESSAGE_DELETE", "MESSAGE_DELETE_BULK"].includes(packet.t) && packet.d.guild_id && this.queued < 50) {
             const settings = this.store.settings(packet.d.guild_id);
@@ -319,6 +335,10 @@ export class SonataBot {
     }
 
     async component(data) {
+        return withModerator(actorId(data), data.member?.nick || data.member?.user?.global_name || data.member?.user?.username || data.user?.username, () => this.componentAction(data));
+    }
+
+    async componentAction(data) {
         if (!this.ready || !isId(actorId(data)) || !isId(data.channel_id)) return;
         if (this.store.get("SELECT id FROM user_blacklist WHERE id=?", actorId(data))) {
             const code = recordCommandFailure(this.store, { id: data.id, guild: data.guild_id, channel: data.channel_id, actor: actorId(data), name: "control" }, { message: "This account is blocked from Sonata Bot.", outcome: "denied" });
@@ -350,6 +370,11 @@ export class SonataBot {
                     const { onDelivered, ...body } = video ? await videoModeReply(data, this.api, this.music, this.session.userId) : await featureAction(data, this.store, this.api, this.session.userId, this.music);
                     if (media) requireBotUser(this.store, actorId(data));
                     if (media && data.guild_id && !featureEnabled(this.store.settings(data.guild_id), "media")) throw new Error("Media is disabled in this server.");
+                    if (video) {
+                        body.flags |= data.message.flags ?? 0;
+                        if (data.message.embeds?.length) body.embeds = [];
+                        if (data.message.content) body.content = null;
+                    }
                     await this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body) });
                     onDelivered?.();
                 } catch (error) {
@@ -391,10 +416,18 @@ export class SonataBot {
         } catch (error) { parsingError = error.message; parsingName = error.commandName; }
         const videoSettings = this.store.settings(data.guild_id);
         if (!parsed && !parsingError && !slash && featureEnabled(videoSettings, "media") && (videoSettings.videoEmbeds?.[data.channel_id] ?? videoSettings.videoEmbedsAll)) {
-            if (invocation && !invocation.explicit) { parsed = parseSlash({ name: "sonata", options: [{name:"url",value:invocation.source}] }); automaticVideo = true; }
+            if (invocation && !invocation.explicit) {
+                parsed = parseSlash({ name: "sonata", options: [{ name: "url", value: invocation.source }] });
+                automaticVideo = true;
+            }
+        }
+        const allowedRoles = videoSettings.videoEmbedRoles ?? [];
+        if (allowedRoles.length && (automaticVideo || invocation?.explicit && parsed?.name === "sonata")) {
+            const roles = data.member?.roles ?? (await this.api(`/guilds/${data.guild_id}/members/${actor}`, { optional: true, parallelRead: true }).catch(() => null))?.roles;
+            if (!roles?.some(role => allowedRoles.includes(role))) return;
         }
         if (!parsed && !parsingError) return;
-        const failureCommand = { id: data.id, guild: data.guild_id, channel: data.channel_id, actor, name: parsed?.name ?? parsingName ?? "unknown", sub: parsed?.sub, options: parsed?.options };
+        const failureCommand = { id: data.id, raw: submittedCommand(data, slash), guild: data.guild_id, channel: data.channel_id, actor, name: parsed?.name ?? parsingName ?? "unknown", sub: parsed?.sub, options: parsed?.options };
         if (this.store.get("SELECT id FROM requests WHERE id=?", data.id)) return;
         const key = `${data.guild_id}:${actor}`, now = Date.now(), previous = this.cooldowns.get(key);
         if (previous && previous.until > now && previous.n >= 5) {
@@ -413,13 +446,13 @@ export class SonataBot {
             else if (parsed?.name === "ping") await this.responses("/users/@me");
             if (slash || parsed?.name === "ping") apiLatency = Date.now() - responseStarted;
         } catch (error) { recordCommandFailure(this.store, failureCommand, error); return; }
-        const respond = body => slash ? this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body) }) : this.responses(`/channels/${data.channel_id}/messages`, { method: "POST", ...replyPayload({ ...body, ...(!(parsed?.name === "sonata" && body.files?.length) ? { message_reference: { message_id: data.id, fail_if_not_exists: false } } : {}) }) });
+        const respond = body => slash ? this.responses(`/webhooks/${this.env.DISCORD_APPLICATION_ID}/${data.token}/messages/@original`, { method: "PATCH", ...replyPayload(body.flags & videoCardFlag ? { ...body, flags: body.flags | 64 } : body) }) : this.responses(`/channels/${data.channel_id}/messages`, { method: "POST", ...replyPayload({ ...body, ...(!(parsed?.name === "sonata" && body.files?.length) ? { message_reference: { message_id: data.id, fail_if_not_exists: false } } : {}) }) });
         if (parsingError || this.queued >= 25) {
             if ((parsed || parsingName) && this.store.claim(data.id)) { this.store.usage(data.guild_id, parsed?.name ?? parsingName); this.store.outcome(data.guild_id, parsed ? [parsed.name, parsed.sub].filter(Boolean).join(" ") : parsingName, parsingError ? "invalid" : "busy"); }
             const code = recordCommandFailure(this.store, failureCommand, { message: parsingError ?? "Sonata is busy. Try again shortly.", outcome: parsingError ? "invalid" : "busy" });
             try { await respond(errorReply(code)); } catch { return; } return;
         }
-        const command = { ...parsed, id: data.id, prefix: !slash, evidence: !slash && ["warn","kick","ban"].includes(parsed.name) ? data.attachments : undefined, reply: !slash ? data.message_reference : undefined, actor, guild: data.guild_id, channel: data.channel_id, latency: { api: apiLatency, gateway: this.gatewayLatency } };
+        const command = { ...parsed, raw: submittedCommand(data, slash), id: data.id, actorName: data.member?.nick || data.member?.user?.global_name || data.member?.user?.username || data.author?.global_name || data.author?.username || data.user?.global_name || data.user?.username, prefix: !slash, evidence: !slash && ["warn","kick","ban"].includes(parsed.name) ? data.attachments : undefined, reply: !slash ? data.message_reference : undefined, actor, guild: data.guild_id, channel: data.channel_id, latency: { api: apiLatency, gateway: this.gatewayLatency } };
         const run = async () => {
             const media = command.name === "sonata" || image;
             if (media && this.videoRequests) { const code = recordCommandFailure(this.store, command, { message: "A media file is already being processed. Try again shortly.", outcome: "busy" }); await respond(errorReply(code)).catch(() => false); return; }
@@ -442,8 +475,8 @@ export class SonataBot {
                             const original = await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { optional: true });
                             if (original?.author.id === actor && original.content === data.content && !original.attachments?.length) await this.api(`/channels/${data.channel_id}/messages/${data.id}`, { method: "DELETE", optional: true, reason: "Sonata uploaded this video." });
                         } catch {
-                            payload.embeds[0].footer.text += " • Original link could not be removed";
-                            await this.responses(`/channels/${data.channel_id}/messages/${sent.id}`, { method: "PATCH", body: { embeds: payload.embeds } });
+                            payload.components[0].components.at(-1).content += " • Original link could not be removed";
+                            await this.responses(`/channels/${data.channel_id}/messages/${sent.id}`, { method: "PATCH", body: { components: payload.components, allowed_mentions: payload.allowed_mentions } });
                         }
                     }
                 } catch (error) { recordCommandFailure(this.store, command, { message: `Response delivery failed: ${error.message}`, outcome: "delivery_failed" }); return; }

@@ -1,0 +1,25 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-amrules { display: flex; flex-direction: column; gap: 16px; }
+.vc-amrules-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.vc-amrules-heading > :first-child { flex: 1; }
+.vc-amrules h2 { font-size: 21px; margin: 0 0 5px; }
+.vc-amrules h3, .vc-amrules h4 { margin: 0; }
+.vc-amrules-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 12px; }
+.vc-amrules-rule, .vc-amrules-editor { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--tl-line); background: var(--sw-card, var(--background-secondary)); border-radius: 7px; min-width: 0; }
+.vc-amrules-rule-title { display: flex; align-items: center; gap: 10px; }
+.vc-amrules-rule-title > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.vc-amrules-rule-title > .sonata-glyph { color: var(--tl-accent); font-size: 21px; }
+.vc-amrules-rule-title small { display: block; color: var(--text-muted); margin-top: 5px; }
+.vc-amrules-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 0; margin: 0; border: 0; min-width: 0; }
+.vc-amrules-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 13px; }
+.vc-amrules-field small, .vc-amrules-toggle small { display: block; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+.vc-amrules-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
+.vc-amrules-actions { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 14px; padding: 18px 0; border-block: 1px solid var(--tl-line); }
+.vc-amrules-form:disabled { opacity: .65; }
+.vc-amrules textarea { min-height: 90px; }
+@media (max-width: 700px) { .vc-amrules-form { grid-template-columns: 1fr; } }

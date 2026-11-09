@@ -5,6 +5,7 @@
  */
 
 import "./styles.css";
+import "./RulesPanel";
 
 import { classNameFactory } from "@utils/css";
 import { classes } from "@utils/misc";

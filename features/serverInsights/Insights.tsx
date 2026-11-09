@@ -14,7 +14,7 @@
 import ErrorBoundary from "@components/ErrorBoundary";
 import type { Guild, RenderModalProps, RoleOrUserPermission } from "@vencord/discord-types";
 import { PermissionOverwriteType } from "@vencord/discord-types/enums";
-import { GuildRoleStore, Menu, React, useEffect, useState } from "@webpack/common";
+import { GuildRoleStore, GuildStore, Menu, React, useEffect, useState, useStateFromStores } from "@webpack/common";
 
 import { isFeatureRunning } from "../../featureSettings";
 import { openSection } from "../_shared/Hub";
@@ -24,6 +24,7 @@ import { MemberLookupModal } from "./permissionsViewer/components/MemberLookup";
 import { RolesAndUsersPermissions } from "./permissionsViewer/components/RolesAndUsersPermissions";
 import { loadGetGuildPermissionSpecMap } from "./permissionsViewer/utils";
 import { GuildInfoModal } from "./serverInfo/GuildInfoModal";
+import { GuildHeader } from "./serverInfo/GuildHeader";
 
 export type InsightsTab = "overview" | "roles" | "compare" | "members";
 export interface InsightsOpts { query?: string; roleId?: string; }
@@ -36,7 +37,9 @@ const tabsNow = (): [InsightsTab, string][] => [
 /** The open window: opening Insights again switches it rather than stacking another. */
 let live: { guildId: string; go(tab: InsightsTab, opts: InsightsOpts): void; } | null = null;
 
-export function InsightsWindow({ modalProps, guild, start, startOpts, tools }: { modalProps: RenderModalProps; guild: Guild; start?: InsightsTab; startOpts: InsightsOpts; tools?: React.ReactNode; }) {
+export function InsightsWindow({ modalProps, guild: initialGuild, start, startOpts }: { modalProps: RenderModalProps; guild: Guild; start?: InsightsTab; startOpts: InsightsOpts; }) {
+    const [guildId, setGuildId] = useState(initialGuild.id);
+    const guild = useStateFromStores([GuildStore], () => GuildStore.getGuild(guildId), [guildId]);
     const tabs = tabsNow();
     const [tab, setTab] = useState<InsightsTab>(() => tabs.find(([id]) => id === start)?.[0] ?? tabs[0]?.[0] ?? "overview");
     const [opts, setOpts] = useState<InsightsOpts>(startOpts);
@@ -45,20 +48,23 @@ export function InsightsWindow({ modalProps, guild, start, startOpts, tools }: {
     const [specsReady, setSpecsReady] = useState(false);
     useEffect(() => void loadGetGuildPermissionSpecMap().then(() => setSpecsReady(true)), []);
     useEffect(() => {
+        if (!guild) return;
         const me = { guildId: guild.id, go: (t: InsightsTab, o: InsightsOpts) => { setTab(t); setOpts(o); setN(x => x + 1); } };
         live = me;
         return () => { if (live === me) live = null; };
-    }, []);
+    }, [guildId]);
 
     const Embedded = embeddedContext().Provider;
+    if (!guild) return <Window {...modalProps} title="Server Insights"><div className="vc-tool-empty">This server is no longer available. Reopen Server Tools to choose another server.</div></Window>;
     const roles = (): RoleOrUserPermission[] => GuildRoleStore.getSortedRoles(guild.id).map(role => ({ type: PermissionOverwriteType.ROLE, ...role })) as any;
 
     return (
-        <Window {...modalProps} size="xl" title="Server Insights" subtitle={guild.name} tools={tools}
+        <Window {...modalProps} size="xl" title="Server Insights" subtitle={guild.name}
             tabs={tabs.length > 1 ? tabs : undefined} tab={tab} onTab={id => { setTab(id as InsightsTab); setOpts({}); }}
             status={[guild.name, tab === "overview" ? "About this server" : tab === "roles" ? "Pick a role to see what it can do and who has it" : tab === "compare" ? "Compare two roles side by side" : "Look someone up by ID, @mention or username"]}>
             <Embedded value>
-                <ErrorBoundary key={`${tab}:${n}`} message="This tab hit a problem — try another one, or reopen Server Insights.">
+                <GuildHeader guild={guild} onChange={id => { setGuildId(id); setOpts({}); }} />
+                <ErrorBoundary key={`${guild.id}:${tab}:${n}`} message="This tab hit a problem — try another one, or reopen Server Insights.">
                     {!tabs.length && <div className="vc-tool-empty">Switch on Server Info or Permissions Viewer in Server Insights' options.</div>}
                     {tab === "overview" && <GuildInfoModal guild={guild} modalProps={modalProps} />}
                     {tab === "roles" && (specsReady

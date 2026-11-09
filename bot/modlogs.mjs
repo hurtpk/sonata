@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { embedColor } from "./discord.mjs";
+
 import { COMMANDS } from "./commands.mjs";
 import { embed, fail, isId } from "./discord.mjs";
 import { actorId, genuineControl } from "./interactionUI.mjs";
@@ -22,7 +24,7 @@ export function modlogPage(store, state, id) {
     const pages = Math.max(1, Math.ceil(count.total / size)); state.page = Math.min(Math.max(0, state.page), pages - 1);
     const entries = store.all(`SELECT * FROM cases WHERE ${where} ORDER BY n DESC LIMIT ? OFFSET ?`, ...values, size, state.page * size);
     const response = embed(state.staff ? "Staff activity" : "Moderation history", state.staff ? `**Moderator:** <@${state.staff}> · \`${state.staff}\`\n**${count.completed || 0} completed actions** · ${count.total - (count.completed || 0)} awaiting review${state.days ? ` · Past ${state.days} days` : " · All time"}\nOnly actions recorded by Sonata Bot.` : `**Member:** <@${state.victim}> · \`${state.victim}\`\n**${count.total} records** · ${count.completed || 0} completed\nOnly actions recorded by Sonata Bot.`);
-    response.embeds[0].color = 0xbd898e;
+    response.embeds[0].color = embedColor();
     response.embeds[0].fields = entries.map(row => ({ name: `#${row.n} · ${row.kind.replace(/\b\w/g, x => x.toUpperCase())}`, value: `**Target:** ${caseTarget(row.kind,row.target)} · **Moderator:** <@${row.actor}>\n<t:${Math.floor(row.at / 1000)}:f> · ${row.status === "completed" ? "Completed" : row.status.replaceAll("_", " ")}\n**Reason:** ${brief(row.reason)}\nView: \`case ${row.n}\``, inline: false }));
     if (!entries.length) response.embeds[0].description += "\n\nNo matching records.";
     response.embeds[0].footer = { text: `Page ${state.page + 1} of ${pages} · ${count.total} matching records · Menu expires after 30 minutes` };

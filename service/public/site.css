@@ -34,3 +34,22 @@ main{overflow-x:clip}
 .live-workspace{min-height:720px}.live-workspace iframe{display:block;width:100%;height:800px;border:0;background:var(--bg)}
 
 .live-signin{padding:80px 6%;min-height:650px}.live-signin h1{font-size:48px;letter-spacing:-1px}.live-signin p{color:var(--muted);font-size:14px;line-height:1.8;margin:22px 0 32px}
+.builder-page-actions,.builder-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#command-builder{width:min(640px,calc(100vw - 28px));max-height:calc(100dvh - 28px);margin:auto;padding:22px;background:var(--surface,#181a1e);color:var(--text,#eee);border:1px solid var(--line,#34343a);border-radius:9px;overflow:auto}
+#command-builder::backdrop{background:#000a}
+.builder-heading{margin-bottom:16px}
+.builder-heading h2{margin:0}
+#command-builder form,#command-builder label{display:grid;gap:8px}
+#command-builder form{gap:14px}
+#command-builder label{font-size:12px;min-width:0}
+#command-builder :is(input,select,textarea){min-width:0;width:100%;font:inherit;color:inherit;background:var(--base,#101316);border:1px solid var(--line,#34343a);border-radius:4px;padding:10px}
+#command-builder :is(p,small){margin:0;color:var(--muted,#aaa);line-height:1.55}
+#command-builder p:empty{display:none}
+#command-builder [hidden]{display:none}
+#command-builder button[type=submit]{justify-self:start}
+#command-builder button:disabled{opacity:.45;cursor:default}
+.builder-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.builder-fields:empty{display:none}
+@media(max-width:530px){.builder-fields{grid-template-columns:1fr}}
+
+#command-list.command-families{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.command-family{border:1px solid var(--line,#2b2c32);border-radius:14px;background:#ffffff03;min-width:0}.command-family>summary{display:flex;align-items:center;gap:14px;padding:18px 22px;list-style:none;cursor:pointer}.command-family>summary::-webkit-details-marker{display:none}.command-family>summary strong{flex:1;font-size:14px}.command-family>summary span{color:var(--muted,#9898a1);font-size:12px}.command-family[open]>summary svg{transform:rotate(90deg)}.command-family>div{border-top:1px solid var(--line,#2b2c32)}.command-family .command-card{border:0;border-bottom:1px solid var(--line,#2b2c32)}.command-family .command-card:last-child{border-bottom:0}

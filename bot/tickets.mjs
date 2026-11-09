@@ -13,6 +13,13 @@ import { saveTicketDetails, ticketDetails, ticketExtras } from "./ticketExtras.m
 const ticketButtons = (id, closed = false) => rows([button(`snticket:${closed ? "reopen" : "claim"}:${id}`, closed ? "Reopen" : "Claim", 1), ...(!closed ? [button(`snticket:close:${id}`, "Close & save transcript", 4)] : []), button(`snticket:transcript:${id}`, "Transcript")]);
 const staff = (context, settings, details) => context.actor.roles.includes(details?.staffRole || settings.tickets?.role) || !!(memberPermissions(context.actor, context.roles, context.guild) & (PERMS.ADMIN | PERMS.CHANNELS));
 
+export function ticketPanel(guild, config) {
+    const commission = config.intake === "commission", categories = Object.keys(config.categories ?? {});
+    const components = rows([button(`snticket:open:${guild}`, commission ? "Request a commission" : "Open ticket", 1)]);
+    if (categories.length) components.push({ type: 1, components: [{ type: 3, custom_id: `snticket:category:${guild}`, placeholder: "Choose a support queue…", min_values: 1, max_values: 1, options: ["general", ...categories].map(name => ({ label: name, value: name })) }] });
+    return { ...(commission ? embed("Commission inquiries", "Tell us about your project in a private ticket. One open ticket per person.") : embed("Need help?", "Open a private ticket for server staff. One open ticket per person.")), components };
+}
+
 export async function createTicket(context, store, topic, kind = "general") {
     const { guild, actor, bot, api, roles } = context, base = store.settings(guild.id).tickets;
     const config = kind === "general" ? base : base?.categories?.[kind] ? { ...base, ...base.categories[kind] } : null;
@@ -63,7 +70,7 @@ export async function ticketTranscript(context, store, row) {
 export async function ticketCommand(context, store, requestedId) {
     const { command, api, guild, actor, bot, roles } = context, settings = store.settings(guild.id), o = command.options;
     if (["categoryadd", "categoryremove", "priority", "assign", "idle"].includes(command.sub)) return ticketExtras(context, store);
-    if (["setup", "panel", "off", "view"].includes(command.sub)) {
+    if (["setup", "panel", "off", "view", "intake"].includes(command.sub)) {
         requirePermission(memberPermissions(actor, roles, guild), PERMS.GUILD | PERMS.CHANNELS);
         if (command.sub === "view") return embed("Support tickets", settings.tickets ? `Enabled: ${settings.tickets.enabled}\nCategory: <#${settings.tickets.category}>\nSupport role: <@&${settings.tickets.role}>\nTranscripts: <#${settings.tickets.log}>` : "Not configured.");
         if (command.sub === "setup") {
@@ -75,22 +82,35 @@ export async function ticketCommand(context, store, requestedId) {
             settings.tickets = { ...settings.tickets, enabled: true, category: category.id, role: o.role, log: o.channel };
         }
         if (command.sub === "off" && settings.tickets) settings.tickets.enabled = false;
+        if (command.sub === "intake") {
+            if (!settings.tickets) fail("Set up tickets before changing the form.");
+            settings.tickets.intake = o.mode;
+        }
         if (command.sub === "panel") {
             if (!settings.tickets?.enabled) fail("Enable ticket setup before posting a panel.");
             await messageChannel(context, o.channel);
-            const components = rows([button(`snticket:open:${guild.id}`, "Open ticket", 1)]), categories = Object.keys(settings.tickets.categories ?? {});
-            if (categories.length) components.push({ type: 1, components: [{ type: 3, custom_id: `snticket:category:${guild.id}`, placeholder: "Choose a support queue…", min_values: 1, max_values: 1, options: ["general", ...categories].map(name => ({ label: name, value: name })) }] });
-            const message = await api(`/channels/${o.channel}/messages`, { method: "POST", body: { ...embed("Need help?", "Open a private ticket for server staff. One open ticket per person."), components } });
+            const panels = settings.tickets.panels ?? (settings.tickets.panel ? [settings.tickets.panel] : []);
+            if (panels.length >= 25) fail("Remove an existing ticket panel before posting another. Up to 25 panels can be managed.");
+            const message = await api(`/channels/${o.channel}/messages`, { method: "POST", body: ticketPanel(guild.id, settings.tickets) });
             settings.tickets.panel = { channel: o.channel, message: message.id };
+            settings.tickets.panels = [...panels, settings.tickets.panel];
         }
         store.saveSettings(guild.id, settings);
+        if (command.sub === "intake") return embed("Ticket form saved", `Your active panel now opens the ${o.mode} form.`);
         return embed("Tickets saved", "Use ticket panel to post an open-ticket button. Closing saves a transcript before making the ticket read-only.");
     }
     if (["open", "openin"].includes(command.sub)) return createTicket(context, store, o.topic, o.category?.trim().toLowerCase() || "general");
     const row = requestedId ? store.get("SELECT * FROM tickets WHERE guild=? AND id=?", guild.id, requestedId) : store.get("SELECT * FROM tickets WHERE guild=? AND channel=?", guild.id, command.channel);
     if (!row || row.channel !== command.channel) fail("Use this control inside its original ticket channel.");
     const details = ticketDetails(store, row);
-    if (!staff(context, settings, details) && (row.owner !== actor.user.id || ["claim", "reopen", "archive"].includes(command.sub))) fail("Only support staff can use this ticket control.");
+    if (!staff(context, settings, details) && (row.owner !== actor.user.id || ["claim", "reopen", "archive", "rename"].includes(command.sub))) fail("Only support staff can use this ticket control.");
+    if (command.sub === "rename") {
+        const name = o.name.trim();
+        if (!name) fail("Enter a channel name.");
+        context.botPermission(PERMS.CHANNELS);
+        const channel = await api(`/channels/${row.channel}`, { method: "PATCH", reason: `Sonata ticket renamed by ${actor.user.id}`, body: { name } });
+        return embed("Ticket renamed", `<#${channel.id}> is now named ${channel.name}.`);
+    }
     if (command.sub === "archive") {
         if (row.state !== "closed" || !row.transcript) fail("Close this ticket and save its transcript before archiving it.");
         store.run("UPDATE tickets SET state='archived' WHERE id=?", row.id);

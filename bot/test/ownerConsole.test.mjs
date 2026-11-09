@@ -70,7 +70,8 @@ test("Website can configure a real alias and perform a moderation action with th
     const f = setup(t);
     await f.request("action", { guild: GUILD, channel: CHANNEL, name: "alias", sub: "set", options: { name: "shutup", target: "timeout" }, actor: TARGET });
     assert.equal(f.store.settings(GUILD).aliases.shutup, "timeout");
-    await f.request("action", { guild: GUILD, channel: CHANNEL, name: "warn", sub: "run", options: { member: TARGET, reason: "Dashboard test" } });
+    const response = await f.request("action", { guild: GUILD, channel: CHANNEL, name: "warn", sub: "run", options: { member: TARGET, reason: "Dashboard test" } });
+    assert.match(response.result.embeds[0].footer.text, new RegExp(`User ${OWNER} \| ${OWNER}`));
     const row = f.store.get("SELECT * FROM cases WHERE kind='warn'"); assert.equal(row.actor, OWNER); assert.equal(row.reason, "Dashboard test");
 });
 

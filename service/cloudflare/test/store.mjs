@@ -15,7 +15,8 @@ export async function testStore() {
         const database = await runtime.getD1Database("DB");
         const schema = await readFile(new URL("../../migrations/0001_initial.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0002_bot_dashboard.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0003_user_profiles.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0004_admin_grants.sql", import.meta.url), "utf8") + await readFile(new URL("../../migrations/0005_in_app_activation.sql", import.meta.url), "utf8");
         const sessionSchema = await readFile(new URL("../../migrations/0006_session_details.sql", import.meta.url), "utf8");
-        for (const sql of (schema + sessionSchema).split(";").map(sql => sql.trim()).filter(Boolean)) await database.prepare(sql).run();
+        const staffSchema = await readFile(new URL("../../migrations/0007_staff_activity.sql", import.meta.url), "utf8");
+        for (const sql of (schema + sessionSchema + staffSchema).split(";").map(sql => sql.trim()).filter(Boolean)) await database.prepare(sql).run();
         return { ...d1Store(database), db: { close: () => runtime.dispose() } };
     } catch (error) { await runtime.dispose(); throw error; }
 }

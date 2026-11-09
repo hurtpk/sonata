@@ -10,6 +10,11 @@
         "nodejs_compat"
     ],
     "workers_dev": true,
+    "preview_urls": false,
+    "ratelimits": [
+        { "name": "AUTH_RATE_LIMIT", "namespace_id": "4826421", "simple": { "limit": 10, "period": 60 } },
+        { "name": "API_RATE_LIMIT", "namespace_id": "4826422", "simple": { "limit": 300, "period": 60 } }
+    ],
     "services": [
         {
             "binding": "BOT_SERVICE",

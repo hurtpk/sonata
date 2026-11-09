@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { adminAccess, adminTools } from "./adminAccess.mjs";
+import { adminAccess, adminTools, recordStaffActivity } from "./adminAccess.mjs";
 import { ownerConsole } from "./ownerConsole.mjs";
 import { Buffer } from "node:buffer";
 
@@ -12,7 +12,7 @@ import { createAuth, failure } from "./auth.mjs";
 import { hash, random, validId, validToken } from "./protocol.mjs";
 
 const DAY = 86400_000;
-const files = { "/dm-sans.ttf": ["dm-sans.ttf", "font/ttf"], "/DM-Sans-OFL.txt": ["DM-Sans-OFL.txt", "text/plain"], "/admin-app.js": ["app.js", "text/javascript"], "/dashboard-style.css": ["style.css", "text/css"], "/embed.js": ["embed.js", "text/javascript"], "/embed.css": ["embed.css", "text/css"], "/site.js": ["site.js", "text/javascript"], "/site.css": ["site.css", "text/css"], "/catalog.json": ["catalog.json", "application/json"], "/dashboard": ["bot.html", "text/html"], "/commands": ["home.html", "text/html"], "/site-scrollbars.css": ["site-scrollbars.css", "text/css"], "/favicon.png": ["favicon.png", "image/png"], "/apple-touch-icon.png": ["apple-touch-icon.png", "image/png"], "/guides": ["home.html", "text/html"], "/status": ["home.html", "text/html"], "/owner-console.js": ["owner-console.js", "text/javascript"], "/owner-console.css": ["owner-console.css", "text/css"], "/command-setup.js": ["command-setup.js", "text/javascript"], "/command-setup.css": ["command-setup.css", "text/css"], "/site-info.js": ["site-info.js", "text/javascript"], "/site-info.css": ["site-info.css", "text/css"], "/alyssajadew.jpg": ["alyssajadew.jpg", "image/jpeg"], "/app.js": ["app.js", "text/javascript"], "/style.css": ["style.css", "text/css"], "/": ["home.html", "text/html"], "/admin": ["index.html", "text/html"], "/activate": ["index.html", "text/html"], "/bot": ["bot.html", "text/html"], "/bot.js": ["bot.js", "text/javascript"], "/bot.css": ["bot.css", "text/css"], "/owner-bot.js": ["owner-bot.js", "text/javascript"], "/admin-tools.js": ["admin-tools.js", "text/javascript"], "/dashboard-extras.js": ["dashboard-extras.js", "text/javascript"], "/bot-profile.js": ["bot-profile.js", "text/javascript"] };
+const files = { "/server-manager.js": ["server-manager.js", "text/javascript"], "/server-manager.css": ["server-manager.css", "text/css"], "/dashboard-search.js": ["dashboard-search.js", "text/javascript"], "/logging-setup.js": ["logging-setup.js", "text/javascript"], "/editorial.css": ["editorial.css", "text/css"], "/bodoni.woff2": ["bodoni.woff2", "font/woff2"], "/space.woff2": ["space.woff2", "font/woff2"], "/bodoni-OFL.txt": ["bodoni-OFL.txt", "text/plain"], "/space-OFL.txt": ["space-OFL.txt", "text/plain"], "/dm-sans.ttf": ["dm-sans.ttf", "font/ttf"], "/DM-Sans-OFL.txt": ["DM-Sans-OFL.txt", "text/plain"], "/admin-app.js": ["app.js", "text/javascript"], "/dashboard-style.css": ["style.css", "text/css"], "/embed.js": ["embed.js", "text/javascript"], "/embed.css": ["embed.css", "text/css"], "/site.js": ["site.js", "text/javascript"], "/site.css": ["site.css", "text/css"], "/catalog.json": ["catalog.json", "application/json"], "/dashboard": ["bot.html", "text/html"], "/commands": ["home.html", "text/html"], "/site-scrollbars.css": ["site-scrollbars.css", "text/css"], "/favicon.png": ["favicon.png", "image/png"], "/apple-touch-icon.png": ["apple-touch-icon.png", "image/png"], "/guides": ["home.html", "text/html"], "/status": ["home.html", "text/html"], "/owner-console.js": ["owner-console.js", "text/javascript"], "/owner-console.css": ["owner-console.css", "text/css"], "/command-builder.js": ["command-builder.js", "text/javascript"], "/command-setup.js": ["command-setup.js", "text/javascript"], "/command-setup.css": ["command-setup.css", "text/css"], "/site-info.js": ["site-info.js", "text/javascript"], "/site-info.css": ["site-info.css", "text/css"], "/alyssajadew.jpg": ["alyssajadew.jpg", "image/jpeg"], "/app.js": ["app.js", "text/javascript"], "/style.css": ["style.css", "text/css"], "/": ["home.html", "text/html"], "/admin": ["index.html", "text/html"], "/activate": ["index.html", "text/html"], "/bot": ["bot.html", "text/html"], "/bot.js": ["bot.js", "text/javascript"], "/bot.css": ["bot.css", "text/css"], "/owner-bot.js": ["owner-bot.js", "text/javascript"], "/admin-tools.js": ["admin-tools.js", "text/javascript"], "/dashboard-extras.js": ["dashboard-extras.js", "text/javascript"], "/bot-profile.js": ["bot-profile.js", "text/javascript"] };
 const versionValid = value => typeof value === "string" && /^[\w.+-]{1,40}$/.test(value);
 
 async function body(request, limit = 16_384) {
@@ -149,13 +149,23 @@ export function createApplication(config, store, discordFetch, readAsset, botFet
                 const session = await auth.botSession(request) || await auth.session(request);
                 if (!session) throw failure(401, "Sign in with Discord to manage a server.");
                 if (request.method !== "GET" && (request.headers.origin !== config.publicUrl || request.headers["x-csrf-token"] !== session.csrf)) throw failure(403, "Refresh this page before making changes.");
-                if (path === "/api/bot/session" && request.method === "GET") { const access = await adminAccess(config, store, session.user_id); json(response, 200, { id: session.user_id, username: session.username, csrf: session.csrf, owner: !!access, sonataOwner: access?.owner === true, permissions: access?.permissions ?? [], connected: !!botFetch }); return; }
+                if (path === "/api/bot/session" && request.method === "GET") {
+                    const access = await adminAccess(config, store, session.user_id);
+                    if (access && !access.owner) await recordStaffActivity(store, session.user_id, "dashboard");
+                    json(response, 200, { id: session.user_id, username: session.username, csrf: session.csrf, owner: !!access, sonataOwner: access?.owner === true, permissions: access?.permissions ?? [], connected: !!botFetch }); return;
+                }
                 if (path === "/api/bot/logout" && request.method === "POST") { await auth.logout(request, response); json(response, 200, { ok: true }); return; }
                 if (!botFetch) throw failure(503, "The bot dashboard connection is not configured yet.");
                 rate(request, "bot", 120);
                 const action = path.slice(9);
-                if (!((request.method === "GET" && ["servers", "server", "forms", "access", "profile", "features"].includes(action)) || (request.method === "POST" && ["action", "access", "designer", "profile", "features"].includes(action)))) throw failure(404, "This bot dashboard action was not found.");
-                json(response, 200, await botFetch(action + url.search, session.user_id, request.method === "POST" ? await body(request, action === "profile" ? 3 * 1024 * 1024 : 16_384) : undefined)); return;
+                if (!((request.method === "GET" && ["servers", "server", "forms", "access", "profile", "features", "command-conflicts", "server-manager"].includes(action)) || (request.method === "POST" && ["action", "access", "designer", "profile", "features", "setup-presets", "server-manager"].includes(action)))) throw failure(404, "This bot dashboard action was not found.");
+                const input = request.method === "POST" ? await body(request, action === "profile" ? 3 * 1024 * 1024 : action === "server-manager" ? 384 * 1024 : 16_384) : undefined;
+                const result = await botFetch(action + url.search, session.user_id, input);
+                if (input && validId(input.guild)) {
+                    const label = action === "server-manager" ? `Server management: ${String(input.action).slice(0, 40)}` : action === "action" && [input.name, input.sub].every(value => typeof value === "string" && /^[\w-]{1,32}$/.test(value)) ? [input.name, input.sub === "run" ? "" : input.sub].filter(Boolean).join(" ") : ({ access: "Dashboard access updated", designer: "Message designer used", profile: "Bot profile updated", features: "Feature settings updated" })[action];
+                    if (label) await recordStaffActivity(store, session.user_id, "dashboard", label, input.guild);
+                }
+                json(response, 200, result); return;
             }
             if (path.startsWith("/api/admin/")) {
                 const session = await requireAdmin(request, request.method !== "GET");
@@ -164,10 +174,26 @@ export function createApplication(config, store, discordFetch, readAsset, botFet
                 if (required && !session.permissions.includes(required)) throw failure(403, "Your Sonata administrator account does not have access to this tool.");
                 if (await adminTools(path, request, response, session, config, store, botFetch, body, json)) return;
                 if (path === "/api/admin/bot/failures" && request.method === "GET") { if (!botFetch) throw failure(503, "The bot dashboard connection is not configured yet."); rate(request, "bot-failures", 120); json(response, 200, await botFetch("owner/failures" + url.search, session.user_id, undefined, session.permissions)); return; }
-                if (path === "/api/admin/bot/profile" && ["GET", "POST"].includes(request.method)) { if (!botFetch) throw failure(503, "The bot dashboard connection is not configured yet."); rate(request, "bot-owner-profile", 60); json(response, 200, await botFetch("owner/profile" + url.search, session.user_id, request.method === "POST" ? await body(request) : undefined, session.permissions)); return; }
-                if (path === "/api/admin/bot/action" && request.method === "POST") { if (!botFetch) throw failure(503, "The bot dashboard connection is not configured yet."); rate(request, "bot-owner-action", 20); json(response, 200, await botFetch("owner/action", session.user_id, await body(request), session.permissions)); return; }
+                if (path === "/api/admin/bot/profile" && ["GET", "POST"].includes(request.method)) {
+                    if (!botFetch) throw failure(503, "The bot dashboard connection is not configured yet.");
+                    rate(request, "bot-owner-profile", 60);
+                    const input = request.method === "POST" ? await body(request) : undefined, result = await botFetch("owner/profile" + url.search, session.user_id, input, session.permissions);
+                    if (input && validId(input.guild)) await recordStaffActivity(store, session.user_id, "admin", "Bot profile reset", input.guild);
+                    json(response, 200, result); return;
+                }
+                if (path === "/api/admin/bot/action" && request.method === "POST") {
+                    if (!botFetch) throw failure(503, "The bot dashboard connection is not configured yet.");
+                    rate(request, "bot-owner-action", 20);
+                    const input = await body(request), result = await botFetch("owner/action", session.user_id, input, session.permissions);
+                    const label = ({ leave: "Bot removed from server", blacklist: "Server blacklisted", unblacklist: "Server removed from blacklist" })[input.action];
+                    if (label && validId(input.guild)) await recordStaffActivity(store, session.user_id, "admin", label, input.guild);
+                    json(response, 200, result); return;
+                }
                 if (request.method === "GET" && ["/api/admin/bot", "/api/admin/bot/server"].includes(path)) { if (!botFetch) throw failure(503, "The bot dashboard connection is not configured yet."); rate(request, "bot-owner", 120); json(response, 200, await botFetch(path === "/api/admin/bot" ? "owner" : "owner/server" + url.search, session.user_id, undefined, session.permissions)); return; }
-                if (request.method === "GET" && path === "/api/admin/session") { json(response, 200, { id: session.user_id, username: session.username, csrf: session.csrf, owner: session.owner, permissions: session.permissions }); return; }
+                if (request.method === "GET" && path === "/api/admin/session") {
+                    if (!session.owner) await recordStaffActivity(store, session.user_id, "admin");
+                    json(response, 200, { id: session.user_id, username: session.username, csrf: session.csrf, owner: session.owner, permissions: session.permissions }); return;
+                }
                 if (request.method === "POST" && path === "/api/admin/logout") { await auth.logout(request, response); json(response, 200, { ok: true }); return; }
                 if (request.method === "GET" && path === "/api/admin/avatars") {
                     const ids = [...new Set((url.searchParams.get("ids") || "").split(","))];
