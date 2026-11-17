@@ -21,8 +21,9 @@ import { TooltipContainer } from "@components/TooltipContainer";
 import { classes } from "@utils/misc";
 import { IconComponent } from "@utils/types";
 import { RenderModalProps } from "@vencord/discord-types";
-import { ConfirmModal, openModal, useEffect, useState } from "@webpack/common";
+import { openModal, useEffect, useState } from "@webpack/common";
 
+import { Window } from "../_shared/Window";
 import { settings } from "./settings";
 import { openTranslateModal } from "./TranslateModal";
 import { cl } from "./utils";
@@ -46,19 +47,24 @@ function AutoTranslateConfirmModal(props: RenderModalProps) {
     const s = settings.use(["dismissedAutoTranslateAlert"]);
 
     return (
-        <ConfirmModal
+        <Window
             {...props}
-            title="Vencord Auto-Translate Enabled"
-            subtitle="You just enabled Auto Translate! Any message will automatically be translated before being sent."
-            confirmText="Disable Auto-Translate"
-            onConfirm={() => settings.store.autoTranslate = false}
-            cancelText="Got it"
-            variant="primary"
-            checkboxProps={{
-                checked: s.dismissedAutoTranslateAlert === true,
-                onChange: checked => s.dismissedAutoTranslateAlert = checked,
-            }}
-        />
+            size="sm"
+            title="Auto-translate enabled"
+            role="alertdialog"
+            actions={[
+                { text: "Disable auto-translate", variant: "secondary", onClick: () => { settings.store.autoTranslate = false; props.onClose(); } },
+                { text: "Got it", variant: "primary", onClick: props.onClose },
+            ]}
+        >
+            <div className="vc-tool-wrap">
+                <p>Auto-translate translates your messages before sending them.</p>
+                <label className="vc-tool-check">
+                    <input type="checkbox" checked={s.dismissedAutoTranslateAlert === true} onChange={event => { settings.store.dismissedAutoTranslateAlert = event.currentTarget.checked; }} />
+                    Don’t show this again
+                </label>
+            </div>
+        </Window>
     );
 }
 

@@ -56,18 +56,18 @@ function dayLabel(t: number) {
 const timeOf = (t: number) => new Date(t).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 
 function Avatar({ e }: { e: LogEntry; }) {
-    const [broken, setBroken] = useState(false);
+    const [failedUrl, setFailedUrl] = useState<string>();
     const place = e.group ?? e.server;
     const src = e.user ? avatarOf(e.user) : place?.iconURL ?? undefined;
     const square = !e.user && !!e.server;
-    if (src && !broken) return <img className={classes(cl("avatar"), square && cl("avatar-square"))} src={src} alt="" onError={() => setBroken(true)} />;
+    if (src && src !== failedUrl) return <img className={classes(cl("avatar"), square && cl("avatar-square"))} src={src} alt="" onError={() => setFailedUrl(src)} />;
     const label = e.user ? nameOf(e.user) : place?.name ?? "?";
     return <div className={classes(cl("avatar"), cl("avatar-fallback"), square && cl("avatar-square"))}>{label.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()}</div>;
 }
 
 function Row({ e }: { e: LogEntry; }) {
     const { text, tone } = describe(e);
-    const clickable = !!e.user && e.user.username !== "unknown";
+    const userId = e.user?.username !== "unknown" ? e.user?.id : undefined;
     const sub = [
         e.user && e.user.username !== "unknown" ? `@${e.user.username}` : null,
         (e.kind === "group-member-removed" || e.kind === "group-member-left") && e.group ? e.group.name : null,
@@ -76,11 +76,15 @@ function Row({ e }: { e: LogEntry; }) {
 
     return (
         <div
-            className={classes(cl("row"), cl(`tone-${tone}`), clickable && cl("row-click"))}
-            onClick={clickable ? () => openUserProfile(e.user!.id) : undefined}
-            role={clickable ? "button" : undefined}
-            tabIndex={clickable ? 0 : undefined}
-            onKeyDown={clickable ? ev => { if (ev.key === "Enter") openUserProfile(e.user!.id); } : undefined}
+            className={classes(cl("row"), cl(`tone-${tone}`), userId && cl("row-click"))}
+            onClick={userId ? () => openUserProfile(userId) : undefined}
+            role={userId ? "button" : undefined}
+            tabIndex={userId ? 0 : undefined}
+            onKeyDown={userId ? event => {
+                if (event.repeat || (event.key !== "Enter" && event.key !== " ")) return;
+                event.preventDefault();
+                openUserProfile(userId);
+            } : undefined}
         >
             <Avatar e={e} />
             <div className={cl("row-text")}>
@@ -173,9 +177,9 @@ function LogModal({ modalProps }: { modalProps: RenderModalProps; }) {
                     </div>
 
                     <div className={cl("controls")}>
-                        <div className={cl("chips")} role="tablist" aria-label="Category">
+                        <div className={cl("chips")} role="group" aria-label="Category">
                             {CATEGORIES.map(c => (
-                                <button key={c.id} type="button" role="tab" aria-selected={category === c.id}
+                                <button key={c.id} type="button" aria-pressed={category === c.id}
                                     className={classes(cl("chip"), category === c.id && cl("chip-active"))}
                                     onClick={() => setCategory(c.id)}>
                                     {c.label}
@@ -183,9 +187,9 @@ function LogModal({ modalProps }: { modalProps: RenderModalProps; }) {
                             ))}
                         </div>
                         <div className={cl("controls-row")}>
-                            <div className={cl("segmented")} role="radiogroup" aria-label="Who did it">
+                            <div className={cl("segmented")} role="group" aria-label="Who did it">
                                 {WHO.map(w => (
-                                    <button key={w.id} type="button" role="radio" aria-checked={who === w.id}
+                                    <button key={w.id} type="button" aria-pressed={who === w.id}
                                         className={classes(cl("segment"), who === w.id && cl("segment-active"))}
                                         onClick={() => setWho(w.id)}>
                                         {w.label}

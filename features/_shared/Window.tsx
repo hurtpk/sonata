@@ -130,7 +130,6 @@ function Frame({ transitionState, onClose, size = "md", title, subtitle, childre
                 <header className="vc-sw-top">
                     <div className="vc-sw-name" title={typeof subtitle === "string" ? subtitle : undefined}>
                         <span className="vc-sw-wordmark" aria-hidden><SonataIcon width={17} height={17} />sonata<i>.</i></span>
-                        <span className="vc-sw-dash" aria-hidden>/</span>
                         <span className="vc-sw-here">{title}</span>
                     </div>
                     {tools && <div className="vc-sw-tools">{tools}</div>}

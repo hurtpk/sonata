@@ -37,7 +37,8 @@ import { Welcome, WhatsNew } from "./Welcome";
 import { WindowStylePanel } from "./WindowStylePanel";
 
 export const ACCENTS: { name: string; hex: string; }[] = [
-    { name: "Peach", hex: DEFAULT_ACCENT },
+    { name: "Pewter", hex: DEFAULT_ACCENT },
+    { name: "Peach", hex: "#ffad91" },
     { name: "Dusty rose", hex: "#c58d91" },
     { name: "Sapphire", hex: "#3b82f6" },
     { name: "Iris", hex: "#6366f1" },
@@ -107,7 +108,7 @@ function SearchBox({ value, onChange, inputRef, placeholder, wide }: { value: st
                 <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
                 <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <input ref={inputRef} className="sonata-search" value={value} placeholder={placeholder} spellCheck={false}
+            <input ref={inputRef} className="sonata-search" value={value} placeholder={placeholder} aria-label={placeholder} spellCheck={false}
                 onChange={e => onChange(e.currentTarget.value)} onKeyDown={e => { if (e.key === "Escape" && value) { e.stopPropagation(); onChange(""); } }} />
             {value
                 ? <button type="button" className="sonata-clear" onClick={() => onChange("")} aria-label="Clear search">×</button>
@@ -120,7 +121,6 @@ function PaneHead({ title, sub, children }: { title: React.ReactNode; sub?: Reac
     return (
         <header className="sonata-head">
             <div>
-                <div className="sonata-eyebrow">Discord plugin</div>
                 <h2 className="sonata-head-title">{title}</h2>
                 {sub && <p className="sonata-head-sub">{sub}</p>}
             </div>
@@ -281,10 +281,15 @@ function FeaturesTab({ api, s, query, setQuery, search, onSearchPlugins, onOpenL
     const [status, setStatus] = useState<StatusFilter>("all");
     const [openKey, setOpenKey] = useState<string | null>(null);
     const pane = useRef<HTMLDivElement>(null);
-    const toolbar = useRef<HTMLDivElement>(null);
-    // Picking a category or filter brings the cards up under the toolbar.
-    const toCards = () => { const p = pane.current, t = toolbar.current; if (p && t && p.scrollTop > t.offsetTop) p.scrollTo({ top: t.offsetTop - 6 }); };
-    useEffect(() => { lastCategory = category; toCards(); }, [category, status]);
+    const results = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        lastCategory = category;
+        const container = pane.current;
+        const list = results.current;
+        if (!container || !list) return;
+        const top = list.getBoundingClientRect().top - container.getBoundingClientRect().top;
+        if (top < 0) container.scrollTop += top;
+    }, [category, status]);
 
     const q = query.trim().toLowerCase();
     const passes = (key: string) => {
@@ -320,67 +325,71 @@ function FeaturesTab({ api, s, query, setQuery, search, onSearchPlugins, onOpenL
                     {pending > 0 && <button type="button" className="sonata-btn sonata-btn-accent" onClick={api.apply}>Apply {pending} changes</button>}
                 </PaneHead>
 
-                <div className="sonata-toolbar" ref={toolbar}>
-                    <SearchBox value={query} onChange={setQuery} inputRef={search} placeholder="Search features…" />
-                    <div className="sonata-toolbar-cats" onWheel={e => { const el = e.currentTarget; if (el.scrollWidth > el.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) el.scrollLeft += e.deltaY; }}>
-                        <button type="button" className={classes("sonata-chip", category === "all" && "sonata-chip-on")} onClick={() => setCategory("all")}>All<small>{base.length}</small></button>
+                <div className="sonata-feature-browser">
+                    <nav className="sonata-toolbar-cats" aria-label="Feature categories">
+                        <span className="sonata-category-title">Categories</span>
+                        <button type="button" className={classes("sonata-chip", category === "all" && "sonata-chip-on")} aria-pressed={category === "all"} onClick={() => setCategory("all")}>All features<small>{base.length}</small></button>
                         {cats.map(c => {
                             const n = base.filter(k => categoryOf(k).id === c.id).length;
                             return (
-                                <button key={c.id} type="button" className={classes("sonata-chip", category === c.id && "sonata-chip-on")} onClick={() => setCategory(category === c.id ? "all" : c.id)}>
+                                <button key={c.id} type="button" className={classes("sonata-chip", category === c.id && "sonata-chip-on")} aria-pressed={category === c.id} onClick={() => setCategory(category === c.id ? "all" : c.id)}>
                                     <i style={{ background: c.color }} />{c.label}<small>{n}</small>
                                 </button>
                             );
                         })}
-                    </div>
-                    <div className="sonata-toolbar-end">
-                        <select className="sonata-select" value={status} onChange={e => setStatus(e.currentTarget.value as StatusFilter)} aria-label="Show">
-                            <option value="all">Any status</option>
-                            <option value="on">On</option>
-                            <option value="off">Off</option>
-                            <option value="pending">Waiting for reload</option>
-                        </select>
-                        <BulkSwitch api={api} keys={shown} />
+                    </nav>
+                    <div className="sonata-feature-results" ref={results}>
+                        <div className="sonata-toolbar">
+                            <SearchBox value={query} onChange={setQuery} inputRef={search} placeholder="Search features…" />
+                            <div className="sonata-toolbar-end">
+                                <div className="sonata-status-filters" role="group" aria-label="Feature status">
+                                    {([["all", "Any status"], ["on", "On"], ["off", "Off"], ["pending", "Needs reload"]] as const).map(([value, label]) => (
+                                        <button type="button" key={value} aria-pressed={status === value} onClick={() => setStatus(value)}>{label}</button>
+                                    ))}
+                                </div>
+                                <BulkSwitch api={api} keys={shown} />
+                            </div>
+                        </div>
+
+                        {showPinned && (
+                            <section className="sonata-group sonata-group-pinned">
+                                <h3 className="sonata-group-head">
+                                    <span className="sonata-group-name"><span className="sonata-group-star" aria-hidden>★</span>Pinned</span>
+                                    <span className="sonata-group-count"><b>{pinned.filter(k => api.isOn(k)).length}</b> of {pinned.length} on</span>
+                                </h3>
+                                <div className="sonata-grid">{pinned.map(k => card(k, "pin:"))}</div>
+                            </section>
+                        )}
+
+                        {cats.map(c => {
+                            if (category !== "all" && category !== c.id) return null;
+                            const keys = shown.filter(k => categoryOf(k).id === c.id);
+                            if (!keys.length) return null;
+                            const lit = keys.filter(k => api.isOn(k)).length;
+                            return (
+                                <section key={c.id} className="sonata-group">
+                                    <h3 className="sonata-group-head">
+                                        <span className="sonata-group-name"><i style={{ background: c.color }} />{c.label}</span>
+                                        <span className="sonata-group-count"><b>{lit}</b> of {keys.length} on</span>
+                                    </h3>
+                                    <div className="sonata-grid">
+                                        {keys.map(k => card(k))}
+                                    </div>
+                                </section>
+                            );
+                        })}
+                        {shown.length === 0 && (
+                            <div className="sonata-empty">
+                                No features match{q ? ` “${query.trim()}”` : ""}{category !== "all" ? " in this category" : ""}.
+                                <div className="sonata-field-actions">
+                                    {category !== "all" && <button type="button" className="sonata-btn" onClick={() => setCategory("all")}>Search every category</button>}
+                                    {q && <button type="button" className="sonata-btn" onClick={onSearchPlugins}>Search plugins instead</button>}
+                                    {status !== "all" && <button type="button" className="sonata-btn" onClick={() => setStatus("all")}>Show any status</button>}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-
-                {showPinned && (
-                    <section className="sonata-group sonata-group-pinned">
-                        <h3 className="sonata-group-head">
-                            <span className="sonata-group-name"><span className="sonata-group-star" aria-hidden>★</span>Pinned</span>
-                            <span className="sonata-group-count"><b>{pinned.filter(k => api.isOn(k)).length}</b> of {pinned.length} on</span>
-                        </h3>
-                        <div className="sonata-grid">{pinned.map(k => card(k, "pin:"))}</div>
-                    </section>
-                )}
-
-                {cats.map(c => {
-                    if (category !== "all" && category !== c.id) return null;
-                    const keys = shown.filter(k => categoryOf(k).id === c.id);
-                    if (!keys.length) return null;
-                    const lit = keys.filter(k => api.isOn(k)).length;
-                    return (
-                        <section key={c.id} className="sonata-group">
-                            <h3 className="sonata-group-head">
-                                <span className="sonata-group-name"><i style={{ background: c.color }} />{c.label}</span>
-                                <span className="sonata-group-count"><b>{lit}</b> of {keys.length} on</span>
-                            </h3>
-                            <div className="sonata-grid">
-                                {keys.map(k => card(k))}
-                            </div>
-                        </section>
-                    );
-                })}
-                {shown.length === 0 && (
-                    <div className="sonata-empty">
-                        No features match{q ? ` “${query.trim()}”` : ""}{category !== "all" ? " in this category" : ""}.
-                        <div className="sonata-field-actions">
-                            {category !== "all" && <button type="button" className="sonata-btn" onClick={() => setCategory("all")}>Search every category</button>}
-                            {q && <button type="button" className="sonata-btn" onClick={onSearchPlugins}>Search plugins instead</button>}
-                            {status !== "all" && <button type="button" className="sonata-btn" onClick={() => setStatus("all")}>Show any status</button>}
-                        </div>
-                    </div>
-                )}
                 {footer}
             </div>
         </div>
@@ -799,7 +808,7 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
     );
 
     return (
-        <div className={classes("sonata", accentA !== accentB && "sonata-duo")}
+        <div className={classes("sonata", "sonata-screen", accentA !== accentB && "sonata-duo")}
             style={{ "--sn-accent": accentA, "--sn-accent-2": accentB } as React.CSSProperties}>
             <div className="sonata-frame">
                 {welcome && <Welcome api={api} store={store} accents={ACCENTS} onDone={() => { setWelcome(false); store.sonataSeenVersion = LATEST; }} />}
@@ -822,7 +831,7 @@ export function SonataScreen({ api, onClose }: { api: QolApi; onClose?(): void; 
                     <div className="sonata-corner">
                         {pending > 0 && <button type="button" className="sonata-btn sonata-btn-light" onClick={api.apply}>Apply {pending} · reload</button>}
                         <Button variant="none" size="min" className="sonata-updates" title="Open the Sonata dashboard"
-                            onClick={() => VencordNative.native.openExternal("https://sonatabot.info/")}>
+                            onClick={() => VencordNative.native.openExternal("https://sonatabot.info/#dashboard")}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.7" /></svg>
                             Dashboard
                         </Button>

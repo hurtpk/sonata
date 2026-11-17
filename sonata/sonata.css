@@ -681,3 +681,101 @@ button.sonata-occasion-pill:focus-visible { outline: 2px solid var(--sn-accent);
 .sonata-log-icons { display: inline-flex; align-items: center; gap: 4px; color: var(--sn-hi); }
 .sonata-log-entry li > span:first-child { color: var(--sn-hi); }
 @media (max-width: 640px) { .sonata-log-icons { display: none; } }
+
+.sonata-screen {
+    --sn-outside: #070809;
+    --sn-base: #0c0e0f;
+    --sn-surface: #17191a;
+    --sn-line: #afb9c233;
+    --sn-text: #eff1f2;
+    --sn-muted: #b5bac0;
+    --sn-dim: #a1a6ac;
+    --sn-font: "Sonata DM Sans", "gg sans", sans-serif;
+    --sn-display: var(--sn-font);
+    --sn-panel: var(--sonata-glass);
+}
+.sonata-screen .sonata-frame {
+    background: radial-gradient(ellipse 72% 570px at 50% 0%, #24282b, transparent 94%), var(--sn-outside);
+}
+.sonata-screen .sonata-top {
+    min-height: 68px;
+    width: min(1280px, calc(100% - 56px));
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 9px 16px;
+    border-bottom: 0;
+}
+.sonata-screen .sonata-brand { font-size: 25px; font-weight: 750; letter-spacing: -.025em; -webkit-text-stroke: 0; }
+.sonata-screen .sonata-brand svg { width: 18px; height: 18px; }
+.sonata-screen .sonata-tabs {
+    align-self: center;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--sn-line);
+    border-radius: 999px;
+    background: linear-gradient(165deg, #272b2ecf, #111314e8);
+}
+.sonata-screen .sonata-tab {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+.sonata-screen .sonata-tab:is(:hover, .sonata-tab-on) { color: var(--sn-text); background: var(--sn-faint); }
+.sonata-screen .sonata-tab b { border-radius: 999px; background: var(--sn-glass); }
+.sonata-screen .sonata-updates { padding-inline: 10px; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.sonata-screen .sonata-corner .sonata-close { width: 34px; height: 34px; border-radius: 10px; }
+.sonata-screen .sonata-pane { padding-top: 24px; }
+.sonata-screen .sonata-pane-inner { width: min(1280px, 100%); gap: 20px; }
+.sonata-screen .sonata-pane-narrow { width: min(1000px, 100%); }
+.sonata-screen .sonata-head { padding: clamp(18px, 3vw, 37px) clamp(18px, 3vw, 34px); }
+.sonata-screen .sonata-head > div:first-child { flex-basis: 210px; }
+.sonata-screen .sonata-head-title { font-size: clamp(30px, 4vw, 52px); font-weight: 680; letter-spacing: -.033em; -webkit-text-stroke: 0; }
+.sonata-screen .sonata-head-sub { margin-top: 9px; }
+.sonata-screen :is(.sonata-head, .sonata-toolbar-cats, .sonata-panel, .sonata-card, .sonata-prow, .sonata-ptile) {
+    border: 1px solid var(--sn-line);
+    border-bottom-color: #afb9c24d;
+    border-radius: 16px;
+    background: var(--sn-panel);
+}
+.sonata-feature-browser { display: grid; grid-template-columns: minmax(168px, 205px) minmax(0, 1fr); align-items: start; gap: clamp(14px, 2.5vw, 28px); }
+.sonata-feature-results { display: grid; min-width: 0; gap: 14px; }
+.sonata-screen .sonata-toolbar-cats { position: sticky; top: 0; order: 0; flex-direction: column; gap: 4px; padding: 10px; }
+.sonata-category-title { padding: 7px 10px 4px; color: var(--sn-muted); font-size: 12px; }
+.sonata-screen .sonata-toolbar-cats .sonata-chip { justify-content: flex-start; min-height: 36px; padding: 6px 10px; border-radius: 8px; }
+.sonata-screen .sonata-toolbar-cats small { margin-left: auto; }
+.sonata-screen .sonata-toolbar-cats i, .sonata-screen .sonata-group-name i { display: none; }
+.sonata-screen .sonata-toolbar { top: 0; gap: 10px; padding: 10px; border: 1px solid var(--sn-line); border-radius: 14px; background: linear-gradient(145deg, #1b1e20, #101213); }
+.sonata-screen .sonata-toolbar-end { flex: 1 1 auto; min-width: 0; flex-wrap: wrap; justify-content: space-between; }
+.sonata-status-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--sn-line); border-radius: 10px; }
+.sonata-status-filters button { padding: 5px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--sn-muted); font: 600 11px var(--sn-font); cursor: pointer; }
+.sonata-status-filters button:is(:hover, [aria-pressed="true"]) { background: var(--sn-faint); color: var(--sn-text); }
+.sonata-screen .sonata-group-name { font-size: 15px; font-weight: 670; letter-spacing: 0; text-transform: none; }
+.sonata-screen .sonata-grid { grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 12px; }
+.sonata-screen .sonata-card { min-height: 150px; box-shadow: none; }
+.sonata-screen .sonata-card-open { border-color: var(--sn-hi); }
+.sonata-screen .sonata-card-pending { border-color: #bfa474; }
+.sonata-screen .sonata-card-lit .sonata-card-icon { background: var(--sn-faint); border: 1px solid var(--sn-line); }
+.sonata-screen .sonata-card:is(:hover, :focus-within) { border-color: #afb9c27a; box-shadow: 0 9px 29px -17px var(--sn-glow); }
+.sonata-screen .sonata-close:focus-visible, .sonata-status-filters button:focus-visible { outline: 2px solid var(--sn-hi); outline-offset: 2px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .sonata-screen .sonata-card { transition: border-color 180ms ease, box-shadow 210ms ease, translate 210ms ease; }
+    .sonata-screen .sonata-card[role="button"]:not(.sonata-card-open):hover { translate: 0 -2px; }
+}
+.sonata-screen :is(.sonata-prow-on, .sonata-ptile-on) { border-color: color-mix(in srgb, var(--sn-accent) 48%, transparent); }
+@media (max-width: 1100px) {
+    .sonata-screen .sonata-top { grid-template-columns: minmax(0, 1fr) auto; padding-block: 9px; }
+    .sonata-screen .sonata-tabs { grid-column: 1 / -1; justify-self: center; max-width: 100%; }
+}
+@media (max-width: 760px) {
+    .sonata-feature-browser { grid-template-columns: minmax(0, 1fr); }
+    .sonata-screen .sonata-toolbar-cats { position: static; flex-direction: row; }
+    .sonata-category-title { display: none; }
+    .sonata-screen .sonata-toolbar-cats small { margin-left: 3px; }
+    .sonata-screen .sonata-top { width: calc(100% - 32px); grid-template-columns: minmax(0, 1fr); }
+    .sonata-screen .sonata-corner { justify-self: start; justify-content: flex-start; }
+    .sonata-screen .sonata-tabs { justify-self: stretch; }
+}
