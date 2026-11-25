@@ -70,7 +70,7 @@ export default definePlugin({
                     replace: "false"
                 },
                 {
-                    match: /(?<="GatewaySocket"\)\}\),properties:)(\i)/,
+                    match: /(?<=capabilities:\d+,properties:)(\i)(?=,presence:)/,
                     replace: "{...$1,...$self.getPlatform(true)}"
                 },
             ]

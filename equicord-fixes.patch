@@ -1,3 +1,16 @@
+diff --git a/src/equicordplugins/_api/profileSections.ts b/src/equicordplugins/_api/profileSections.ts
+index bee004211..1db162a03 100644
+--- a/src/equicordplugins/_api/profileSections.ts
++++ b/src/equicordplugins/_api/profileSections.ts
+@@ -16,7 +16,7 @@ export default definePlugin({
+         {
+             find: ".SIDEBAR,disableToolbar:",
+             replacement: {
+-                match: /(#{intl::USER_PROFILE_MEMBER_SINCE}\),.{0,100}userId:(\i\.id)\}\)\}\))(?=.{0,100}unownedWishlistItems:\i,wishlistId:\i)/,
++                match: /(#{intl::USER_PROFILE_MEMBER_SINCE}\),.{0,100}userId:(\i\.id)\}\)\}\))/,
+                 replace: "$1,Vencord.Api.ProfileSections.renderProfileSections({userId:$2,isSideBar:true})",
+             }
+         },
 diff --git a/src/equicordplugins/equicordHelper/index.tsx b/src/equicordplugins/equicordHelper/index.tsx
 index 6361de8c1..7b8c1e846 100644
 --- a/src/equicordplugins/equicordHelper/index.tsx
@@ -76,7 +89,7 @@ index ace58e705..381d3215e 100644
                  },
                  {
 diff --git a/src/plugins/_core/concatenatedComponentExtractor.tsx b/src/plugins/_core/concatenatedComponentExtractor.tsx
-index 2c01bb36b..bcdc3c836 100644
+index 2c01bb36b..b2e1525b0 100644
 --- a/src/plugins/_core/concatenatedComponentExtractor.tsx
 +++ b/src/plugins/_core/concatenatedComponentExtractor.tsx
 @@ -26,7 +26,8 @@ export default definePlugin({
@@ -88,6 +101,17 @@ index 2c01bb36b..bcdc3c836 100644
 +                match: /(?=function (\i)\(\i,\i,\i\)\{.{0,20}?return (?:\i\.forwardRef\()?function\(\i(?:,\i)?\)\{let\{[^}]+?="ltr",orientation:)/,
                  replace: "$self.setCreateScroller($1);"
              }
+         },
+@@ -34,8 +35,8 @@ export default definePlugin({
+             find: '("UserProfileModalV2EditingPanel")',
+             replacement: [
+                 {
+-                    match: /function (\i).{0,50}showNitroIcon:.{0,500}\}\),\i\]\}\)\}/,
+-                    replace: "$&$self.setNewCustomizationSection($1);"
++                    match: /(?=function (\i)\(\i\)\{let\{[^}]{0,150}showNitroIcon:)/,
++                    replace: "$self.setNewCustomizationSection($1);"
+                 }
+             ]
          },
 diff --git a/src/plugins/betterFolders/index.tsx b/src/plugins/betterFolders/index.tsx
 index ab08c9f57..56ddb8834 100644
@@ -109,6 +133,65 @@ index ab08c9f57..56ddb8834 100644
                  },
                  // Export the isBetterFolders and betterFoldersExpandedIds variable to the Guild List component
                  {
+diff --git a/src/plugins/showHiddenChannels/index.tsx b/src/plugins/showHiddenChannels/index.tsx
+index 45b89a24a..e61795504 100644
+--- a/src/plugins/showHiddenChannels/index.tsx
++++ b/src/plugins/showHiddenChannels/index.tsx
+@@ -398,41 +398,41 @@ export default definePlugin({
+             ]
+         },
+         {
+-            find: '"HasBeenInStageChannel"',
++            find: /screenMessage:\i\?\{mainText:/,
+             replacement: [
+                 {
+                     // Render our HiddenChannelLockScreen component instead of the main stage channel component
+-                    match: /screenMessage:(\i)\?.+?children:(?=!\1)(?<=let \i,{channel:(\i).+?)/,
+-                    replace: (m, _isPopoutOpen, channel) => `${m}$self.isHiddenChannel(${channel})?$self.HiddenChannelLockScreen(${channel}):`
++                    match: /screenMessage:(\i)\?.{0,150}?children:(?=!\1)/,
++                    replace: "$&$self.isHiddenChannel(arguments[0].channel)?$self.HiddenChannelLockScreen(arguments[0].channel):"
+                 },
+                 {
+                     // Disable useless components for the HiddenChannelLockScreen of stage channels
+-                    match: /render(?:BottomLeft|BottomCenter|BottomRight|ChatToasts):\(\)=>(?<=let \i,{channel:(\i).+?)/g,
+-                    replace: (m, channel) => `${m}$self.isHiddenChannel(${channel})?null:`
++                    match: /render(?:BottomLeft|BottomCenter|BottomRight|ChatToasts):(?:\(\)=>|function\(\)\{return)/g,
++                    replace: m => `${m.replace("function()", "()=>")} $self.isHiddenChannel(arguments[0].channel)?null:`
+                 },
+                 {
+                     // Disable gradients for the HiddenChannelLockScreen of stage channels
+-                    match: /"124px".+?disableGradients:(?<=let \i,{channel:(\i).+?)/,
+-                    replace: (m, channel) => `${m}$self.isHiddenChannel(${channel})||`
++                    match: /(?<=paddingTop:\i\},)disableGradients:/,
++                    replace: "$&$self.isHiddenChannel(arguments[0].channel)||"
+                 },
+                 {
+                     // Disable strange styles applied to the header for the HiddenChannelLockScreen of stage channels
+-                    match: /"124px".+?style:(?<=let \i,{channel:(\i).+?)/,
+-                    replace: (m, channel) => `${m}$self.isHiddenChannel(${channel})?void 0:`
++                    match: /style:(?=\{height:`calc\(100% - \$\{\i\}\)`,paddingTop:)/,
++                    replace: "$&$self.isHiddenChannel(arguments[0].channel)?void 0:"
+                 }
+             ]
+         },
+         {
+-            find: "#{intl::STAGE_FULL_MODERATOR_TITLE}",
++            find: /screenMessage:\i\?\{mainText:/,
+             replacement: [
+                 {
+                     // Remove the divider and amount of users in stage channel components for the HiddenChannelLockScreen
+-                    match: /\(0,\i\.jsx\)\(\i\.\i\.Divider.+?}\)]}\)(?=.+?:(\i)\.guild_id)/,
+-                    replace: (m, channel) => `$self.isHiddenChannel(${channel})?null:(${m})`
++                    match: /(\(0,\i\.jsx\)\(\i\.\i\.Divider,\{className:\i\.\i\}\)),(?=\(0,\i\.jsxs\)\(\i\.\i\.Title,\{children:\[)/,
++                    replace: "$self.isHiddenChannel(arguments[0].channel)?null:$1,$self.isHiddenChannel(arguments[0].channel)?null:"
+                 },
+                 {
+                     // Remove the open chat button for the HiddenChannelLockScreen
+-                    match: /(?<=numRequestToSpeak:\i\}\)\}\):null,!\i&&)\(0,\i\.jsxs?\).{0,280}?iconClassName:/,
++                    match: /\(0,\i\.jsx\)\(\i\.\i,\{(?=[^}]{0,180}showRequestToSpeakSidebar:)(?=[^}]{0,180}iconClassName:)/,
+                     replace: "!$self.isHiddenChannel(arguments[0]?.channel,true)&&$&"
+                 }
+             ]
 diff --git a/src/webpack/common/utils.ts b/src/webpack/common/utils.ts
 index 47903155b..36a752d2c 100644
 --- a/src/webpack/common/utils.ts

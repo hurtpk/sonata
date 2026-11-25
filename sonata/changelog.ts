@@ -19,6 +19,14 @@ export interface ChangeEntry {
 
 export const CHANGELOG: ChangeEntry[] = [
     {
+        version: "2026.11.25",
+        date: "November 25, 2026",
+        title: "Discord compatibility",
+        items: [
+            { icon: "shield", text: "Updated the profile section, stage channel and Platform Spoofer patches for Discord's latest changes. Better Folders compatibility fixes are included in the installer and updater." },
+        ],
+    },
+    {
         version: "2026.11.08",
         date: "November 8, 2026",
         title: "Server Tools and sidebar fixes",
