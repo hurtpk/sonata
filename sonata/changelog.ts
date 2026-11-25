@@ -23,7 +23,7 @@ export const CHANGELOG: ChangeEntry[] = [
         date: "November 25, 2026",
         title: "Discord compatibility",
         items: [
-            { icon: "shield", text: "Updated the profile section, stage channel and Platform Spoofer patches for Discord's latest changes. Better Folders compatibility fixes are included in the installer and updater." },
+            { icon: "shield", text: "Updated the profile section, stage channel and Platform Spoofer patches for Discord's latest changes. Better Folders compatibility fixes are included in the installer and updater. The old bundled Show Hidden Channels feature is removed; use Equicord's separate plugin." },
         ],
     },
     {

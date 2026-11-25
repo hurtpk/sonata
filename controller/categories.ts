@@ -54,7 +54,6 @@ const FEATURE_CATEGORY: Record<string, string> = {
     permissionsViewer: "servers",
     roleColorEverywhere: "servers",
     serverInfo: "servers",
-    showHiddenChannels: "servers",
     showTimeoutDuration: "servers",
     betterInvites: "servers",
     inviteManager: "servers",

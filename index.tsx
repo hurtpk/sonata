@@ -138,7 +138,6 @@ import scheduledMessages from "./features/scheduledMessages";
 import forceOwnerCrown from "./features/serverInsights/forceOwnerCrown";
 import permissionsViewer from "./features/serverInsights/permissionsViewer";
 import serverInfo from "./features/serverInsights/serverInfo";
-import showHiddenChannels from "./features/serverInsights/showHiddenChannels";
 import showTimeoutDuration from "./features/serverInsights/showTimeoutDuration";
 import shareSetup from "./features/shareSetup";
 import showRolesInChat from "./features/showRolesInChat";
@@ -327,7 +326,7 @@ const FEATURES: Record<string, Feature> = {
     anonymiseFileNames, callTimer, crashHandler, disableCallIdle, forceOwnerCrown,
     imageFilename, imageLink, imageZoom, messageLogger, messageLoggerEnhanced, mutualGroupDMs,
     noUnblockToJump, onePingPerDM, permissionsViewer, pinDms, readAllNotificationsButton,
-    reverseImageSearch, roleColorEverywhere, serverInfo, showHiddenChannels, showTimeoutDuration,
+    reverseImageSearch, roleColorEverywhere, serverInfo, showTimeoutDuration,
     silentTyping, spotifyCrack, translate, viewIcons, voiceDownload, voiceMessages,
     betterInvites, declutter, gifMaker, splitLargeMessages,
     sameVoiceLabel: {
@@ -366,12 +365,12 @@ const FIRST_BATCH = new Set([
     "anonymiseFileNames", "callTimer", "crashHandler", "disableCallIdle", "forceOwnerCrown",
     "imageFilename", "imageLink", "imageZoom", "messageLogger", "mutualGroupDMs",
     "noUnblockToJump", "onePingPerDM", "pinDms", "readAllNotificationsButton", "relationshipNotifier",
-    "reverseImageSearch", "roleColorEverywhere", "serverInfo", "showHiddenChannels", "showTimeoutDuration",
+    "reverseImageSearch", "roleColorEverywhere", "serverInfo", "showTimeoutDuration",
     "silentTyping", "spotifyCrack", "translate", "viewIcons", "voiceDownload", "voiceMessages",
 ]);
 
 /** Features taken out of Sonata; their leftover settings are cleared once. */
-const REMOVED_FEATURES = ["stereo", "voiceChanger", "typingSounds", "giftWrap", "zipPreview"];
+const REMOVED_FEATURES = ["stereo", "voiceChanger", "typingSounds", "giftWrap", "zipPreview", "showHiddenChannels"];
 
 const savedSonata = PlainSettings.plugins.Sonata;
 if (savedSonata?.on_zipPreview === true && savedSonata.on_filePreviewer === false) {
@@ -469,7 +468,7 @@ function neededApis(f: Feature): string[] {
         .map(([, api]) => api);
 }
 
-/** "ShowHiddenChannels" -> "Show Hidden Channels", "PinDMs" -> "Pin DMs". */
+/** "PinDMs" -> "Pin DMs". */
 const displayName = (key: string) => FEATURES[key].name.replace(/([a-z])([A-Z])/g, "$1 $2");
 
 /** Settings page / display order: alphabetical by the name you'd recognise. */

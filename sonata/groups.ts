@@ -113,8 +113,8 @@ export const GROUPS: Record<string, Group> = {
     serverInsights: {
         aliasOf: "serverTools",
         name: "Server Insights",
-        description: "One Server Insights window for any server (its details, every role with what it can do and who has it, and a member look-up), plus channels you can't open, how long a timeout lasts, and the owner's crown in big servers.",
-        members: ["serverInfo", "permissionsViewer", "showHiddenChannels", "showTimeoutDuration", "forceOwnerCrown"],
+        description: "One Server Insights window for any server (its details, every role with what it can do and who has it, and a member look-up), plus timeout lengths and the owner's crown in big servers.",
+        members: ["serverInfo", "permissionsViewer", "showTimeoutDuration", "forceOwnerCrown"],
     },
     sonataInsights: {
         name: "Sonata Insights",
@@ -158,7 +158,7 @@ export const GROUPS: Record<string, Group> = {
     serverTools: {
         name: "Server Tools",
         description: "Server insights, permissions, invites, local names, Discord AutoMod rules and regex, Word Purge, private member evidence logs and active timeouts in one window.",
-        members: ["serverInfo", "permissionsViewer", "showHiddenChannels", "showTimeoutDuration", "forceOwnerCrown", "betterInvites", "inviteManager", "localNames", "autoModRegex", "memberLogs", "activeTimeouts", "serverWordPurge"],
+        members: ["serverInfo", "permissionsViewer", "showTimeoutDuration", "forceOwnerCrown", "betterInvites", "inviteManager", "localNames", "autoModRegex", "memberLogs", "activeTimeouts", "serverWordPurge"],
         window: true,
     },
 };
