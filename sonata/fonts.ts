@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import bodoni from "file://../service/public/bodoni.woff2?base64";
-import dmSans from "file://../service/public/dm-sans.ttf?base64";
-import space from "file://../service/public/space.woff2?base64";
+import bodoni from "file://./assets/fonts/bodoni.woff2?base64";
+import dmSans from "file://./assets/fonts/dm-sans.ttf?base64";
+import space from "file://./assets/fonts/space.woff2?base64";
 
 const fonts = [
     ["Sonata Bodoni", bodoni],

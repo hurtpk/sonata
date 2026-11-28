@@ -1,5 +1,0 @@
-.env*
-.ssh
-node_modules
-test
-data

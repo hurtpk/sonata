@@ -25,3 +25,7 @@ bot/music/.ssh/
 bot/music/.env*
 !bot/music/.env.example
 bot/music/data/
+
+# Hosted bot and website are maintained in a separate private repository.
+/bot/
+/service/

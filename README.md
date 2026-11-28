@@ -117,3 +117,5 @@ Then restart Discord.
 | Discord opens without Equicord | Run `pnpm inject` again. Discord updates sometimes remove it. |
 | A feature stopped working after a Discord update | Open **Sonata Insights**. It shows what broke and how to fix it. |
 | Discord feels slow | In Sonata, open the **Performance** tab and pick **⚡ Light**. |
+
+The hosted Sonata bot and website are maintained separately from this public Equicord client plugin.
